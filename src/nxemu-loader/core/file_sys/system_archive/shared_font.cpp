@@ -9,7 +9,7 @@
 #include "core/file_sys/system_archive/data/font_standard.h"
 #include "core/file_sys/system_archive/shared_font.h"
 #include "core/file_sys/vfs/vfs_vector.h"
-#include <yuzu_common/yuzu_assert.h>
+#include "core/hle/service/ns/platform_service_manager.h"
 
 namespace FileSys::SystemArchive {
 
@@ -23,7 +23,7 @@ VirtualFile PackBFTTF(const std::array<u8, Size>& data, const std::string& name)
     std::vector<u8> bfttf(Size + sizeof(u64));
 
     size_t offset = 0;
-    UNIMPLEMENTED();
+    Service::NS::EncryptSharedFont(vec, bfttf, offset);
     return std::make_shared<VectorVfsFile>(std::move(bfttf), name);
 }
 

@@ -98,6 +98,9 @@
     <ClInclude Include="core\hle\kernel\k_typed_address.h" />
     <ClInclude Include="core\hle\kernel\physical_memory.h" />
     <ClInclude Include="core\hle\result.h" />
+    <ClInclude Include="core\hle\service\cmif_types.h" />
+    <ClInclude Include="core\hle\service\ns\platform_service_manager.h" />
+    <ClInclude Include="core\hle\service\set\settings_types.h" />
     <ClInclude Include="core\loader\loader.h" />
     <ClInclude Include="core\loader\nro.h" />
     <ClInclude Include="core\loader\nso.h" />
@@ -147,6 +150,7 @@
     <ClCompile Include="core\file_sys\vfs\vfs_vector.cpp" />
     <ClCompile Include="core\file_sys\xts_archive.cpp" />
     <ClCompile Include="core\hle\kernel\code_set.cpp" />
+    <ClCompile Include="core\hle\service\ns\platform_service_manager.cpp" />
     <ClCompile Include="core\loader\loader.cpp" />
     <ClCompile Include="core\loader\nro.cpp" />
     <ClCompile Include="file_format\nacp.cpp" />

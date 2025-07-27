@@ -73,6 +73,21 @@
     <Filter Include="Header Files\core\hle\kernel">
       <UniqueIdentifier>{f6316aee-fbba-418a-a828-390817ba5caa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\core\hle\service">
+      <UniqueIdentifier>{1a0219c5-cfb4-400d-a8ea-15f884a79717}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core\hle\service\ns">
+      <UniqueIdentifier>{fad24260-1fa5-4c10-b722-b6f147cc2613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\hle\service">
+      <UniqueIdentifier>{76db1d79-7fcf-4fd3-a99b-acc459d33284}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\hle\service\ns">
+      <UniqueIdentifier>{974dd6a9-6dd0-48b7-ae01-6c7e8806cf59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\hle\service\set">
+      <UniqueIdentifier>{4b6f891e-a0e9-4c70-89b6-b4be5dda45a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nxemu-loader.cpp">
@@ -215,6 +230,9 @@
     </ClCompile>
     <ClCompile Include="core\hle\kernel\code_set.cpp">
       <Filter>Source Files\core\hle\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hle\service\ns\platform_service_manager.cpp">
+      <Filter>Source Files\core\hle\service\ns</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +415,15 @@
     </ClInclude>
     <ClInclude Include="core\hle\kernel\physical_memory.h">
       <Filter>Header Files\core\hle\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\ns\platform_service_manager.h">
+      <Filter>Header Files\core\hle\service\ns</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\set\settings_types.h">
+      <Filter>Header Files\core\hle\service\set</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\cmif_types.h">
+      <Filter>Header Files\core\hle\service</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
