@@ -20,6 +20,7 @@ public:
     ~Systemloader();
 
     ISwitchSystem & GetSystem();
+    FileSys::ContentProvider & GetContentProvider();
     FileSys::VirtualFilesystem GetFilesystem();
     FileSys::FileSystemController & GetFileSystemController();
     void RegisterContentProvider(FileSys::ContentProviderUnionSlot slot, FileSys::ContentProvider* provider);

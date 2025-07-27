@@ -44,6 +44,7 @@
     <None Include="version.h.in" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\core.h" />
     <ClInclude Include="core\file_sys\bis_factory.h" />
     <ClInclude Include="core\file_sys\card_image.h" />
     <ClInclude Include="core\file_sys\common_funcs.h" />
@@ -57,6 +58,7 @@
     <ClInclude Include="core\file_sys\fssystem\fssystem_nca_file_system_driver.h" />
     <ClInclude Include="core\file_sys\fssystem\fssystem_nca_header.h" />
     <ClInclude Include="core\file_sys\fssystem\fs_types.h" />
+    <ClInclude Include="core\file_sys\fs_filesystem.h" />
     <ClInclude Include="core\file_sys\fs_save_data_types.h" />
     <ClInclude Include="core\file_sys\ips_layer.h" />
     <ClInclude Include="core\file_sys\nca_metadata.h" />
@@ -92,14 +94,19 @@
     <ClInclude Include="core\file_sys\vfs\vfs_vector.h" />
     <ClInclude Include="core\file_sys\xts_archive.h" />
     <ClInclude Include="core\hle\api_version.h" />
+    <ClInclude Include="core\hle\kernel\code_set.h" />
+    <ClInclude Include="core\hle\kernel\k_typed_address.h" />
+    <ClInclude Include="core\hle\kernel\physical_memory.h" />
     <ClInclude Include="core\hle\result.h" />
     <ClInclude Include="core\loader\loader.h" />
+    <ClInclude Include="core\loader\nro.h" />
     <ClInclude Include="core\loader\nso.h" />
     <ClInclude Include="file_format\nacp.h" />
     <ClInclude Include="file_format\nro.h" />
     <ClInclude Include="system_loader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="core\core.cpp" />
     <ClCompile Include="core\file_sys\bis_factory.cpp" />
     <ClCompile Include="core\file_sys\card_image.cpp" />
     <ClCompile Include="core\file_sys\content_archive.cpp" />
@@ -139,6 +146,9 @@
     <ClCompile Include="core\file_sys\vfs\vfs_types.cpp" />
     <ClCompile Include="core\file_sys\vfs\vfs_vector.cpp" />
     <ClCompile Include="core\file_sys\xts_archive.cpp" />
+    <ClCompile Include="core\hle\kernel\code_set.cpp" />
+    <ClCompile Include="core\loader\loader.cpp" />
+    <ClCompile Include="core\loader\nro.cpp" />
     <ClCompile Include="file_format\nacp.cpp" />
     <ClCompile Include="file_format\nro.cpp" />
     <ClCompile Include="nxemu-loader.cpp" />

@@ -112,7 +112,7 @@ LoaderResultStatus ProgramMetadata::Reload(VirtualFile file) {
     ProgramMetadata result;
 
     result.LoadManual(
-        true /*is_64_bit*/, FileSys::ProgramAddressSpaceType::Is39Bit /*address_space*/,
+        true /*is_64_bit*/, ProgramAddressSpaceType::Is39Bit /*address_space*/,
         0x2c /*main_thread_prio*/, 0 /*main_thread_core*/, 0x100000 /*main_thread_stack_size*/,
         0 /*title_id*/, 0xFFFFFFFFFFFFFFFF /*filesystem_permissions*/, 0 /*system_resource_size*/,
         {default_thread_info_capability} /*capabilities*/);
@@ -172,8 +172,19 @@ PoolPartition ProgramMetadata::GetPoolPartition() const {
     return acid_header.pool_partition;
 }
 
-const ProgramMetadata::KernelCapabilityDescriptors& ProgramMetadata::GetKernelCapabilities() const {
-    return aci_kernel_capabilities;
+const uint32_t * ProgramMetadata::GetKernelCapabilities() const
+{
+    return aci_kernel_capabilities.data();
+}
+
+uint32_t ProgramMetadata::GetKernelCapabilitiesSize() const
+{
+    return (uint32_t)aci_kernel_capabilities.size();
+}
+
+const char * ProgramMetadata::GetName() const
+{
+    return (const char *)npdm_header.application_name.data();
 }
 
 void ProgramMetadata::Print() const {

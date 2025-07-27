@@ -4,26 +4,53 @@
 #include <fmt/core.h>
 #include <common/path.h>
 #include <nxemu-core/settings/identifiers.h>
+#include "core/core.h"
+#include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/filesystem.h"
 #include "core/file_sys/romfs_factory.h"
 #include "core/file_sys/vfs/vfs_real.h"
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/file_sys/system_archive/system_archive.h"
+#include "core/loader/loader.h"
 
 extern IModuleSettings * g_settings;
+
+namespace {
+
+    StorageId GetStorageIdForFrontendSlot(
+        std::optional<FileSys::ContentProviderUnionSlot> slot) {
+        if (!slot.has_value()) {
+            return StorageId::None;
+        }
+
+        switch (*slot) {
+        case FileSys::ContentProviderUnionSlot::UserNAND:
+            return StorageId::NandUser;
+        case FileSys::ContentProviderUnionSlot::SysNAND:
+            return StorageId::NandSystem;
+        case FileSys::ContentProviderUnionSlot::SDMC:
+            return StorageId::SdCard;
+        case FileSys::ContentProviderUnionSlot::FrontendManual:
+            return StorageId::Host;
+        default:
+            return StorageId::None;
+        }
+    }
+
+} // Anonymous namespace
 
 struct Systemloader::Impl {
     explicit Impl(Systemloader & loader, ISwitchSystem& system) :
         m_loader(loader),
         m_system(system),
         m_fsController(loader),
+        m_provider(std::make_unique<FileSys::ManualContentProvider>()),
         m_titleID(0)
     {
     }
 
-    bool LoadNRO(const char* nroFile);
-
+    std::unique_ptr<Loader::AppLoader> app_loader;
     Systemloader & m_loader;
     ISwitchSystem & m_system;
     /// RealVfsFilesystem instance
@@ -31,6 +58,7 @@ struct Systemloader::Impl {
     /// ContentProviderUnion instance
     std::unique_ptr<FileSys::ContentProviderUnion> m_contentProvider;
     FileSys::FileSystemController m_fsController;
+    std::unique_ptr<FileSys::ManualContentProvider> m_provider;
     std::unique_ptr<Nro> m_nro;
     uint64_t m_titleID;
 };
@@ -52,6 +80,7 @@ bool Systemloader::Initialize(void)
     if (impl->m_contentProvider == nullptr) {
         impl->m_contentProvider = std::make_unique<FileSys::ContentProviderUnion>();
     }
+    impl->m_contentProvider->SetSlot(FileSys::ContentProviderUnionSlot::FrontendManual, impl->m_provider.get());
     GetFileSystemController().CreateFactories(*GetFilesystem(), false);
     return true;
 }
@@ -74,24 +103,81 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
 
 bool Systemloader::LoadRom(const char * romFile)
 {
-    bool res = false;
     g_settings->SetBool(NXCoreSetting::RomLoading, true);
-    if (Nro::IsNroFile(romFile))
+    const FileSys::VirtualFile file = Core::GetGameFileFromPath(impl->m_virtualFilesystem, romFile);
+    impl->app_loader = Loader::GetLoader(*this, file, 0, 0);
+    if (!impl->app_loader)
     {
-        res = impl->LoadNRO(romFile);
+        g_settings->SetBool(NXCoreSetting::RomLoading, false);
+        return false;
     }
 
-    g_settings->SetBool(NXCoreSetting::RomLoading, false);
-    if (res)
+    const Loader::FileType file_type = impl->app_loader->GetFileType();
+    if (file_type == Loader::FileType::Unknown || file_type == Loader::FileType::Error) 
     {
-        g_settings->SetString(NXCoreSetting::GameFile, romFile);
-        impl->m_system.StartEmulation();
+        g_settings->SetBool(NXCoreSetting::RomLoading, false);
+        return false;
     }
-    return res;
+    u64 program_id = 0;
+    const LoaderResultStatus res = impl->app_loader->ReadProgramId(program_id);
+    if (res != LoaderResultStatus::Success)
+    {
+        LOG_ERROR(Core, "Failed to find title id for ROM!");
+    }
+
+    std::string name = "Unknown program";
+    if (impl->app_loader->ReadTitle(name) != LoaderResultStatus::Success)
+    {
+        LOG_ERROR(Core, "Failed to read title for ROM!");
+    }
+
+    const auto [load_result, load_parameters] = impl->app_loader->Load(*this);
+    if (load_result != LoaderResultStatus::Success)
+    {
+        LOG_CRITICAL(Core, "Failed to load ROM (Error {})!", load_result);
+        g_settings->SetBool(NXCoreSetting::RomLoading, false);
+        return false;
+    }
+    {
+        std::vector<u8> nacp_data;
+        FileSys::NACP nacp;
+        if (impl->app_loader->ReadControlData(nacp) == LoaderResultStatus::Success)
+        {
+            nacp_data = nacp.GetRawBytes();
+        }
+        else
+        {
+            nacp_data.resize(sizeof(FileSys::RawNACP));
+        }
+
+        //launch.title_id = process.GetProgramId();
+        FileSys::PatchManager pm{ impl->m_titleID, impl->m_fsController, *impl->m_contentProvider };
+        uint32_t version = pm.GetGameVersion().value_or(0);
+
+        // TODO(DarkLordZach): When FSController/Game Card Support is added, if
+        // current_process_game_card use correct StorageId
+        StorageId baseGameStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(impl->m_titleID, LoaderContentRecordType::Program));
+        StorageId updateStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(FileSys::GetUpdateTitleID(impl->m_titleID), LoaderContentRecordType::Program));
+
+        IOperatingSystem& operatingSystem = impl->m_system.OperatingSystem();
+        operatingSystem.StartApplicationProcess(load_parameters->main_thread_priority, load_parameters->main_thread_stack_size, version, baseGameStorageId, updateStorageId, nacp_data.data(), (uint32_t)nacp_data.size());
+    }
+
+    std::string title;
+    impl->app_loader->ReadTitle(title);
+    g_settings->SetString(NXCoreSetting::GameName, title.c_str());
+    g_settings->SetBool(NXCoreSetting::RomLoading, false);
+    g_settings->SetString(NXCoreSetting::GameFile, romFile);
+    impl->m_system.StartEmulation();
+    return true;
 }
 
 ISwitchSystem & Systemloader::GetSystem() {
     return impl->m_system;
+}
+
+FileSys::ContentProvider & Systemloader::GetContentProvider() {
+    return *impl->m_contentProvider;
 }
 
 FileSys::VirtualFilesystem Systemloader::GetFilesystem() {
@@ -105,41 +191,6 @@ FileSys::FileSystemController & Systemloader::GetFileSystemController() {
 void Systemloader::RegisterContentProvider(FileSys::ContentProviderUnionSlot slot, FileSys::ContentProvider* provider) 
 {
     impl->m_contentProvider->SetSlot(slot, provider);
-}
-
-bool Systemloader::Impl::LoadNRO(const char* nroFile)
-{
-    Path filePath(nroFile);
-    m_nro = std::make_unique<Nro>(filePath);
-    if (!m_nro->Valid())
-    {
-        return false;
-    }
-
-    IOperatingSystem & operatingSystem = m_system.OperatingSystem();
-    const IProgramMetadata & metaData = m_nro->MetaData();
-    uint64_t baseAddress = 0;
-    uint64_t processID = 0;
-    if (!operatingSystem.CreateApplicationProcess(m_nro->CodeSize(), metaData, baseAddress, processID, false))
-    {
-        return false;
-    }
-
-    if (!operatingSystem.LoadModule(*m_nro, baseAddress))
-    {
-        return false;
-    }
-    const NACP * Nacp = m_nro->Nacp();
-    if (Nacp == nullptr)
-    {
-        return false;
-    }
-
-    m_titleID = Nacp->GetTitleId();
-    m_fsController.RegisterProcess(processID, m_titleID, std::make_unique<FileSys::RomFSFactory>(nullptr, false, *m_contentProvider, m_fsController));
-    g_settings->SetString(NXCoreSetting::GameName, Nacp->GetApplicationName().c_str());
-    operatingSystem.StartApplicationProcess(metaData.GetMainThreadPriority(), metaData.GetMainThreadStackSize(), 0, StorageId::None, StorageId::None, nullptr, 0);
-    return true;
 }
 
 IFileSystemController & Systemloader::FileSystemController()

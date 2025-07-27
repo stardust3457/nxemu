@@ -61,6 +61,18 @@
     <Filter Include="Header Files\core\hle">
       <UniqueIdentifier>{b0dd73aa-2aeb-4dbb-8e14-e1ae49999f15}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\core\loader">
+      <UniqueIdentifier>{f2eabf06-73c1-4f03-99aa-991657f8fa57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core\hle">
+      <UniqueIdentifier>{d6429173-5deb-45a1-8165-a3e5bb694f4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core\hle\kernel">
+      <UniqueIdentifier>{c6883935-5f41-42f9-a99f-c3a715ad8cbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\hle\kernel">
+      <UniqueIdentifier>{f6316aee-fbba-418a-a828-390817ba5caa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nxemu-loader.cpp">
@@ -191,6 +203,18 @@
     </ClCompile>
     <ClCompile Include="core\file_sys\filesystem.cpp">
       <Filter>Source Files\core\file_sys</Filter>
+    </ClCompile>
+    <ClCompile Include="core\core.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\loader\loader.cpp">
+      <Filter>Source Files\core\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="core\loader\nro.cpp">
+      <Filter>Source Files\core\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hle\kernel\code_set.cpp">
+      <Filter>Source Files\core\hle\kernel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -355,6 +379,24 @@
     </ClInclude>
     <ClInclude Include="core\file_sys\filesystem.h">
       <Filter>Header Files\core\file_sys</Filter>
+    </ClInclude>
+    <ClInclude Include="core\core.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fs_filesystem.h">
+      <Filter>Header Files\core\file_sys</Filter>
+    </ClInclude>
+    <ClInclude Include="core\loader\nro.h">
+      <Filter>Header Files\core\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\kernel\code_set.h">
+      <Filter>Header Files\core\hle\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\kernel\k_typed_address.h">
+      <Filter>Header Files\core\hle\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\kernel\physical_memory.h">
+      <Filter>Header Files\core\hle\kernel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

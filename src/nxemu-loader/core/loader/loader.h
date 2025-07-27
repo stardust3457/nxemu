@@ -34,14 +34,7 @@ namespace Loader {
 enum class FileType {
     Error,
     Unknown,
-    NSO,
     NRO,
-    NCA,
-    NSP,
-    XCI,
-    NAX,
-    KIP,
-    DeconstructedRomDirectory,
 };
 
 /**
@@ -76,6 +69,8 @@ public:
     struct LoadParameters {
         s32 main_thread_priority;
         u64 main_thread_stack_size;
+        u64 base_address;
+        u64 process_id;
     };
     using LoadResult = std::pair<LoaderResultStatus, std::optional<LoadParameters>>;
 

@@ -11,17 +11,11 @@
 #include "yuzu_common/common_types.h"
 #include "yuzu_common/swap.h"
 #include "core/file_sys/vfs/vfs_types.h"
+#include <nxemu-module-spec/operating_system.h>
 
 enum class LoaderResultStatus : uint16_t;
 
 namespace FileSys {
-
-enum class ProgramAddressSpaceType : u8 {
-    Is32Bit = 0,
-    Is36Bit = 1,
-    Is32BitNoMap = 2,
-    Is39Bit = 3,
-};
 
 enum class ProgramFilePermission : u64 {
     MountContent = 1ULL << 0,
@@ -32,18 +26,13 @@ enum class ProgramFilePermission : u64 {
     Everything = 1ULL << 63,
 };
 
-enum class PoolPartition : u32 {
-    Application = 0,
-    Applet = 1,
-    System = 2,
-    SystemNonSecure = 3,
-};
-
 /**
  * Helper which implements an interface to parse Program Description Metadata (NPDM)
  * Data can either be loaded from a file path or with data and an offset into it.
  */
-class ProgramMetadata {
+class ProgramMetadata :
+    public IProgramMetadata
+{
 public:
     using KernelCapabilityDescriptors = std::vector<u32>;
 
@@ -78,10 +67,9 @@ public:
     u64 GetFilesystemPermissions() const;
     u32 GetSystemResourceSize() const;
     PoolPartition GetPoolPartition() const;
-    const KernelCapabilityDescriptors& GetKernelCapabilities() const;
-    const std::array<u8, 0x10>& GetName() const {
-        return npdm_header.application_name;
-    }
+    const uint32_t * GetKernelCapabilities() const;
+    uint32_t GetKernelCapabilitiesSize() const;
+    const char * GetName() const;
 
     void Print() const;
 
