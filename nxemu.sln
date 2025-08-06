@@ -112,6 +112,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "speex", "external\speex.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "opus", "external\opus.vcxproj", "{B278162F-3EE6-4BCC-AF23-8E04A164A4E6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lz4", "src\3rd_party\lz4\lz4.vcxproj", "{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -416,6 +418,14 @@ Global
 		{B278162F-3EE6-4BCC-AF23-8E04A164A4E6}.Release|x64.Build.0 = Release|x64
 		{B278162F-3EE6-4BCC-AF23-8E04A164A4E6}.Release|x86.ActiveCfg = Release|x64
 		{B278162F-3EE6-4BCC-AF23-8E04A164A4E6}.Release|x86.Build.0 = Release|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Debug|x64.ActiveCfg = Debug|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Debug|x64.Build.0 = Debug|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Debug|x86.ActiveCfg = Debug|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Debug|x86.Build.0 = Debug|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Release|x64.ActiveCfg = Release|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Release|x64.Build.0 = Release|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Release|x86.ActiveCfg = Release|x64
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -439,6 +449,7 @@ Global
 		{8D9EA734-C041-463B-9ABB-2EDC6F1CD04F} = {29EE6611-75A5-4A1D-A994-33A5EBB4F765}
 		{2B13A785-82EC-4C96-AE28-9BB738182CF5} = {29EE6611-75A5-4A1D-A994-33A5EBB4F765}
 		{B278162F-3EE6-4BCC-AF23-8E04A164A4E6} = {29EE6611-75A5-4A1D-A994-33A5EBB4F765}
+		{20F15EB4-E65B-4D48-AA18-C7DAD16279CC} = {F9F8A94D-341A-46BD-A4DA-13CC33489942}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF860836-279D-4187-9FAF-4E2D4B9C59CF}
