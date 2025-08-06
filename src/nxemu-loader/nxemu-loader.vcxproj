@@ -104,8 +104,6 @@
     <ClInclude Include="core\loader\loader.h" />
     <ClInclude Include="core\loader\nro.h" />
     <ClInclude Include="core\loader\nso.h" />
-    <ClInclude Include="file_format\nacp.h" />
-    <ClInclude Include="file_format\nro.h" />
     <ClInclude Include="system_loader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -153,8 +151,6 @@
     <ClCompile Include="core\hle\service\ns\platform_service_manager.cpp" />
     <ClCompile Include="core\loader\loader.cpp" />
     <ClCompile Include="core\loader\nro.cpp" />
-    <ClCompile Include="file_format\nacp.cpp" />
-    <ClCompile Include="file_format\nro.cpp" />
     <ClCompile Include="nxemu-loader.cpp" />
     <ClCompile Include="system_loader.cpp" />
   </ItemGroup>

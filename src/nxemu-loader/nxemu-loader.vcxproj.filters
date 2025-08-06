@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\file_format">
-      <UniqueIdentifier>{95a68879-c4c1-498e-9fb2-e46e810c7065}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\file_format">
-      <UniqueIdentifier>{b8cf31cb-7965-45d0-8764-cdaec5216829}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\core">
       <UniqueIdentifier>{68c18db1-6b12-4558-926f-42b71a940e53}</UniqueIdentifier>
     </Filter>
@@ -95,12 +89,6 @@
     </ClCompile>
     <ClCompile Include="system_loader.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="file_format\nacp.cpp">
-      <Filter>Source Files\file_format</Filter>
-    </ClCompile>
-    <ClCompile Include="file_format\nro.cpp">
-      <Filter>Source Files\file_format</Filter>
     </ClCompile>
     <ClCompile Include="core\file_sys\bis_factory.cpp">
       <Filter>Source Files\core\file_sys</Filter>
@@ -238,12 +226,6 @@
   <ItemGroup>
     <ClInclude Include="system_loader.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="file_format\nacp.h">
-      <Filter>Header Files\file_format</Filter>
-    </ClInclude>
-    <ClInclude Include="file_format\nro.h">
-      <Filter>Header Files\file_format</Filter>
     </ClInclude>
     <ClInclude Include="core\file_sys\bis_factory.h">
       <Filter>Header Files\core\file_sys</Filter>

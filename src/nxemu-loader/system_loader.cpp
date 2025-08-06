@@ -1,6 +1,4 @@
 #include "system_loader.h"
-#include "file_format/nro.h"
-#include "file_format/nacp.h"
 #include <fmt/core.h>
 #include <common/path.h>
 #include <nxemu-core/settings/identifiers.h>
@@ -59,7 +57,6 @@ struct Systemloader::Impl {
     std::unique_ptr<FileSys::ContentProviderUnion> m_contentProvider;
     FileSys::FileSystemController m_fsController;
     std::unique_ptr<FileSys::ManualContentProvider> m_provider;
-    std::unique_ptr<Nro> m_nro;
     uint64_t m_titleID;
 };
 
