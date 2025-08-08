@@ -305,11 +305,11 @@ VirtualDir RealVfsFile::GetContainingDirectory() const {
 }
 
 bool RealVfsFile::IsWritable() const {
-    return ((uint32_t)perms & (uint32_t)VirtualFileOpenMode::Write) == (uint32_t)VirtualFileOpenMode::Write;
+    return ((uint32_t)perms & (uint32_t)VirtualFileOpenMode::Write) != 0;
 }
 
 bool RealVfsFile::IsReadable() const {
-    return ((uint32_t)perms & (uint32_t)VirtualFileOpenMode::Read) == (uint32_t)VirtualFileOpenMode::Read;
+    return ((uint32_t)perms & (uint32_t)VirtualFileOpenMode::Read) != 0;
 }
 
 std::size_t RealVfsFile::Read(u8* data, std::size_t length, std::size_t offset) const {
@@ -384,7 +384,7 @@ RealVfsDirectory::RealVfsDirectory(RealVfsFilesystem& base_, const std::string& 
                                    VirtualFileOpenMode perms_)
     : base(base_), path(FS::RemoveTrailingSlash(path_)), parent_path(FS::GetParentPath(path)),
       path_components(FS::SplitPathComponentsCopy(path)), perms(perms_) {
-    if (!FS::Exists(path) && ((uint32_t)perms & (uint32_t)VirtualFileOpenMode::Write) != 0) {
+    if (!FS::Exists(path) && (((uint32_t)perms & (uint32_t)VirtualFileOpenMode::Write) != 0)) {
         void(FS::CreateDirs(path));
     }
 }

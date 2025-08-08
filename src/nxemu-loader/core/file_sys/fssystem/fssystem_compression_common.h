@@ -3,6 +3,7 @@
 
 #pragma once
 #include <yuzu_common/common_types.h>
+#include "core/hle/result.h"
 
 namespace FileSys {
 
@@ -14,7 +15,7 @@ enum class CompressionType : u8 {
     Unknown = 4,
 };
 
-using DecompressorFunction = u32 (*)(void*, size_t, const void*, size_t);
+using DecompressorFunction = Result(*)(void*, size_t, const void*, size_t);
 using GetDecompressorFunction = DecompressorFunction (*)(CompressionType);
 
 constexpr s64 CompressionBlockAlignment = 0x10;

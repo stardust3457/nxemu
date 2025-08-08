@@ -14,6 +14,10 @@ enum class LoaderResultStatus : uint16_t;
 
 namespace FileSys {
 
+class NCA;
+enum class NCAContentType : u8;
+class NSP;
+
 enum class GamecardSize : u8 {
     S_1GB = 0xFA,
     S_2GB = 0xF8,
@@ -78,6 +82,7 @@ public:
     VirtualDir GetPartition(XCIPartition partition);
     std::vector<VirtualDir> GetPartitions();
 
+    std::shared_ptr<NSP> GetSecurePartitionNSP() const;
     VirtualDir GetSecurePartition();
     VirtualDir GetNormalPartition();
     VirtualDir GetUpdatePartition();
@@ -96,6 +101,12 @@ public:
     u32 GetSystemUpdateVersion();
     u64 GetSystemUpdateTitleID() const;
 
+    bool HasProgramNCA() const;
+    VirtualFile GetProgramNCAFile() const;
+    const std::vector<std::shared_ptr<NCA>>& GetNCAs() const;
+    std::shared_ptr<NCA> GetNCAByType(NCAContentType type) const;
+    VirtualFile GetNCAFileByType(NCAContentType type) const;
+
     std::vector<VirtualFile> GetFiles() const override;
 
     std::vector<VirtualDir> GetSubdirectories() const override;
@@ -108,6 +119,7 @@ public:
     VirtualDir ConcatenatedPseudoDirectory();
 
 private:
+    LoaderResultStatus AddNCAFromPartition(XCIPartition part);
     LoaderResultStatus TryReadHeader();
 
     VirtualFile file;
@@ -118,6 +130,9 @@ private:
 
     std::vector<VirtualDir> partitions;
     std::vector<VirtualFile> partitions_raw;
+    std::shared_ptr<NSP> secure_partition;
+    std::shared_ptr<NCA> program;
+    std::vector<std::shared_ptr<NCA>> ncas;
 
     u64 update_normal_partition_end;
 };

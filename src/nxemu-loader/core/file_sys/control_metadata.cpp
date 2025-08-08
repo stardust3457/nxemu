@@ -67,6 +67,15 @@ NACP::NACP(VirtualFile file) {
 
 NACP::~NACP() = default;
 
+NACP& NACP::operator=(const NACP& other)
+{
+    if (this != &other) 
+    {
+        raw = other.raw;
+    }
+    return *this;
+}
+
 const LanguageEntry& NACP::GetLanguageEntry() const {
     Language language =
         language_to_codes[static_cast<s32>(Settings::values.language_index.GetValue())];
@@ -139,4 +148,20 @@ std::vector<u8> NACP::GetRawBytes() const {
     std::memcpy(out.data(), &raw, sizeof(RawNACP));
     return out;
 }
+
+bool NACP::GetRatingAge(uint8_t* buffer, uint32_t bufferSize) const
+{
+    if (bufferSize > raw.rating_age.size())
+    {
+        return false;
+    }
+    memcpy(buffer, raw.rating_age.data(), bufferSize);
+    return true;
+}
+
+void NACP::Release()
+{
+    delete this;
+}
+
 } // namespace FileSys

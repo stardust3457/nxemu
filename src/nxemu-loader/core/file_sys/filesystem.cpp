@@ -104,6 +104,34 @@ FileSys::RegisteredCache * FileSystemController::SystemNANDContents() const
     return bis_factory->GetSystemNANDContents();
 }
 
+FileSys::VirtualDir FileSystemController::GetModificationLoadRoot(u64 title_id) const {
+    LOG_TRACE(Service_FS, "Opening mod load root for tid={:016X}", title_id);
+
+    if (bis_factory == nullptr)
+        return nullptr;
+
+    return bis_factory->GetModificationLoadRoot(title_id);
+}
+
+FileSys::VirtualDir FileSystemController::GetSDMCModificationLoadRoot(u64 title_id) const {
+    LOG_TRACE(Service_FS, "Opening SDMC mod load root for tid={:016X}", title_id);
+
+    if (sdmc_factory == nullptr) {
+        return nullptr;
+    }
+
+    return sdmc_factory->GetSDMCModificationLoadRoot(title_id);
+}
+
+FileSys::VirtualDir FileSystemController::GetModificationDumpRoot(u64 title_id) const {
+    LOG_TRACE(Service_FS, "Opening mod dump root for tid={:016X}", title_id);
+
+    if (bis_factory == nullptr)
+        return nullptr;
+
+    return bis_factory->GetModificationDumpRoot(title_id);
+}
+
 void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite) {
     if (overwrite) {
         bis_factory = nullptr;
@@ -119,9 +147,9 @@ void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool ov
         vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::NANDDir), rw_mode);
     auto sd_directory = vfs.OpenDirectory(Common::FS::PathToUTF8String(sdmc_dir_path), rw_mode);
     auto load_directory = vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::LoadDir),
-        VirtualFileOpenMode::Read);
+                                            VirtualFileOpenMode::Read);
     auto sd_load_directory = vfs.OpenDirectory(Common::FS::PathToUTF8String(sdmc_load_dir_path),
-        VirtualFileOpenMode::Read);
+                                               VirtualFileOpenMode::Read);
     auto dump_directory =
         vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::DumpDir), rw_mode);
 
@@ -129,16 +157,16 @@ void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool ov
         bis_factory = std::make_unique<FileSys::BISFactory>(
             nand_directory, std::move(load_directory), std::move(dump_directory));
         loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::SysNAND,
-            bis_factory->GetSystemNANDContents());
+                                       bis_factory->GetSystemNANDContents());
         loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::UserNAND,
-            bis_factory->GetUserNANDContents());
+                                       bis_factory->GetUserNANDContents());
     }
 
     if (sdmc_factory == nullptr) {
         sdmc_factory = std::make_unique<FileSys::SDMCFactory>(std::move(sd_directory),
-            std::move(sd_load_directory));
+                                                              std::move(sd_load_directory));
         loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::SDMC,
-            sdmc_factory->GetSDMCContents());
+                                       sdmc_factory->GetSDMCContents());
     }
 }
 

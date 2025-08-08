@@ -72,6 +72,9 @@ public:
     virtual VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const = 0;
     VirtualFile GetEntryRaw(ContentProviderEntry entry) const;
 
+    virtual std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const = 0;
+    std::unique_ptr<NCA> GetEntryNCA(ContentProviderEntry entry) const;
+
     virtual std::vector<ContentProviderEntry> ListEntries() const;
 
     // If a parameter is not std::nullopt, it will be filtered for from all entries.
@@ -142,6 +145,7 @@ public:
 
     VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const override;
 
+    std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const override;
 
     // If a parameter is not std::nullopt, it will be filtered for from all entries.
     std::vector<ContentProviderEntry> ListEntriesFilter(
@@ -215,6 +219,7 @@ public:
     std::optional<u32> GetEntryVersion(u64 title_id) const override;
     VirtualFile GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const override;
     VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const override;
+    std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const override;
     std::vector<ContentProviderEntry> ListEntriesFilter(
         std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
         std::optional<u64> title_id) const override;
@@ -244,6 +249,7 @@ public:
     std::optional<u32> GetEntryVersion(u64 title_id) const override;
     VirtualFile GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const override;
     VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const override;
+    std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const override;
     std::vector<ContentProviderEntry> ListEntriesFilter(
         std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
         std::optional<u64> title_id) const override;

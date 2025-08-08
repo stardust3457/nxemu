@@ -32,8 +32,11 @@ VirtualFile RomFSFactory::OpenCurrentProcess(u64 current_process_title_id) const
         return file;
     }
 
-    UNIMPLEMENTED();
-    return file;
+    const auto type = LoaderContentRecordType::Program;
+    const auto nca = content_provider.GetEntryNCA(current_process_title_id, type);
+    const PatchManager patch_manager{current_process_title_id, filesystem_controller,
+                                     content_provider};
+    return patch_manager.PatchRomFS(nca.get(), file, LoaderContentRecordType::Program, packed_update_raw);
 }
 
 VirtualFile RomFSFactory::OpenPatchedRomFS(u64 title_id, LoaderContentRecordType type) const {
@@ -76,8 +79,8 @@ RomFSFactoryPtr::~RomFSFactoryPtr()
 
 IVirtualFile * RomFSFactoryPtr::OpenCurrentProcess(uint64_t currentProcessTitleId) const
 {
-    UNIMPLEMENTED();
-    return nullptr;
+    FileSys::VirtualFile romfs = m_romFSFactory->OpenCurrentProcess(currentProcessTitleId);
+    return std::make_unique<VirtualFilePtr>(romfs).release();
 }
 
 void RomFSFactoryPtr::Release()

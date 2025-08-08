@@ -122,6 +122,10 @@ VirtualFile ContentProvider::GetEntryRaw(ContentProviderEntry entry) const {
     return GetEntryRaw(entry.titleID, entry.type);
 }
 
+std::unique_ptr<NCA> ContentProvider::GetEntryNCA(ContentProviderEntry entry) const {
+    return GetEntryNCA(entry.titleID, entry.type);
+}
+
 std::vector<ContentProviderEntry> ContentProvider::ListEntries() const {
     return ListEntriesFilter(std::nullopt, std::nullopt, std::nullopt);
 }
@@ -487,10 +491,14 @@ VirtualFile RegisteredCache::GetEntryRaw(u64 title_id, LoaderContentRecordType t
 }
 
 IFileSysNCA * RegisteredCache::GetEntry(u64 title_id, LoaderContentRecordType type) const {
+    return GetEntryNCA(title_id, type).release();
+}
+
+std::unique_ptr<NCA> RegisteredCache::GetEntryNCA(u64 title_id, LoaderContentRecordType type) const {
     const auto raw = GetEntryRaw(title_id, type);
     if (raw == nullptr)
         return nullptr;
-    return std::make_unique<NCA>(raw).release();
+    return std::make_unique<NCA>(raw);
 }
 
 template <typename T>
@@ -808,6 +816,19 @@ VirtualFile ContentProviderUnion::GetEntryRaw(u64 title_id, LoaderContentRecordT
     return nullptr;
 }
 
+std::unique_ptr<NCA> ContentProviderUnion::GetEntryNCA(u64 title_id, LoaderContentRecordType type) const {
+    for (const auto& provider : providers) {
+        if (provider.second == nullptr)
+            continue;
+
+        auto res = provider.second->GetEntryNCA(title_id, type);
+        if (res != nullptr)
+            return res;
+    }
+
+    return nullptr;
+}
+
 std::vector<ContentProviderEntry> ContentProviderUnion::ListEntriesFilter(
     std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
     std::optional<u64> title_id) const {
@@ -901,6 +922,13 @@ VirtualFile ManualContentProvider::GetEntryRaw(u64 title_id, LoaderContentRecord
     if (iter == entries.end())
         return nullptr;
     return iter->second;
+}
+
+std::unique_ptr<NCA> ManualContentProvider::GetEntryNCA(u64 title_id, LoaderContentRecordType type) const {
+    const auto res = GetEntryRaw(title_id, type);
+    if (res == nullptr)
+        return nullptr;
+    return std::make_unique<NCA>(res);
 }
 
 std::vector<ContentProviderEntry> ManualContentProvider::ListEntriesFilter(

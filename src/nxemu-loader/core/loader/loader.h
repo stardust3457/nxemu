@@ -34,7 +34,12 @@ namespace Loader {
 enum class FileType {
     Error,
     Unknown,
+    NSO,
     NRO,
+    NCA,
+    NSP,
+    XCI,
+    DeconstructedRomDirectory,
 };
 
 /**

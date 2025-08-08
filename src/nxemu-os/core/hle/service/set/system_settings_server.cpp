@@ -50,12 +50,7 @@ Result GetFirmwareVersionImpl(FirmwareVersionFormat& out_firmware, Core::System&
     }
 
     if (nca) {
-        __debugbreak();
-#ifdef tofix
-        if (auto nca_romfs = nca->GetRomFS(); nca_romfs) {
-            romfs = FileSys::ExtractRomFS(nca_romfs);
-        }
-#endif
+        UNIMPLEMENTED();
     }
     if (!romfs) 
     {

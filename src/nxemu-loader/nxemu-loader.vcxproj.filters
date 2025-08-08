@@ -82,6 +82,9 @@
     <Filter Include="Header Files\core\hle\service\set">
       <UniqueIdentifier>{4b6f891e-a0e9-4c70-89b6-b4be5dda45a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\core\hle\service\set">
+      <UniqueIdentifier>{1a42828a-0b0b-469d-8d60-f63f77308949}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nxemu-loader.cpp">
@@ -221,6 +224,63 @@
     </ClCompile>
     <ClCompile Include="core\hle\service\ns\platform_service_manager.cpp">
       <Filter>Source Files\core\hle\service\ns</Filter>
+    </ClCompile>
+    <ClCompile Include="core\loader\xci.cpp">
+      <Filter>Source Files\core\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="core\loader\nca.cpp">
+      <Filter>Source Files\core\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="core\loader\deconstructed_rom_directory.cpp">
+      <Filter>Source Files\core\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\submission_package.cpp">
+      <Filter>Source Files\core\file_sys</Filter>
+    </ClCompile>
+    <ClCompile Include="core\loader\nso.cpp">
+      <Filter>Source Files\core\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_nca_file_system_driver.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_integrity_verification_storage.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_aes_ctr_counter_extended_storage.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_hierarchical_integrity_verification_storage.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_hierarchical_sha256_storage.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_bucket_tree.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_sparse_storage.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_alignment_matching_storage_impl.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_pooled_buffer.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_integrity_romfs_storage.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_indirect_storage.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\file_sys\fssystem\fssystem_compression_configuration.cpp">
+      <Filter>Source Files\core\file_sys\fssystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hle\service\ns\language.cpp">
+      <Filter>Source Files\core\hle\service\ns</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hle\service\set\settings_server.cpp">
+      <Filter>Source Files\core\hle\service\set</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -406,6 +466,72 @@
     </ClInclude>
     <ClInclude Include="core\hle\service\cmif_types.h">
       <Filter>Header Files\core\hle\service</Filter>
+    </ClInclude>
+    <ClInclude Include="core\loader\xci.h">
+      <Filter>Header Files\core\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="core\loader\nca.h">
+      <Filter>Header Files\core\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="core\loader\deconstructed_rom_directory.h">
+      <Filter>Header Files\core\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fs_i_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_aes_ctr_counter_extended_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_alignment_matching_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_alignment_matching_storage_impl.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_bucket_tree.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_compressed_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_hierarchical_integrity_verification_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_hierarchical_sha256_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_pooled_buffer.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_bucket_tree_template_impl.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_bucket_tree_utils.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_indirect_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_integrity_romfs_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_integrity_verification_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_memory_resource_buffer_hold_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_sparse_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\fssystem\fssystem_switch_storage.h">
+      <Filter>Header Files\core\file_sys\fssystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\ns\language.h">
+      <Filter>Header Files\core\hle\service\ns</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\set\settings_server.h">
+      <Filter>Header Files\core\hle\service\set</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

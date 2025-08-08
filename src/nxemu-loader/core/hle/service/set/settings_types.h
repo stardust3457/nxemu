@@ -9,9 +9,6 @@
 #include "yuzu_common/common_funcs.h"
 #include "yuzu_common/common_types.h"
 #include "yuzu_common/uuid.h"
-#ifdef tofix
-#include "core/hle/service/psc/time/common.h"
-#endif
 
 namespace Service::Set {
 using SettingItemName = std::array<u8, 0x48>;
@@ -406,18 +403,6 @@ struct BatteryLot {
 };
 static_assert(sizeof(BatteryLot) == 0x18, "BatteryLot is an invalid size");
 
-/// This is nn::settings::system::EulaVersion
-#ifdef tofix
-struct EulaVersion {
-    u32 version;
-    SystemRegionCode region_code;
-    EulaVersionClockType clock_type;
-    INSERT_PADDING_BYTES(0x4);
-    Service::PSC::Time::SystemClockContext system_clock_context;
-};
-static_assert(sizeof(EulaVersion) == 0x30, "EulaVersion is incorrect size");
-#endif
-
 struct FirmwareVersionFormat {
     u8 major;
     u8 minor;
@@ -444,25 +429,6 @@ struct HomeMenuScheme {
     u32 extra;
 };
 static_assert(sizeof(HomeMenuScheme) == 0x14, "HomeMenuScheme is incorrect size");
-
-/// This is nn::settings::system::InitialLaunchSettings
-#ifdef tofix
-struct InitialLaunchSettings {
-    InitialLaunchFlag flags;
-    INSERT_PADDING_BYTES(0x4);
-    Service::PSC::Time::SteadyClockTimePoint timestamp;
-};
-static_assert(sizeof(InitialLaunchSettings) == 0x20, "InitialLaunchSettings is incorrect size");
-
-#pragma pack(push, 4)
-struct InitialLaunchSettingsPacked {
-    InitialLaunchFlag flags;
-    Service::PSC::Time::SteadyClockTimePoint timestamp;
-};
-#pragma pack(pop)
-static_assert(sizeof(InitialLaunchSettingsPacked) == 0x1C,
-              "InitialLaunchSettingsPacked is incorrect size");
-#endif
 
 /// This is nn::settings::system::NotificationTime
 struct NotificationTime {

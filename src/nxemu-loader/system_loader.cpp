@@ -3,10 +3,13 @@
 #include <common/path.h>
 #include <nxemu-core/settings/identifiers.h>
 #include "core/core.h"
+#include "core/file_sys/card_image.h"
+#include "core/file_sys/content_archive.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/filesystem.h"
 #include "core/file_sys/romfs_factory.h"
+#include "core/file_sys/submission_package.h"
 #include "core/file_sys/vfs/vfs_real.h"
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/file_sys/system_archive/system_archive.h"
@@ -44,6 +47,7 @@ struct Systemloader::Impl {
         m_system(system),
         m_fsController(loader),
         m_provider(std::make_unique<FileSys::ManualContentProvider>()),
+        m_processID(0),
         m_titleID(0)
     {
     }
@@ -57,6 +61,7 @@ struct Systemloader::Impl {
     std::unique_ptr<FileSys::ContentProviderUnion> m_contentProvider;
     FileSys::FileSystemController m_fsController;
     std::unique_ptr<FileSys::ManualContentProvider> m_provider;
+    uint64_t m_processID;
     uint64_t m_titleID;
 };
 
@@ -86,7 +91,7 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
 {
     Path fileToOpen;
     std::string fileName;
-    const char * filter = "Switch Files (*.nro)\0*.nro\0All files (*.*)\0*.*\0";
+    const char * filter = "Switch Files (*.nro, *.dxci)\0*.nro;*.dxci\0All files (*.*)\0*.*\0";
     if (fileToOpen.FileSelect(parentWindow, Path(Path::MODULE_DIRECTORY), filter, true))
     {
         fileName = (const std::string &)fileToOpen;
@@ -117,7 +122,21 @@ bool Systemloader::LoadRom(const char * romFile)
     }
     u64 program_id = 0;
     const LoaderResultStatus res = impl->app_loader->ReadProgramId(program_id);
-    if (res != LoaderResultStatus::Success)
+    if (res == LoaderResultStatus::Success && file_type == Loader::FileType::NCA) 
+    {
+        UNIMPLEMENTED();
+    }
+    else if (res == LoaderResultStatus::Success && (file_type == Loader::FileType::XCI || file_type == Loader::FileType::NSP))
+    {
+        const auto nsp = file_type == Loader::FileType::NSP ? std::make_shared<FileSys::NSP>(file) : FileSys::XCI{ file }.GetSecurePartitionNSP();
+        for (const auto& title : nsp->GetNCAs()) {
+            for (const auto& entry : title.second) {
+                impl->m_provider->AddEntry(entry.first.first, entry.first.second, title.first,
+                    entry.second->GetBaseFile());
+            }
+        }
+    }
+    else if (res != LoaderResultStatus::Success)
     {
         LOG_ERROR(Core, "Failed to find title id for ROM!");
     }
@@ -190,6 +209,16 @@ void Systemloader::RegisterContentProvider(FileSys::ContentProviderUnionSlot slo
     impl->m_contentProvider->SetSlot(slot, provider);
 }
 
+void Systemloader::SetProcessID(uint64_t processID)
+{
+    impl->m_processID = processID;
+}
+
+void Systemloader::SetTitleID(uint64_t titleID)
+{
+    impl->m_titleID = titleID;
+}
+
 IFileSystemController & Systemloader::FileSystemController()
 {
     return impl->m_fsController;
@@ -229,12 +258,12 @@ uint32_t Systemloader::GetContentProviderEntries(bool useTitleType, LoaderTitleT
 
 IFileSysNCA * Systemloader::GetContentProviderEntry(uint64_t title_id, LoaderContentRecordType type)
 {
-    UNIMPLEMENTED();
-    return nullptr;
+    return GetContentProvider().GetEntryNCA(title_id, type).release();
 }
 
 IFileSysNACP * Systemloader::GetPMControlMetadata(uint64_t programID)
 {
-    UNIMPLEMENTED();
-    return nullptr;
+    const FileSys::PatchManager pm(programID, GetFileSystemController(), GetContentProvider());
+    FileSys::PatchManager::Metadata control = pm.GetControlMetadata();
+    return control.first.release();
 }

@@ -16,6 +16,7 @@
 #include "core/file_sys/common_funcs.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/control_metadata.h"
+#include "core/file_sys/filesystem.h"
 #include "core/file_sys/ips_layer.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
@@ -23,6 +24,8 @@
 #include "core/file_sys/vfs/vfs_cached.h"
 #include "core/file_sys/vfs/vfs_layered.h"
 #include "core/file_sys/vfs/vfs_vector.h"
+#include "core/hle/service/ns/language.h"
+#include "core/hle/service/set/settings_server.h"
 #include "core/loader/loader.h"
 
 namespace FileSys {
@@ -99,7 +102,65 @@ u64 PatchManager::GetTitleID() const {
 }
 
 VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
-    UNIMPLEMENTED();
+    LOG_INFO(Loader, "Patching ExeFS for title_id={:016X}", title_id);
+
+    if (exefs == nullptr)
+        return exefs;
+
+    const auto& disabled = Settings::values.disabled_addons[title_id];
+    const auto update_disabled =
+        std::find(disabled.cbegin(), disabled.cend(), "Update") != disabled.cend();
+
+    // Game Updates
+    const auto update_tid = GetUpdateTitleID(title_id);
+    const auto update = content_provider.GetEntryNCA(update_tid, LoaderContentRecordType::Program);
+
+    if (!update_disabled && update != nullptr && update->GetExeFS() != nullptr) {
+        LOG_INFO(Loader, "    ExeFS: Update ({}) applied successfully",
+                 FormatTitleVersion(content_provider.GetEntryVersion(update_tid).value_or(0)));
+        exefs = update->GetExeFS();
+    }
+
+    // LayeredExeFS
+    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+
+    std::vector<VirtualDir> patch_dirs = {sdmc_load_dir};
+    if (load_dir != nullptr) {
+        const auto load_patch_dirs = load_dir->GetSubdirectories();
+        patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
+    }
+
+    std::sort(patch_dirs.begin(), patch_dirs.end(),
+              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+
+    std::vector<VirtualDir> layers;
+    layers.reserve(patch_dirs.size() + 1);
+    for (const auto& subdir : patch_dirs) {
+        if (std::find(disabled.begin(), disabled.end(), subdir->GetName()) != disabled.end())
+            continue;
+
+        auto exefs_dir = FindSubdirectoryCaseless(subdir, "exefs");
+        if (exefs_dir != nullptr)
+            layers.push_back(std::move(exefs_dir));
+    }
+    layers.push_back(exefs);
+
+    auto layered = LayeredVfsDirectory::MakeLayeredDirectory(std::move(layers));
+    if (layered != nullptr) {
+        LOG_INFO(Loader, "    ExeFS: LayeredExeFS patches applied successfully");
+        exefs = std::move(layered);
+    }
+
+    if (Settings::values.dump_exefs) {
+        LOG_INFO(Loader, "Dumping ExeFS for title_id={:016X}", title_id);
+        const auto dump_dir = fs_controller.GetModificationDumpRoot(title_id);
+        if (dump_dir != nullptr) {
+            const auto exefs_dir = GetOrCreateDirectoryRelative(dump_dir, "/exefs");
+            VfsRawCopyD(exefs, exefs_dir);
+        }
+    }
+
     return exefs;
 }
 
@@ -146,13 +207,92 @@ std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::st
 }
 
 bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) const {
-    UNIMPLEMENTED();
-    return false;
+    const auto build_id_raw = Common::HexToString(build_id_);
+    const auto build_id = build_id_raw.substr(0, build_id_raw.find_last_not_of('0') + 1);
+
+    LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
+
+    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+    if (load_dir == nullptr) {
+        LOG_ERROR(Loader, "Cannot load mods for invalid title_id={:016X}", title_id);
+        return false;
+    }
+
+    auto patch_dirs = load_dir->GetSubdirectories();
+    std::sort(patch_dirs.begin(), patch_dirs.end(),
+              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+
+    return !CollectPatches(patch_dirs, build_id).empty();
 }
 
 static void ApplyLayeredFS(VirtualFile& romfs, u64 title_id, LoaderContentRecordType type,
                            const FileSystemController& fs_controller) {
-    UNIMPLEMENTED();
+    const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
+    const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
+    if ((type != LoaderContentRecordType::Program && type != LoaderContentRecordType::Data &&
+         type != LoaderContentRecordType::HtmlDocument) ||
+        (load_dir == nullptr && sdmc_load_dir == nullptr)) {
+        return;
+    }
+
+    const auto& disabled = Settings::values.disabled_addons[title_id];
+    std::vector<VirtualDir> patch_dirs = load_dir->GetSubdirectories();
+    if (std::find(disabled.cbegin(), disabled.cend(), "SDMC") == disabled.cend()) {
+        patch_dirs.push_back(sdmc_load_dir);
+    }
+    std::sort(patch_dirs.begin(), patch_dirs.end(),
+              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+
+    std::vector<VirtualDir> layers;
+    std::vector<VirtualDir> layers_ext;
+    layers.reserve(patch_dirs.size() + 1);
+    layers_ext.reserve(patch_dirs.size() + 1);
+    for (const auto& subdir : patch_dirs) {
+        if (std::find(disabled.cbegin(), disabled.cend(), subdir->GetName()) != disabled.cend()) {
+            continue;
+        }
+
+        auto romfs_dir = FindSubdirectoryCaseless(subdir, "romfs");
+        if (romfs_dir != nullptr)
+            layers.emplace_back(std::make_shared<CachedVfsDirectory>(std::move(romfs_dir)));
+
+        auto ext_dir = FindSubdirectoryCaseless(subdir, "romfs_ext");
+        if (ext_dir != nullptr)
+            layers_ext.emplace_back(std::make_shared<CachedVfsDirectory>(std::move(ext_dir)));
+
+        if (type == LoaderContentRecordType::HtmlDocument) {
+            auto manual_dir = FindSubdirectoryCaseless(subdir, "manual_html");
+            if (manual_dir != nullptr)
+                layers.emplace_back(std::make_shared<CachedVfsDirectory>(std::move(manual_dir)));
+        }
+    }
+
+    // When there are no layers to apply, return early as there is no need to rebuild the RomFS
+    if (layers.empty() && layers_ext.empty()) {
+        return;
+    }
+
+    auto extracted = ExtractRomFS(romfs);
+    if (extracted == nullptr) {
+        return;
+    }
+
+    layers.emplace_back(std::move(extracted));
+
+    auto layered = LayeredVfsDirectory::MakeLayeredDirectory(std::move(layers));
+    if (layered == nullptr) {
+        return;
+    }
+
+    auto layered_ext = LayeredVfsDirectory::MakeLayeredDirectory(std::move(layers_ext));
+
+    auto packed = CreateRomFS(std::move(layered), std::move(layered_ext));
+    if (packed == nullptr) {
+        return;
+    }
+
+    LOG_INFO(Loader, "    RomFS: LayeredFS patches applied successfully");
+    romfs = std::move(packed);
 }
 
 VirtualFile PatchManager::PatchRomFS(const NCA* base_nca, VirtualFile base_romfs,
@@ -231,7 +371,65 @@ PatchManager::Metadata PatchManager::GetControlMetadata() const {
 }
 
 PatchManager::Metadata PatchManager::ParseControlNCA(const NCA& nca) const {
-    UNIMPLEMENTED(); 
-    return {};
+    const auto base_romfs = nca.RomFS();
+    if (base_romfs == nullptr) {
+        return {};
+    }
+
+    const auto romfs = PatchRomFS(&nca, base_romfs, LoaderContentRecordType::Control);
+    if (romfs == nullptr) {
+        return {};
+    }
+
+    const auto extracted = ExtractRomFS(romfs);
+    if (extracted == nullptr) {
+        return {};
+    }
+
+    auto nacp_file = extracted->GetFile("control.nacp");
+    if (nacp_file == nullptr) {
+        nacp_file = extracted->GetFile("Control.nacp");
+    }
+
+    auto nacp = nacp_file == nullptr ? nullptr : std::make_unique<NACP>(nacp_file);
+
+    // Get language code from settings
+    const auto language_code = Service::Set::GetLanguageCodeFromIndex(
+        static_cast<u32>(Settings::values.language_index.GetValue()));
+
+    // Convert to application language and get priority list
+    const auto application_language =
+        Service::NS::ConvertToApplicationLanguage(language_code)
+            .value_or(Service::NS::ApplicationLanguage::AmericanEnglish);
+    const auto language_priority_list =
+        Service::NS::GetApplicationLanguagePriorityList(application_language);
+
+    // Convert to language names
+    auto priority_language_names = FileSys::LANGUAGE_NAMES; // Copy
+    if (language_priority_list) {
+        for (size_t i = 0; i < priority_language_names.size(); ++i) {
+            // Relies on FileSys::LANGUAGE_NAMES being in the same order as
+            // Service::NS::ApplicationLanguage
+            const auto language_index = static_cast<u8>(language_priority_list->at(i));
+
+            if (language_index < FileSys::LANGUAGE_NAMES.size()) {
+                priority_language_names[i] = FileSys::LANGUAGE_NAMES[language_index];
+            } else {
+                // Not a catastrophe, unlikely to happen
+                LOG_WARNING(Loader, "Invalid language index {}", language_index);
+            }
+        }
+    }
+
+    // Get first matching icon
+    VirtualFile icon_file;
+    for (const auto& language : priority_language_names) {
+        icon_file = extracted->GetFile(std::string("icon_").append(language).append(".dat"));
+        if (icon_file != nullptr) {
+            break;
+        }
+    }
+
+    return {std::move(nacp), icon_file};
 }
 } // namespace FileSys

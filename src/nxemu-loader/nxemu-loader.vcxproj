@@ -53,10 +53,27 @@
     <ClInclude Include="core\file_sys\errors.h" />
     <ClInclude Include="core\file_sys\filesystem.h" />
     <ClInclude Include="core\file_sys\fsmitm_romfsbuild.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_aes_ctr_counter_extended_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_alignment_matching_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_alignment_matching_storage_impl.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_bucket_tree.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_bucket_tree_template_impl.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_bucket_tree_utils.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_compressed_storage.h" />
     <ClInclude Include="core\file_sys\fssystem\fssystem_compression_common.h" />
     <ClInclude Include="core\file_sys\fssystem\fssystem_compression_configuration.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_hierarchical_integrity_verification_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_hierarchical_sha256_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_indirect_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_integrity_romfs_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_integrity_verification_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_memory_resource_buffer_hold_storage.h" />
     <ClInclude Include="core\file_sys\fssystem\fssystem_nca_file_system_driver.h" />
     <ClInclude Include="core\file_sys\fssystem\fssystem_nca_header.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_pooled_buffer.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_sparse_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fssystem_switch_storage.h" />
+    <ClInclude Include="core\file_sys\fssystem\fs_i_storage.h" />
     <ClInclude Include="core\file_sys\fssystem\fs_types.h" />
     <ClInclude Include="core\file_sys\fs_filesystem.h" />
     <ClInclude Include="core\file_sys\fs_save_data_types.h" />
@@ -99,11 +116,16 @@
     <ClInclude Include="core\hle\kernel\physical_memory.h" />
     <ClInclude Include="core\hle\result.h" />
     <ClInclude Include="core\hle\service\cmif_types.h" />
+    <ClInclude Include="core\hle\service\ns\language.h" />
     <ClInclude Include="core\hle\service\ns\platform_service_manager.h" />
+    <ClInclude Include="core\hle\service\set\settings_server.h" />
     <ClInclude Include="core\hle\service\set\settings_types.h" />
+    <ClInclude Include="core\loader\deconstructed_rom_directory.h" />
     <ClInclude Include="core\loader\loader.h" />
+    <ClInclude Include="core\loader\nca.h" />
     <ClInclude Include="core\loader\nro.h" />
     <ClInclude Include="core\loader\nso.h" />
+    <ClInclude Include="core\loader\xci.h" />
     <ClInclude Include="system_loader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -114,8 +136,20 @@
     <ClCompile Include="core\file_sys\control_metadata.cpp" />
     <ClCompile Include="core\file_sys\filesystem.cpp" />
     <ClCompile Include="core\file_sys\fsmitm_romfsbuild.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_aes_ctr_counter_extended_storage.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_alignment_matching_storage_impl.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_bucket_tree.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_compression_configuration.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_hierarchical_integrity_verification_storage.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_hierarchical_sha256_storage.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_indirect_storage.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_integrity_romfs_storage.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_integrity_verification_storage.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_nca_file_system_driver.cpp" />
     <ClCompile Include="core\file_sys\fssystem\fssystem_nca_header.cpp" />
     <ClCompile Include="core\file_sys\fssystem\fssystem_nca_reader.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_pooled_buffer.cpp" />
+    <ClCompile Include="core\file_sys\fssystem\fssystem_sparse_storage.cpp" />
     <ClCompile Include="core\file_sys\ips_layer.cpp" />
     <ClCompile Include="core\file_sys\nca_metadata.cpp" />
     <ClCompile Include="core\file_sys\partition_filesystem.cpp" />
@@ -126,6 +160,7 @@
     <ClCompile Include="core\file_sys\romfs_factory.cpp" />
     <ClCompile Include="core\file_sys\savedata_factory.cpp" />
     <ClCompile Include="core\file_sys\sdmc_factory.cpp" />
+    <ClCompile Include="core\file_sys\submission_package.cpp" />
     <ClCompile Include="core\file_sys\system_archive\data\font_chinese_simplified.cpp" />
     <ClCompile Include="core\file_sys\system_archive\data\font_chinese_traditional.cpp" />
     <ClCompile Include="core\file_sys\system_archive\data\font_extended_chinese_simplified.cpp" />
@@ -148,15 +183,24 @@
     <ClCompile Include="core\file_sys\vfs\vfs_vector.cpp" />
     <ClCompile Include="core\file_sys\xts_archive.cpp" />
     <ClCompile Include="core\hle\kernel\code_set.cpp" />
+    <ClCompile Include="core\hle\service\ns\language.cpp" />
     <ClCompile Include="core\hle\service\ns\platform_service_manager.cpp" />
+    <ClCompile Include="core\hle\service\set\settings_server.cpp" />
+    <ClCompile Include="core\loader\deconstructed_rom_directory.cpp" />
     <ClCompile Include="core\loader\loader.cpp" />
+    <ClCompile Include="core\loader\nca.cpp" />
     <ClCompile Include="core\loader\nro.cpp" />
+    <ClCompile Include="core\loader\nso.cpp" />
+    <ClCompile Include="core\loader\xci.cpp" />
     <ClCompile Include="nxemu-loader.cpp" />
     <ClCompile Include="system_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\external\fmt.vcxproj">
       <Project>{d58bdfc6-1f1e-4c55-9296-1c2411b0fda7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rd_party\lz4\lz4.vcxproj">
+      <Project>{20f15eb4-e65b-4d48-aa18-c7dad16279cc}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{ec81be93-8316-4db6-8a26-b13fb5b13848}</Project>

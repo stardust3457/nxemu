@@ -28,8 +28,61 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca)
         status = LoaderResultStatus::ErrorNullFile;
         return;
     }
-    UNIMPLEMENTED();
-    status = LoaderResultStatus::ErrorNotImplemented;
+
+    reader = std::make_shared<NcaReader>();
+    if (Result rc =
+            reader->Initialize(file, GetNcaCompressionConfiguration());
+        R_FAILED(rc)) {
+        if (rc != ResultInvalidNcaSignature) {
+            LOG_ERROR(Loader, "File reader errored out during header read: {:#x}",
+                      rc.GetInnerValue());
+        }
+        status = LoaderResultStatus::ErrorBadNCAHeader;
+        return;
+    }
+
+    const s32 fs_count = reader->GetFsCount();
+    NcaFileSystemDriver fs(base_nca ? base_nca->reader : nullptr, reader);
+    std::vector<VirtualFile> filesystems(fs_count);
+    for (s32 i = 0; i < fs_count; i++) {
+        NcaFsHeaderReader header_reader;
+        const Result rc = fs.OpenStorage(&filesystems[i], &header_reader, i);
+        if (R_FAILED(rc)) {
+            LOG_ERROR(Loader, "File reader errored out during read of section {}: {:#x}", i,
+                      rc.GetInnerValue());
+            status = LoaderResultStatus::ErrorBadNCAHeader;
+            return;
+        }
+
+        if (header_reader.GetFsType() == NcaFsHeader::FsType::RomFs) {
+            files.push_back(filesystems[i]);
+            romfs = files.back();
+        }
+
+        if (header_reader.GetFsType() == NcaFsHeader::FsType::PartitionFs) {
+            auto npfs = std::make_shared<PartitionFilesystem>(filesystems[i]);
+            if (npfs->GetStatus() == LoaderResultStatus::Success) {
+                dirs.push_back(npfs);
+                if (IsDirectoryExeFS(npfs)) {
+                    exefs = dirs.back();
+                } else if (IsDirectoryLogoPartition(npfs)) {
+                    logo = dirs.back();
+                } else {
+                    continue;
+                }
+            }
+        }
+
+        if (header_reader.GetEncryptionType() == NcaFsHeader::EncryptionType::AesCtrEx) {
+            is_update = true;
+        }
+    }
+
+    if (is_update && base_nca == nullptr) {
+        status = LoaderResultStatus::ErrorMissingBKTRBaseRomFS;
+    } else {
+        status = LoaderResultStatus::Success;
+    }
 }
 
 NCA::~NCA() = default;

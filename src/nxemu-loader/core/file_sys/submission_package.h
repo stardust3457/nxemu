@@ -18,4 +18,62 @@ namespace FileSys {
 
 class PartitionFilesystem;
 
+class NSP : public ReadOnlyVfsDirectory {
+public:
+    explicit NSP(VirtualFile file_, u64 title_id = 0, std::size_t program_index_ = 0);
+    ~NSP() override;
+
+    LoaderResultStatus GetStatus() const;
+    LoaderResultStatus GetProgramStatus() const;
+    // Should only be used when one title id can be assured.
+    u64 GetProgramTitleID() const;
+    u64 GetExtractedTitleID() const;
+    std::vector<u64> GetProgramTitleIDs() const;
+
+    bool IsExtractedType() const;
+
+    // Common (Can be safely called on both types)
+    VirtualFile GetRomFS() const;
+    VirtualDir GetExeFS() const;
+
+    // Type 0 Only (Collection of NCAs + Certificate + Ticket + Meta XML)
+    std::vector<std::shared_ptr<NCA>> GetNCAsCollapsed() const;
+    std::multimap<u64, std::shared_ptr<NCA>> GetNCAsByTitleID() const;
+    std::map<u64, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>> GetNCAs()
+        const;
+    std::shared_ptr<NCA> GetNCA(u64 title_id, LoaderContentRecordType type,
+                                LoaderTitleType title_type = LoaderTitleType::Application) const;
+    VirtualFile GetNCAFile(u64 title_id, LoaderContentRecordType type,
+                           LoaderTitleType title_type = LoaderTitleType::Application) const;
+
+    std::vector<VirtualFile> GetFiles() const override;
+
+    std::vector<VirtualDir> GetSubdirectories() const override;
+
+    std::string GetName() const override;
+
+    VirtualDir GetParentDirectory() const override;
+
+private:
+    void InitializeExeFSAndRomFS(const std::vector<VirtualFile>& files);
+    void ReadNCAs(const std::vector<VirtualFile>& files);
+
+    VirtualFile file;
+
+    const u64 expected_program_id;
+    const std::size_t program_index;
+
+    bool extracted = false;
+    LoaderResultStatus status;
+    std::map<u64, LoaderResultStatus> program_status;
+
+    std::shared_ptr<PartitionFilesystem> pfs;
+    // Map title id -> {map type -> NCA}
+    std::map<u64, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>> ncas;
+    std::set<u64> program_ids;
+    std::vector<VirtualFile> ticket_files;
+
+    VirtualFile romfs;
+    VirtualDir exefs;
+};
 } // namespace FileSys

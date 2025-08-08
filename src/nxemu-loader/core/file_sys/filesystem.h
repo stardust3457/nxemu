@@ -7,6 +7,7 @@
 #include <mutex>
 #include <yuzu_common/common_types.h>
 #include <nxemu-module-spec/system_loader.h>
+#include "core/file_sys/vfs/vfs_types.h"
 
 class Systemloader;
 
@@ -31,6 +32,10 @@ public:
     bool RegisterProcess(ProcessId process_id, ProgramId program_id, std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory);
 
     FileSys::RegisteredCache * SystemNANDContents() const;
+
+    FileSys::VirtualDir GetSDMCModificationLoadRoot(u64 title_id) const;
+    FileSys::VirtualDir GetModificationLoadRoot(u64 title_id) const;
+    FileSys::VirtualDir GetModificationDumpRoot(u64 title_id) const;
 
     void CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite = true);
 

@@ -9,6 +9,8 @@
 #include "yuzu_common/yuzu_assert.h"
 #include "loader.h"
 #include "core/loader/nro.h"
+#include "core/loader/xci.h"
+#include <nxemu-loader/system_loader.h>
 
 namespace Loader {
 
@@ -28,7 +30,10 @@ std::optional<FileType> IdentifyFileLoader(FileSys::VirtualFile file) {
 FileType IdentifyFile(FileSys::VirtualFile file) {
     if (const auto nro_type = IdentifyFileLoader<AppLoader_NRO>(file)) {
         return *nro_type;
+    } else if (const auto xci_type = IdentifyFileLoader<AppLoader_XCI>(file)) {
+        return *xci_type;
     } else {
+        UNIMPLEMENTED();
         return FileType::Unknown;
     }
 }
@@ -39,6 +44,8 @@ FileType GuessFromFilename(const std::string& name) {
 
     if (extension == "nro")
         return FileType::NRO;
+    if (extension == "dxci")
+        return FileType::XCI;
 
     return FileType::Unknown;
 }
@@ -47,6 +54,8 @@ std::string GetFileTypeString(FileType type) {
     switch (type) {
     case FileType::NRO:
         return "NRO";
+    case FileType::XCI:
+        return "XCI";
     case FileType::Error:
     case FileType::Unknown:
         break;
@@ -73,6 +82,11 @@ static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::
     // NX NRO file format.
     case FileType::NRO:
         return std::make_unique<AppLoader_NRO>(std::move(file));
+    // NX XCI (nX Card Image) file format.
+    case FileType::XCI:
+        return std::make_unique<AppLoader_XCI>(std::move(file), loader.GetFileSystemController(),
+                                               loader.GetContentProvider(), program_id,
+                                               program_index);
     }
     UNIMPLEMENTED();
     return nullptr;

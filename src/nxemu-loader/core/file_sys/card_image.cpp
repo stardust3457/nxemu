@@ -55,8 +55,33 @@ XCI::XCI(VirtualFile file_, u64 program_id, size_t program_index)
         partitions_raw[static_cast<std::size_t>(partition)] = std::move(raw);
     }
 
-    UNIMPLEMENTED();
-    status = LoaderResultStatus::ErrorNotImplemented;
+    secure_partition = std::make_shared<NSP>(
+        main_hfs.GetFile(partition_names[static_cast<std::size_t>(XCIPartition::Secure)]),
+        program_id, program_index);
+
+    ncas = secure_partition->GetNCAsCollapsed();
+    program =
+        secure_partition->GetNCA(secure_partition->GetProgramTitleID(), LoaderContentRecordType::Program);
+    program_nca_status = secure_partition->GetProgramStatus();
+    if (program_nca_status == LoaderResultStatus::ErrorNSPMissingProgramNCA) {
+        program_nca_status = LoaderResultStatus::ErrorXCIMissingProgramNCA;
+    }
+
+    auto result = AddNCAFromPartition(XCIPartition::Normal);
+    if (result != LoaderResultStatus::Success) {
+        status = result;
+        return;
+    }
+
+    if (GetFormatVersion() >= 0x2) {
+        result = AddNCAFromPartition(XCIPartition::Logo);
+        if (result != LoaderResultStatus::Success) {
+            status = result;
+            return;
+        }
+    }
+
+    status = LoaderResultStatus::Success;
 }
 
 XCI::~XCI() = default;
@@ -88,6 +113,10 @@ std::vector<VirtualDir> XCI::GetPartitions() {
         }
     }
     return out;
+}
+
+std::shared_ptr<NSP> XCI::GetSecurePartitionNSP() const {
+    return secure_partition;
 }
 
 VirtualDir XCI::GetSecurePartition() {
@@ -136,13 +165,11 @@ VirtualFile XCI::GetLogoPartitionRaw() const {
 }
 
 u64 XCI::GetProgramTitleID() const {
-    UNIMPLEMENTED();
-    return 0;
+    return secure_partition->GetProgramTitleID();
 }
 
 std::vector<u64> XCI::GetProgramTitleIDs() const {
-    UNIMPLEMENTED();
-    return {};
+    return secure_partition->GetProgramTitleIDs();
 }
 
 u32 XCI::GetSystemUpdateVersion() {
@@ -183,6 +210,35 @@ u64 XCI::GetSystemUpdateTitleID() const {
     return 0x0100000000000816;
 }
 
+bool XCI::HasProgramNCA() const {
+    return program != nullptr;
+}
+
+VirtualFile XCI::GetProgramNCAFile() const {
+    if (!HasProgramNCA()) {
+        return nullptr;
+    }
+
+    return program->GetBaseFile();
+}
+
+std::shared_ptr<NCA> XCI::GetNCAByType(NCAContentType type) const {
+    const auto program_id = secure_partition->GetProgramTitleID();
+    const auto iter =
+        std::find_if(ncas.begin(), ncas.end(), [type, program_id](const std::shared_ptr<NCA>& nca) {
+            return nca->GetType() == type && nca->GetTitleId() == program_id;
+        });
+    return iter == ncas.end() ? nullptr : *iter;
+}
+
+VirtualFile XCI::GetNCAFileByType(NCAContentType type) const {
+    auto nca = GetNCAByType(type);
+    if (nca != nullptr) {
+        return nca->GetBaseFile();
+    }
+    return nullptr;
+}
+
 std::vector<VirtualFile> XCI::GetFiles() const {
     return {};
 }
@@ -211,6 +267,39 @@ VirtualDir XCI::ConcatenatedPseudoDirectory() {
     }
 
     return out;
+}
+
+LoaderResultStatus XCI::AddNCAFromPartition(XCIPartition part) {
+    const auto partition_index = static_cast<std::size_t>(part);
+    const auto partition = GetPartition(part);
+
+    if (partition == nullptr) {
+        return LoaderResultStatus::ErrorXCIMissingPartition;
+    }
+
+    for (const VirtualFile& partition_file : partition->GetFiles()) {
+        if (partition_file->GetExtension() != "nca") {
+            continue;
+        }
+
+        auto nca = std::make_shared<NCA>(partition_file);
+        if (nca->IsUpdate()) {
+            continue;
+        }
+        if (nca->GetType() == NCAContentType::Program) {
+            program_nca_status = nca->GetStatus();
+        }
+        if (nca->GetStatus() == LoaderResultStatus::Success) {
+            ncas.push_back(std::move(nca));
+        } else {
+            const u16 error_id = static_cast<u16>(nca->GetStatus());
+            LOG_CRITICAL(Loader, "Could not load NCA {}/{}, failed with error code {:04X} ({})",
+                         partition_names[partition_index], nca->GetName(), error_id,
+                         nca->GetStatus());
+        }
+    }
+
+    return LoaderResultStatus::Success;
 }
 
 LoaderResultStatus XCI::TryReadHeader() {

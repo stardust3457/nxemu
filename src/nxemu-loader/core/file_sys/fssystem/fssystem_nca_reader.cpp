@@ -39,8 +39,30 @@ Result NcaReader::Initialize(VirtualFile base_storage, const NcaCompressionConfi
     ASSERT(base_storage != nullptr);
     ASSERT(m_body_storage == nullptr);
 
-    UNIMPLEMENTED();
-    R_RETURN(ResultUnknown);
+    // Create the work header storage storage.
+    VirtualFile work_header_storage;
+
+    // Read the header.
+    base_storage->ReadObject(std::addressof(m_header), 0);
+    const Result magic_result = CheckNcaMagic(m_header.magic);
+    R_UNLESS(R_SUCCEEDED(magic_result), magic_result);
+
+    // Configure to use the plaintext header.
+    auto base_storage_size = base_storage->GetSize();
+    work_header_storage = std::make_shared<OffsetVfsFile>(base_storage, base_storage_size, 0);
+    R_UNLESS(work_header_storage != nullptr, ResultAllocationMemoryFailedInNcaReaderA);
+
+    // Validate the sdk version.
+    R_UNLESS(m_header.sdk_addon_version >= SdkAddonVersionMin, ResultUnsupportedSdkVersion);
+
+    // Set our decompressor function getter.
+    m_get_decompressor = compression_cfg.get_decompressor;
+
+    // Set our storages.
+    m_header_storage = std::move(work_header_storage);
+    m_body_storage = std::move(base_storage);
+
+    R_SUCCEED();
 }
 
 VirtualFile NcaReader::GetSharedBodyStorage() {

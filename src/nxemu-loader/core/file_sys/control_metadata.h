@@ -95,11 +95,15 @@ extern const std::array<const char*, 16> LANGUAGE_NAMES;
 
 // A class representing the format used by NX metadata files, typically named Control.nacp.
 // These store application name, dev name, title id, and other miscellaneous data.
-class NACP {
+class NACP :
+    public IFileSysNACP
+{
 public:
     explicit NACP();
     explicit NACP(VirtualFile file);
     ~NACP();
+
+    NACP& operator=(const NACP& other);
 
     const LanguageEntry& GetLanguageEntry() const;
     std::string GetApplicationName() const;
@@ -115,6 +119,10 @@ public:
     u64 GetDeviceSaveDataSize() const;
     u32 GetParentalControlFlag() const;
     const std::array<u8, 0x20>& GetRatingAge() const;
+
+    //IFileSysNACP
+    bool GetRatingAge(uint8_t* buffer, uint32_t bufferSize) const override;
+    void Release() override;
 
 private:
     RawNACP raw{};

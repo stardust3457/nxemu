@@ -81,7 +81,7 @@ public:
     uint64_t ReadBytes(uint8_t * data, uint64_t datalen, uint64_t offset) override;
     uint64_t WriteBytes(const uint8_t * data, uint64_t datalen, uint64_t offset) override;
     IVirtualDirectory * ExtractRomFS() override;
-    IVirtualFile* Duplicate() override;
+    IVirtualFile * Duplicate() override;
     void Release() override;
 
 private:

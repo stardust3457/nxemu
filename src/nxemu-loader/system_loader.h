@@ -4,8 +4,6 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/file_sys/registered_cache.h"
 
-class Nro;
-
 namespace FileSys
 {
 class FileSystemController;
@@ -25,6 +23,9 @@ public:
     FileSys::FileSystemController & GetFileSystemController();
     void RegisterContentProvider(FileSys::ContentProviderUnionSlot slot, FileSys::ContentProvider* provider);
 
+    void SetProcessID(uint64_t processID);
+    void SetTitleID(uint64_t titleID);
+    
     //ISystemloader
     bool Initialize() override;
     bool SelectAndLoad(void * parentWindow) override;
