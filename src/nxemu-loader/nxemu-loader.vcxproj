@@ -86,6 +86,7 @@
     <ClInclude Include="core\file_sys\romfs.h" />
     <ClInclude Include="core\file_sys\romfs_factory.h" />
     <ClInclude Include="core\file_sys\savedata_factory.h" />
+    <ClInclude Include="core\file_sys\save_data_controller.h" />
     <ClInclude Include="core\file_sys\sdmc_factory.h" />
     <ClInclude Include="core\file_sys\submission_package.h" />
     <ClInclude Include="core\file_sys\system_archive\data\font_chinese_simplified.h" />
@@ -159,6 +160,7 @@
     <ClCompile Include="core\file_sys\romfs.cpp" />
     <ClCompile Include="core\file_sys\romfs_factory.cpp" />
     <ClCompile Include="core\file_sys\savedata_factory.cpp" />
+    <ClCompile Include="core\file_sys\save_data_controller.cpp" />
     <ClCompile Include="core\file_sys\sdmc_factory.cpp" />
     <ClCompile Include="core\file_sys\submission_package.cpp" />
     <ClCompile Include="core\file_sys\system_archive\data\font_chinese_simplified.cpp" />

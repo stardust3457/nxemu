@@ -3,6 +3,7 @@
 
 #include "core/file_sys/filesystem.h"
 #include "core/file_sys/vfs/vfs.h"
+#include "core/file_sys/save_data_controller.h"
 #include "core/file_sys/savedata_factory.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/bis_factory.h"
@@ -41,8 +42,8 @@ IFileSysRegisteredCache * FileSystemController::GetSystemNANDContents() const
 
 ISaveDataController * FileSystemController::OpenSaveDataController() const
 {
-    UNIMPLEMENTED();
-    return nullptr;
+    std::shared_ptr<Service::FileSystem::SaveDataController> dataController(std::make_shared<Service::FileSystem::SaveDataController>(loader, CreateSaveDataFactory(ProgramId{})));
+    return std::make_unique<SaveDataControllerPtr>(dataController).release();
 }
 
 uint64_t FileSystemController::GetFreeSpaceSize(StorageId id) const
@@ -171,7 +172,7 @@ void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool ov
 }
 
 std::shared_ptr<FileSys::SaveDataFactory> FileSystemController::CreateSaveDataFactory(
-    ProgramId program_id) {
+    ProgramId program_id) const {
     using YuzuPath = Common::FS::YuzuPath;
     const auto rw_mode = VirtualFileOpenMode::ReadWrite;
 

@@ -282,6 +282,9 @@
     <ClCompile Include="core\hle\service\set\settings_server.cpp">
       <Filter>Source Files\core\hle\service\set</Filter>
     </ClCompile>
+    <ClCompile Include="core\file_sys\save_data_controller.cpp">
+      <Filter>Source Files\core\file_sys</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system_loader.h">
@@ -532,6 +535,9 @@
     </ClInclude>
     <ClInclude Include="core\hle\service\set\settings_server.h">
       <Filter>Header Files\core\hle\service\set</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\save_data_controller.h">
+      <Filter>Header Files\core\file_sys</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

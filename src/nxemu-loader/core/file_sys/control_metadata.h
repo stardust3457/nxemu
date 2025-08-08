@@ -5,6 +5,7 @@
 
 #include <array>
 #include <string>
+#include <vector>
 #include "yuzu_common/common_funcs.h"
 #include "yuzu_common/common_types.h"
 #include "yuzu_common/swap.h"

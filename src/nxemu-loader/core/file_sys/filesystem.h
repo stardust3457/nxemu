@@ -5,9 +5,9 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include "core/file_sys/vfs/vfs_types.h"
 #include <yuzu_common/common_types.h>
 #include <nxemu-module-spec/system_loader.h>
-#include "core/file_sys/vfs/vfs_types.h"
 
 class Systemloader;
 
@@ -48,7 +48,7 @@ public:
     bool OpenSDMC(IVirtualDirectory ** out_sdmc) const override;
 
 private:
-    std::shared_ptr<FileSys::SaveDataFactory> CreateSaveDataFactory(ProgramId program_id);
+    std::shared_ptr<FileSys::SaveDataFactory> CreateSaveDataFactory(ProgramId program_id) const;
 
     Systemloader & loader;
 
