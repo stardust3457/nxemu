@@ -54,9 +54,6 @@
     <ClInclude Include="logging\text_formatter.h">
       <Filter>Header Files\logging</Filter>
     </ClInclude>
-    <ClInclude Include="logging\types.h">
-      <Filter>Header Files\logging</Filter>
-    </ClInclude>
     <ClInclude Include="common_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>

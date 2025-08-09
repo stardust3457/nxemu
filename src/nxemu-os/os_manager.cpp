@@ -5,7 +5,6 @@
 #include "core/hle/service/filesystem/filesystem.h"
 #include "core/core_timing.h"
 #include "core/perf_stats.h"
-#include "yuzu_common/logging/backend.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/settings_input.h"
 #include "yuzu_hid_core/hid_core.h"
@@ -31,7 +30,6 @@ OSManager::~OSManager()
         m_process->Close();
         m_process = nullptr;
     }
-    Common::Log::Stop();
 }
 
 void OSManager::EmulationStarting()
@@ -42,10 +40,6 @@ void OSManager::EmulationStarting()
 bool OSManager::Initialize(void)
 {
     SetupOsSetting();
-
-    Common::Log::Initialize();
-    Common::Log::Start();
-    Common::Log::SetColorConsoleBackendEnabled(g_settings->GetBool(NXCoreSetting::ShowConsole));
 
     auto & player = Settings::values.players.GetValue()[0];
     player.connected = true;

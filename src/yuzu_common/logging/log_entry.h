@@ -4,8 +4,7 @@
 #pragma once
 
 #include <chrono>
-
-#include "yuzu_common/logging/types.h"
+#include <nxemu-module-spec/base.h>
 
 namespace Common::Log {
 
@@ -15,8 +14,8 @@ namespace Common::Log {
  */
 struct Entry {
     std::chrono::microseconds timestamp;
-    Class log_class{};
-    Level log_level{};
+    LogClass log_class{};
+    LogLevel log_level{};
     const char* filename = nullptr;
     unsigned int line_num = 0;
     std::string function;

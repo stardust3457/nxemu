@@ -96,6 +96,9 @@
     <ClInclude Include="..\nxemu-module-spec\system_loader.h">
       <Filter>Module Spec</Filter>
     </ClInclude>
+    <ClInclude Include="logging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings\settings.cpp">
@@ -139,6 +142,9 @@
     </ClCompile>
     <ClCompile Include="modules\loader_module.cpp">
       <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="logging.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

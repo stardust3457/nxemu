@@ -12,6 +12,7 @@
 
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/time_zone.h"
+#include "yuzu_common/common_types.h"
 
 namespace Common::TimeZone {
 

@@ -78,7 +78,6 @@
     <ClInclude Include="logging\log.h" />
     <ClInclude Include="logging\log_entry.h" />
     <ClInclude Include="logging\text_formatter.h" />
-    <ClInclude Include="logging\types.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="lz4_compression.h" />
     <ClInclude Include="make_unique_for_overwrite.h" />

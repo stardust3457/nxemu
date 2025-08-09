@@ -2,31 +2,36 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <nxemu-module-spec/base.h>
 #include "yuzu_common/logging/filter.h"
+#include "yuzu_common/logging/log.h"
 #include "yuzu_common/string_util.h"
 
 namespace Common::Log {
+
+LogLevel g_classLevel[(uint8_t)LogClass::Count];
+
 namespace {
 template <typename It>
-Level GetLevelByName(const It begin, const It end) {
-    for (u8 i = 0; i < static_cast<u8>(Level::Count); ++i) {
-        const char* level_name = GetLevelName(static_cast<Level>(i));
+LogLevel GetLevelByName(const It begin, const It end) {
+    for (u8 i = 0; i < static_cast<u8>(LogLevel::Count); ++i) {
+        const char* level_name = GetLevelName(static_cast<LogLevel>(i));
         if (Common::ComparePartialString(begin, end, level_name)) {
-            return static_cast<Level>(i);
+            return static_cast<LogLevel>(i);
         }
     }
-    return Level::Count;
+    return LogLevel::Count;
 }
 
 template <typename It>
-Class GetClassByName(const It begin, const It end) {
-    for (u8 i = 0; i < static_cast<u8>(Class::Count); ++i) {
-        const char* level_name = GetLogClassName(static_cast<Class>(i));
+LogClass GetClassByName(const It begin, const It end) {
+    for (u8 i = 0; i < static_cast<u8>(LogClass::Count); ++i) {
+        const char* level_name = GetLogClassName(static_cast<LogClass>(i));
         if (Common::ComparePartialString(begin, end, level_name)) {
-            return static_cast<Class>(i);
+            return static_cast<LogClass>(i);
         }
     }
-    return Class::Count;
+    return LogClass::Count;
 }
 
 template <typename Iterator>
@@ -38,8 +43,8 @@ bool ParseFilterRule(Filter& instance, Iterator begin, Iterator end) {
         return false;
     }
 
-    const Level level = GetLevelByName(level_separator + 1, end);
-    if (level == Level::Count) {
+    const LogLevel level = GetLevelByName(level_separator + 1, end);
+    if (level == LogLevel::Count) {
         LOG_ERROR(Log, "Unknown log level in filter: {}", std::string(begin, end));
         return false;
     }
@@ -49,8 +54,8 @@ bool ParseFilterRule(Filter& instance, Iterator begin, Iterator end) {
         return true;
     }
 
-    const Class log_class = GetClassByName(begin, level_separator);
-    if (log_class == Class::Count) {
+    const LogClass log_class = GetClassByName(begin, level_separator);
+    if (log_class == LogClass::Count) {
         LOG_ERROR(Log, "Unknown log class in filter: {}", std::string(begin, end));
         return false;
     }
@@ -159,30 +164,29 @@ bool ParseFilterRule(Filter& instance, Iterator begin, Iterator end) {
     CLS(Network)                                                                                   \
     CLS(Loader)                                                                                    \
     CLS(CheatEngine)                                                                               \
-    CLS(Crypto)                                                                                    \
     CLS(WebService)
 
 // GetClassName is a macro defined by Windows.h, grrr...
-const char* GetLogClassName(Class log_class) {
+const char* GetLogClassName(LogClass log_class) {
     switch (log_class) {
 #define CLS(x)                                                                                     \
-    case Class::x:                                                                                 \
+    case LogClass::x:                                                                                 \
         return #x;
 #define SUB(x, y)                                                                                  \
-    case Class::x##_##y:                                                                           \
+    case LogClass::x##_##y:                                                                           \
         return #x "." #y;
         ALL_LOG_CLASSES()
 #undef CLS
 #undef SUB
-    case Class::Count:
+    case LogClass::Count:
         break;
     }
     return "Invalid";
 }
 
-const char* GetLevelName(Level log_level) {
+const char* GetLevelName(LogLevel log_level) {
 #define LVL(x)                                                                                     \
-    case Level::x:                                                                                 \
+    case LogLevel::x:                                                                                 \
         return #x
     switch (log_level) {
         LVL(Trace);
@@ -191,23 +195,23 @@ const char* GetLevelName(Level log_level) {
         LVL(Warning);
         LVL(Error);
         LVL(Critical);
-    case Level::Count:
+    case LogLevel::Count:
         break;
     }
 #undef LVL
     return "Invalid";
 }
 
-Filter::Filter(Level default_level) {
+Filter::Filter(LogLevel default_level) {
     ResetAll(default_level);
 }
 
-void Filter::ResetAll(Level level) {
-    class_levels.fill(level);
+void Filter::ResetAll(LogLevel level) {
+    std::fill(g_classLevel, g_classLevel + static_cast<size_t>(LogClass::Count), level);
 }
 
-void Filter::SetClassLevel(Class log_class, Level level) {
-    class_levels[static_cast<std::size_t>(log_class)] = level;
+void Filter::SetClassLevel(LogClass log_class, LogLevel level) {
+    g_classLevel[static_cast<std::size_t>(log_class)] = level;
 }
 
 void Filter::ParseFilterString(std::string_view filter_view) {
@@ -228,15 +232,18 @@ void Filter::ParseFilterString(std::string_view filter_view) {
     }
 }
 
-bool Filter::CheckMessage(Class log_class, Level level) const {
+bool Filter::CheckMessage(LogClass log_class, LogLevel level) const {
     return static_cast<u8>(level) >=
-           static_cast<u8>(class_levels[static_cast<std::size_t>(log_class)]);
+           static_cast<u8>(g_classLevel[static_cast<std::size_t>(log_class)]);
 }
 
 bool Filter::IsDebug() const {
-    return std::any_of(class_levels.begin(), class_levels.end(), [](const Level& l) {
-        return static_cast<u8>(l) <= static_cast<u8>(Level::Debug);
-    });
+    for (size_t i = 0; i < static_cast<size_t>(LogClass::Count); ++i) {
+        if (static_cast<u8>(g_classLevel[i]) <= static_cast<u8>(LogLevel::Debug)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 } // namespace Common::Log

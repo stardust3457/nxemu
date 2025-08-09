@@ -110,7 +110,7 @@ public:
         // Prevent logs from exceeding a set maximum size in the event that log entries are spammed.
         const auto write_limit = Settings::values.extended_logging.GetValue() ? 1_GiB : 100_MiB;
         const bool write_limit_exceeded = bytes_written > write_limit;
-        if (entry.log_level >= Level::Error || write_limit_exceeded) {
+        if (entry.log_level >= LogLevel::Error || write_limit_exceeded) {
             if (write_limit_exceeded) {
                 // Stop writing after the write limit is exceeded.
                 // Don't close the file so we can print a stacktrace if necessary
@@ -180,7 +180,9 @@ bool initialization_in_progress_suppress_logging = true;
 /**
  * Static state as a singleton.
  */
-class Impl {
+class Impl :
+    public IModuleLogger 
+{
 public:
     static Impl& Instance() {
         if (!instance) {
@@ -189,18 +191,25 @@ public:
         return *instance;
     }
 
-    static void Initialize() {
+    static void Initialize(IModuleLogger * logger) {
         if (instance) {
             LOG_WARNING(Log, "Reinitializing logging backend");
             return;
         }
-        using namespace Common::FS;
-        const auto& log_dir = GetYuzuPath(YuzuPath::LogDir);
-        void(CreateDir(log_dir));
         Filter filter;
         filter.ParseFilterString(Settings::values.log_filter.GetValue());
-        instance = std::unique_ptr<Impl, decltype(&Deleter)>(new Impl(log_dir / LOG_FILE, filter),
-                                                             Deleter);
+        if (logger)
+        {
+            instance = std::unique_ptr<Impl, decltype(&Deleter)>(new Impl(logger, filter), Deleter);
+        }
+        else
+        {
+            using namespace Common::FS;
+            const auto& log_dir = GetYuzuPath(YuzuPath::LogDir);
+            void(CreateDir(log_dir));
+            instance = std::unique_ptr<Impl, decltype(&Deleter)>(new Impl(log_dir / LOG_FILE, filter),
+                Deleter);
+        }
         initialization_in_progress_suppress_logging = false;
     }
 
@@ -226,18 +235,41 @@ public:
         color_console_backend.SetEnabled(enabled);
     }
 
-    void PushEntry(Class log_class, Level log_level, const char* filename, unsigned int line_num,
-                   const char* function, std::string&& message) {
+    void Log(LogClass log_class, LogLevel log_level, const char * filename, unsigned int line_num, const char * function, const char * message)
+    {
+        if (modulelogger != nullptr)
+        {
+            return;
+        }
         if (!filter.CheckMessage(log_class, log_level)) {
             return;
         }
-        message_queue.EmplaceWait(
-            CreateEntry(log_class, log_level, filename, line_num, function, std::move(message)));
+        message_queue.EmplaceWait(CreateEntry(log_class, log_level, filename, line_num, function, std::string(message)));
+    }
+
+    void PushEntry(LogClass log_class, LogLevel log_level, const char* filename, unsigned int line_num,
+        const char* function, std::string&& message) {
+        if (modulelogger != nullptr)
+        {
+            modulelogger->Log(log_class, log_level, filename, line_num, function, message.c_str());
+        }
+        else
+        {
+            if (!filter.CheckMessage(log_class, log_level))
+            {
+                return;
+            }
+            message_queue.EmplaceWait(CreateEntry(log_class, log_level, filename, line_num, function, std::move(message)));
+        }
     }
 
 private:
     Impl(const std::filesystem::path& file_backend_filename, const Filter& filter_)
-        : filter{filter_}, file_backend{file_backend_filename} {}
+        : modulelogger(nullptr), filter{filter_}, file_backend{ new FileBackend(file_backend_filename)} {}
+
+    Impl(IModuleLogger * logger, const Filter& filter_)
+        : modulelogger{ logger }, filter{ filter_ }, file_backend{nullptr} {
+    }
 
     ~Impl() = default;
 
@@ -272,7 +304,7 @@ private:
         ForEachBackend([](Backend& backend) { backend.Flush(); });
     }
 
-    Entry CreateEntry(Class log_class, Level log_level, const char* filename, unsigned int line_nr,
+    Entry CreateEntry(LogClass log_class, LogLevel log_level, const char* filename, unsigned int line_nr,
                       const char* function, std::string&& message) const {
         using std::chrono::duration_cast;
         using std::chrono::microseconds;
@@ -292,7 +324,10 @@ private:
     void ForEachBackend(auto lambda) {
         lambda(static_cast<Backend&>(debugger_backend));
         lambda(static_cast<Backend&>(color_console_backend));
-        lambda(static_cast<Backend&>(file_backend));
+        if (file_backend != nullptr)
+        {
+            lambda(static_cast<Backend&>(*file_backend));
+        }
 #ifdef ANDROID
         lambda(static_cast<Backend&>(lc_backend));
 #endif
@@ -305,9 +340,10 @@ private:
     static inline std::unique_ptr<Impl, decltype(&Deleter)> instance{nullptr, Deleter};
 
     Filter filter;
+    IModuleLogger * modulelogger;
     DebuggerBackend debugger_backend{};
     ColorConsoleBackend color_console_backend{};
-    FileBackend file_backend;
+    std::unique_ptr<FileBackend> file_backend;
 #ifdef ANDROID
     LogcatBackend lc_backend{};
 #endif
@@ -318,8 +354,8 @@ private:
 };
 } // namespace
 
-void Initialize() {
-    Impl::Initialize();
+void Initialize(IModuleLogger * logger) {
+    Impl::Initialize(logger);
 }
 
 void Start() {
@@ -342,12 +378,21 @@ void SetColorConsoleBackendEnabled(bool enabled) {
     Impl::Instance().SetColorConsoleBackendEnabled(enabled);
 }
 
-void FmtLogMessageImpl(Class log_class, Level log_level, const char* filename,
+void FmtLogMessageImpl(LogClass log_class, LogLevel log_level, const char* filename,
                        unsigned int line_num, const char* function, const char* format,
-                       const fmt::format_args& args) {
-    if (!initialization_in_progress_suppress_logging) {
-        Impl::Instance().PushEntry(log_class, log_level, filename, line_num, function,
-                                   fmt::vformat(format, args));
+                       const fmt::format_args& args) 
+{
+    if (initialization_in_progress_suppress_logging) 
+    {
+        return;
     }
+    Impl::Instance().PushEntry(log_class, log_level, filename, line_num, function,
+        fmt::vformat(format, args));
 }
+
+IModuleLogger * ModuleLogger()
+{
+    return &Impl::Instance();
+}
+
 } // namespace Common::Log

@@ -1,4 +1,5 @@
 #include "module_base.h"
+#include <yuzu_common/logging/backend.h>
 
 ModuleBase::ModuleBase() :
     m_lib(nullptr),
@@ -63,6 +64,7 @@ bool ModuleBase::Load(const char * fileName, IModuleNotification * notification,
     ModuleInterfaces interfaces = {0};
     interfaces.notification = notification;
     interfaces.settings = settings;
+    interfaces.logger = Common::Log::ModuleLogger();
     if (ModuleInitialize(interfaces) != 0)
     {
         return false;

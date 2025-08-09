@@ -3,6 +3,7 @@
 
 #include <mutex>
 
+#include "yuzu_common/common_types.h"
 #include "yuzu_common/yuzu_assert.h"
 #include "yuzu_common/fiber.h"
 #include "yuzu_common/virtual_buffer.h"

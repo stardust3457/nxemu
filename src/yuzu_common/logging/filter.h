@@ -3,10 +3,8 @@
 
 #pragma once
 
-#include <array>
-#include <chrono>
-#include <cstddef>
-#include "yuzu_common/logging/log.h"
+#include <string>
+#include <nxemu-module-spec/base.h>
 
 namespace Common::Log {
 
@@ -14,12 +12,12 @@ namespace Common::Log {
  * Returns the name of the passed log class as a C-string. Subclasses are separated by periods
  * instead of underscores as in the enumeration.
  */
-const char* GetLogClassName(Class log_class);
+const char* GetLogClassName(LogClass log_class);
 
 /**
  * Returns the name of the passed log level as a C-string.
  */
-const char* GetLevelName(Level log_level);
+const char* GetLevelName(LogLevel log_level);
 
 /**
  * Implements a log message filter which allows different log classes to have different minimum
@@ -29,12 +27,12 @@ const char* GetLevelName(Level log_level);
 class Filter {
 public:
     /// Initializes the filter with all classes having `default_level` as the minimum level.
-    explicit Filter(Level default_level = Level::Info);
+    explicit Filter(LogLevel default_level = LogLevel::Info);
 
     /// Resets the filter so that all classes have `level` as the minimum displayed level.
-    void ResetAll(Level level);
+    void ResetAll(LogLevel level);
     /// Sets the minimum level of `log_class` (and not of its subclasses) to `level`.
-    void SetClassLevel(Class log_class, Level level);
+    void SetClassLevel(LogClass log_class, LogLevel level);
 
     /**
      * Parses a filter string and applies it to this filter.
@@ -53,12 +51,9 @@ public:
     void ParseFilterString(std::string_view filter_view);
 
     /// Matches class/level combination against the filter, returning true if it passed.
-    bool CheckMessage(Class log_class, Level level) const;
+    bool CheckMessage(LogClass log_class, LogLevel level) const;
 
     /// Returns true if any logging classes are set to debug
     bool IsDebug() const;
-
-private:
-    std::array<Level, static_cast<std::size_t>(Class::Count)> class_levels;
 };
 } // namespace Common::Log

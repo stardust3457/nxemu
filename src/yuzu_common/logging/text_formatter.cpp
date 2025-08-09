@@ -49,25 +49,25 @@ void PrintColoredMessage(const Entry& entry) {
 
     WORD color = 0;
     switch (entry.log_level) {
-    case Level::Trace: // Grey
+    case LogLevel::Trace: // Grey
         color = FOREGROUND_INTENSITY;
         break;
-    case Level::Debug: // Cyan
+    case LogLevel::Debug: // Cyan
         color = FOREGROUND_GREEN | FOREGROUND_BLUE;
         break;
-    case Level::Info: // Bright gray
+    case LogLevel::Info: // Bright gray
         color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
         break;
-    case Level::Warning: // Bright yellow
+    case LogLevel::Warning: // Bright yellow
         color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
         break;
-    case Level::Error: // Bright red
+    case LogLevel::Error: // Bright red
         color = FOREGROUND_RED | FOREGROUND_INTENSITY;
         break;
-    case Level::Critical: // Bright magenta
+    case LogLevel::Critical: // Bright magenta
         color = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
         break;
-    case Level::Count:
+    case LogLevel::Count:
         UNREACHABLE();
     }
 
@@ -76,25 +76,25 @@ void PrintColoredMessage(const Entry& entry) {
 #define ESC "\x1b"
     const char* color = "";
     switch (entry.log_level) {
-    case Level::Trace: // Grey
+    case LogLevel::Trace: // Grey
         color = ESC "[1;30m";
         break;
-    case Level::Debug: // Cyan
+    case LogLevel::Debug: // Cyan
         color = ESC "[0;36m";
         break;
-    case Level::Info: // Bright gray
+    case LogLevel::Info: // Bright gray
         color = ESC "[0;37m";
         break;
-    case Level::Warning: // Bright yellow
+    case LogLevel::Warning: // Bright yellow
         color = ESC "[1;33m";
         break;
-    case Level::Error: // Bright red
+    case LogLevel::Error: // Bright red
         color = ESC "[1;31m";
         break;
-    case Level::Critical: // Bright magenta
+    case LogLevel::Critical: // Bright magenta
         color = ESC "[1;35m";
         break;
-    case Level::Count:
+    case LogLevel::Count:
         UNREACHABLE();
     }
 
@@ -117,25 +117,25 @@ void PrintMessageToLogcat(const Entry& entry) {
 
     android_LogPriority android_log_priority;
     switch (entry.log_level) {
-    case Level::Trace:
+    case LogLevel::Trace:
         android_log_priority = ANDROID_LOG_VERBOSE;
         break;
-    case Level::Debug:
+    case LogLevel::Debug:
         android_log_priority = ANDROID_LOG_DEBUG;
         break;
-    case Level::Info:
+    case LogLevel::Info:
         android_log_priority = ANDROID_LOG_INFO;
         break;
-    case Level::Warning:
+    case LogLevel::Warning:
         android_log_priority = ANDROID_LOG_WARN;
         break;
-    case Level::Error:
+    case LogLevel::Error:
         android_log_priority = ANDROID_LOG_ERROR;
         break;
-    case Level::Critical:
+    case LogLevel::Critical:
         android_log_priority = ANDROID_LOG_FATAL;
         break;
-    case Level::Count:
+    case LogLevel::Count:
         UNREACHABLE();
     }
     __android_log_print(android_log_priority, "YuzuNative", "%s", str.c_str());

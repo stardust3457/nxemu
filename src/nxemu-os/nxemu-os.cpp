@@ -2,6 +2,7 @@
 #include "os_settings.h"
 #include <memory>
 #include <stdio.h>
+#include <yuzu_common/logging/backend.h>
 
 std::unique_ptr<OSManager> g_osManager;
 IModuleNotification * g_notify = nullptr;
@@ -35,10 +36,11 @@ int CALL ModuleInitialize(ModuleInterfaces & interfaces)
     g_notify = interfaces.notification;
     g_settings = interfaces.settings;
 
-    if (g_notify == nullptr || g_settings == nullptr)
+    if (g_notify == nullptr || g_settings == nullptr || interfaces.logger == nullptr)
     {
         return -1;
     }
+    Common::Log::Initialize(interfaces.logger);
     return 0;
 }
 

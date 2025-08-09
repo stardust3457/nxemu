@@ -9,9 +9,11 @@
 #include <fmt/format.h>
 
 #include "yuzu_common/logging/formatter.h"
-#include "yuzu_common/logging/types.h"
+#include <nxemu-module-spec/base.h>
 
 namespace Common::Log {
+
+extern LogLevel g_classLevel[(uint8_t)LogClass::Count];
 
 // trims up to and including the last of ../, ..\, src/, src\ in a string
 constexpr const char* TrimSourcePath(std::string_view source) {
@@ -23,12 +25,12 @@ constexpr const char* TrimSourcePath(std::string_view source) {
 }
 
 /// Logs a message to the global logger, using fmt
-void FmtLogMessageImpl(Class log_class, Level log_level, const char* filename,
+void FmtLogMessageImpl(LogClass log_class, LogLevel log_level, const char* filename,
                        unsigned int line_num, const char* function, const char* format,
                        const fmt::format_args& args);
 
 template <typename... Args>
-void FmtLogMessage(Class log_class, Level log_level, const char* filename, unsigned int line_num,
+void FmtLogMessage(LogClass log_class, LogLevel log_level, const char* filename, unsigned int line_num,
                    const char* function, const char* format, const Args&... args) {
     FmtLogMessageImpl(log_class, log_level, filename, line_num, function, format,
                       fmt::make_format_args(args...));
@@ -37,31 +39,43 @@ void FmtLogMessage(Class log_class, Level log_level, const char* filename, unsig
 } // namespace Common::Log
 
 #ifdef _DEBUG
-#define LOG_TRACE(log_class, ...)                                                                  \
-    Common::Log::FmtLogMessage(Common::Log::Class::log_class, Common::Log::Level::Trace,           \
-                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,          \
-                               __VA_ARGS__)
+#define LOG_TRACE(log_class, ...)                                                                       \
+    if (Common::Log::g_classLevel[(uint8_t)LogClass::log_class] <= LogLevel::Trace) [[unlikely]] {      \
+        Common::Log::FmtLogMessage(LogClass::log_class, LogLevel::Trace,                                \
+                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,               \
+                               __VA_ARGS__);                                                            \
+    }
 #else
 #define LOG_TRACE(log_class, fmt, ...) (void(0))
 #endif
 
-#define LOG_DEBUG(log_class, ...)                                                                  \
-    Common::Log::FmtLogMessage(Common::Log::Class::log_class, Common::Log::Level::Debug,           \
-                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,          \
-                               __VA_ARGS__)
-#define LOG_INFO(log_class, ...)                                                                   \
-    Common::Log::FmtLogMessage(Common::Log::Class::log_class, Common::Log::Level::Info,            \
-                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,          \
-                               __VA_ARGS__)
-#define LOG_WARNING(log_class, ...)                                                                \
-    Common::Log::FmtLogMessage(Common::Log::Class::log_class, Common::Log::Level::Warning,         \
-                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,          \
-                               __VA_ARGS__)
-#define LOG_ERROR(log_class, ...)                                                                  \
-    Common::Log::FmtLogMessage(Common::Log::Class::log_class, Common::Log::Level::Error,           \
-                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,          \
-                               __VA_ARGS__)
-#define LOG_CRITICAL(log_class, ...)                                                               \
-    Common::Log::FmtLogMessage(Common::Log::Class::log_class, Common::Log::Level::Critical,        \
-                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,          \
-                               __VA_ARGS__)
+#define LOG_DEBUG(log_class, ...)                                                                       \
+    if (Common::Log::g_classLevel[(uint8_t)LogClass::log_class] <= LogLevel::Debug) [[unlikely]] {      \
+        Common::Log::FmtLogMessage(LogClass::log_class, LogLevel::Debug,                                \
+                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,               \
+                               __VA_ARGS__);                                                            \
+    }
+#define LOG_INFO(log_class, ...)                                                                        \
+    if (Common::Log::g_classLevel[(uint8_t)LogClass::log_class] <= LogLevel::Info) [[unlikely]] {       \
+        Common::Log::FmtLogMessage(LogClass::log_class, LogLevel::Info,                                 \
+                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,               \
+                               __VA_ARGS__);                                                            \
+    }
+#define LOG_WARNING(log_class, ...)                                                                     \
+    if (Common::Log::g_classLevel[(uint8_t)LogClass::log_class] <= LogLevel::Warning) [[unlikely]] {    \
+        Common::Log::FmtLogMessage(LogClass::log_class, LogLevel::Warning,                              \
+                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,               \
+                               __VA_ARGS__);                                                            \
+    }
+#define LOG_ERROR(log_class, ...)                                                                       \
+    if (Common::Log::g_classLevel[((uint8_t)LogClass::log_class)] <= LogLevel::Error) [[unlikely]] {    \
+        Common::Log::FmtLogMessage(LogClass::log_class, LogLevel::Error,                                \
+                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,               \
+                               __VA_ARGS__);                                                            \
+    }
+#define LOG_CRITICAL(log_class, ...)                                                                    \
+    if (Common::Log::g_classLevel[((uint8_t)LogClass::log_class)] <= LogLevel::Critical) [[unlikely]] { \
+        Common::Log::FmtLogMessage(LogClass::log_class, LogLevel::Critical,                             \
+                               Common::Log::TrimSourcePath(__FILE__), __LINE__, __func__,               \
+                               __VA_ARGS__);                                                            \
+    }

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <nxemu-module-spec/base.h>
 #include "yuzu_common/logging/filter.h"
 
 namespace Common::Log {
@@ -10,7 +11,7 @@ namespace Common::Log {
 class Filter;
 
 /// Initializes the logging system. This should be the first thing called in main.
-void Initialize();
+void Initialize(IModuleLogger * logger);
 
 void Start();
 
@@ -25,4 +26,6 @@ void DisableLoggingInTests();
 void SetGlobalFilter(const Filter& filter);
 
 void SetColorConsoleBackendEnabled(bool enabled);
+
+IModuleLogger * ModuleLogger();
 } // namespace Common::Log
