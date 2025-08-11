@@ -218,7 +218,7 @@ Result FSP_SRV::OpenSdCardFileSystem(OutInterface<IFileSystem> out_interface) {
     {
         R_RETURN(FileSys::ResultPortSdCardNoDevice);
     }
-    UNIMPLEMENTED();
+    *out_interface = std::make_shared<IFileSystem>(system, std::move(sdmc_dir), SizeGetter::FromStorageId(fsc, StorageId::SdCard));
     R_SUCCEED();
 }
 

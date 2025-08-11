@@ -45,6 +45,7 @@ public:
     operator bool() const;
 
     // IVirtualDirectory
+    IVirtualDirectory * CreateSubdirectory(const char * path) const override;
     IVirtualDirectory * GetDirectoryRelative(const char * path) const override;
     IVirtualDirectory * GetSubdirectory(const char * name) const override;
     IVirtualFile * CreateFile(const char * name) const override;

@@ -11,6 +11,20 @@ VirtualDirectoryPtr::~VirtualDirectoryPtr()
 {
 }
 
+IVirtualDirectory * VirtualDirectoryPtr::CreateSubdirectory(const char * path) const
+{
+    if (m_directory.get() == nullptr)
+    {
+        return nullptr;
+    }
+    FileSys::VirtualDir dir = m_directory->CreateSubdirectory(path);
+    if (dir.get() == nullptr)
+    {
+        return nullptr;
+    }
+    return std::make_unique<VirtualDirectoryPtr>(dir).release();
+}
+
 IVirtualDirectory * VirtualDirectoryPtr::GetDirectoryRelative(const char * path) const
 {
     if (m_directory.get() == nullptr)

@@ -61,6 +61,26 @@ Result VfsDirectoryServiceWrapper::CreateFile(const std::string& path_, u64 size
     return ResultSuccess;
 }
 
+Result VfsDirectoryServiceWrapper::CreateDirectory(const std::string& path_) const {
+    std::string path(Common::FS::SanitizePath(path_));
+
+    // NOTE: This is inaccurate behavior. CreateDirectory is not recursive.
+    // CreateDirectory should return PathNotFound if the parent directory does not exist.
+    // This is here temporarily in order to have UMM "work" in the meantime.
+    // TODO (Morph): Remove this when a hardware test verifies the correct behavior.
+    const auto components = Common::FS::SplitPathComponents(path);
+    std::string relative_path;
+    for (const auto& component : components) {
+        relative_path = Common::FS::SanitizePath(fmt::format("{}/{}", relative_path, component));
+        auto new_dir = backing->CreateSubdirectory(relative_path.c_str());
+        if (new_dir == nullptr) {
+            // TODO(DarkLordZach): Find a better error code for this
+            return ResultUnknown;
+        }
+    }
+    return ResultSuccess;
+}
+
 Result VfsDirectoryServiceWrapper::OpenFile(IVirtualFile** out_file,
                                             const std::string& path_,
                                             VirtualFileOpenMode mode) const {

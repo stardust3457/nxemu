@@ -54,8 +54,7 @@ Result IFileSystem::CreateDirectory(
     const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
     LOG_DEBUG(Service_FS, "called. directory={}", path->str);
 
-    UNIMPLEMENTED();
-    R_SUCCEED();
+    R_RETURN(backend->CreateDirectory(FileSys::Path(path->str)));
 }
 
 Result IFileSystem::DeleteDirectory(
@@ -116,7 +115,10 @@ Result IFileSystem::GetEntryType(
     Out<u32> out_type, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
     LOG_DEBUG(Service_FS, "called. file={}", path->str);
 
-    UNIMPLEMENTED();
+    FileSys::DirectoryEntryType vfs_entry_type{};
+    R_TRY(backend->GetEntryType(&vfs_entry_type, FileSys::Path(path->str)));
+
+    *out_type = static_cast<u32>(vfs_entry_type);
     R_SUCCEED();
 }
 

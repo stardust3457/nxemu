@@ -155,6 +155,7 @@ __interface IVirtualFile;
 
 __interface IVirtualDirectory
 {
+    IVirtualDirectory * CreateSubdirectory(const char* path) const = 0;
     IVirtualDirectory * GetDirectoryRelative(const char * path) const = 0;
     IVirtualDirectory * GetSubdirectory(const char* name) const = 0;
     IVirtualFile * CreateFile(const char* name) const = 0;

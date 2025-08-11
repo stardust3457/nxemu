@@ -61,6 +61,10 @@ public:
         R_RETURN(this->DoRenameDirectory(old_path, new_path));
     }
 
+    Result GetEntryType(DirectoryEntryType* out, const Path& path) {
+        R_RETURN(this->DoGetEntryType(out, path));
+    }
+
     Result OpenFile(IVirtualFile ** out_file, const Path& path, VirtualFileOpenMode mode) {
         R_UNLESS(out_file != nullptr, ResultNullptrArgument);
         R_UNLESS(((uint32_t)mode & (uint32_t)VirtualFileOpenMode::ReadWrite) != 0, ResultInvalidOpenMode);
@@ -118,8 +122,7 @@ private:
     }
 
     Result DoCreateDirectory(const Path& path) {
-        UNIMPLEMENTED();
-        R_SUCCEED();
+        R_RETURN(backend.CreateDirectory(path.GetString()));
     }
 
     Result DoDeleteDirectory(const Path& path) {
@@ -140,6 +143,10 @@ private:
     Result DoRenameDirectory(const Path& old_path, const Path& new_path) {
         UNIMPLEMENTED();
         R_SUCCEED();
+    }
+
+    Result DoGetEntryType(DirectoryEntryType* out, const Path& path) {
+        R_RETURN(backend.GetEntryType(out, path.GetString()));
     }
 
     Result DoOpenFile(IVirtualFile ** out_file, const Path& path, VirtualFileOpenMode mode) {
