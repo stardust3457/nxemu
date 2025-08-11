@@ -3,203 +3,309 @@
 #include "settings.h"
 #include <common/json.h>
 #include <common/path.h>
+#include <yuzu_common/yuzu_assert.h>
 
 namespace
 {
-struct CoreSettingsDefaults
-{
-    static constexpr const char * defaultModuleDirValue = "./modules";
+    enum class SettingType
+    {
+        Boolean,
+        Path,
+        String,
+    };
+
+    class CoreSetting
+    {
+    public:
+        CoreSetting(const char * id, bool defaultValue);
+        CoreSetting(const char * id, const char * section, const char * key, bool * settingValue, bool defaultValue);
+        CoreSetting(const char * id, const char * section, const char * key, Path * settingPath, std::string * settingPathValue, const char * defaultValue);
+        CoreSetting(const char * id, const char * section, const char * key, std::string * settingStr, const char * defaultValue);
+
+        const char * identifier;
+        const char * json_section;
+        const char * json_key;
+        SettingType settingType;
+        union
+        {
+            bool boolValue;
+            const char * strValue;
+        } defaults;
+        union
+        {
+            bool * boolValue;
+            Path * path;
+            std::string * strValue;            
+        } value;
+        union
+        {
+            std::string * strValue;
+        } clearValue;
+    };
+
+    Path defaultModuleDirValue;
+
+    static CoreSetting settings[] = {
+        { NXCoreSetting::ModuleDirectory, "", "ModuleDirectory-x64", &coreSettings.moduleDir, &coreSettings.moduleDirValue, "./modules" },
 #ifdef _DEBUG
-    static constexpr const char * defaultModuleLoader = "loader\\nxemu-loader_d.dll";
-    static constexpr const char * defaultModuleCpu = "cpu\\nxemu-cpu_d.dll";
-    static constexpr const char * defaultModuleVideo = "video\\nxemu-video_d.dll";
-    static constexpr const char * defaultModuleOperatingSystem = "operating_system\\nxemu-os_d.dll";
+        { NXCoreSetting::ModuleLoader, "modules", "loader", &coreSettings.moduleLoader, "loader\\nxemu-loader_d.dll" },
+        { NXCoreSetting::ModuleCpu, "modules", "cpu", &coreSettings.moduleCpu, "cpu\\nxemu-cpu_d.dll" },
+        { NXCoreSetting::ModuleVideo, "modules", "video", &coreSettings.moduleVideo, "video\\nxemu-video_d.dll" },
+        { NXCoreSetting::ModuleOs, "modules", "os", &coreSettings.moduleOs, "operating_system\\nxemu-os_d.dll" },
 #else
-    static constexpr const char * defaultModuleLoader = "loader\\nxemu-loader.dll";
-    static constexpr const char * defaultModuleCpu = "cpu\\nxemu-cpu.dll";
-    static constexpr const char * defaultModuleVideo = "video\\nxemu-video.dll";
-    static constexpr const char * defaultModuleOperatingSystem = "operating_system\\nxemu-os.dll";
+        { NXCoreSetting::ModuleLoader, "modules", "loader", &coreSettings.moduleLoader, "loader\\nxemu-loader.dll" },
+        { NXCoreSetting::ModuleCpu, "modules", "cpu", &coreSettings.moduleCpu, "cpu\\nxemu-cpu.dll" },
+        { NXCoreSetting::ModuleVideo, "modules", "video", &coreSettings.moduleVideo, "video\\nxemu-video.dll" },
+        { NXCoreSetting::ModuleOs, "modules", "os", &coreSettings.moduleOs, "operating_system\\nxemu-os.dll" },
 #endif
-    static constexpr bool defaultShowConsole = false;
-    static constexpr bool defaultRomLoading = false;
-    static constexpr bool defaultEmulationRunning = false;
-    static constexpr bool defaultDisplayedFrames = false;
+        { NXCoreSetting::ShowLogConsole, "", "ShowLogConsole", &coreSettings.ShowLogConsole, false },
+        { NXCoreSetting::LogFilter, "", "LogFilter", &coreSettings.LogFilter, "*:Info" },
+        { NXCoreSetting::RomLoading, false },
+        { NXCoreSetting::EmulationRunning, false },
+        { NXCoreSetting::DisplayedFrames, false },
+    };
 
-    static Path GetDefaultModuleDir();
-};
+    void CoreSettingChanged(const char* setting, void* /*userData*/);
 
-void ModuleLoaderSelectedChanged(const char* /*setting*/, void* /*userData*/);
-void ModuleCpuSelectedChanged(const char* /*setting*/, void* /*userData*/);
-void ModuleVideoSelectedChanged(const char* /*setting*/, void* /*userData*/);
-void ModuleOsSelectedChanged(const char* /*setting*/, void* /*userData*/);
 } // namespace
 
 CoreSettings coreSettings = {};
 
-Path CoreSettingsDefaults::GetDefaultModuleDir()
+void SetupCoreSetting(void)
 {
-    Path dir(Path::MODULE_DIRECTORY);
-    dir.AppendDirectory("modules");
-    return dir;
-}
+    defaultModuleDirValue = Path(Path::MODULE_DIRECTORY);
+    defaultModuleDirValue.AppendDirectory("modules");
 
-void LoadCoreSetting(void)
-{
-    SettingsStore & settings = SettingsStore::GetInstance();
+    SettingsStore & settingsStore = SettingsStore::GetInstance();
+    JsonValue jsonSettings = settingsStore.GetSettings("Core");
 
-    coreSettings = {};
-    coreSettings.configDir = Path(Path(settings.GetConfigFile()).GetDriveDirectory(), "");
-    coreSettings.moduleDir = CoreSettingsDefaults::GetDefaultModuleDir();
-    coreSettings.moduleDirValue = CoreSettingsDefaults::defaultModuleDirValue;
-
-    JsonValue jsonSettings = SettingsStore::GetInstance().GetSettings("Core");
-    const JsonValue * moduleDir = jsonSettings.Find("ModuleDirectory-x64");
-    if (moduleDir != nullptr && moduleDir->isString())
+    for (CoreSetting & setting : settings)
     {
-        std::string dirValue = moduleDir->asString();
-        if (!dirValue.empty())
+        switch (setting.settingType)
         {
-            coreSettings.moduleDirValue = dirValue;
-            coreSettings.moduleDir = Path(coreSettings.moduleDirValue, "").DirectoryNormalize(Path(Path::MODULE_DIRECTORY));
+        case SettingType::Boolean:
+            if (setting.value.boolValue != nullptr)
+            {
+                *setting.value.boolValue = setting.defaults.boolValue;
+            }
+            break;
+        case SettingType::Path:
+            if (setting.value.path != nullptr)
+            {
+                *setting.value.path = Path(setting.defaults.strValue, "").DirectoryNormalize(Path(Path::MODULE_DIRECTORY));
+            }
+            if (setting.clearValue.strValue != nullptr)
+            {
+                *setting.clearValue.strValue = setting.defaults.strValue;
+            }
+            break;
+        case SettingType::String:
+            if (setting.value.strValue != nullptr)
+            {
+                *setting.value.strValue = setting.defaults.strValue;
+            }
+            break;
+        default:
+            UNIMPLEMENTED();
         }
+
+        if (setting.json_key != nullptr)
+        {
+            JsonValue value = jsonSettings;
+            if (setting.json_section != nullptr && setting.json_section[0] != '\0')
+            {
+                JsonValue section = value[setting.json_section];
+                value = section.isObject() ? section : JsonValue();
+            }
+            value = value[setting.json_key];
+            switch (setting.settingType)
+            {
+            case SettingType::Boolean:
+                if (value.isBool() && setting.value.boolValue != nullptr)
+                {
+                    *setting.value.boolValue = value.asBool();
+                }
+                break;
+            case SettingType::Path:
+                if (value.isString() && setting.value.path != nullptr && setting.clearValue.strValue != nullptr)
+                {
+                    *setting.clearValue.strValue = value.asString();
+                    *setting.value.path = Path(*setting.clearValue.strValue, "").DirectoryNormalize(Path(Path::MODULE_DIRECTORY));
+                }
+                break;
+            case SettingType::String:
+                if (value.isString() && setting.value.strValue != nullptr)
+                {
+                    *setting.value.strValue = value.asString();
+                }
+                break;
+            default:
+                UNIMPLEMENTED();
+            }
+        }
+
+        switch (setting.settingType)
+        {
+        case SettingType::Boolean:
+            settingsStore.SetDefaultBool(setting.identifier, setting.defaults.boolValue);
+            settingsStore.SetBool(setting.identifier, setting.value.boolValue != nullptr ? *setting.value.boolValue : setting.defaults.boolValue);
+            break;
+        case SettingType::Path:
+            settingsStore.SetDefaultString(setting.identifier, setting.defaults.strValue);
+            settingsStore.SetString(setting.identifier, setting.clearValue.strValue != nullptr ? setting.clearValue.strValue->c_str() : setting.defaults.strValue);
+            break;
+        case SettingType::String:
+            settingsStore.SetDefaultString(setting.identifier, setting.defaults.strValue);
+            settingsStore.SetString(setting.identifier, setting.value.strValue != nullptr ? setting.value.strValue->c_str() : setting.defaults.strValue);
+            break;
+        default:
+            UNIMPLEMENTED();
+        }
+
+        settingsStore.RegisterCallback(setting.identifier, CoreSettingChanged, nullptr);
     }
-
-    settings.SetDefaultString(NXCoreSetting::ModuleLoaderSelected, CoreSettingsDefaults::defaultModuleLoader);
-    settings.SetDefaultString(NXCoreSetting::ModuleCpuSelected, CoreSettingsDefaults::defaultModuleCpu);
-    settings.SetDefaultString(NXCoreSetting::ModuleVideoSelected, CoreSettingsDefaults::defaultModuleVideo);
-    settings.SetDefaultString(NXCoreSetting::ModuleOsSelected, CoreSettingsDefaults::defaultModuleOperatingSystem);
-    settings.SetDefaultBool(NXCoreSetting::ShowConsole, CoreSettingsDefaults::defaultShowConsole);
-
-    settings.SetDefaultBool(NXCoreSetting::RomLoading, CoreSettingsDefaults::defaultRomLoading);
-    settings.SetDefaultBool(NXCoreSetting::EmulationRunning, CoreSettingsDefaults::defaultEmulationRunning);
-    settings.SetDefaultBool(NXCoreSetting::DisplayedFrames, CoreSettingsDefaults::defaultDisplayedFrames);
-
-    coreSettings.moduleLoaderSelected = CoreSettingsDefaults::defaultModuleLoader;
-    coreSettings.moduleCpuSelected = CoreSettingsDefaults::defaultModuleCpu;
-    coreSettings.moduleVideoSelected = CoreSettingsDefaults::defaultModuleVideo;
-    coreSettings.moduleOsSelected = CoreSettingsDefaults::defaultModuleOperatingSystem;
-
-    JsonValue settingValue = jsonSettings["ShowConsole"];
-    coreSettings.showConsole = settingValue.isBool() ? settingValue.asBool() : false;
-
-    const JsonValue * modules = jsonSettings.Find("modules");
-    if (modules != nullptr && modules->isObject())
-    {
-        JsonValue value = (*modules)["loader"];
-        if (value.isString())
-        {
-            coreSettings.moduleLoaderSelected = value.asString();
-        }
-        value = (*modules)["video"];
-        if (value.isString())
-        {
-            coreSettings.moduleVideoSelected = value.asString();
-        }
-        value = (*modules)["cpu"];
-        if (value.isString())
-        {
-            coreSettings.moduleCpuSelected = value.asString();
-        }
-        value = (*modules)["os"];
-        if (value.isString())
-        {
-            coreSettings.moduleOsSelected = value.asString();
-        }
-    }
-
-    settings.SetString(NXCoreSetting::ModuleLoaderSelected, coreSettings.moduleLoaderSelected.c_str());
-    settings.SetString(NXCoreSetting::ModuleVideoSelected, coreSettings.moduleVideoSelected.c_str());
-    settings.SetString(NXCoreSetting::ModuleCpuSelected, coreSettings.moduleCpuSelected.c_str());
-    settings.SetString(NXCoreSetting::ModuleOsSelected, coreSettings.moduleOsSelected.c_str());
-    settings.SetBool(NXCoreSetting::ShowConsole, coreSettings.showConsole);
-    settings.SetChanged(NXCoreSetting::ModuleLoaderSelected, strcmp(coreSettings.moduleLoaderSelected.c_str(), CoreSettingsDefaults::defaultModuleLoader) != 0);
-    settings.SetChanged(NXCoreSetting::ModuleVideoSelected, strcmp(coreSettings.moduleVideoSelected.c_str(), CoreSettingsDefaults::defaultModuleVideo) != 0);
-    settings.SetChanged(NXCoreSetting::ModuleCpuSelected, strcmp(coreSettings.moduleCpuSelected.c_str(), CoreSettingsDefaults::defaultModuleCpu) != 0);
-    settings.SetChanged(NXCoreSetting::ModuleOsSelected, strcmp(coreSettings.moduleOsSelected.c_str(), CoreSettingsDefaults::defaultModuleOperatingSystem) != 0);
-    settings.SetChanged(NXCoreSetting::ShowConsole, coreSettings.showConsole != CoreSettingsDefaults::defaultShowConsole);
-
-    SettingsStore::GetInstance().RegisterCallback(NXCoreSetting::ModuleLoaderSelected, ModuleLoaderSelectedChanged, nullptr);
-    SettingsStore::GetInstance().RegisterCallback(NXCoreSetting::ModuleCpuSelected, ModuleCpuSelectedChanged, nullptr);
-    SettingsStore::GetInstance().RegisterCallback(NXCoreSetting::ModuleVideoSelected, ModuleVideoSelectedChanged, nullptr);
-    SettingsStore::GetInstance().RegisterCallback(NXCoreSetting::ModuleOsSelected, ModuleOsSelectedChanged, nullptr);
-
-    coreSettings.moduleLoaderSelected = settings.GetString(NXCoreSetting::ModuleLoaderSelected);
-    coreSettings.moduleCpuSelected = settings.GetString(NXCoreSetting::ModuleCpuSelected);
-    coreSettings.moduleVideoSelected = settings.GetString(NXCoreSetting::ModuleVideoSelected);
-    coreSettings.moduleOsSelected = settings.GetString(NXCoreSetting::ModuleOsSelected);
 }
 
 void SaveCoreSetting(void)
 {
-    JsonValue json(JsonValueType::Object);
-    bool loaderModuleChanged = strcmp(coreSettings.moduleLoaderSelected.c_str(), CoreSettingsDefaults::defaultModuleLoader) != 0;
-    bool videoModuleChanged = strcmp(coreSettings.moduleVideoSelected.c_str(), CoreSettingsDefaults::defaultModuleVideo) != 0;
-    bool cpuModuleChanged = strcmp(coreSettings.moduleCpuSelected.c_str(), CoreSettingsDefaults::defaultModuleCpu) != 0;
-    bool osModuleChanged = strcmp(coreSettings.moduleOsSelected.c_str(), CoreSettingsDefaults::defaultModuleOperatingSystem) != 0;
+    typedef std::map<std::string, JsonValue> SectionMap;
+    SectionMap sections;
 
-    if (loaderModuleChanged || videoModuleChanged || cpuModuleChanged || osModuleChanged)
+    for (const CoreSetting & coreSetting : settings)
     {
-        JsonValue modules(JsonValueType::Object);
-        if (loaderModuleChanged)
+        if (coreSetting.json_key == nullptr)
         {
-            modules["loader"] = JsonValue(coreSettings.moduleLoaderSelected);
+            continue;
         }
-        if (videoModuleChanged)
+        switch (coreSetting.settingType)
         {
-            modules["video"] = JsonValue(coreSettings.moduleVideoSelected);
+        case SettingType::Boolean:
+            if (*coreSetting.value.boolValue != coreSetting.defaults.boolValue)
+            {
+                sections[coreSetting.json_section][coreSetting.json_key] = *coreSetting.value.boolValue;
+            }
+            break;
+        case SettingType::Path:
+            if (*coreSetting.clearValue.strValue != coreSetting.defaults.strValue)
+            {
+                sections[coreSetting.json_section][coreSetting.json_key] = *coreSetting.clearValue.strValue;
+            }
+            break;
+        case SettingType::String:
+            if (*coreSetting.value.strValue != coreSetting.defaults.strValue)
+            {
+                sections[coreSetting.json_section][coreSetting.json_key] = *coreSetting.value.strValue;
+            }
+            break;
+        default:
+            UNIMPLEMENTED();
         }
-        if (cpuModuleChanged)
+    }
+    JsonValue json;
+    for (SectionMap::const_iterator it = sections.begin(); it != sections.end(); ++it)
+    {
+        if (it->second.size() == 0)
         {
-            modules["cpu"] = JsonValue(coreSettings.moduleCpuSelected);
+            continue;
         }
-        if (osModuleChanged)
+
+        if (it->first.empty())
         {
-            modules["os"] = JsonValue(coreSettings.moduleOsSelected);
+            if (it->second.isObject())
+            {
+                JsonMembers names = it->second.GetMemberNames();
+                for (const std::string & name : names)
+                {
+                    json[name] = it->second[name];
+                }
+            }
         }
-        json["modules"] = modules;
+        else
+        {
+            json[it->first] = it->second;
+        }
     }
 
-    if (!coreSettings.moduleDirValue.empty())
-    {
-        json["ModuleDirectory-x64"] = JsonValue(coreSettings.moduleDirValue);
-    }
-
-    SettingsStore& settings = SettingsStore::GetInstance();
-    settings.SetSettings("Core", json);
-    settings.Save();
+    SettingsStore & settingsStore = SettingsStore::GetInstance();
+    settingsStore.SetSettings("Core", json);
+    settingsStore.Save();
 }
 
 namespace
 {
-void ModuleLoaderSelectedChanged(const char * /*setting*/, void * /*userData*/)
+CoreSetting::CoreSetting(const char * id, bool defaultValue) :
+    identifier(id),
+    json_section(nullptr),
+    json_key(nullptr),
+    settingType(SettingType::Boolean)
 {
-    SettingsStore & settings = SettingsStore::GetInstance();
-    coreSettings.moduleLoaderSelected = settings.GetString(NXCoreSetting::ModuleLoaderSelected);
-    settings.SetChanged(NXCoreSetting::ModuleLoaderSelected, strcmp(coreSettings.moduleLoaderSelected.c_str(), CoreSettingsDefaults::defaultModuleLoader) != 0);
-    SaveCoreSetting();
+    defaults.boolValue = defaultValue;
+    value.boolValue = nullptr;
+    clearValue.strValue = nullptr;
 }
 
-void ModuleCpuSelectedChanged(const char* /*setting*/, void* /*userData*/)
+CoreSetting::CoreSetting(const char * id, const char * section, const char * key, bool * settingValue, bool defaultValue) :
+    identifier(id),
+    json_section(section),
+    json_key(key),
+    settingType(SettingType::Boolean)
 {
-    SettingsStore & settings = SettingsStore::GetInstance();
-    coreSettings.moduleCpuSelected = settings.GetString(NXCoreSetting::ModuleCpuSelected);
-    settings.SetChanged(NXCoreSetting::ModuleCpuSelected, strcmp(coreSettings.moduleCpuSelected.c_str(), CoreSettingsDefaults::defaultModuleCpu) != 0);
-    SaveCoreSetting();
+    defaults.boolValue = defaultValue;
+    value.boolValue = settingValue;
+    clearValue.strValue = nullptr;
 }
 
-void ModuleVideoSelectedChanged(const char* /*setting*/, void* /*userData*/)
+CoreSetting::CoreSetting(const char * id, const char * section, const char * key, Path * settingPath, std::string * settingPathValue, const char * defaultValue) :
+    identifier(id),
+    json_section(section),
+    json_key(key),
+    settingType(SettingType::Path)
 {
-    SettingsStore & settings = SettingsStore::GetInstance();
-    coreSettings.moduleVideoSelected = settings.GetString(NXCoreSetting::ModuleVideoSelected);
-    settings.SetChanged(NXCoreSetting::ModuleVideoSelected, strcmp(coreSettings.moduleVideoSelected.c_str(), CoreSettingsDefaults::defaultModuleVideo) != 0);
-    SaveCoreSetting();
+    defaults.strValue = defaultValue;
+    value.path = settingPath;
+    clearValue.strValue = settingPathValue;
 }
 
-void ModuleOsSelectedChanged(const char* /*setting*/, void* /*userData*/)
+CoreSetting::CoreSetting(const char * id, const char * section, const char * key, std::string * settingStr, const char * defaultValue) :
+    identifier(id),
+    json_section(section),
+    json_key(key),
+    settingType(SettingType::String)
 {
-    SettingsStore & settings = SettingsStore::GetInstance();
-    coreSettings.moduleOsSelected = settings.GetString(NXCoreSetting::ModuleOsSelected);
-    settings.SetChanged(NXCoreSetting::ModuleOsSelected, strcmp(coreSettings.moduleOsSelected.c_str(), CoreSettingsDefaults::defaultModuleOperatingSystem) != 0);
-    SaveCoreSetting();
+    defaults.strValue = defaultValue;
+    value.strValue = settingStr;
+    clearValue.strValue = nullptr;
 }
+
+void CoreSettingChanged(const char * setting, void* /*userData*/)
+{
+    SettingsStore & settingsStore = SettingsStore::GetInstance();
+
+    for (const CoreSetting & coreSetting : settings)
+    {
+        if (strcmp(coreSetting.identifier, setting) != 0)
+        {
+            continue;
+        }
+        switch (coreSetting.settingType)
+        {
+        case SettingType::Boolean:
+            if (coreSetting.value.boolValue != nullptr)
+            {
+                *coreSetting.value.boolValue = settingsStore.GetBool(setting);
+            }
+            break;
+        case SettingType::String:
+            if (coreSetting.value.strValue != nullptr)
+            {
+                *coreSetting.value.strValue = settingsStore.GetString(setting);
+            }
+            break;
+        default:
+            UNIMPLEMENTED();
+        }
+        break;
+    }
+}
+
 } // namespace

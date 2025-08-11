@@ -71,6 +71,7 @@ void SwitchSystem::StopEmulation(void)
 void SwitchSystem::FlushSettings(void)
 {
     m_modules.FlushSettings();
+    SaveCoreSetting();
 }
 
 IVideo & SwitchSystem::Video(void)

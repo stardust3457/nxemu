@@ -12,7 +12,7 @@ bool AppInit(INotification * notification)
     {
         return false;
     }
-    LoadCoreSetting();
+    SetupCoreSetting();
     LoggingSetup();
 
     if (notification)

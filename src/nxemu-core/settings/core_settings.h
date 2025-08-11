@@ -4,17 +4,18 @@
 
 struct CoreSettings
 {
-    bool showConsole;
+    bool ShowLogConsole;
+    std::string LogFilter;
     Path configDir;
     Path moduleDir;
     std::string moduleDirValue;
-    std::string moduleLoaderSelected;
-    std::string moduleCpuSelected;
-    std::string moduleVideoSelected;
-    std::string moduleOsSelected;
+    std::string moduleLoader;
+    std::string moduleCpu;
+    std::string moduleVideo;
+    std::string moduleOs;
 };
 
 extern CoreSettings coreSettings;
 
-void LoadCoreSetting(void);
+void SetupCoreSetting(void);
 void SaveCoreSetting(void);

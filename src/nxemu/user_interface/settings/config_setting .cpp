@@ -24,6 +24,14 @@ ConfigSetting::ConfigSetting(TYPE_SLIDER /*type*/, const char * elementId, const
 {
 }
 
+ConfigSetting::ConfigSetting(TYPE_INPUT_TEXT /*type*/, const char * elementId, const char * StoreSettingId) :
+    m_type(ConfigSettingType::InputText),
+    m_elementId(elementId),
+    m_settingIndex(0),
+    m_storeSettingId(StoreSettingId)
+{
+}
+
 ConfigSettingType ConfigSetting::Type() const
 {
     return m_type;

@@ -115,10 +115,10 @@ void Modules::FlushSettings(void)
 
 void Modules::CreateModules(void)
 {
-    m_loaderFile = coreSettings.moduleLoaderSelected;
-    m_cpuFile = coreSettings.moduleCpuSelected;
-    m_videoFile = coreSettings.moduleVideoSelected;
-    m_operatingsystemFile = coreSettings.moduleOsSelected;
+    m_loaderFile = coreSettings.moduleLoader;
+    m_cpuFile = coreSettings.moduleCpu;
+    m_videoFile = coreSettings.moduleVideo;
+    m_operatingsystemFile = coreSettings.moduleOs;
 
     LoadModule(m_loaderFile, m_loaderModule);
     LoadModule(m_cpuFile, m_cpuModule);

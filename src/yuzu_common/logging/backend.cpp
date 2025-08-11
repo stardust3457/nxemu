@@ -191,13 +191,13 @@ public:
         return *instance;
     }
 
-    static void Initialize(IModuleLogger * logger) {
+    static void Initialize(IModuleLogger * logger, const char * filterType) {
         if (instance) {
             LOG_WARNING(Log, "Reinitializing logging backend");
             return;
         }
         Filter filter;
-        filter.ParseFilterString(Settings::values.log_filter.GetValue());
+        filter.ParseFilterString(filterType);
         if (logger)
         {
             instance = std::unique_ptr<Impl, decltype(&Deleter)>(new Impl(logger, filter), Deleter);
@@ -226,6 +226,11 @@ public:
 
     Impl(Impl&&) = delete;
     Impl& operator=(Impl&&) = delete;
+
+    static void ResetFilter(const char * filterType)
+    {
+        instance->filter.ParseFilterString(filterType);
+    }
 
     void SetGlobalFilter(const Filter& f) {
         filter = f;
@@ -354,8 +359,8 @@ private:
 };
 } // namespace
 
-void Initialize(IModuleLogger * logger) {
-    Impl::Initialize(logger);
+void Initialize(IModuleLogger * logger, const char * filterType) {
+    Impl::Initialize(logger, filterType);
 }
 
 void Start() {
@@ -364,6 +369,10 @@ void Start() {
 
 void Stop() {
     Impl::Stop();
+}
+
+void ResetFilter(const char * filterType) {
+    Impl::ResetFilter(filterType);
 }
 
 void DisableLoggingInTests() {

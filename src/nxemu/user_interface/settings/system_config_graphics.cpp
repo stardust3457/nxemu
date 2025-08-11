@@ -41,7 +41,8 @@ SystemConfigGraphics::SystemConfigGraphics(ISciterUI & sciterUI, SystemConfig & 
     m_config(config),
     m_parent(parent),
     m_page(page),
-    m_graphicsPage(nullptr)
+    m_graphicsPage(nullptr),
+    m_advancedPage(nullptr)
 {
     SciterElement pageNav = page.GetElementByID("GraphicsTabNav");
     std::shared_ptr<void> interfacePtr = pageNav.IsValid() ? m_sciterUI.GetElementInterface(pageNav, IID_IPAGENAV) : nullptr;

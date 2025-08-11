@@ -11,7 +11,7 @@ namespace Common::Log {
 class Filter;
 
 /// Initializes the logging system. This should be the first thing called in main.
-void Initialize(IModuleLogger * logger);
+void Initialize(IModuleLogger * logger, const char * filterType);
 
 void Start();
 
@@ -24,6 +24,8 @@ void DisableLoggingInTests();
  * The global filter will prevent any messages from even being processed if they are filtered.
  */
 void SetGlobalFilter(const Filter& filter);
+
+void ResetFilter(const char * filterType);
 
 void SetColorConsoleBackendEnabled(bool enabled);
 

@@ -49,6 +49,11 @@
     margin: 0 0 1em 0;
   }
 
+  .inputtext-row
+  {
+    margin: 0 0 0.5em 0;
+  }
+
   .form-row .left,
   .form-row .right
   {
@@ -162,6 +167,26 @@ input[type="checkbox"]:checked {
    background-size: 0.7em;
 }
 
+input[type="text"] {
+  color: #FFF;
+  padding: 0.1em;
+  margin: 0 0 0.3em 0;
+  width: 100%%;
+  border: 1px solid #54575b;
+  border-radius: .2em;
+  background: #2F2F31;
+}
+
+input[type="text"]:focus,
+input[type="text"]:active
+{
+  border-color: #3daee9;
+}
+
+input[type="text"]:hover {
+  background: #3C3C3C;
+}
+
 PageNav.page_tabs {
   display: flex;
 }
@@ -225,6 +250,7 @@ PageNav.page_tabs page.active {
     <PageNav target="ConfigContents" id="MainTabNav">
 	  <Page contents="system_config_graphics.html" label="Graphics" Name="Graphics" />
 	  <Page contents="system_config_audio.html" label="Audio" Name="Audio" />
+	  <Page contents="system_config_debug.html" label="Debug" Name="Debug" />
     </PageNav>
     <div id="ConfigContents" />
   </div>

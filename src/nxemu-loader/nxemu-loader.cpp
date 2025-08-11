@@ -1,11 +1,20 @@
 #include "system_loader.h"
 #include <memory>
 #include <stdio.h>
+#include <nxemu-core/settings/identifiers.h>
 #include <yuzu_common/logging/backend.h>
 
 std::unique_ptr<Systemloader> g_loaderManager;
 IModuleNotification * g_notify = nullptr;
 IModuleSettings * g_settings = nullptr;
+
+void LoggingSettingChanged(const char* setting, void* /*userData*/)
+{
+    if (strcmp(setting, NXCoreSetting::LogFilter) == 0)
+    {
+        Common::Log::ResetFilter(g_settings->GetString(NXCoreSetting::LogFilter));
+    }
+}
 
 /*
 Function: GetModuleInfo
@@ -39,7 +48,8 @@ int CALL ModuleInitialize(ModuleInterfaces & interfaces)
     {
         return -1;
     }
-    Common::Log::Initialize(interfaces.logger);
+    Common::Log::Initialize(interfaces.logger, g_settings->GetString(NXCoreSetting::LogFilter));
+    g_settings->RegisterCallback(NXCoreSetting::LogFilter, LoggingSettingChanged, nullptr);
     return 0;
 }
 

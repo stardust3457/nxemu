@@ -1,6 +1,7 @@
 ﻿#include "config_setting.h"
 #include "system_config.h"
 #include "system_config_audio.h"
+#include "system_config_debug.h"
 #include "system_config_graphics.h"
 #include <common/std_string.h>
 #include <nxemu-core/machine/switch_system.h>
@@ -86,6 +87,18 @@ void SystemConfig::SavePage(SCITER_ELEMENT pageElement, const ConfigSetting* set
                 }
             }
         }
+        else if (setting.Type() == ConfigSettingType::InputText)
+        {
+            SciterElement element = page.GetElementByID(setting.ElementId());
+            if (element)
+            {
+                SciterValue value = element.GetValue();
+                if (value.isString())
+                {
+                    settingsStore.SetString(setting.StoreSettingId(), value.GetValueStr().c_str());
+                }
+            }
+        }
         else
         {
             g_notify->BreakPoint(__FILE__, __LINE__);
@@ -120,6 +133,14 @@ void SystemConfig::SetupPage(SCITER_ELEMENT pageElement, const ConfigSetting * s
             if (element)
             {
                 element.SetValue(SciterValue(settingsStore.GetInt(setting.StoreSettingId())));
+            }
+        }
+        else if (setting.Type() == ConfigSettingType::InputText)
+        {
+            SciterElement element = page.GetElementByID(setting.ElementId());
+            if (element)
+            {
+                element.SetValue(SciterValue(std::string(settingsStore.GetString(setting.StoreSettingId()))));
             }
         }
         else
@@ -186,14 +207,18 @@ bool SystemConfig::PageNavChangeTo(const std::string & /*pageName*/, SCITER_ELEM
 
 void SystemConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEMENT page)
 {
-    if (pageName == "Graphics")
-    {
-        m_systemConfigGraphics.reset(new SystemConfigGraphics(m_sciterUI, *this, m_window->GetHandle(), page));
-    }   
-    else if (pageName == "Audio")
+    if (pageName == "Audio")
     {
         m_systemConfigAudio.reset(new SystemConfigAudio(m_sciterUI, m_window->GetHandle(), page));
     }
+    else if (pageName == "Debug")
+    {
+        m_systemConfigDebug.reset(new SystemConfigDebug(m_sciterUI, *this, m_window->GetHandle(), page));
+    }
+    else if (pageName == "Graphics")
+    {
+        m_systemConfigGraphics.reset(new SystemConfigGraphics(m_sciterUI, *this, m_window->GetHandle(), page));
+    }   
 }
 
 void SystemConfig::PageNavPageChanged(const std::string & /*pageName*/, SCITER_ELEMENT /*pageNav*/)
@@ -208,6 +233,10 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
         if (m_systemConfigAudio)
         {
             m_systemConfigAudio->SaveSetting();
+        }
+        if (m_systemConfigDebug)
+        {
+            m_systemConfigDebug->SaveSetting();
         }
         if (m_systemConfigGraphics)
         {
