@@ -182,7 +182,7 @@ void RendererOpenGL::InitializeWatermark()
     while (glGetError() != GL_NO_ERROR) {}
 
     int channels;
-    unsigned char * image_data = stbi_load_from_memory(watermark_png, sizeof(watermark_png), &watermark_width, &watermark_height, &channels, 4);
+    unsigned char * image_data = stbi_load_from_memory(watermark_png, watermark_png_len, &watermark_width, &watermark_height, &channels, 4);
     if (!image_data) 
     {
         LOG_ERROR(Render_OpenGL, "Failed to load watermark image: {}", stbi_failure_reason());

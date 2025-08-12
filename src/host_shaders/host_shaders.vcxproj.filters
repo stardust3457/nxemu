@@ -193,4 +193,9 @@
       <UniqueIdentifier>{5da5dfe3-1ad8-4805-9f8d-6554c3c53fca}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\yuzu_video_core\host_shaders\watermark.vert">
+      <Filter>vert</Filter>
+    </None>
+  </ItemGroup>
 </Project>

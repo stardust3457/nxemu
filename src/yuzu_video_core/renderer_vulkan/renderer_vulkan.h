@@ -35,6 +35,27 @@ Device CreateDevice(const vk::Instance& instance, const vk::InstanceDispatch& dl
                     VkSurfaceKHR surface);
 
 class RendererVulkan final : public VideoCore::RendererBase {
+    struct watermark_vk
+    {
+        vk::Image image;
+        vk::ImageView image_view;
+        vk::Sampler sampler;
+        vk::DescriptorSetLayout dsl;
+        vk::DescriptorPool dpool;
+        VkDescriptorSet set;
+        vk::RenderPass render_pass;
+        vk::Pipeline pipeline;
+        vk::PipelineLayout pipeline_layout;
+        vk::Buffer vertex_buffer;
+
+        std::chrono::steady_clock::time_point start_time;
+        bool timer_started;
+
+        int width, height;
+        bool valid;
+        bool show;
+    };
+
 public:
     explicit RendererVulkan(Core::Frontend::EmuWindow& emu_window,
                             Tegra::MaxwellDeviceMemoryManager& device_memory_, Tegra::GPU& gpu_,
@@ -54,6 +75,12 @@ public:
     }
 
 private:
+    void InitializeWatermark();
+    void CleanupWatermark();
+    void RenderWatermark(Frame & frame);
+    void CreateWatermarkRenderPass();
+    void CreateWatermarkPipeline();
+    void CreateWatermarkVertexBuffer();
     void Report() const;
 
     vk::Buffer RenderToBuffer(std::span<const Tegra::FramebufferConfig> framebuffers,
@@ -64,6 +91,7 @@ private:
 
     Tegra::MaxwellDeviceMemoryManager& device_memory;
     Tegra::GPU& gpu;
+    watermark_vk wm;
 
     std::shared_ptr<Common::DynamicLibrary> library;
     vk::InstanceDispatch dld;

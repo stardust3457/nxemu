@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
+﻿// SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
@@ -15,16 +15,20 @@
 #include "yuzu_common/polyfill_ranges.h"
 #include "yuzu_common/scope_exit.h"
 #include "yuzu_common/settings.h"
+#include "yuzu_common/stb.h"
 #include "core/core_timing.h"
 #include "frontend/graphics_context.h"
 #include "yuzu_video_core/capture.h"
 #include "yuzu_video_core/gpu.h"
+#include "yuzu_video_core/host_shaders/watermark_vert_spv.h"
+#include "yuzu_video_core/host_shaders/watermark_frag_spv.h"
 #include "yuzu_video_core/present.h"
 #include "yuzu_video_core/renderer_vulkan/present/util.h"
 #include "yuzu_video_core/renderer_vulkan/renderer_vulkan.h"
 #include "yuzu_video_core/renderer_vulkan/vk_blit_screen.h"
 #include "yuzu_video_core/renderer_vulkan/vk_rasterizer.h"
 #include "yuzu_video_core/renderer_vulkan/vk_scheduler.h"
+#include "yuzu_video_core/renderer_vulkan/vk_shader_util.h"
 #include "yuzu_video_core/renderer_vulkan/vk_state_tracker.h"
 #include "yuzu_video_core/renderer_vulkan/vk_swapchain.h"
 #include "yuzu_video_core/textures/decoders.h"
@@ -35,6 +39,7 @@
 #include "yuzu_video_core/vulkan_common/vulkan_memory_allocator.h"
 #include "yuzu_video_core/vulkan_common/vulkan_surface.h"
 #include "yuzu_video_core/vulkan_common/vulkan_wrapper.h"
+#include "yuzu_video_core/watermark.h"
 
 namespace Vulkan {
 namespace {
@@ -120,11 +125,14 @@ RendererVulkan::RendererVulkan(Core::Frontend::EmuWindow& emu_window,
                   PresentFiltersForAppletCapture),
       rasterizer(render_window, gpu, device_memory, device, memory_allocator, state_tracker,
                  scheduler),
-      applet_frame() {
+      applet_frame(),
+    wm{}
+{
     if (Settings::values.renderer_force_max_clock.GetValue() && device.ShouldBoostClocks()) {
         turbo_mode.emplace(instance, dld);
         scheduler.RegisterOnSubmit([this] { turbo_mode->QueueSubmitted(); });
     }
+    InitializeWatermark();
     Report();
 } catch (const vk::Exception& exception) {
     LOG_ERROR(Render_Vulkan, "Vulkan initialization failed with error: {}", exception.what());
@@ -134,6 +142,7 @@ RendererVulkan::RendererVulkan(Core::Frontend::EmuWindow& emu_window,
 RendererVulkan::~RendererVulkan() {
     scheduler.RegisterOnSubmit([] {});
     void(device.GetLogical().WaitIdle());
+    CleanupWatermark();
 }
 
 void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {
@@ -156,11 +165,407 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
     blit_swapchain.DrawToFrame(rasterizer, frame, framebuffers,
                                render_window.GetFramebufferLayout(), swapchain.GetImageCount(),
                                swapchain.GetImageViewFormat());
+    if (wm.show)
+    {
+        RenderWatermark(*frame);
+    }
     scheduler.Flush(*frame->render_ready);
     present_manager.Present(frame);
 
     gpu.RendererFrameEndNotify();
     rasterizer.TickFrame();
+}
+
+void RendererVulkan::InitializeWatermark()
+{
+    if (wm.valid)
+    {
+        return;
+    }
+    wm.timer_started = false;
+
+    int ch = 0;
+    unsigned char * pixels = stbi_load_from_memory(watermark_png, watermark_png_len, &wm.width, &wm.height, &ch, 4);
+    if (!pixels) 
+    {
+        LOG_ERROR(Render_Vulkan, "watermark load failed: {}", stbi_failure_reason());
+        return;
+    }
+
+    const VkExtent2D dims{ (uint32_t)wm.width, (uint32_t)wm.height };
+    const VkFormat swapFmt = swapchain.GetImageViewFormat();
+    const VkFormat texFmt = (swapFmt == VK_FORMAT_B8G8R8A8_SRGB || swapFmt == VK_FORMAT_R8G8B8A8_SRGB) ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+
+    wm.image = Vulkan::CreateWrappedImage(memory_allocator, dims, texFmt);
+    Vulkan::UploadImage(device, memory_allocator, scheduler, wm.image, dims, texFmt, std::span<const u8>(pixels, wm.width * wm.height * 4));
+    stbi_image_free(pixels);
+    wm.image_view = Vulkan::CreateWrappedImageView(device, wm.image, texFmt);
+    wm.sampler = Vulkan::CreateWrappedSampler(device, VK_FILTER_LINEAR);
+    wm.dsl = Vulkan::CreateWrappedDescriptorSetLayout(device, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER });
+    wm.dpool = Vulkan::CreateWrappedDescriptorPool(device, 1, 1, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER });
+    std::array<VkDescriptorSetLayout, 1> layouts{ *wm.dsl };
+    vk::DescriptorSets sets = Vulkan::CreateWrappedDescriptorSets(wm.dpool, vk::Span<VkDescriptorSetLayout>(layouts.data(), layouts.size()));
+    wm.set = sets[0];
+
+    std::vector<VkDescriptorImageInfo> img_infos;
+    img_infos.reserve(1);
+    const VkWriteDescriptorSet write = Vulkan::CreateWriteDescriptorSet(img_infos, *wm.sampler, *wm.image_view, wm.set, 0);
+    device.GetLogical().UpdateDescriptorSets({ write }, {});
+    
+    CreateWatermarkRenderPass();
+    CreateWatermarkPipeline();
+    CreateWatermarkVertexBuffer();
+
+    wm.show = true;
+    wm.valid = true;
+}
+
+void RendererVulkan::CleanupWatermark()
+{
+    if (!wm.valid)
+    {
+        return;
+    }
+
+    wm.image = {};
+    wm.image_view = {};
+    wm.sampler = {};
+    wm.dsl = {};
+    wm.dpool = {};
+    wm.set = {};
+    wm.render_pass = {};    
+    wm.pipeline = {};
+    wm.pipeline_layout = {};
+    wm.vertex_buffer = {};
+
+    wm.show = false;
+    wm.valid = false;
+}
+
+void RendererVulkan::RenderWatermark(Frame& frame)
+{
+    if (!wm.timer_started)
+    {
+        wm.timer_started = true;
+        wm.start_time = std::chrono::steady_clock::now();
+    }
+
+    std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
+    long long elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(current_time - wm.start_time).count();
+
+    float fade_alpha;
+    const float fade_duration = 300.0f;
+    if (elapsed_seconds >= fade_duration)
+    {
+        fade_alpha = 0.0f;
+        wm.show = false;
+        return;
+    }
+    else
+    {
+        float progress = elapsed_seconds / fade_duration;
+        float eased = 0.5f * (1.0f + cosf(progress * 3.14159f));
+        fade_alpha = 0.8f * eased;
+    }
+
+    float watermark_scale = 0.14f;
+    float aspect_ratio = (float)wm.height / (float)wm.width;
+    float watermark_screen_width = frame.width * watermark_scale;
+    float watermark_screen_height = watermark_screen_width * aspect_ratio;
+
+    float padding = 18.0f;
+    float x = frame.width - watermark_screen_width - padding;
+    float y = padding;
+
+    float ndc_left = (x / frame.width) * 2.0f - 1.0f    ;
+    float ndc_right = ((x + watermark_screen_width) / frame.width) * 2.0f - 1.0f;
+    float ndc_bottom = -(((y + watermark_screen_height) / frame.height) * 2.0f - 1.0f);;
+    float ndc_top = -((y / frame.height) * 2.0f - 1.0f);
+
+    float vertices[] = {
+        ndc_left,  ndc_bottom, 0.0f, 0.0f,  // Bottom-left -> tex (0,0) 
+        ndc_right, ndc_bottom, 1.0f, 0.0f,  // Bottom-right -> tex (1,0)
+        ndc_left,  ndc_top,    0.0f, 1.0f,  // Top-left -> tex (0,1)
+
+        ndc_right, ndc_bottom, 1.0f, 0.0f,  // Bottom-right -> tex (1,0)
+        ndc_right, ndc_top,    1.0f, 1.0f,  // Top-right -> tex (1,1)
+        ndc_left,  ndc_top,    0.0f, 1.0f   // Top-left -> tex (0,1)
+    };
+
+    std::memcpy(wm.vertex_buffer.Mapped().data(), vertices, sizeof(vertices));
+
+    scheduler.Record([&, fade_alpha](vk::CommandBuffer cmdbuf) {
+        vk::Framebuffer temp_framebuffer = CreateWrappedFramebuffer(device, wm.render_pass, frame.image_view, { frame.width, frame.height });
+        TransitionImageLayout(cmdbuf, *frame.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        BeginRenderPass(cmdbuf, *wm.render_pass, *temp_framebuffer, { frame.width, frame.height });
+
+        cmdbuf.BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, *wm.pipeline);
+        cmdbuf.BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, *wm.pipeline_layout, 0, std::array{ wm.set }, {});
+        cmdbuf.PushConstants(*wm.pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(std::array<float, 4>), std::array<float, 4>{fade_alpha, 0.0f, 0.0f, 0.0f}.data());
+        cmdbuf.BindVertexBuffers(0, 1, std::array{ *wm.vertex_buffer }.data(), std::array<VkDeviceSize, 1>{0}.data());
+        cmdbuf.Draw(6, 1, 0, 0);
+        cmdbuf.EndRenderPass();
+
+        VkImageMemoryBarrier transition{
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+            .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = *frame.image,
+            .subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0, .levelCount = 1,
+                .baseArrayLayer = 0, .layerCount = 1,
+            },
+        };
+
+        cmdbuf.PipelineBarrier(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, {}, {}, transition);
+    });
+    scheduler.InvalidateState();
+}
+
+void RendererVulkan::CreateWatermarkRenderPass()
+{
+    // Use the same format as the frame's image view
+    VkAttachmentDescription color_attachment{
+        .flags = 0,
+        .format = swapchain.GetImageViewFormat(),
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,  // Keep existing content
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    };
+
+    VkAttachmentReference color_ref{
+        .attachment = 0,
+        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    };
+
+    VkSubpassDescription subpass{
+        .flags = 0,
+        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .inputAttachmentCount = 0,
+        .pInputAttachments = nullptr,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &color_ref,
+        .pResolveAttachments = nullptr,
+        .pDepthStencilAttachment = nullptr,
+        .preserveAttachmentCount = 0,
+        .pPreserveAttachments = nullptr,
+    };
+
+    VkRenderPassCreateInfo render_pass_info{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .attachmentCount = 1,
+        .pAttachments = &color_attachment,
+        .subpassCount = 1,
+        .pSubpasses = &subpass,
+        .dependencyCount = 0,
+        .pDependencies = nullptr,
+    };
+
+    wm.render_pass = device.GetLogical().CreateRenderPass(render_pass_info);
+}
+
+void RendererVulkan::CreateWatermarkPipeline()
+{
+    // Create shaders from pre-compiled SPIR-V
+    auto vertex_shader = BuildShader(device, std::span<const u32>{WATERMARK_VERT_SPV,
+        sizeof(WATERMARK_VERT_SPV) / sizeof(u32)});
+    auto fragment_shader = BuildShader(device, std::span<const u32>{WATERMARK_FRAG_SPV,
+        sizeof(WATERMARK_FRAG_SPV) / sizeof(u32)});
+
+    // Pipeline layout with push constants for alpha
+    VkPushConstantRange push_constant_range{
+        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .offset = 0,
+        .size = sizeof(float) * 4, // vec4 = 16 bytes
+    };
+
+    VkPipelineLayoutCreateInfo layout_info{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .setLayoutCount = 1,
+        .pSetLayouts = wm.dsl.address(),
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges = &push_constant_range,
+    };
+
+    wm.pipeline_layout = device.GetLogical().CreatePipelineLayout(layout_info);
+
+    // Vertex input description
+    VkVertexInputBindingDescription binding_desc{
+        .binding = 0,
+        .stride = 4 * sizeof(float), // x, y, u, v
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+    };
+
+    std::array<VkVertexInputAttributeDescription, 2> attribute_descs{ {
+        {
+            .location = 0,
+            .binding = 0,
+            .format = VK_FORMAT_R32G32_SFLOAT,
+            .offset = 0,
+        },
+        {
+            .location = 1,
+            .binding = 0,
+            .format = VK_FORMAT_R32G32_SFLOAT,
+            .offset = 2 * sizeof(float),
+        },
+    } };
+
+    VkPipelineVertexInputStateCreateInfo vertex_input{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .vertexBindingDescriptionCount = 1,
+        .pVertexBindingDescriptions = &binding_desc,
+        .vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descs.size()),
+        .pVertexAttributeDescriptions = attribute_descs.data(),
+    };
+
+    VkPipelineInputAssemblyStateCreateInfo input_assembly{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        .primitiveRestartEnable = VK_FALSE,
+    };
+
+    VkPipelineViewportStateCreateInfo viewport_state{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .viewportCount = 1,
+        .pViewports = nullptr, // Dynamic
+        .scissorCount = 1,
+        .pScissors = nullptr,  // Dynamic
+    };
+
+    VkPipelineRasterizationStateCreateInfo rasterizer{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .depthClampEnable = VK_FALSE,
+        .rasterizerDiscardEnable = VK_FALSE,
+        .polygonMode = VK_POLYGON_MODE_FILL,
+        .cullMode = VK_CULL_MODE_NONE,
+        .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+        .depthBiasEnable = VK_FALSE,
+        .lineWidth = 1.0f,
+    };
+
+    VkPipelineMultisampleStateCreateInfo multisampling{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+        .sampleShadingEnable = VK_FALSE,
+    };
+
+    // Enable alpha blending like OpenGL version
+    VkPipelineColorBlendAttachmentState color_blend_attachment{
+        .blendEnable = VK_TRUE,
+        .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+        .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .colorBlendOp = VK_BLEND_OP_ADD,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .alphaBlendOp = VK_BLEND_OP_ADD,
+        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+    };
+
+    VkPipelineColorBlendStateCreateInfo color_blending{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .logicOpEnable = VK_FALSE,
+        .attachmentCount = 1,
+        .pAttachments = &color_blend_attachment,
+    };
+
+    // Dynamic state for viewport and scissor
+    std::array<VkDynamicState, 2> dynamic_states = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR,
+    };
+
+    VkPipelineDynamicStateCreateInfo dynamic_state{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .dynamicStateCount = static_cast<uint32_t>(dynamic_states.size()),
+        .pDynamicStates = dynamic_states.data(),
+    };
+
+    // Shader stages
+    std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages{ {
+        {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .stage = VK_SHADER_STAGE_VERTEX_BIT,
+            .module = *vertex_shader,
+            .pName = "main",
+        },
+        {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+            .module = *fragment_shader,
+            .pName = "main",
+        },
+    } };
+
+    VkGraphicsPipelineCreateInfo pipeline_info{
+        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .stageCount = static_cast<uint32_t>(shader_stages.size()),
+        .pStages = shader_stages.data(),
+        .pVertexInputState = &vertex_input,
+        .pInputAssemblyState = &input_assembly,
+        .pViewportState = &viewport_state,
+        .pRasterizationState = &rasterizer,
+        .pMultisampleState = &multisampling,
+        .pDepthStencilState = nullptr,
+        .pColorBlendState = &color_blending,
+        .pDynamicState = &dynamic_state,
+        .layout = *wm.pipeline_layout,
+        .renderPass = *wm.render_pass,
+        .subpass = 0,
+    };
+
+    wm.pipeline = device.GetLogical().CreateGraphicsPipeline(pipeline_info);
+}
+
+void RendererVulkan::CreateWatermarkVertexBuffer()
+{
+    // Create vertex buffer for a quad (2 triangles = 6 vertices)
+    // Each vertex has 4 floats: x, y, u, v
+    const size_t buffer_size = 6 * 4 * sizeof(float);
+
+    wm.vertex_buffer = memory_allocator.CreateBuffer({
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .size = buffer_size,
+        .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        }, MemoryUsage::Upload);
 }
 
 void RendererVulkan::Report() const {

@@ -132,7 +132,7 @@ std::unique_ptr<Core::Frontend::GraphicsContext> RenderWindow::CreateSharedConte
 
 bool RenderWindow::IsShown() const
 {
-    return false;
+    return true;
 }
 
 void RenderWindow::LoadOpenGL()

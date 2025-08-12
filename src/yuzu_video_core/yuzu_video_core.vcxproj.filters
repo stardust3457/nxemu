@@ -1082,5 +1082,8 @@
     <ClCompile Include="frontend\framebuffer_layout.cpp">
       <Filter>Source Files\frontend</Filter>
     </ClCompile>
+    <ClCompile Include="watermark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

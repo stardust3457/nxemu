@@ -377,6 +377,7 @@
     <ClCompile Include="vulkan_common\vulkan_memory_allocator.cpp" />
     <ClCompile Include="vulkan_common\vulkan_surface.cpp" />
     <ClCompile Include="vulkan_common\vulkan_wrapper.cpp" />
+    <ClCompile Include="watermark.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\3rd_party\bc_decoder\bc_decoder.vcxproj">
