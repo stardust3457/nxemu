@@ -72,6 +72,7 @@ struct NcaHeader {
     static constexpr u32 Magic1 = Common::MakeMagic('N', 'C', 'A', '1');
     static constexpr u32 Magic2 = Common::MakeMagic('N', 'C', 'A', '2');
     static constexpr u32 Magic3 = Common::MakeMagic('N', 'C', 'A', '3');
+    static constexpr u32 MagicDecrypted = Common::MakeMagic('D', 'N', 'C', 'A');
 
     static constexpr u32 Magic = Magic3;
 

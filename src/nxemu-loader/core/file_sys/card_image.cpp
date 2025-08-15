@@ -313,7 +313,7 @@ LoaderResultStatus XCI::TryReadHeader() {
         }
 
         // Ensure the header magic matches. If it doesn't, this isn't a card image header.
-        if (header.magic != Common::MakeMagic('H', 'E', 'A', 'D')) {
+        if (header.magic != Common::MakeMagic('D', 'X', 'C', 'I')) {
             return LoaderResultStatus::ErrorBadXCIHeader;
         }
 
