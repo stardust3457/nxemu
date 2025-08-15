@@ -51,8 +51,8 @@ void SciterMainWindow::ResetMenu()
             recentFileIndex += 1;
         }
         fileMenu.emplace_back(MenuBarItem::SUB_MENU, "Recent Games", &RecentGameMenu);
+        fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
     }
-    fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
     fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit"));
 
     MenuBarItemList emulationMenu;

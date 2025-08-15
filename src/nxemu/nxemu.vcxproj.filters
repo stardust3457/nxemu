@@ -36,9 +36,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="user_interface\menu_item.cpp">
-      <Filter>Source Files\user_interface</Filter>
-    </ClCompile>
     <ClCompile Include="settings\ui_settings.cpp">
       <Filter>Source Files\settings.cpp</Filter>
     </ClCompile>
@@ -72,9 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="user_interface\resource.h">
-      <Filter>Header Files\user_interface</Filter>
-    </ClInclude>
-    <ClInclude Include="user_interface\menu_item.h">
       <Filter>Header Files\user_interface</Filter>
     </ClInclude>
     <ClInclude Include="settings\ui_settings.h">
