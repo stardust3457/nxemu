@@ -20,7 +20,7 @@ class VfsFilesystem;
 class RegisteredCache;
 
 using ProcessId = u64;
-using ProgramId = u64; 
+using ProgramId = u64;
 
 class FileSystemController :
     public IFileSystemController
@@ -30,6 +30,7 @@ public:
     ~FileSystemController();
 
     bool RegisterProcess(ProcessId process_id, ProgramId program_id, std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory);
+    void SetPackedUpdate(ProcessId process_id, FileSys::VirtualFile update_raw);
 
     FileSys::RegisteredCache * SystemNANDContents() const;
 

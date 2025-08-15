@@ -35,6 +35,18 @@ bool FileSystemController::RegisterProcess(
     return true;
 }
 
+void FileSystemController::SetPackedUpdate(ProcessId process_id, FileSys::VirtualFile update_raw) {
+    LOG_TRACE(Service_FS, "Setting packed update for romfs");
+
+    std::scoped_lock lk{registration_lock};
+    const auto it = registrations.find(process_id);
+    if (it == registrations.end()) {
+        return;
+    }
+
+    it->second.romfs_factory->SetPackedUpdate(std::move(update_raw));
+}
+
 IFileSysRegisteredCache * FileSystemController::GetSystemNANDContents() const
 {
     return SystemNANDContents();

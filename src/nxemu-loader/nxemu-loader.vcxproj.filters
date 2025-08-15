@@ -285,6 +285,9 @@
     <ClCompile Include="core\file_sys\save_data_controller.cpp">
       <Filter>Source Files\core\file_sys</Filter>
     </ClCompile>
+    <ClCompile Include="core\loader\nsp.cpp">
+      <Filter>Source Files\core\loader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system_loader.h">
@@ -538,6 +541,9 @@
     </ClInclude>
     <ClInclude Include="core\file_sys\save_data_controller.h">
       <Filter>Header Files\core\file_sys</Filter>
+    </ClInclude>
+    <ClInclude Include="core\loader\nsp.h">
+      <Filter>Header Files\core\loader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

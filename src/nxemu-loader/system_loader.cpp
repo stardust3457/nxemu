@@ -91,7 +91,7 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
 {
     Path fileToOpen;
     std::string fileName;
-    const char * filter = "Switch Files (*.nro, *.dxci)\0*.nro;*.dxci\0All files (*.*)\0*.*\0";
+    const char * filter = "Switch Files (*.dxci, *.dnsp, *.nro)\0*.dxci;*.dnsp;*.nro;\0All files (*.*)\0*.*\0";
     if (fileToOpen.FileSelect(parentWindow, Path(Path::MODULE_DIRECTORY), filter, true))
     {
         fileName = (const std::string &)fileToOpen;

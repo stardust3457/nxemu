@@ -9,6 +9,7 @@
 #include "yuzu_common/yuzu_assert.h"
 #include "loader.h"
 #include "core/loader/nro.h"
+#include "core/loader/nsp.h"
 #include "core/loader/xci.h"
 #include <nxemu-loader/system_loader.h>
 
@@ -32,6 +33,8 @@ FileType IdentifyFile(FileSys::VirtualFile file) {
         return *nro_type;
     } else if (const auto xci_type = IdentifyFileLoader<AppLoader_XCI>(file)) {
         return *xci_type;
+    } else if (const auto nsp_type = IdentifyFileLoader<AppLoader_NSP>(file)) {
+        return *nsp_type;
     } else {
         UNIMPLEMENTED();
         return FileType::Unknown;
@@ -85,6 +88,11 @@ static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::
     // NX XCI (nX Card Image) file format.
     case FileType::XCI:
         return std::make_unique<AppLoader_XCI>(std::move(file), loader.GetFileSystemController(),
+                                               loader.GetContentProvider(), program_id,
+                                               program_index);
+    // NX NSP (Nintendo Submission Package) file format
+    case FileType::NSP:
+        return std::make_unique<AppLoader_NSP>(std::move(file), loader.GetFileSystemController(),
                                                loader.GetContentProvider(), program_id,
                                                program_index);
     }

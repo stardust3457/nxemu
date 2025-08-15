@@ -126,6 +126,7 @@
     <ClInclude Include="core\loader\nca.h" />
     <ClInclude Include="core\loader\nro.h" />
     <ClInclude Include="core\loader\nso.h" />
+    <ClInclude Include="core\loader\nsp.h" />
     <ClInclude Include="core\loader\xci.h" />
     <ClInclude Include="system_loader.h" />
   </ItemGroup>
@@ -193,6 +194,7 @@
     <ClCompile Include="core\loader\nca.cpp" />
     <ClCompile Include="core\loader\nro.cpp" />
     <ClCompile Include="core\loader\nso.cpp" />
+    <ClCompile Include="core\loader\nsp.cpp" />
     <ClCompile Include="core\loader\xci.cpp" />
     <ClCompile Include="nxemu-loader.cpp" />
     <ClCompile Include="system_loader.cpp" />
