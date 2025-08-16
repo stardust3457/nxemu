@@ -9,14 +9,14 @@ Notification::Notification()
 {
 }
 
-void Notification::DisplayError(const char * message) const
+void Notification::DisplayError(const char * message, const char * title) const
 {
-    MessageBoxW(nullptr, stdstr(message).ToUTF16().c_str(), L"Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+    MessageBoxW(nullptr, stdstr(message).ToUTF16().c_str(), stdstr(title).ToUTF16().c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
 }
 
 void Notification::BreakPoint(const char * fileName, uint32_t lineNumber)
 {
-    DisplayError(stdstr_f("Break point found at\n%s\n%d", fileName, lineNumber).c_str());
+    DisplayError(stdstr_f("Break point found at\n%s\n%d", fileName, lineNumber).c_str(), "Error");
     if (IsDebuggerPresent() != 0)
     {
         DebugBreak();

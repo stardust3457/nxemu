@@ -390,6 +390,15 @@ void SciterMainWindow::RomLoadingChanged(const char * /*setting*/, void * userDa
     {
         impl->ShowLoadingScreen();
     }
+    else if (strlen(SettingsStore::GetInstance().GetString(NXCoreSetting::GameFile)) == 0)
+    {
+        SciterElement rootElement(impl->m_window->GetRootElement());
+        SciterElement mainContents(rootElement.GetElementByID("MainContents"));
+        if (mainContents.IsValid())
+        {
+            mainContents.SetHTML((uint8_t*)"", 0, SciterElement::SIH_REPLACE_CONTENT);
+        }
+    }
 }
 
 void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * userData)

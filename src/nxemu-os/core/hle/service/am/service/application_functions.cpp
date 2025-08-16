@@ -192,7 +192,25 @@ Result IApplicationFunctions::SetTerminateResult(Result terminate_result) {
 
 Result IApplicationFunctions::GetDisplayVersion(Out<DisplayVersion> out_display_version) {
     LOG_DEBUG(Service_AM, "called");
-    UNIMPLEMENTED();
+
+    ISystemloader & loader = system.GetSystemloader();
+    IFileSysNACPPtr metadata(loader.GetPMControlMetadata(m_applet->program_id));
+    if (!metadata)
+    {
+        metadata = loader.GetPMControlMetadata(FileSys::GetUpdateTitleID(m_applet->program_id));
+    }
+
+    if (metadata)
+    {
+        std::string version(metadata->GetVersionString());
+        std::memcpy(out_display_version->string.data(), version.data(), std::min(version.size(), out_display_version->string.size()));
+    }
+    else
+    {
+        static constexpr char default_version[]{ "1.0.0" };
+        std::memcpy(out_display_version->string.data(), default_version, sizeof(default_version));
+    }
+    out_display_version->string[out_display_version->string.size() - 1] = '\0';
     R_SUCCEED();
 }
 

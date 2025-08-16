@@ -16,6 +16,7 @@
 #include "core/loader/loader.h"
 
 extern IModuleSettings * g_settings;
+extern IModuleNotification * g_notify;
 
 namespace {
 
@@ -110,6 +111,7 @@ bool Systemloader::LoadRom(const char * romFile)
     impl->app_loader = Loader::GetLoader(*this, file, 0, 0);
     if (!impl->app_loader)
     {
+        g_notify->DisplayError("The file format is not supported.", "Error loading file!");
         g_settings->SetBool(NXCoreSetting::RomLoading, false);
         return false;
     }
@@ -117,6 +119,7 @@ bool Systemloader::LoadRom(const char * romFile)
     const Loader::FileType file_type = impl->app_loader->GetFileType();
     if (file_type == Loader::FileType::Unknown || file_type == Loader::FileType::Error) 
     {
+        g_notify->DisplayError("The file format is not supported.", "Error loading file!");
         g_settings->SetBool(NXCoreSetting::RomLoading, false);
         return false;
     }
@@ -182,8 +185,8 @@ bool Systemloader::LoadRom(const char * romFile)
     std::string title;
     impl->app_loader->ReadTitle(title);
     g_settings->SetString(NXCoreSetting::GameName, title.c_str());
-    g_settings->SetBool(NXCoreSetting::RomLoading, false);
     g_settings->SetString(NXCoreSetting::GameFile, romFile);
+    g_settings->SetBool(NXCoreSetting::RomLoading, false);
     impl->m_system.StartEmulation();
     return true;
 }

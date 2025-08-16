@@ -63,6 +63,7 @@ NACP::NACP() = default;
 
 NACP::NACP(VirtualFile file) {
     file->ReadObject(&raw);
+    version = Common::StringFromFixedZeroTerminatedBuffer(raw.version_string.data(), raw.version_string.size());
 }
 
 NACP::~NACP() = default;
@@ -110,9 +111,8 @@ u64 NACP::GetDLCBaseTitleId() const {
     return raw.dlc_base_title_id;
 }
 
-std::string NACP::GetVersionString() const {
-    return Common::StringFromFixedZeroTerminatedBuffer(raw.version_string.data(),
-                                                       raw.version_string.size());
+const char * NACP::GetVersionString() const {
+    return version.c_str();
 }
 
 u64 NACP::GetDefaultNormalSaveSize() const {
@@ -137,10 +137,6 @@ u64 NACP::GetDeviceSaveDataSize() const {
 
 u32 NACP::GetParentalControlFlag() const {
     return raw.parental_control;
-}
-
-const std::array<u8, 0x20>& NACP::GetRatingAge() const {
-    return raw.rating_age;
 }
 
 std::vector<u8> NACP::GetRawBytes() const {

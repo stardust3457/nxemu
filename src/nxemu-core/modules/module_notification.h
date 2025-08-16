@@ -6,6 +6,8 @@ class ModuleNotification :
     public IModuleNotification
 {
 public:
-    void DisplayError(const char * message);
-    void BreakPoint(const char * fileName, uint32_t lineNumber);
+
+    //IModuleNotification
+    void DisplayError(const char * message, const char * title) override;
+    void BreakPoint(const char * fileName, uint32_t lineNumber) override;
 };

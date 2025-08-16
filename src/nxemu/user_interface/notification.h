@@ -8,9 +8,10 @@ class Notification :
 public:
     Notification();
 
-    void DisplayError(const char * message) const;
-    void BreakPoint(const char * fileName, uint32_t lineNumber);
-    void AppInitDone(void);
+    // INotification
+    void DisplayError(const char * message, const char * title) const override;
+    void BreakPoint(const char * fileName, uint32_t lineNumber) override;
+    void AppInitDone(void) override;
 
     static Notification & GetInstance();
     static void CleanUp();

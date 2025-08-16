@@ -36,7 +36,6 @@ FileType IdentifyFile(FileSys::VirtualFile file) {
     } else if (const auto nsp_type = IdentifyFileLoader<AppLoader_NSP>(file)) {
         return *nsp_type;
     } else {
-        UNIMPLEMENTED();
         return FileType::Unknown;
     }
 }
@@ -49,6 +48,8 @@ FileType GuessFromFilename(const std::string& name) {
         return FileType::NRO;
     if (extension == "dxci")
         return FileType::XCI;
+    if (extension == "dnsp")
+        return FileType::NSP;
 
     return FileType::Unknown;
 }
@@ -96,7 +97,6 @@ static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::
                                                loader.GetContentProvider(), program_id,
                                                program_index);
     }
-    UNIMPLEMENTED();
     return nullptr;
 }
 

@@ -111,21 +111,21 @@ public:
     std::string GetDeveloperName() const;
     u64 GetTitleId() const;
     u64 GetDLCBaseTitleId() const;
-    std::string GetVersionString() const;
     u64 GetDefaultNormalSaveSize() const;
     u64 GetDefaultJournalSaveSize() const;
-    u32 GetSupportedLanguages() const;
     std::vector<u8> GetRawBytes() const;
     bool GetUserAccountSwitchLock() const;
     u64 GetDeviceSaveDataSize() const;
-    u32 GetParentalControlFlag() const;
-    const std::array<u8, 0x20>& GetRatingAge() const;
 
     //IFileSysNACP
+    uint32_t GetSupportedLanguages() const override;
+    uint32_t GetParentalControlFlag() const override;
     bool GetRatingAge(uint8_t* buffer, uint32_t bufferSize) const override;
+    const char * GetVersionString() const override;
     void Release() override;
 
 private:
+    std::string version;
     RawNACP raw{};
 };
 

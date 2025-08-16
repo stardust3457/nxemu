@@ -16,10 +16,10 @@
 
 enum
 {
-    MODULE_LOADER_SPECS_VERSION = 0x010A,
-    MODULE_VIDEO_SPECS_VERSION = 0x010C,
-    MODULE_CPU_SPECS_VERSION = 0x0105,
-    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x010A,
+    MODULE_LOADER_SPECS_VERSION = 0x010B,
+    MODULE_VIDEO_SPECS_VERSION = 0x010D,
+    MODULE_CPU_SPECS_VERSION = 0x0106,
+    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x010B,
 };
 
 enum MODULE_TYPE : uint16_t
@@ -32,7 +32,7 @@ enum MODULE_TYPE : uint16_t
 
 __interface IModuleNotification
 {
-    void DisplayError(const char * message) = 0;
+    void DisplayError(const char * message, const char * title) = 0;
     void BreakPoint(const char * fileName, uint32_t lineNumber) = 0;
 };
 
