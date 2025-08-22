@@ -65,7 +65,11 @@ void SystemConfig::SavePage(SCITER_ELEMENT pageElement, const ConfigSetting* set
         const ConfigSetting& setting = settings[i];
         if (setting.Type() == ConfigSettingType::ComboBox)
         {
-            SaveComboBox(page, setting);
+            SaveComboBox(page, setting, true);
+        }
+        else if (setting.Type() == ConfigSettingType::ComboBoxValue)
+        {
+            SaveComboBox(page, setting, false);
         }
         else if (setting.Type() == ConfigSettingType::CheckBox)
         {
@@ -118,6 +122,10 @@ void SystemConfig::SetupPage(SCITER_ELEMENT pageElement, const ConfigSetting * s
         {
             SetupComboBox(page, setting);
         }
+        else if (setting.Type() == ConfigSettingType::ComboBoxValue)
+        {
+            // do nothing
+        }
         else if (setting.Type() == ConfigSettingType::CheckBox)
         {
             SciterElement element = page.GetElementByID(setting.ElementId());
@@ -150,7 +158,7 @@ void SystemConfig::SetupPage(SCITER_ELEMENT pageElement, const ConfigSetting * s
     }
 }
 
-void SystemConfig::SaveComboBox(const SciterElement& page, const ConfigSetting& setting)
+void SystemConfig::SaveComboBox(const SciterElement & page, const ConfigSetting & setting, bool intValue)
 {
     SettingsStore & settingsStore = SettingsStore::GetInstance();
     std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(page.GetElementByID(setting.ElementId()), IID_ICOMBOBOX);
@@ -163,7 +171,14 @@ void SystemConfig::SaveComboBox(const SciterElement& page, const ConfigSetting& 
             std::string value = element.GetAttribute("value");
             if (value.size() > 0)
             {
-                settingsStore.SetInt(setting.StoreSettingId(), std::stoi(value.c_str()));
+                if (intValue)
+                {
+                    settingsStore.SetInt(setting.StoreSettingId(), std::stoi(value.c_str()));
+                }
+                else
+                {
+                    settingsStore.SetString(setting.StoreSettingId(), value.c_str());
+                }
             }
         }
     }
@@ -209,7 +224,7 @@ void SystemConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEME
 {
     if (pageName == "Audio")
     {
-        m_systemConfigAudio.reset(new SystemConfigAudio(m_sciterUI, m_window->GetHandle(), page));
+        m_systemConfigAudio.reset(new SystemConfigAudio(m_sciterUI, *this, m_window->GetHandle(), page));
     }
     else if (pageName == "Debug")
     {
@@ -349,4 +364,10 @@ void SystemConfig::InitializeTranslations()
         vulkanDeviceTranslations.push_back({ (int32_t)i, m_vkDeviceRecords[i].name });
     }
     m_settingTranslations.insert({ (uint32_t)SystemConfig::TranslationType::VulkanDevice, vulkanDeviceTranslations });
+
+    m_settingTranslations.insert({ Settings::EnumMetadata<Settings::AudioMode>::Index(), {
+        {(uint32_t)Settings::AudioMode::Mono, "Mono"},
+        {(uint32_t)Settings::AudioMode::Stereo, "Stereo"},
+        {(uint32_t)Settings::AudioMode::Surround, "Surround"},
+    }});
 }

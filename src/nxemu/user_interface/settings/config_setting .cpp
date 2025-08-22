@@ -8,6 +8,14 @@ ConfigSetting::ConfigSetting(TYPE_COMBOBOX /*type*/, const char * elementId, uin
 {
 }
 
+ConfigSetting::ConfigSetting(TYPE_COMBOBOXVALUE /*type*/, const char* elementId, const char* StoreSettingId) :
+    m_type(ConfigSettingType::ComboBoxValue),
+    m_elementId(elementId),
+    m_settingIndex(0),
+    m_storeSettingId(StoreSettingId)
+{
+}
+
 ConfigSetting::ConfigSetting(TYPE_CHECKBOX /*type*/, const char * elementId, const char * StoreSettingId) :
     m_type(ConfigSettingType::CheckBox),
     m_elementId(elementId),

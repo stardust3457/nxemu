@@ -49,7 +49,7 @@ private:
     SystemConfig & operator=(const SystemConfig &) = delete;
 
     void InitializeTranslations();
-    void SaveComboBox(const SciterElement & page, const ConfigSetting & setting);
+    void SaveComboBox(const SciterElement & page, const ConfigSetting & setting, bool intValue);
     void SetupComboBox(const SciterElement & page, const ConfigSetting & setting);
 
     ISciterUI & m_sciterUI;

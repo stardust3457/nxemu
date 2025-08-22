@@ -1,13 +1,24 @@
+#include "config_setting.h"
 #include "system_config_audio.h"
+#include "system_config.h"
 #include <common/std_string.h>
 #include <nxemu-core/settings/settings.h>
-#include <widgets/combo_box.h>
-#include <yuzu_common/settings_enums.h>
 #include <nxemu-core/machine/switch_system.h>
 #include <nxemu-os/os_settings_identifiers.h>
+#include <yuzu_common/settings_enums.h>
+#include <widgets/combo_box.h>
 
 namespace
 {
+static ConfigSetting audioSettings[] = {
+    ConfigSetting(ConfigSetting::ComboBox, "audioOutputEngine", Settings::EnumMetadata<Settings::AudioEngine>::Index(), NXOsSetting::AudioSinkId),
+    ConfigSetting(ConfigSetting::ComboBoxValue, "audioOutputDevice", NXOsSetting::AudioOutputDeviceId),
+    ConfigSetting(ConfigSetting::ComboBoxValue, "audioInputDevice", NXOsSetting::AudioInputDeviceId),
+    ConfigSetting(ConfigSetting::ComboBox, "soundMode", Settings::EnumMetadata<Settings::AudioMode>::Index(), NXOsSetting::AudioMode),
+    ConfigSetting(ConfigSetting::Slider, "audioVolume", NXOsSetting::AudioVolume),
+    ConfigSetting(ConfigSetting::CheckBox, "muteAudio", NXOsSetting::AudioMuted),
+};
+
 void AddDeviceToVector(const char * device, void * userData)
 {
     std::vector<std::string> * deviceList = (std::vector<std::string> *)userData;
@@ -15,24 +26,68 @@ void AddDeviceToVector(const char * device, void * userData)
 }
 }
 
-SystemConfigAudio::SystemConfigAudio(ISciterUI & sciterUI, HWINDOW parent, SciterElement page) :
+SystemConfigAudio::SystemConfigAudio(ISciterUI & sciterUI, SystemConfig & config, HWINDOW parent, SciterElement page) :
     m_sciterUI(sciterUI),
+    m_config(config),
     m_parent(parent),
     m_page(page)
 {
-    SwitchSystem * system = SwitchSystem::GetInstance();
+    SciterElement pageNav = page.GetElementByID("AudioTabNav");
+    std::shared_ptr<void> interfacePtr = pageNav.IsValid() ? m_sciterUI.GetElementInterface(pageNav, IID_IPAGENAV) : nullptr;
+    if (interfacePtr)
+    {
+        m_pageNav = std::static_pointer_cast<IPageNav>(interfacePtr);
+        m_pageNav->AddSink(this);
+    }
+}
+
+void SystemConfigAudio::SaveSetting(void)
+{
+    if (m_audioPage != nullptr)
+    {
+        m_config.SavePage(m_audioPage, audioSettings, sizeof(audioSettings) / sizeof(audioSettings[0]));
+    }
+}
+
+bool SystemConfigAudio::PageNavChangeFrom(const std::string& /*pageName*/, SCITER_ELEMENT /*pageNav*/)
+{
+    return true;
+}
+
+bool SystemConfigAudio::PageNavChangeTo(const std::string& /*pageName*/, SCITER_ELEMENT /*pageNav*/)
+{
+    return true;
+}
+
+void SystemConfigAudio::PageNavCreatedPage(const std::string& pageName, SCITER_ELEMENT page)
+{
+    if (pageName == "Audio")
+    {
+        SetupAudioPage(page);
+    }
+}
+
+void SystemConfigAudio::PageNavPageChanged(const std::string& /*pageName*/, SCITER_ELEMENT /*pageNav*/)
+{
+}
+
+void SystemConfigAudio::SetupAudioPage(SciterElement page)
+{
+    m_audioPage = page;
+    m_config.SetupPage(page, audioSettings, sizeof(audioSettings) / sizeof(audioSettings[0]));
+    SwitchSystem* system = SwitchSystem::GetInstance();
     if (system == nullptr)
     {
         return;
     }
-    IOperatingSystem & OperatingSystem = system->OperatingSystem();
+    IOperatingSystem& OperatingSystem = system->OperatingSystem();
 
     uint32_t count = 0;
     OperatingSystem.AudioGetSyncIDs(nullptr, 0, &count);
     std::vector<uint32_t> ids(count);
     OperatingSystem.AudioGetSyncIDs(ids.data(), count, &count);
 
-    SettingsStore & settings = SettingsStore::GetInstance();
+    SettingsStore& settings = SettingsStore::GetInstance();
     int32_t audioSinkId = settings.GetInt(NXOsSetting::AudioSinkId);
     std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(page.GetElementByID("audioOutputEngine"), IID_ICOMBOBOX);
     if (interfacePtr)
@@ -53,98 +108,11 @@ SystemConfigAudio::SystemConfigAudio(ISciterUI & sciterUI, HWINDOW parent, Scite
             m_outputEngine->SelectItem(selectedIndex);
         }
     }
-    int32_t audioMode = settings.GetInt(NXOsSetting::AudioMode);
-    interfacePtr = m_sciterUI.GetElementInterface(page.GetElementByID("soundMode"), IID_ICOMBOBOX);
-    if (interfacePtr)
-    {
-        std::array modes = { Settings::AudioMode::Mono, Settings::AudioMode::Stereo, Settings::AudioMode::Surround };
-        m_audioMode = std::static_pointer_cast<IComboBox>(interfacePtr);
-        int32_t selectedIndex = -1;
-        for (size_t i = 0, n = modes.size(); i < n; i++)
-        {
-            int32_t index = m_audioMode->AddItem(Settings::CanonicalizeEnum(modes[i]).c_str(), stdstr_f("%d", modes[i]).c_str());
-            if (audioMode == (int32_t)modes[i])
-            {
-                selectedIndex = index;
-            }
-        }
-        if (selectedIndex >= 0)
-        {
-            m_audioMode->SelectItem(selectedIndex);
-        }
-    }
-    SciterElement element = page.GetElementByID("audioVolume");
-    if (element)
-    {
-        element.SetValue(SciterValue(settings.GetInt(NXOsSetting::AudioVolume)));
-        updateVolumeDisplay();
-    }
-    element = page.GetElementByID("muteAudio");
-    if (element)
-    {
-        bool checked = settings.GetBool(NXOsSetting::AudioMuted);
-        element.SetState(checked ? SciterElement::STATE_CHECKED : 0, checked ? 0 : SciterElement::STATE_CHECKED, true);
-    }
-    const char * audioOutputDeviceId = settings.GetString(NXOsSetting::AudioOutputDeviceId);
-    const char * audioInputDeviceId = settings.GetString(NXOsSetting::AudioInputDeviceId);
+    const char* audioOutputDeviceId = settings.GetString(NXOsSetting::AudioOutputDeviceId);
+    const char* audioInputDeviceId = settings.GetString(NXOsSetting::AudioInputDeviceId);
     updateAudioDevices(audioSinkId, audioOutputDeviceId, audioInputDeviceId);
     m_sciterUI.AttachHandler(page.GetElementByID("audioOutputEngine"), IID_ISTATECHANGESINK, (IStateChangeSink*)this);
     m_sciterUI.AttachHandler(page.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink*)this);
-}
-
-void SystemConfigAudio::SaveSetting(void)
-{
-    SettingsStore & settings = SettingsStore::GetInstance();
-    SciterElement element = m_outputEngine->GetSelectedItem();
-    if (element)
-    {
-        std::string value = element.GetAttribute("value");
-        if (value.size() > 0)
-        {
-            settings.SetInt(NXOsSetting::AudioSinkId, std::stoi(value));
-        }
-    }
-    element = m_audioOutputDevice->GetSelectedItem();
-    if (element)
-    {
-        std::string value = element.GetAttribute("value");
-        if (value.size() > 0)
-        {
-            settings.SetString(NXOsSetting::AudioOutputDeviceId, value.c_str());
-        }
-    }
-    element = m_audioInputDevice->GetSelectedItem();
-    if (element)
-    {
-        std::string value = element.GetAttribute("value");
-        if (value.size() > 0)
-        {
-            settings.SetString(NXOsSetting::AudioInputDeviceId, value.c_str());
-        }
-    }
-    element = m_audioMode->GetSelectedItem();
-    if (element)
-    {
-        std::string value = element.GetAttribute("value");
-        if (value.size() > 0)
-        {
-            settings.SetInt(NXOsSetting::AudioMode, std::stoi(value));
-        }
-    }
-    element = m_page.GetElementByID("audioVolume");
-    if (element)
-    {
-        SciterValue value = element.GetValue();
-        if (value.isInt())
-        {
-            settings.SetInt(NXOsSetting::AudioVolume, value.GetValueInt());
-        }
-    }
-    element = m_page.GetElementByID("muteAudio");
-    if (element)
-    {
-        settings.SetBool(NXOsSetting::AudioMuted, (element.GetState() & SciterElement::STATE_CHECKED) != 0);
-    }
 }
 
 bool SystemConfigAudio::OnStateChange(SCITER_ELEMENT elem, uint32_t /*eventReason*/, void * /*data*/)

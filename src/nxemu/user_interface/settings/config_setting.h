@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-enum class ConfigSettingType { ComboBox, CheckBox, Slider, InputText };
+enum class ConfigSettingType { ComboBox, ComboBoxValue, CheckBox, Slider, InputText };
 
 class ConfigSetting
 {
@@ -9,6 +9,10 @@ public:
     enum TYPE_COMBOBOX
     {
         ComboBox
+    };
+    enum TYPE_COMBOBOXVALUE
+    {
+        ComboBoxValue
     };
     enum TYPE_CHECKBOX
     {
@@ -24,6 +28,7 @@ public:
     };
 
     ConfigSetting(TYPE_COMBOBOX type, const char * elementId, uint32_t settingIndex, const char * StoreSettingId);
+    ConfigSetting(TYPE_COMBOBOXVALUE type, const char * elementId, const char * StoreSettingId);
     ConfigSetting(TYPE_CHECKBOX type, const char * elementId, const char * StoreSettingId);
     ConfigSetting(TYPE_SLIDER type, const char * elementId, const char * StoreSettingId);
     ConfigSetting(TYPE_INPUT_TEXT type, const char * elementId, const char * StoreSettingId);
