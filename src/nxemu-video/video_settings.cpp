@@ -17,13 +17,18 @@ namespace
         IntValueRanged,
         RendererBackend,
         ShaderBackend,
-        AstcDecodeMode, 
+        AstcDecodeMode,
+        VSyncMode,
         NvdecEmulation,
         FullscreenMode,
         AspectRatio,
         ResolutionSetup,
         ScalingFilter,
         AntiAliasing,
+        GpuAccuracy,
+        AnisotropyMode,
+        AstcRecompression,
+        VramUsageMode,
     };
 
     class VideoSetting
@@ -35,12 +40,17 @@ namespace
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::RendererBackend, true> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::ShaderBackend, true> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::AstcDecodeMode, true> * val);
+        VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::VSyncMode, true> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::NvdecEmulation> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::FullscreenMode, true> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::AspectRatio, true> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::ResolutionSetup> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::ScalingFilter> * val);
         VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::AntiAliasing> * val);
+        VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::GpuAccuracy, true> * val);
+        VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::AnisotropyMode, true> * val);
+        VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::AstcRecompression, true> * val);
+        VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::VramUsageMode, true> * val);
 
         const char * identifier;
         const char * json_section;
@@ -54,12 +64,17 @@ namespace
             Settings::SwitchableSetting<Settings::RendererBackend, true>* rendererBackend;
             Settings::SwitchableSetting<Settings::ShaderBackend, true> * shaderBackend;
             Settings::SwitchableSetting<Settings::AstcDecodeMode, true> * astcDecodeMode;
+            Settings::SwitchableSetting<Settings::VSyncMode, true> * vSyncMode;
             Settings::SwitchableSetting<Settings::NvdecEmulation> * nvdecEmulation;
             Settings::SwitchableSetting<Settings::FullscreenMode, true> * fullscreenMode;
             Settings::SwitchableSetting<Settings::AspectRatio, true> * aspectRatio;
             Settings::SwitchableSetting<Settings::ResolutionSetup> * resolutionSetup;
             Settings::SwitchableSetting<Settings::ScalingFilter> * scalingFilter;
             Settings::SwitchableSetting<Settings::AntiAliasing> * antiAliasing;
+            Settings::SwitchableSetting<Settings::GpuAccuracy, true> * gpuAccuracy;
+            Settings::SwitchableSetting<Settings::AnisotropyMode, true> * anisotropyMode;
+            Settings::SwitchableSetting<Settings::AstcRecompression, true> * astcRecompression;
+            Settings::SwitchableSetting<Settings::VramUsageMode, true> * vramUsageMode;
         } setting;
     };
 
@@ -70,6 +85,7 @@ namespace
         { NXVideoSetting::UseDiskPipelineCache, "video", "use_disk_shader_cache", &Settings::values.use_disk_shader_cache },
         { NXVideoSetting::UseAsynchronousGPUEmulation, "video", "use_asynchronous_gpu_emulation", &Settings::values.use_asynchronous_gpu_emulation },
         { NXVideoSetting::AstcDecodeMode, "video", "astc_decode_mode", &Settings::values.accelerate_astc },
+        { NXVideoSetting::VSyncMode, "video", "vsync_mode", &Settings::values.vsync_mode },
         { NXVideoSetting::NvdecEmulation, "video", "nvdec_emulation", &Settings::values.nvdec_emulation },
         { NXVideoSetting::FullscreenMode, "video", "fullscreen_mode", &Settings::values.fullscreen_mode },
         { NXVideoSetting::AspectRatio, "video", "aspect_ratio", &Settings::values.aspect_ratio },
@@ -85,6 +101,10 @@ namespace
         { NXVideoSetting::UseVulkanPipelineCache, "video", "use_vulkan_driver_pipeline_cache", &Settings::values.use_vulkan_driver_pipeline_cache },
         { NXVideoSetting::SyncToFramerateOfVideoPlayback, "video", "use_video_framerate", &Settings::values.use_video_framerate },
         { NXVideoSetting::BarrierFeedbackLoops, "video", "barrier_feedback_loops", &Settings::values.barrier_feedback_loops },
+        { NXVideoSetting::AccuracyLevel, "video", "accuracy_level", &Settings::values.gpu_accuracy },
+        { NXVideoSetting::AnisotropicFiltering, "video", "anisotropic_filtering", &Settings::values.max_anisotropy },
+        { NXVideoSetting::ASTCRecompressionMethod, "video", "astc_recompression_method", &Settings::values.astc_recompression },
+        { NXVideoSetting::VRAMUsageMode, "video", "vram_usage_mode", &Settings::values.vram_usage_mode },
     };
 }
 
@@ -116,6 +136,9 @@ void VideoSettingChanged(const char * setting, void * /*userData*/)
         case SettingType::AstcDecodeMode:
             videoSetting.setting.astcDecodeMode->SetValue((Settings::AstcDecodeMode)g_settings->GetInt(setting));
             break;
+        case SettingType::VSyncMode:
+            videoSetting.setting.vSyncMode->SetValue((Settings::VSyncMode)g_settings->GetInt(setting));
+            break;
         case SettingType::NvdecEmulation:
             videoSetting.setting.nvdecEmulation->SetValue((Settings::NvdecEmulation)g_settings->GetInt(setting));
             break;
@@ -133,6 +156,18 @@ void VideoSettingChanged(const char * setting, void * /*userData*/)
             break;
         case SettingType::AntiAliasing:
             videoSetting.setting.antiAliasing->SetValue((Settings::AntiAliasing)g_settings->GetInt(setting));
+            break;
+        case SettingType::GpuAccuracy:
+            videoSetting.setting.gpuAccuracy->SetValue((Settings::GpuAccuracy)g_settings->GetInt(setting));
+            break;
+        case SettingType::AnisotropyMode:
+            videoSetting.setting.anisotropyMode->SetValue((Settings::AnisotropyMode)g_settings->GetInt(setting));
+            break;
+        case SettingType::AstcRecompression:
+            videoSetting.setting.astcRecompression->SetValue((Settings::AstcRecompression)g_settings->GetInt(setting));
+            break;
+        case SettingType::VramUsageMode:
+            videoSetting.setting.vramUsageMode->SetValue((Settings::VramUsageMode)g_settings->GetInt(setting));
             break;
         default:
             UNIMPLEMENTED();
@@ -164,6 +199,9 @@ void SetupVideoSetting(void)
         case SettingType::AstcDecodeMode:
             videoSetting.setting.astcDecodeMode->SetValue(videoSetting.setting.astcDecodeMode->GetDefault());
             break;
+        case SettingType::VSyncMode:
+            videoSetting.setting.vSyncMode->SetValue(videoSetting.setting.vSyncMode->GetDefault());
+            break;
         case SettingType::NvdecEmulation:
             videoSetting.setting.nvdecEmulation->SetValue(videoSetting.setting.nvdecEmulation->GetDefault());
             break;
@@ -181,6 +219,18 @@ void SetupVideoSetting(void)
             break;
         case SettingType::AntiAliasing:
             videoSetting.setting.antiAliasing->SetValue(videoSetting.setting.antiAliasing->GetDefault());
+            break;
+        case SettingType::GpuAccuracy:
+            videoSetting.setting.gpuAccuracy->SetValue(videoSetting.setting.gpuAccuracy->GetDefault());
+            break;
+        case SettingType::AnisotropyMode:
+            videoSetting.setting.anisotropyMode->SetValue(videoSetting.setting.anisotropyMode->GetDefault());
+            break;
+        case SettingType::AstcRecompression:
+            videoSetting.setting.astcRecompression->SetValue(videoSetting.setting.astcRecompression->GetDefault());
+            break;
+        case SettingType::VramUsageMode:
+            videoSetting.setting.vramUsageMode->SetValue(videoSetting.setting.vramUsageMode->GetDefault());
             break;
         default:
             UNIMPLEMENTED();
@@ -239,6 +289,12 @@ void SetupVideoSetting(void)
                     videoSetting.setting.astcDecodeMode->SetValue(Settings::ToEnum<Settings::AstcDecodeMode>(value.asString()));
                 }
                 break;
+            case SettingType::VSyncMode:
+                if (value.isString())
+                {
+                    videoSetting.setting.vSyncMode->SetValue(Settings::ToEnum<Settings::VSyncMode>(value.asString()));
+                }
+                break;
             case SettingType::NvdecEmulation:
                 if (value.isString())
                 {
@@ -275,6 +331,30 @@ void SetupVideoSetting(void)
                     videoSetting.setting.antiAliasing->SetValue(Settings::ToEnum<Settings::AntiAliasing>(value.asString()));
                 }
                 break;
+            case SettingType::GpuAccuracy:
+                if (value.isString())
+                {
+                    videoSetting.setting.gpuAccuracy->SetValue(Settings::ToEnum<Settings::GpuAccuracy>(value.asString()));
+                }
+                break;
+            case SettingType::AnisotropyMode:
+                if (value.isString())
+                {
+                    videoSetting.setting.anisotropyMode->SetValue(Settings::ToEnum<Settings::AnisotropyMode>(value.asString()));
+                }
+                break;
+            case SettingType::AstcRecompression:
+                if (value.isString())
+                {
+                    videoSetting.setting.astcRecompression->SetValue(Settings::ToEnum<Settings::AstcRecompression>(value.asString()));
+                }
+                break;
+            case SettingType::VramUsageMode:
+                if (value.isString())
+                {
+                    videoSetting.setting.vramUsageMode->SetValue(Settings::ToEnum<Settings::VramUsageMode>(value.asString()));
+                }
+                break;
             default:
                 UNIMPLEMENTED();
             }
@@ -309,6 +389,10 @@ void SetupVideoSetting(void)
             g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.astcDecodeMode->GetDefault());
             g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.astcDecodeMode->GetValue());
             break;
+        case SettingType::VSyncMode:
+            g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.vSyncMode->GetDefault());
+            g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.vSyncMode->GetValue());
+            break;
         case SettingType::NvdecEmulation:
             g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.nvdecEmulation->GetDefault());
             g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.nvdecEmulation->GetValue());
@@ -332,6 +416,22 @@ void SetupVideoSetting(void)
         case SettingType::AntiAliasing:
             g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.antiAliasing->GetDefault());
             g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.antiAliasing->GetValue());
+            break;
+        case SettingType::GpuAccuracy:
+            g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.gpuAccuracy->GetDefault());
+            g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.gpuAccuracy->GetValue());
+            break;
+        case SettingType::AnisotropyMode:
+            g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.anisotropyMode->GetDefault());
+            g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.anisotropyMode->GetValue());
+            break;
+        case SettingType::AstcRecompression:
+            g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.astcRecompression->GetDefault());
+            g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.astcRecompression->GetValue());
+            break;
+        case SettingType::VramUsageMode:
+            g_settings->SetDefaultInt(videoSetting.identifier, (int32_t)videoSetting.setting.vramUsageMode->GetDefault());
+            g_settings->SetInt(videoSetting.identifier, (int32_t)videoSetting.setting.vramUsageMode->GetValue());
             break;
         default:
             UNIMPLEMENTED();
@@ -385,6 +485,12 @@ void SaveVideoSettings(void)
                 sections[videoSetting.json_section][videoSetting.json_key] = Settings::CanonicalizeEnum(videoSetting.setting.astcDecodeMode->GetValue());
             }
             break;
+        case SettingType::VSyncMode:
+            if (videoSetting.setting.vSyncMode->GetValue() != videoSetting.setting.vSyncMode->GetDefault())
+            {
+                sections[videoSetting.json_section][videoSetting.json_key] = Settings::CanonicalizeEnum(videoSetting.setting.vSyncMode->GetValue());
+            }
+            break;
         case SettingType::NvdecEmulation:
             if (videoSetting.setting.nvdecEmulation->GetValue() != videoSetting.setting.nvdecEmulation->GetDefault())
             {
@@ -419,6 +525,30 @@ void SaveVideoSettings(void)
             if (videoSetting.setting.antiAliasing->GetValue() != videoSetting.setting.antiAliasing->GetDefault())
             {
                 sections[videoSetting.json_section][videoSetting.json_key] = Settings::CanonicalizeEnum(videoSetting.setting.antiAliasing->GetValue());
+            }
+            break;
+        case SettingType::GpuAccuracy:
+            if (videoSetting.setting.gpuAccuracy->GetValue() != videoSetting.setting.gpuAccuracy->GetDefault())
+            {
+                sections[videoSetting.json_section][videoSetting.json_key] = Settings::CanonicalizeEnum(videoSetting.setting.gpuAccuracy->GetValue());
+            }
+            break;
+        case SettingType::AnisotropyMode:
+            if (videoSetting.setting.anisotropyMode->GetValue() != videoSetting.setting.anisotropyMode->GetDefault())
+            {
+                sections[videoSetting.json_section][videoSetting.json_key] = Settings::CanonicalizeEnum(videoSetting.setting.anisotropyMode->GetValue());
+            }
+            break;
+        case SettingType::AstcRecompression:
+            if (videoSetting.setting.astcRecompression->GetValue() != videoSetting.setting.astcRecompression->GetDefault())
+            {
+                sections[videoSetting.json_section][videoSetting.json_key] = Settings::CanonicalizeEnum(videoSetting.setting.astcRecompression->GetValue());
+            }
+            break;
+        case SettingType::VramUsageMode:
+            if (videoSetting.setting.vramUsageMode->GetValue() != videoSetting.setting.vramUsageMode->GetDefault())
+            {
+                sections[videoSetting.json_section][videoSetting.json_key] = Settings::CanonicalizeEnum(videoSetting.setting.vramUsageMode->GetValue());
             }
             break;
         default:
@@ -493,6 +623,15 @@ namespace
         setting.astcDecodeMode = val;
     }
 
+    VideoSetting::VideoSetting(const char* id, const char * section, const char * key, Settings::SwitchableSetting<Settings::VSyncMode, true> * val) :
+        identifier(id),
+        json_section(section),
+        json_key(key),
+        settingType(SettingType::VSyncMode)
+    {
+        setting.vSyncMode = val;
+    }
+
     VideoSetting::VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::NvdecEmulation> * val) :
         identifier(id),
         json_section(section),
@@ -545,5 +684,41 @@ namespace
         settingType(SettingType::AntiAliasing)
     {
         setting.antiAliasing = val;
+    }
+
+    VideoSetting::VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::GpuAccuracy, true> * val) :
+        identifier(id),
+        json_section(section),
+        json_key(key),
+        settingType(SettingType::GpuAccuracy)
+    {
+        setting.gpuAccuracy = val;
+    }
+
+    VideoSetting::VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::AnisotropyMode, true> * val) :
+        identifier(id),
+        json_section(section),
+        json_key(key),
+        settingType(SettingType::AnisotropyMode)
+    {
+        setting.anisotropyMode = val;
+    }
+
+    VideoSetting::VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::AstcRecompression, true> * val) :
+        identifier(id),
+        json_section(section),
+        json_key(key),
+        settingType(SettingType::AstcRecompression)
+    {
+        setting.astcRecompression = val;
+    }
+
+    VideoSetting::VideoSetting(const char * id, const char * section, const char * key, Settings::SwitchableSetting<Settings::VramUsageMode, true> * val) :
+        identifier(id),
+        json_section(section),
+        json_key(key),
+        settingType(SettingType::VramUsageMode)
+    {
+        setting.vramUsageMode = val;
     }
 }

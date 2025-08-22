@@ -34,6 +34,7 @@ private:
     void SetupGraphicsPage(SciterElement page);
     void UpdateGraphicsAPI();
     void UpdateFSPSharpnessDisplay();
+    void UpdateVSyncMode();
 
     ISciterUI & m_sciterUI;
     SystemConfig & m_config;

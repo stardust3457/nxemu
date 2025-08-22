@@ -10,6 +10,7 @@
 #include <widgets/combo_box.h>
 #include <widgets/menubar.h>
 #include <widgets/page_nav.h>
+#include <widgets/tooltip_host.h>
 #include <windows.h>
 
 void RegisterWidgets(ISciterUI & sciterUI)
@@ -17,6 +18,7 @@ void RegisterWidgets(ISciterUI & sciterUI)
     Register_WidgetComboBox(sciterUI);
     Register_WidgetMenuBar(sciterUI);
     Register_WidgetPageNav(sciterUI);
+    Register_WidgetToolTipHost(sciterUI);
 }
 
 int WINAPI WinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPSTR /*lpszArgs*/, _In_ int /*nWinMode*/)

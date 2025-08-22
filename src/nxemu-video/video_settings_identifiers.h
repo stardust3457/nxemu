@@ -8,6 +8,7 @@ namespace NXVideoSetting
     constexpr const char * UseDiskPipelineCache = "nxvideo:UseDiskPipelineCache";
     constexpr const char * UseAsynchronousGPUEmulation = "nxvideo:UseAsynchronousGPUEmulation";
     constexpr const char * AstcDecodeMode = "nxvideo:AstcDecodeMode";
+    constexpr const char * VSyncMode = "nxvideo:VSyncMode";
     constexpr const char * NvdecEmulation = "nxvideo:NvdecEmulation";
     constexpr const char * FullscreenMode = "nxvideo:FullscreenMode";
     constexpr const char * AspectRatio = "nxvideo:AspectRatio";
@@ -23,5 +24,9 @@ namespace NXVideoSetting
     constexpr const char * UseVulkanPipelineCache = "nxvideo:UseVulkanPipelineCache";
     constexpr const char * SyncToFramerateOfVideoPlayback = "nxvideo:SyncToFramerateOfVideoPlayback";
     constexpr const char * BarrierFeedbackLoops = "nxvideo:BarrierFeedbackLoops";
+    constexpr const char * AccuracyLevel = "nxvideo:AccuracyLevel";
+    constexpr const char * AnisotropicFiltering = "nxvideo:AnisotropicFiltering";
+    constexpr const char * ASTCRecompressionMethod = "nxvideo:ASTCRecompressionMethod";
+    constexpr const char * VRAMUsageMode = "nxvideo:VRAMUsageMode";
 
 } // namespace NXVideoSetting

@@ -321,8 +321,28 @@ void SystemConfig::InitializeTranslations()
         {(uint32_t)Settings::AntiAliasing::Fxaa, "FXAA"},
         {(uint32_t)Settings::AntiAliasing::Smaa, "SMAA"},
     }});
-
-
+    m_settingTranslations.insert({ Settings::EnumMetadata<Settings::GpuAccuracy>::Index(), {
+        {(uint32_t)Settings::GpuAccuracy::Normal, "Normal"},
+        {(uint32_t)Settings::GpuAccuracy::High, "High"},
+        {(uint32_t)Settings::GpuAccuracy::Extreme, "Extreme"},
+    }});
+    m_settingTranslations.insert({ Settings::EnumMetadata<Settings::AnisotropyMode>::Index(), {
+        {(uint32_t)Settings::AnisotropyMode::Automatic, "Automatic"},
+        {(uint32_t)Settings::AnisotropyMode::Default, "Default"},
+        {(uint32_t)Settings::AnisotropyMode::X2, "2x"},
+        {(uint32_t)Settings::AnisotropyMode::X4, "4x"},
+        {(uint32_t)Settings::AnisotropyMode::X8, "8x"},
+        {(uint32_t)Settings::AnisotropyMode::X16, "16x"},
+    }});
+    m_settingTranslations.insert({ Settings::EnumMetadata<Settings::AstcRecompression>::Index(), {
+        {(uint32_t)Settings::AstcRecompression::Uncompressed, "Uncompressed (Best quality)"},
+        {(uint32_t)Settings::AstcRecompression::Bc1, "BC1 (Low quality)"},
+        {(uint32_t)Settings::AstcRecompression::Bc3, "BC3 (Medium quality)"},
+    }});
+    m_settingTranslations.insert({ Settings::EnumMetadata<Settings::VramUsageMode>::Index(), {
+        {(uint32_t)Settings::VramUsageMode::Conservative, "Conservative"},
+        {(uint32_t)Settings::VramUsageMode::Aggressive, "Aggressive"},
+    }});
     SettingTranslationList vulkanDeviceTranslations;
     for (size_t i = 0; i < m_vkDeviceRecords.size(); ++i)
     {
