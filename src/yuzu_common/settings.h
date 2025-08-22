@@ -266,7 +266,7 @@ struct Values {
 
     // Renderer
     SwitchableSetting<RendererBackend, true> renderer_backend{
-        linkage, RendererBackend::OpenGL, RendererBackend::OpenGL, RendererBackend::Null,
+        linkage,   RendererBackend::Vulkan, RendererBackend::OpenGL, RendererBackend::Null,
         "backend", Category::Renderer};
     SwitchableSetting<ShaderBackend, true> shader_backend{
         linkage,          ShaderBackend::Glsl, ShaderBackend::Glsl,        ShaderBackend::SpirV,
@@ -599,9 +599,6 @@ struct Values {
     Setting<bool> enable_all_controllers{linkage, false, "enable_all_controllers",
                                          Category::Debugging};
     Setting<bool> perform_vulkan_check{linkage, true, "perform_vulkan_check", Category::Debugging};
-
-    // Miscellaneous
-    Setting<bool> use_dev_keys{linkage, false, "use_dev_keys", Category::Miscellaneous};
 
     // Network
     Setting<std::string> network_interface{linkage, std::string(), "network_interface",
