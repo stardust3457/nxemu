@@ -5,6 +5,7 @@
 #include "system_config_graphics.h"
 #include <common/std_string.h>
 #include <nxemu-core/machine/switch_system.h>
+#include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/notification.h>
 #include <sciter_ui.h>
@@ -114,10 +115,24 @@ void SystemConfig::SetupPage(SCITER_ELEMENT pageElement, const ConfigSetting * s
 {
     SettingsStore & settingsStore = SettingsStore::GetInstance();
     SciterElement page(pageElement);
+    bool emulationRunning = settingsStore.GetBool(NXCoreSetting::EmulationRunning);
 
     for (size_t i = 0; i < settingsCount; ++i) 
     {
         const ConfigSetting & setting = settings[i];
+        if (emulationRunning && !setting.CanChangeWhenRunning())
+        {
+            SciterElement element = page.GetElementByID(setting.ElementId());
+            if (element)
+            {
+                element.SetState(SciterElement::STATE_DISABLED, 0, true);
+                element = page.FindFirst("[for='%s']", setting.ElementId());
+                if (element)
+                {
+                    element.SetState(SciterElement::STATE_DISABLED, 0, true);
+                }
+            }
+        }
         if (setting.Type() == ConfigSettingType::ComboBox)
         {
             SetupComboBox(page, setting);

@@ -6,8 +6,8 @@
 namespace
 {
     static ConfigSetting loggingSettings[] = {
-        ConfigSetting(ConfigSetting::CheckBox, "ShowLogConsole", NXCoreSetting::ShowLogConsole),
-        ConfigSetting(ConfigSetting::InputText, "LogFilter", NXCoreSetting::LogFilter),
+        ConfigSetting(ConfigSetting::CheckBox, "ShowLogConsole", true, NXCoreSetting::ShowLogConsole),
+        ConfigSetting(ConfigSetting::InputText, "LogFilter", true, NXCoreSetting::LogFilter),
     };
 }
 

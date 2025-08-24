@@ -33,9 +33,9 @@ public:
     bool GetDefaultBool(const char * setting) const;
     int GetDefaultInt(const char * setting) const;
     const char * GetString(const char * setting) const;
-    bool GetBool(const char* setting) const;
+    bool GetBool(const char * setting) const;
     bool GetChanged(const char * setting) const;
-    int32_t GetInt(const char* setting) const;
+    int32_t GetInt(const char * setting) const;
     void SetDefaultString(const char * setting, const char * value);
     void SetDefaultBool(const char * setting, bool value);
     void SetDefaultInt(const char * setting, const int32_t value);

@@ -11,12 +11,12 @@
 namespace
 {
 static ConfigSetting audioSettings[] = {
-    ConfigSetting(ConfigSetting::ComboBox, "audioOutputEngine", Settings::EnumMetadata<Settings::AudioEngine>::Index(), NXOsSetting::AudioSinkId),
-    ConfigSetting(ConfigSetting::ComboBoxValue, "audioOutputDevice", NXOsSetting::AudioOutputDeviceId),
-    ConfigSetting(ConfigSetting::ComboBoxValue, "audioInputDevice", NXOsSetting::AudioInputDeviceId),
-    ConfigSetting(ConfigSetting::ComboBox, "soundMode", Settings::EnumMetadata<Settings::AudioMode>::Index(), NXOsSetting::AudioMode),
-    ConfigSetting(ConfigSetting::Slider, "audioVolume", NXOsSetting::AudioVolume),
-    ConfigSetting(ConfigSetting::CheckBox, "muteAudio", NXOsSetting::AudioMuted),
+    ConfigSetting(ConfigSetting::ComboBox, "audioOutputEngine", false, Settings::EnumMetadata<Settings::AudioEngine>::Index(), NXOsSetting::AudioSinkId),
+    ConfigSetting(ConfigSetting::ComboBoxValue, "audioOutputDevice", false, NXOsSetting::AudioOutputDeviceId),
+    ConfigSetting(ConfigSetting::ComboBoxValue, "audioInputDevice", false, NXOsSetting::AudioInputDeviceId),
+    ConfigSetting(ConfigSetting::ComboBox, "soundMode", true, Settings::EnumMetadata<Settings::AudioMode>::Index(), NXOsSetting::AudioMode),
+    ConfigSetting(ConfigSetting::Slider, "audioVolume", true, NXOsSetting::AudioVolume),
+    ConfigSetting(ConfigSetting::CheckBox, "muteAudio", true, NXOsSetting::AudioMuted),
 };
 
 void AddDeviceToVector(const char * device, void * userData)
