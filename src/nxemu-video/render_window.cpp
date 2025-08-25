@@ -33,29 +33,34 @@ public:
         {
             return;
         }
-        PIXELFORMATDESCRIPTOR pfd = {0};
-        pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-        pfd.nVersion = 1;
-        pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_GENERIC_ACCELERATED | PFD_DOUBLEBUFFER;
-        pfd.iPixelType = PFD_TYPE_RGBA;
-        pfd.iLayerType = PFD_MAIN_PLANE;
-        pfd.cColorBits = 32;
-        pfd.cDepthBits = 24;
-        pfd.cAuxBuffers = 1;
 
-        int pfm = ChoosePixelFormat(m_hdc, &pfd);
+        int pfm = GetPixelFormat(m_hdc);
         if (pfm == 0)
         {
-            pfd.cAuxBuffers = 0;
-            pfm = ChoosePixelFormat(m_hdc, &pfd);
-        }
-        if (pfm == 0)
-        {
-            return;
-        }
-        if (SetPixelFormat(m_hdc, pfm, &pfd) == 0)
-        {
-            return;
+            PIXELFORMATDESCRIPTOR pfd = { 0 };
+            pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+            pfd.nVersion = 1;
+            pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_GENERIC_ACCELERATED | PFD_DOUBLEBUFFER;
+            pfd.iPixelType = PFD_TYPE_RGBA;
+            pfd.iLayerType = PFD_MAIN_PLANE;
+            pfd.cColorBits = 32;
+            pfd.cDepthBits = 24;
+            pfd.cAuxBuffers = 1;
+
+            int pfm = ChoosePixelFormat(m_hdc, &pfd);
+            if (pfm == 0)
+            {
+                pfd.cAuxBuffers = 0;
+                pfm = ChoosePixelFormat(m_hdc, &pfd);
+            }
+            if (pfm == 0)
+            {
+                return;
+            }
+            if (SetPixelFormat(m_hdc, pfm, &pfd) == 0)
+            {
+                return;
+            }
         }
 
         m_glrc = wglCreateContext(m_hdc);

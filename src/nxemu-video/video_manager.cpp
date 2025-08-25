@@ -43,6 +43,16 @@ VideoManager::~VideoManager()
 
 void VideoManager::EmulationStarting(void)
 {
+    Layout::FramebufferLayout layout;
+    if (impl->m_emuWindow)
+    {
+        layout = impl->m_emuWindow->GetFramebufferLayout();
+    }
+    impl->m_emuWindow = nullptr;
+    impl->m_emuWindow = std::make_unique<RenderWindow>(impl->m_window);
+    impl->m_emuWindow->UpdateCurrentFramebufferLayout(layout.width, layout.height);
+    impl->m_gpuCore = nullptr;  
+    impl->m_gpuCore = VideoCore::CreateGPU(impl->m_system, *(impl->m_emuWindow.get()), *impl->m_host1x);
     impl->m_gpuCore->Start();
 }
 

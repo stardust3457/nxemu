@@ -47,7 +47,9 @@ private:
     SciterMainWindow(const SciterMainWindow &) = delete;
     SciterMainWindow & operator=(const SciterMainWindow &) = delete;
 
+    void CreateRenderWindow(void);
     void SetCaption(const std::string & caption);
+    static void EmulationRunning(const char * setting, void * userData);
     static void GameFileChanged(const char * setting, void * userData);
     static void GameNameChanged(const char * setting, void * userData);
     static void RomLoadingChanged(const char * setting, void * userData);

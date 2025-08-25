@@ -2,16 +2,19 @@
 #include "settings/input_config.h"
 #include "settings/system_config.h"
 #include "settings/ui_settings.h"
-#include <Windows.h>
 #include <common/std_string.h>
 #include <nxemu-core/machine/switch_system.h>
 #include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/version.h>
 #include <nxemu-os/os_settings_identifiers.h>
+#include <nxemu-video/video_settings_identifiers.h>
 #include <sciter_element.h>
 #include <widgets/menubar.h>
 #include <yuzu_common/settings_input.h>
+#include <yuzu_common/settings.h>
+
+#include <Windows.h>
 
 SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitle) :
     m_sciterUI(sciterUI),
@@ -22,6 +25,7 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_volumePopup(false)
 {
     SettingsStore & settings = SettingsStore::GetInstance();
+    settings.RegisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
     settings.RegisterCallback(NXCoreSetting::GameFile, SciterMainWindow::GameFileChanged, this);
     settings.RegisterCallback(NXCoreSetting::GameName, SciterMainWindow::GameNameChanged, this);
     settings.RegisterCallback(NXCoreSetting::RomLoading, SciterMainWindow::RomLoadingChanged, this);
@@ -101,21 +105,12 @@ bool SciterMainWindow::Show(void)
         rect = mainContents.GetLocation();
     }
 
-    uint32_t width = rect.right - rect.left;
-    uint32_t height = rect.bottom - rect.top;
-    m_renderWindow = CreateWindowExW(0, L"Static", L"", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
-                                     rect.left, rect.top, width, height, (HWND)m_window->GetHandle(), nullptr, GetModuleHandle(nullptr), nullptr);
-    ShowWindow((HWND)m_renderWindow, SW_HIDE);
+    CreateRenderWindow();
     SwitchSystem::Create(*this);
 
-    SwitchSystem* system = SwitchSystem::GetInstance();
-    if (system != nullptr)
-    {
-        IVideo & video = system->Video();
-        video.UpdateFramebufferLayout(rect.right - rect.left, rect.bottom - rect.top);
-    }
     UpdateStatusbar();
     m_sciterUI.AttachHandler(rootElement, IID_IMOUSEUPDOWNSINK, (IMouseUpDownSink*)this);
+    m_sciterUI.AttachHandler(rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink*)this);
     m_sciterUI.AttachHandler(rootElement.GetElementByID("volume"), IID_ICLICKSINK, (IClickSink*)this);
     m_sciterUI.AttachHandler(rootElement.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink*)this);
 
@@ -300,8 +295,12 @@ void SciterMainWindow::UpdateStatusbar()
 {
     SettingsStore & settings = SettingsStore::GetInstance();
     SciterElement rootElement(m_window->GetRootElement());
+    SciterElement renderer(rootElement.GetElementByID("renderer"));
+    stdstr_f text("%s", Settings::CanonicalizeEnum((Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI)).c_str());
+    renderer.SetHTML((const uint8_t*)text.c_str(), text.size());
+
     SciterElement volume(rootElement.GetElementByID("volume"));
-    stdstr_f text("VOLUME: %d %%", settings.GetInt(NXOsSetting::AudioVolume));
+    text.Format("VOLUME: %d %%", settings.GetInt(NXOsSetting::AudioVolume));
     volume.SetHTML((const uint8_t *)text.c_str(), text.size());
 }
 
@@ -326,6 +325,25 @@ void SciterMainWindow::DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int3
     m_volumePopup = false;
 }
 
+void SciterMainWindow::CreateRenderWindow(void)
+{
+    SciterElement rootElement(m_window->GetRootElement());
+    SciterElement mainContents(rootElement.GetElementByID("MainContents"));
+    SciterElement::RECT rect = mainContents.GetLocation();
+    uint32_t width = rect.right - rect.left;
+    uint32_t height = rect.bottom - rect.top;
+    m_renderWindow = CreateWindowExW(0, L"Static", L"", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
+        rect.left, rect.top, width, height, (HWND)m_window->GetHandle(), nullptr, GetModuleHandle(nullptr), nullptr);
+    ShowWindow((HWND)m_renderWindow, SW_HIDE);
+
+    SwitchSystem * system = SwitchSystem::GetInstance();
+    if (system != nullptr)
+    {
+        IVideo & video = system->Video();
+        video.UpdateFramebufferLayout(rect.right - rect.left, rect.bottom - rect.top);
+    }
+}
+
 void SciterMainWindow::SetCaption(const std::string & caption)
 {
     SciterElement rootElement(m_window->GetRootElement());
@@ -334,6 +352,27 @@ void SciterMainWindow::SetCaption(const std::string & caption)
     if (captionElement.IsValid())
     {
         captionElement.SetHTML((uint8_t *)caption.data(), caption.size());
+    }
+}
+
+void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userData)
+{
+    bool emulationRunning = SettingsStore::GetInstance().GetBool(NXCoreSetting::EmulationRunning);
+    SciterMainWindow * impl = (SciterMainWindow*)userData;
+    if (emulationRunning)
+    {
+        if (impl->m_renderWindow != nullptr)
+        {
+            DestroyWindow((HWND)impl->m_renderWindow);
+            impl->m_renderWindow = nullptr;
+        }
+        impl->CreateRenderWindow();
+    }
+    SciterElement rootElement(impl->m_window->GetRootElement());
+    SciterElement renderer(rootElement.GetElementByID("renderer"));
+    if (renderer)
+    {
+        renderer.SetState(emulationRunning ? SciterElement::STATE_DISABLED : 0, emulationRunning ? 0 : SciterElement::STATE_DISABLED, true);
     }
 }
 
@@ -533,7 +572,28 @@ bool SciterMainWindow::OnSizeChanged(SCITER_ELEMENT elem)
 bool SciterMainWindow::OnClick(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t /*reason*/)
 {
     SciterElement rootElement(m_window->GetRootElement());
-    if (source == rootElement.GetElementByID("volume"))
+    if (source == rootElement.GetElementByID("renderer"))
+    {
+        SettingsStore & settings = SettingsStore::GetInstance();
+        Settings::RendererBackend graphicsAPI = (Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI);
+        if (graphicsAPI == Settings::RendererBackend::Vulkan)
+        {
+            graphicsAPI = Settings::RendererBackend::OpenGL;
+        }
+        else if (graphicsAPI == Settings::RendererBackend::OpenGL)
+        {
+            graphicsAPI = Settings::RendererBackend::Vulkan;
+        }
+        settings.SetInt(NXVideoSetting::GraphicsAPI, (int32_t)graphicsAPI);
+        stdstr_f text("%s", Settings::CanonicalizeEnum((Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI)).c_str());
+        SciterElement(source).SetHTML((const uint8_t*)text.c_str(), text.size());
+        SwitchSystem * system = SwitchSystem::GetInstance();
+        if (system != nullptr)
+        {
+            system->FlushSettings();
+        }
+    }
+    else if (source == rootElement.GetElementByID("volume"))
     {
         m_sciterUI.PopupShow(rootElement.GetElementByID("VolumePopup"), rootElement.GetElementByID("volume"), 8);
         m_volumePopup = true;
@@ -563,6 +623,11 @@ bool SciterMainWindow::OnStateChange(SCITER_ELEMENT elem, uint32_t /*eventReason
         {
             SettingsStore& settings = SettingsStore::GetInstance();
             settings.SetInt(NXOsSetting::AudioVolume, value.GetValueInt());
+            SwitchSystem * system = SwitchSystem::GetInstance();
+            if (system != nullptr)
+            {
+                system->FlushSettings();
+            }
         }
     }
     return false;

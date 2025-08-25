@@ -221,14 +221,16 @@ hr
   font-weight: 100;
 }
 
-#StatusBar #volume
+#StatusBar #volume,
+#StatusBar #renderer
 {
   border: 1px solid transparent;
   padding: 0.2em;
   display: inline-block;
 }
 
-#StatusBar #volume:hover
+#StatusBar #volume:hover,
+#StatusBar #renderer:hover
 {
   border: 1px solid #76797c;
 }
