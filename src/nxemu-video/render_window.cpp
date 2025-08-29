@@ -3,6 +3,7 @@
 #include "yuzu_common/settings.h"
 #include <Windows.h>
 #include <glad/glad.h>
+#include <glad/glad_wgl.h>
 #include <nxemu-module-spec/video.h>
 #include <nxemu-core/settings/identifiers.h>
 
@@ -16,12 +17,10 @@ public:
         m_glrc(nullptr),
         m_hdc(nullptr)
     {
-        typedef HGLRC(WINAPI * PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC, HGLRC hShareContext, const int * attribList);
-
-#define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
-#define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
-#define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
-#define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+        if (!m_openglLoaded && !LoadOpenGL())
+        {
+            return;
+        }
 
         HWND hWnd = (HWND)renderWindow.RenderSurface();
         if (hWnd == nullptr)
@@ -40,30 +39,58 @@ public:
             PIXELFORMATDESCRIPTOR pfd = { 0 };
             pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
             pfd.nVersion = 1;
-            pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_GENERIC_ACCELERATED | PFD_DOUBLEBUFFER;
+            pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
             pfd.iPixelType = PFD_TYPE_RGBA;
             pfd.iLayerType = PFD_MAIN_PLANE;
             pfd.cColorBits = 32;
             pfd.cDepthBits = 24;
-            pfd.cAuxBuffers = 1;
+            pfd.cStencilBits = 8;   
 
-            int pfm = ChoosePixelFormat(m_hdc, &pfd);
-            if (pfm == 0)
-            {
-                pfd.cAuxBuffers = 0;
-                pfm = ChoosePixelFormat(m_hdc, &pfd);
-            }
-            if (pfm == 0)
-            {
+            int pfAttribs[] = {
+                WGL_DRAW_TO_WINDOW_ARB, TRUE,
+                WGL_SUPPORT_OPENGL_ARB, TRUE,
+                WGL_DOUBLE_BUFFER_ARB, TRUE,
+                WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+                WGL_COLOR_BITS_ARB, 32,
+                WGL_DEPTH_BITS_ARB, 24,
+                WGL_STENCIL_BITS_ARB, 8,
+                WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+                0
+            };
+            int fmt = 0; UINT num = 0;
+            BOOL ok = wglChoosePixelFormatARB(m_hdc, pfAttribs, nullptr, 1, &fmt, &num);
+            if (!ok || num == 0) 
+            { 
                 return;
             }
-            if (SetPixelFormat(m_hdc, pfm, &pfd) == 0)
+
+            DescribePixelFormat(m_hdc, fmt, sizeof(pfd), &pfd);
+            if (!SetPixelFormat(m_hdc, fmt, &pfd)) 
             {
                 return;
             }
         }
 
-        m_glrc = wglCreateContext(m_hdc);
+        if (wglCreateContextAttribsARB) 
+        {
+            int contextAttribs[] = {
+                WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+                WGL_CONTEXT_MINOR_VERSION_ARB, 6,
+                WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+                0
+            };
+
+            m_glrc = wglCreateContextAttribsARB(m_hdc, nullptr, contextAttribs);
+            if (m_glrc == nullptr)
+            {
+                contextAttribs[5] = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                m_glrc = wglCreateContextAttribsARB(m_hdc, nullptr, contextAttribs);
+            }
+        }
+        if (m_glrc == nullptr)
+        {
+            m_glrc = wglCreateContext(m_hdc);
+        }
         if (m_glrc == nullptr)
         {
             return;
@@ -91,10 +118,102 @@ public:
     {
         wglMakeCurrent(nullptr, nullptr);
     }
+
+private:
+    static LRESULT CALLBACK DummyWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
+    {
+        return DefWindowProc(hWnd, msg, wParam, lParam);
+    }
+        
+    bool LoadOpenGL()
+    {
+        HWND hwnd = CreateDummyWindow(nullptr);
+        if (hwnd == nullptr)
+        {
+            return false;
+        }
+        HDC hdc = GetDC(hwnd);
+        if (hdc == nullptr)
+        {
+            DestroyWindow(hwnd);
+            return false;
+        }
+
+        PIXELFORMATDESCRIPTOR pfd = {};
+        pfd.nSize = sizeof(pfd);
+        pfd.nVersion = 1;
+        pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+        pfd.iPixelType = PFD_TYPE_RGBA;
+        pfd.cColorBits = 32;
+        pfd.cDepthBits = 24;
+        pfd.cStencilBits = 8;
+        int pf = ChoosePixelFormat(hdc, &pfd);
+        if (pf == 0) 
+        { 
+            ReleaseDC(hwnd, hdc); 
+            DestroyWindow(hwnd); 
+            return false; 
+        }
+        if (!SetPixelFormat(hdc, pf, &pfd))
+        { 
+            ReleaseDC(hwnd, hdc); 
+            DestroyWindow(hwnd); 
+            return false; 
+        }
+
+        HGLRC dummyCtx = wglCreateContext(hdc);
+        if (dummyCtx == nullptr) 
+        { 
+            ReleaseDC(hwnd, hdc); 
+            DestroyWindow(hwnd); 
+            return false; 
+        }
+        if (!wglMakeCurrent(hdc, dummyCtx)) 
+        {
+            wglDeleteContext(dummyCtx);
+            ReleaseDC(hwnd, hdc);
+            DestroyWindow(hwnd);
+            return false;
+        }
+
+        if (gladLoadGL() == 0)
+        {
+            wglMakeCurrent(nullptr, nullptr);
+            wglDeleteContext(dummyCtx);
+            ReleaseDC(hwnd, hdc);
+            DestroyWindow(hwnd);
+            return false;
+        }
+        gladLoadWGL(hdc);
+        m_openglLoaded = true;
+        wglMakeCurrent(nullptr, nullptr);
+        wglDeleteContext(dummyCtx);
+        ReleaseDC(hwnd, hdc);
+        DestroyWindow(hwnd);
+        return true;
+    }
+
+    HWND CreateDummyWindow(HINSTANCE hInstance) 
+    {
+        WNDCLASSA wc = {};
+        wc.style = CS_OWNDC;
+        wc.lpfnWndProc = DummyWndProc;
+        wc.hInstance = hInstance;
+        wc.lpszClassName = "DummyGLWindowClass";
+
+        RegisterClassA(&wc);
+
+        HWND hwnd = CreateWindowA(wc.lpszClassName, "DummyGL", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, nullptr, nullptr, hInstance, nullptr);
+        return hwnd;
+    }
+
+    static bool m_openglLoaded;
     IRenderWindow & m_renderWindow;
     HGLRC m_glrc;
     HDC m_hdc;
 };
+
+bool OpenGLSharedContext::m_openglLoaded = false;
 
 class DummyContext : public Core::Frontend::GraphicsContext
 {
@@ -110,11 +229,6 @@ RenderWindow::RenderWindow(IRenderWindow & renderWindow) :
     window_info.render_surface = renderWindow.RenderSurface();
     NotifyClientAreaSizeChanged({ 0,0 });
     UpdateCurrentFramebufferLayout(640, 480);
-
-    if (Settings::values.renderer_backend.GetValue() == Settings::RendererBackend::OpenGL)
-    {
-        LoadOpenGL();
-    }
 }
 
 void RenderWindow::OnFrameDisplayed()
@@ -138,11 +252,4 @@ std::unique_ptr<Core::Frontend::GraphicsContext> RenderWindow::CreateSharedConte
 bool RenderWindow::IsShown() const
 {
     return true;
-}
-
-void RenderWindow::LoadOpenGL()
-{
-    auto context = CreateSharedContext();
-    auto scope = context->Acquire();
-    gladLoadGL();
 }

@@ -16,8 +16,6 @@ public:
     bool IsShown() const;
 
 private:
-    void LoadOpenGL();
-
     IRenderWindow & m_renderWindow;
     bool m_firstFrame;
 };

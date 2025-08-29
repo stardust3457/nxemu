@@ -81,6 +81,7 @@ __interface IOperatingSystem
     void KeyboardKeyRelease(int modifier, int keyIndex, int keyCode) = 0;
     void GatherGPUDirtyMemory(ICacheInvalidator * invalidator) = 0;
     uint64_t GetGPUTicks() = 0;
+    uint64_t GetProgramId() = 0;
     void GameFrameEnd() = 0;
     void AudioGetSyncIDs(uint32_t * ids, uint32_t maxCount, uint32_t * actualCount) = 0;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void * userData) = 0;

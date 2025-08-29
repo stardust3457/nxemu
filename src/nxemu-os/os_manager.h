@@ -21,6 +21,7 @@ public:
     void KeyboardKeyRelease(int modifier, int keyIndex, int keyCode) override;
     void GatherGPUDirtyMemory(ICacheInvalidator * invalidator) override;
     uint64_t GetGPUTicks() override;
+    uint64_t GetProgramId() override;
     void GameFrameEnd() override;
     void AudioGetSyncIDs(uint32_t* ids, uint32_t maxCount, uint32_t* actualCount) override;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void* userData) override;

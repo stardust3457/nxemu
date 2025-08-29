@@ -156,6 +156,11 @@ uint64_t OSManager::GetGPUTicks()
     return m_coreSystem.CoreTiming().GetGPUTicks();
 }
 
+uint64_t OSManager::GetProgramId()
+{
+    return m_coreSystem.ApplicationProcess()->GetProgramId();
+}
+
 void OSManager::GameFrameEnd()
 {
     m_coreSystem.GetPerfStats().EndGameFrame();

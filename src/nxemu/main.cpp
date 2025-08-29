@@ -21,6 +21,11 @@ void RegisterWidgets(ISciterUI & sciterUI)
     Register_WidgetToolTipHost(sciterUI);
 }
 
+extern "C" {
+    __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;         // NVIDIA
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;   // AMD
+}
+
 int WINAPI WinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPSTR /*lpszArgs*/, _In_ int /*nWinMode*/)
 {
     bool Res = AppInit(&Notification::GetInstance());
