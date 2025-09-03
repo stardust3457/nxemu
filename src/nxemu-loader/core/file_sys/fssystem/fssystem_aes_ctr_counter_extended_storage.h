@@ -31,13 +31,7 @@ public:
     };
 
     struct Entry {
-        enum class Encryption : u8 {
-            Encrypted = 0,
-            NotEncrypted = 1,
-        };
-
         std::array<u8, sizeof(s64)> offset;
-        Encryption encryption_value;
         std::array<u8, 3> reserved;
         s32 generation;
 

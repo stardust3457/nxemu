@@ -213,12 +213,6 @@ size_t AesCtrCounterExtendedStorage::Read(u8* buffer, size_t size, size_t offset
         const auto cur_size = static_cast<size_t>(std::min(remaining_size, data_size));
         ASSERT(cur_size <= size);
 
-        // If necessary, perform decryption.
-        if (cur_entry.encryption_value == Entry::Encryption::Encrypted) {
-            UNIMPLEMENTED();
-            return 0;
-        }
-
         // Advance.
         cur_data += cur_size;
         cur_offset += cur_size;
