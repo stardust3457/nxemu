@@ -61,7 +61,6 @@ static std::vector<u64> AccumulateAOCTitleIDs(Core::System & system) {
         std::vector<ContentProviderEntry> entries(entriesCount);
         entriesCount = loader.GetContentProviderEntries(true, LoaderTitleType::AOC, true, LoaderContentRecordType::Data, false, 0, entries.data(), entriesCount);
         entries.resize(entriesCount);
-        std::vector<u64> add_on_content;
         std::transform(entries.begin(), entries.end(), std::back_inserter(add_on_content),
             [](const ContentProviderEntry& rce) { return rce.titleID; });
 
