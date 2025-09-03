@@ -23,6 +23,21 @@ struct VideoManager::Impl
         return true;
     }
     
+    void EmulationStarting(void)
+    {
+        Layout::FramebufferLayout layout;
+        if (m_emuWindow)
+        {
+            layout = m_emuWindow->GetFramebufferLayout();
+        }
+        m_emuWindow = nullptr;
+        m_emuWindow = std::make_unique<RenderWindow>(m_window);
+        m_emuWindow->UpdateCurrentFramebufferLayout(layout.width, layout.height);
+        m_gpuCore = nullptr;
+        m_gpuCore = VideoCore::CreateGPU(m_system, *(m_emuWindow.get()), *m_host1x);
+
+        m_gpuCore->Start();
+    }
     std::shared_ptr<Tegra::MemoryManager> m_gmmu;
     std::unique_ptr<Tegra::Host1x::Host1x> m_host1x;
     std::unique_ptr<RenderWindow> m_emuWindow;
@@ -43,17 +58,7 @@ VideoManager::~VideoManager()
 
 void VideoManager::EmulationStarting(void)
 {
-    Layout::FramebufferLayout layout;
-    if (impl->m_emuWindow)
-    {
-        layout = impl->m_emuWindow->GetFramebufferLayout();
-    }
-    impl->m_emuWindow = nullptr;
-    impl->m_emuWindow = std::make_unique<RenderWindow>(impl->m_window);
-    impl->m_emuWindow->UpdateCurrentFramebufferLayout(layout.width, layout.height);
-    impl->m_gpuCore = nullptr;  
-    impl->m_gpuCore = VideoCore::CreateGPU(impl->m_system, *(impl->m_emuWindow.get()), *impl->m_host1x);
-    impl->m_gpuCore->Start();
+    impl->EmulationStarting();
 }
 
 bool VideoManager::Initialize(void)

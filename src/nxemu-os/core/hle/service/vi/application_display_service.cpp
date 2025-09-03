@@ -215,6 +215,7 @@ Result IApplicationDisplayService::CreateStrayLayer(
                 std::min(out_native_window.size(), buffer.size()));
 
     *out_size = buffer.size();
+
     R_SUCCEED();
 }
 
