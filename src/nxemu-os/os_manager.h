@@ -25,6 +25,7 @@ public:
     void GameFrameEnd() override;
     void AudioGetSyncIDs(uint32_t* ids, uint32_t maxCount, uint32_t* actualCount) override;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void* userData) override;
+    void RegisterHostThread() override;
 
 private:
     OSManager() = delete;

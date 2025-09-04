@@ -363,6 +363,11 @@ struct GPU::Impl :
         rasterizer->OnCacheInvalidation(address, size);
     }
 
+    void RegisterHostThread()
+    {
+        m_system.OperatingSystem().RegisterHostThread();
+    }
+
     ISwitchSystem& m_system;
     GPU & gpu;
     Host1x::Host1x & host1x;
@@ -587,6 +592,10 @@ bool GPU::OnCPUWrite(DAddr addr, u64 size) {
 
 void GPU::FlushAndInvalidateRegion(DAddr addr, u64 size) {
     impl->FlushAndInvalidateRegion(addr, size);
+}
+
+void GPU::RegisterHostThread() {
+    impl->RegisterHostThread();
 }
 
 } // namespace Tegra

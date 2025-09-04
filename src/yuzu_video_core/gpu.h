@@ -260,6 +260,9 @@ public:
     /// Notify rasterizer that any caches of the specified region should be flushed and invalidated
     void FlushAndInvalidateRegion(DAddr addr, u64 size);
 
+    /// Register a host thread as an auxiliary thread.
+    void RegisterHostThread();
+
 private:
     struct Impl;
     mutable std::unique_ptr<Impl> impl;

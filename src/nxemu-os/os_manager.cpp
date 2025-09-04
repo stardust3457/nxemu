@@ -188,3 +188,8 @@ void OSManager::AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceE
         callback(devices[i].c_str(), userData);
     }
 }
+
+void OSManager::RegisterHostThread()
+{
+    m_coreSystem.RegisterHostThread();
+}
