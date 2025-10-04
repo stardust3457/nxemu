@@ -237,3 +237,14 @@ void VideoManager::WaitHost(uint32_t syncpoint_id, uint32_t expected_value)
     impl->m_host1x->GetSyncpointManager().WaitHost(syncpoint_id, expected_value);
 }
 
+uint32_t VideoManager::Host1xAllocate(uint32_t size) 
+{
+    Common::FlatAllocator<u32, 0, 32> & gmmu_allocator = impl->m_host1x->Allocator();
+    return gmmu_allocator.Allocate(static_cast<u32>(size));
+}
+
+void VideoManager::Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size)
+{
+    auto& gmmu = impl->m_host1x->GMMU();
+    gmmu.Map(static_cast<GPUVAddr>(address), virtual_address, size);
+}

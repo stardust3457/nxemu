@@ -280,6 +280,14 @@ void System::UnstallApplication() {
     impl->UnstallApplication();
 }
 
+void System::SetNVDECActive(bool is_nvdec_active) {
+    impl->SetNVDECActive(is_nvdec_active);
+}
+
+bool System::GetNVDECActive() {
+    return impl->GetNVDECActive();
+}
+
 bool System::IsPoweredOn() const {
     return impl->is_powered_on.load(std::memory_order::relaxed);
 }

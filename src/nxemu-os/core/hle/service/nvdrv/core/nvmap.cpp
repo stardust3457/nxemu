@@ -158,7 +158,11 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin) {
 
     std::scoped_lock lock(handle_description->mutex);
     const auto map_low_area = [&] {
-        UNIMPLEMENTED();
+        if (handle_description->pin_virt_address == 0) {
+            u32 address = video.Host1xAllocate(static_cast<u32>(handle_description->aligned_size));
+            video.Host1xMap(static_cast<GPUVAddr>(address), handle_description->d_address, handle_description->aligned_size);
+            handle_description->pin_virt_address = address;
+        }
     };
     if (!handle_description->pins) {
         // If we're in the unmap queue we can just remove ourselves and return since we're already
@@ -208,7 +212,7 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin) {
             }
 
             handle_description->d_address = address;
-            UNIMPLEMENTED();
+            video.MemoryMap(address, vaddress, map_size, session->asid.id, true);
             handle_description->in_heap = false;
         }
     }

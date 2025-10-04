@@ -67,11 +67,23 @@ NvResult nvhost_nvdec::Ioctl3(DeviceFD fd, Ioctl command, std::span<const u8> in
 }
 
 void nvhost_nvdec::OnOpen(NvCore::SessionId session_id, DeviceFD fd) {
-    UNIMPLEMENTED();
+    LOG_INFO(Service_NVDRV, "NVDEC video stream started");
+    system.SetNVDECActive(true);
+    sessions[fd] = session_id;
 }
 
 void nvhost_nvdec::OnClose(DeviceFD fd) {
-    UNIMPLEMENTED();
+    LOG_INFO(Service_NVDRV, "NVDEC video stream ended");
+    auto& host1x_file = core.Host1xDeviceFile();
+    const auto iter = host1x_file.fd_to_id.find(fd);
+    if (iter != host1x_file.fd_to_id.end()) {
+        UNIMPLEMENTED();
+    }
+    system.SetNVDECActive(false);
+    auto it = sessions.find(fd);
+    if (it != sessions.end()) {
+        sessions.erase(it);
+    }
 }
 
 } // namespace Service::Nvidia::Devices

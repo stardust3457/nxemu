@@ -69,6 +69,8 @@ __interface IVideo
     uint32_t HostSyncpointValue(uint32_t id) = 0;
     uint32_t HostSyncpointRegisterAction(uint32_t fence_id, uint32_t target_value, HostActionCallback operation, uint32_t slot, void * userData) = 0;
     void WaitHost(uint32_t syncpoint_id, uint32_t expected_value) = 0;
+    uint32_t Host1xAllocate(uint32_t size) = 0;
+    void Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size) = 0;
 };
 
 EXPORT IVideo * CALL CreateVideo(IRenderWindow & RenderWindow, ISwitchSystem & System);
