@@ -11,6 +11,7 @@ class SciterElement;
 class SystemConfigAudio;
 class SystemConfigGraphics;
 class SystemConfigDebug;
+class SystemConfigGameBrowser;
 class ConfigSetting;
 
 typedef std::pair<int32_t, std::string> SettingTranslation;
@@ -60,4 +61,5 @@ private:
     std::unique_ptr<SystemConfigGraphics> m_systemConfigGraphics;
     std::unique_ptr<SystemConfigAudio> m_systemConfigAudio;
     std::unique_ptr<SystemConfigDebug> m_systemConfigDebug;
+    std::unique_ptr<SystemConfigGameBrowser> m_systemConfigGameBrowser;
 };

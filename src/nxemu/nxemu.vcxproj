@@ -46,6 +46,7 @@
     <ClCompile Include="user_interface\settings\input_config.cpp" />
     <ClCompile Include="user_interface\settings\system_config_audio.cpp" />
     <ClCompile Include="user_interface\settings\system_config_debug.cpp" />
+    <ClCompile Include="user_interface\settings\system_config_game_browser.cpp" />
     <ClCompile Include="user_interface\settings\system_config_graphics.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -60,6 +61,7 @@
     <ClInclude Include="user_interface\settings\input_config.h" />
     <ClInclude Include="user_interface\settings\system_config_audio.h" />
     <ClInclude Include="user_interface\settings\system_config_debug.h" />
+    <ClInclude Include="user_interface\settings\system_config_game_browser.h" />
     <ClInclude Include="user_interface\settings\system_config_graphics.h" />
   </ItemGroup>
   <ItemGroup>

@@ -66,6 +66,9 @@
     <ClCompile Include="user_interface\settings\system_config_debug.cpp">
       <Filter>Source Files\user_interface\settings</Filter>
     </ClCompile>
+    <ClCompile Include="user_interface\settings\system_config_game_browser.cpp">
+      <Filter>Source Files\user_interface\settings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="user_interface\resource.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="user_interface\settings\system_config_debug.h">
+      <Filter>Header Files\user_interface\settings</Filter>
+    </ClInclude>
+    <ClInclude Include="user_interface\settings\system_config_game_browser.h">
       <Filter>Header Files\user_interface\settings</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,6 +3,7 @@
 #include "system_config_audio.h"
 #include "system_config_debug.h"
 #include "system_config_graphics.h"
+#include "system_config_game_browser.h"
 #include <common/std_string.h>
 #include <nxemu-core/machine/switch_system.h>
 #include <nxemu-core/settings/identifiers.h>
@@ -31,8 +32,8 @@ void SystemConfig::Display(void * parentWindow)
 
     enum
     {
-        WINDOW_HEIGHT = 300,
-        WINDOW_WIDTH = 300,
+        WINDOW_HEIGHT = 720,
+        WINDOW_WIDTH = 1050,
     };
 
     if (!m_sciterUI.WindowCreate(parentWindow, "system_config.html", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, SUIW_CHILD, m_window))
@@ -52,8 +53,8 @@ void SystemConfig::Display(void * parentWindow)
 
         SciterElement okButton = root.FindFirst("button[role=\"window-ok\"]");
         m_sciterUI.AttachHandler(okButton, IID_ICLICKSINK, (IClickSink*)this);
-
     }
+    m_window->CenterWindow();
 }
 
 void SystemConfig::SavePage(SCITER_ELEMENT pageElement, const ConfigSetting* settings, size_t settingsCount)
@@ -248,7 +249,11 @@ void SystemConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEME
     else if (pageName == "Graphics")
     {
         m_systemConfigGraphics.reset(new SystemConfigGraphics(m_sciterUI, *this, m_window->GetHandle(), page));
-    }   
+    }
+    else if (pageName == "GameBrowser")
+    {
+        m_systemConfigGameBrowser.reset(new SystemConfigGameBrowser(m_sciterUI, *this, *m_window, page));
+    }
 }
 
 void SystemConfig::PageNavPageChanged(const std::string & /*pageName*/, SCITER_ELEMENT /*pageNav*/)
@@ -272,6 +277,10 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
         {
             m_systemConfigGraphics->SaveSetting();
         }
+        if (m_systemConfigGameBrowser)
+        {
+            m_systemConfigGameBrowser->SaveSetting();
+        }
         SwitchSystem * system = SwitchSystem::GetInstance();
         if (system != nullptr)
         {
@@ -279,7 +288,7 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
         }
         m_window->Destroy();
     }
-    return false;
+    return true;
 }
 
 void SystemConfig::InitializeTranslations()

@@ -41,6 +41,7 @@ namespace
 
     static UISetting settings[] = {
         { "RecentFiles", &uiSettings.recentFiles},
+        { "GameDirectories", &uiSettings.gameDirectories},
         { "LanguageDirectory", &uiSettings.languageDir, &uiSettings.languageDirValue, GetDefaultLanguageDir(), "./lang"},
         { "LanguageBase", &uiSettings.languageBase, "english"},
         { "LanguageCurrent", &uiSettings.languageCurrent, "english"},
@@ -140,12 +141,12 @@ void SaveUISetting(void)
         case SettingType::StringList:
             if (!setting.setting.string_list->empty())
             {
-                JsonValue recentFiles(JsonValueType::Array);
+                JsonValue jsonList(JsonValueType::Array);
                 for (const std::string & item : *(setting.setting.string_list))
                 {
-                    recentFiles.Append(JsonValue(item));
+                    jsonList.Append(JsonValue(item));
                 }
-                json[setting.json_key] = std::move(recentFiles);
+                json[setting.json_key] = std::move(jsonList);
             }
             break;
         case SettingType::Path:

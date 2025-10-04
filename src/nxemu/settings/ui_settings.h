@@ -8,6 +8,7 @@ typedef std::vector<std::string> Stringlist;
 struct UISettings
 {
     Stringlist recentFiles;
+    Stringlist gameDirectories;
     Path languageDir;
     std::string languageDirValue;
     std::string languageBase;

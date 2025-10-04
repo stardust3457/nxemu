@@ -4,6 +4,7 @@
 
 #include <CommDlg.h>
 #include <io.h>
+#include <shlobj_core.h>
 
 const char DRIVE_DELIMITER = ':';
 const char * const DIR_DOUBLEDELIM = "\\\\";
@@ -369,6 +370,51 @@ bool Path::FileSelect(void * hwndOwner, const char * initialDir, const char * fi
     m_path = stdstr().FromUTF16(fileName.data());
     CleanPath(m_path);
     return true;
+}
+
+Path & Path::BrowseForDirectory(void * parentWindow, const char * title)
+{
+    *this = Path();
+    const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+    IFileDialog* dlg = nullptr;
+    HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER,IID_PPV_ARGS(&dlg));
+    if (SUCCEEDED(hr))
+    {
+        DWORD options = 0;
+        if (SUCCEEDED(dlg->GetOptions(&options)))
+        {
+            options |= FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST | FOS_NOCHANGEDIR;
+            dlg->SetOptions(options);
+        }
+
+        if (title && *title)
+        {
+            dlg->SetTitle(stdstr_f(title).ToUTF16().c_str());
+        }
+        hr = dlg->Show((HWND)parentWindow);
+        if (SUCCEEDED(hr))
+        {
+            IShellItem* result = nullptr;
+            if (SUCCEEDED(dlg->GetResult(&result)) && result)
+            {
+                PWSTR psz = nullptr;
+                if (SUCCEEDED(result->GetDisplayName(SIGDN_FILESYSPATH, &psz)) && psz)
+                {
+                    *this = Path(stdstr().FromUTF16(psz).c_str(), "");
+                    CoTaskMemFree(psz);
+                }
+                result->Release();
+            }
+        }
+        dlg->Release();
+    }
+
+    if (SUCCEEDED(hrCo))
+    {
+        CoUninitialize();
+    }
+    return *this;
 }
 
 bool Path::IsDirectory() const

@@ -1,0 +1,233 @@
+:root {
+  --color-main-background: #2d2d2d;
+  --color-titlebar-background: #181818;
+  --color-titlebar-background-inactive: #2d2d2d;
+  --color-titlebar-text: #FFF;
+  --color-titlebar-icon: #FFF;
+  --color-titlebar-icon-hover: #0078d7;
+  --color-titlebar-icon-inactive: #2f7bb0;
+  --color-menubar-background: #181818;
+  --color-menubar-background-hover: #2c2c2c;
+  --color-menubar-background-active: #2c2c2c;
+  --color-menuitem-background: #2c2c2c;
+  --color-menuitem-background-hover: #383838;
+  --color-window-border: #353535;
+}
+
+html
+{
+  border: 1px solid var(--color-window-border);
+  background-color: var(--color-main-background);
+}
+
+html[window-state="maximized"]
+{
+  border: window-frame-width solid transparent;
+}
+
+html > header
+{
+  width: *;
+  flow: horizontal;
+  background-color: var(--color-titlebar-background);
+  height: window-caption-height;
+  margin: 0;
+  color: var(--color-titlebar-text);
+}
+
+html[data-active="false"] > header
+{
+  background-color: var(--color-titlebar-background-inactive);
+}
+
+html > header > window-caption
+{
+  display: block;
+  line-height: window-caption-height;
+  width: *;
+  padding: 0 1em;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 0.9em;
+  font-weight: 100;
+}
+
+html > header > window-caption span
+{
+  vertical-align: middle;
+}
+
+html > header > window-caption img
+{
+  vertical-align: middle;
+  margin-right: 0.4em;
+  width: 1.5em;
+  height: 1.5em; 
+}
+
+html > header > window-buttons
+{
+  display: block;
+  flow: horizontal;
+  width: max-content;
+  height: *;
+}
+
+html > header > window-buttons > window-button {
+  behavior: clickable;
+  display: block;
+  height: *;
+  width: window-button-width;
+  foreground-size: 2em 1.5em;
+  foreground-repeat: no-repeat;
+  foreground-position: 50% 50%;
+  stroke-width: 0;
+  fill: var(--color-titlebar-icon);
+  transition: background-color linear 100ms;
+  padding: 0.25em;
+}
+
+html[data-active="false"] > header > window-buttons > window-button
+{
+  fill: var(--color-titlebar-icon-inactive);
+}
+
+html > header > window-buttons > window-button:hover
+{
+  background: var(--color-titlebar-icon-hover);
+}
+
+html > header > window-buttons > window-button[role="window-close"]
+{
+  foreground-image: url(icon:window-close);
+}
+
+html > header > window-buttons > window-button[role="window-close"]:hover
+{
+  background: rgb(232,17,35);
+  fill: #fff;
+}
+
+html > header > window-buttons > window-button[role="window-maximize"]
+{
+  foreground-image: url(icon:window-maximize);
+}
+
+html[window-state="maximized"]
+{
+  border-color: transparent;
+}
+
+html[window-state="maximized"] > header > window-buttons > window-button[role="window-maximize"]
+{
+  foreground-image: url(icon:window-restore);
+}
+
+html > header > window-buttons > window-button[role="window-minimize"]
+{
+  foreground-image: url(icon:window-minimize);
+}
+
+ul#menu-bar
+{
+  margin: 0;
+  padding: 0 0.5em 0.3em 0.5em;
+  border-left: 1px solid transparent;
+  background: var(--color-menubar-background);
+  color: #eff0f1;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 0.9em;
+  font-weight: 100;
+  behavior:menu-bar;
+  flow: horizontal;
+}
+
+ul#menu-bar > li
+{
+  padding: 0.15em 0.45em;
+  margin: 0;
+  white-space: nowrap;
+  width: max-content;
+  display: block;
+  flow: horizontal;
+  border-radius: 5px;
+}
+
+ul#menu-bar > li:hover
+{
+  background: var(--color-menubar-background-hover);
+}
+
+ul#menu-bar:focus > li:current,
+ul#menu-bar > li:owns-popup {
+  background-color: var(--color-menubar-background-active);
+  border-radius: 5px 5px 0;
+}
+
+menu
+{
+  behavior:menu;
+  flow: vertical;
+  display:none;
+  margin:0;
+  padding: 0.2em;
+  max-width:max-content;
+  background: var(--color-menuitem-background);
+  color: #eff0f1;
+  border: 1px solid #141414;
+  border-top: none;
+}
+
+@media (menu-animation-supported) {
+   menu {
+     popup-animation: popup-animation(type:blend,duration:100ms);
+   }
+}
+
+menu menu
+{
+  max-width: max-content;
+}
+
+menu li
+{
+  width:*;
+  display:block;
+  flow:horizontal;
+  vertical-align:middle;
+  foreground-repeat: no-repeat;
+  foreground-position: left 2px top 50%;
+  padding: 0.2em 1.8em 0.2em 1.3em;
+  margin: 0;
+}
+
+menu li:hover
+{
+  background: var(--color-menuitem-background-hover);
+  border-radius: 5px;
+}
+
+menu li:disabled 
+{ 
+  color:graytext; 
+  foreground-image: none; 
+}
+
+menu li:has-child-of-type(menu)
+{
+  foreground-image:url(stock:arrow-right);
+  foreground-repeat: no-repeat;
+  foreground-position: top 50% right 2px;
+}
+
+menu li:has-child-of-type(menu):rtl
+{
+  foreground-image:url(stock:arrow-left);
+  foreground-repeat: no-repeat;
+  foreground-position: top 50% left 2px;
+}
+
+hr
+{
+  padding: 0;
+  margin: 0.2em 0;
+}

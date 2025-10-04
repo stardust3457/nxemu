@@ -59,6 +59,7 @@ public:
     bool FileExists() const;
     bool FileSelect(void * hwndOwner, const char * initialDir, const char * fileFilter, bool fileMustExist);
 
+    Path & BrowseForDirectory(void * parentWindow, const char * title);
     bool IsDirectory() const;
     bool DirectoryCreate(bool createIntermediates = true);
     bool DirectoryChange() const;
