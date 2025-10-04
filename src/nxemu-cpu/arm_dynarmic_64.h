@@ -54,6 +54,7 @@ private:
     std::unique_ptr<Dynarmic::A64::Jit> m_jit{};
     ISwitchSystem & m_system;
     ICpuInfo & m_CpuInfo;
+    IMemory & m_memory;
     IOperatingSystem & m_OperatingSystem;
     Dynarmic::ExclusiveMonitor * m_monitor;
     A64Registers m_reg;

@@ -63,6 +63,11 @@ __interface IMemory
     uint32_t Read32(uint64_t addr) = 0;
     uint64_t Read64(uint64_t addr) = 0;
 
+    void Write8(uint64_t addr, uint8_t value) = 0;
+    void Write16(uint64_t addr, uint16_t value) = 0;
+    void Write32(uint64_t addr, uint32_t value) = 0;
+    void Write64(uint64_t addr, uint64_t value) = 0;
+
     bool WriteExclusive8(uint64_t addr, uint8_t data, uint8_t expected) = 0;
     bool WriteExclusive16(uint64_t addr, uint16_t data, uint16_t expected) = 0;
     bool WriteExclusive32(uint64_t addr, uint32_t data, uint32_t expected) = 0;
@@ -73,6 +78,7 @@ __interface ICpuInfo
 {
     uint64_t CpuTicks() = 0;
     void ServiceCall(uint32_t index) = 0;
+    IMemory & Memory() = 0;
     bool ReadMemory(uint64_t addr, uint8_t * buffer, uint32_t len) = 0;
     bool WriteMemory(uint64_t addr, const uint8_t * buffer, uint32_t len) = 0;
 };

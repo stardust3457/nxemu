@@ -979,19 +979,19 @@ uint64_t Memory::Read64(uint64_t addr) {
     return impl->Read64(addr);
 }
 
-void Memory::Write8(Common::ProcessAddress addr, u8 data) {
+void Memory::Write8(uint64_t addr, uint8_t data) {
     impl->Write8(addr, data);
 }
 
-void Memory::Write16(Common::ProcessAddress addr, u16 data) {
+void Memory::Write16(uint64_t addr, uint16_t data) {
     impl->Write16(addr, data);
 }
 
-void Memory::Write32(Common::ProcessAddress addr, u32 data) {
+void Memory::Write32(uint64_t addr, uint32_t data) {
     impl->Write32(addr, data);
 }
 
-void Memory::Write64(Common::ProcessAddress addr, u64 data) {
+void Memory::Write64(uint64_t addr, uint64_t data) {
     impl->Write64(addr, data);
 }
 

@@ -216,7 +216,7 @@ public:
      *
      * @post The memory at the given virtual address contains the specified data value.
      */
-    void Write8(Common::ProcessAddress addr, u8 data);
+    void Write8(uint64_t addr, uint8_t data);
 
     /**
      * Writes a 16-bit unsigned integer to the given virtual address in
@@ -227,7 +227,7 @@ public:
      *
      * @post The memory range [addr, sizeof(data)) contains the given data value.
      */
-    void Write16(Common::ProcessAddress addr, u16 data);
+    void Write16(uint64_t addr, uint16_t data);
 
     /**
      * Writes a 32-bit unsigned integer to the given virtual address in
@@ -238,7 +238,7 @@ public:
      *
      * @post The memory range [addr, sizeof(data)) contains the given data value.
      */
-    void Write32(Common::ProcessAddress addr, u32 data);
+    void Write32(uint64_t addr, uint32_t data);
 
     /**
      * Writes a 64-bit unsigned integer to the given virtual address in
@@ -249,7 +249,7 @@ public:
      *
      * @post The memory range [addr, sizeof(data)) contains the given data value.
      */
-    void Write64(Common::ProcessAddress addr, u64 data);
+    void Write64(uint64_t addr, uint64_t data);
 
     /**
      * Writes a 8-bit unsigned integer to the given virtual address in

@@ -8,6 +8,7 @@ ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor * monitor, ISwitchSystem
     m_jit(nullptr),
     m_system(System),
     m_CpuInfo(CpuInfo),
+    m_memory(CpuInfo.Memory()),
     m_OperatingSystem(System.OperatingSystem()),
     m_monitor(monitor),
     m_coreIndex(coreIndex)
@@ -109,22 +110,12 @@ std::uint16_t ArmDynarmic64::MemoryRead16(std::uint64_t vaddr)
 
 std::uint32_t ArmDynarmic64::MemoryRead32(std::uint64_t vaddr)
 {
-    uint32_t Value;
-    if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
-    {
-        return Value;
-    }
-    return 0;
+    return m_memory.Read32(vaddr);
 }
 
 std::uint64_t ArmDynarmic64::MemoryRead64(std::uint64_t vaddr)
 {
-    uint64_t Value;
-    if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
-    {
-        return Value;
-    }
-    return 0;
+    return m_memory.Read64(vaddr);
 }
 
 Dynarmic::A64::Vector ArmDynarmic64::MemoryRead128(std::uint64_t vaddr)
@@ -139,22 +130,22 @@ Dynarmic::A64::Vector ArmDynarmic64::MemoryRead128(std::uint64_t vaddr)
 
 void ArmDynarmic64::MemoryWrite8(std::uint64_t vaddr, std::uint8_t value)
 {
-    m_CpuInfo.WriteMemory(vaddr, &value, sizeof(value));
+    m_memory.Write8(vaddr, value);
 }
 
 void ArmDynarmic64::MemoryWrite16(std::uint64_t vaddr, std::uint16_t value)
 {
-    m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    m_memory.Write16(vaddr, value);
 }
 
 void ArmDynarmic64::MemoryWrite32(std::uint64_t vaddr, std::uint32_t value)
 {
-    m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    m_memory.Write32(vaddr, value);
 }
 
 void ArmDynarmic64::MemoryWrite64(std::uint64_t vaddr, std::uint64_t value)
 {
-    m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    m_memory.Write64(vaddr, value);
 }
 
 void ArmDynarmic64::MemoryWrite128(std::uint64_t vaddr, Dynarmic::A64::Vector value)
@@ -182,10 +173,9 @@ bool ArmDynarmic64::MemoryWriteExclusive64(std::uint64_t vaddr, std::uint64_t va
     return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
 }
 
-bool ArmDynarmic64::MemoryWriteExclusive128(std::uint64_t /*vaddr*/, Dynarmic::A64::Vector /*value*/, Dynarmic::A64::Vector /*expected*/)
+bool ArmDynarmic64::MemoryWriteExclusive128(std::uint64_t vaddr, Dynarmic::A64::Vector value, Dynarmic::A64::Vector /*expected*/)
 {
-    g_notify->BreakPoint(__FILE__, __LINE__);
-    return false;
+    return m_CpuInfo.WriteMemory(vaddr, (const uint8_t*)&value, sizeof(value));
 }
 
 bool ArmDynarmic64::IsReadOnlyMemory(std::uint64_t /*vaddr*/)

@@ -34,6 +34,11 @@ public:
         m_arm64Executor->HaltExecution(IArm64Executor::HaltReason::SupervisorCall);
     }
 
+    IMemory & Memory() override
+    {
+        return m_memory;
+    }
+
     bool ReadMemory(uint64_t addr, uint8_t * Buffer, uint32_t Len)
     {
         return m_memory.ReadBlock(addr, Buffer, Len);

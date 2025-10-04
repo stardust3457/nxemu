@@ -566,7 +566,7 @@ void KThread::SetInterruptFlag() {
     }
 
     auto& memory = this->GetOwnerProcess()->GetMemory();
-    memory.Write16(m_tls_address + offsetof(ThreadLocalRegion, interrupt_flag), 1);
+    memory.Write16(m_tls_address.GetValue() + offsetof(ThreadLocalRegion, interrupt_flag), 1);
 }
 
 void KThread::ClearInterruptFlag() {
@@ -576,7 +576,7 @@ void KThread::ClearInterruptFlag() {
     }
 
     auto& memory = this->GetOwnerProcess()->GetMemory();
-    memory.Write16(m_tls_address + offsetof(ThreadLocalRegion, interrupt_flag), 0);
+    memory.Write16(m_tls_address.GetValue() + offsetof(ThreadLocalRegion, interrupt_flag), 0);
 }
 
 Result KThread::GetCoreMask(s32* out_ideal_core, u64* out_affinity_mask) {

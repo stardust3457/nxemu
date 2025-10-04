@@ -1128,7 +1128,7 @@ Result KProcess::GetThreadList(s32* out_num_threads, KProcessAddress out_thread_
             const u64 id = thread->GetId();
 
             // Copy the id to userland.
-            memory.Write64(out_thread_ids + count * sizeof(u64), id);
+            memory.Write64(out_thread_ids.GetValue() + count * sizeof(u64), id);
         }
 
         // Increment the count.
