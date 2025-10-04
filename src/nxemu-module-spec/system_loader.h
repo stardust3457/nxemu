@@ -227,11 +227,17 @@ __interface IFileSystemController
     bool OpenSDMC(IVirtualDirectory** out_sdmc) const = 0;
 };
 
+__interface IRomInfo
+{
+    void Release() = 0;
+};
+
 __interface ISystemloader
 {
     bool Initialize() = 0;
     bool SelectAndLoad(void * parentWindow) = 0;
-    bool LoadRom(const char * romFile) = 0;
+    bool LoadRom(const char * fileName) = 0;
+    IRomInfo * RomInfo(const char * fileName) = 0;
 
     IFileSystemController & FileSystemController() = 0;
     IVirtualFile * SynthesizeSystemArchive(const uint64_t title_id) = 0;

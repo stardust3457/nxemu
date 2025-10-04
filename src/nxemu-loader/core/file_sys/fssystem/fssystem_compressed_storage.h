@@ -54,7 +54,7 @@ private:
         CompressedStorageCore() : m_table(), m_data_storage() {}
 
         ~CompressedStorageCore() {
-            UNIMPLEMENTED();
+            this->Finalize();
         }
 
     public:
@@ -62,12 +62,29 @@ private:
                           VirtualFile entry_storage, s32 bktr_entry_count, size_t block_size_max,
                           size_t continuous_reading_size_max,
                           GetDecompressorFunction get_decompressor) {
-            UNIMPLEMENTED();
+            // Check pre-conditions.
+            ASSERT(0 < block_size_max);
+            ASSERT(block_size_max <= continuous_reading_size_max);
+            ASSERT(get_decompressor != nullptr);
+
+            // Initialize our entry table.
+            R_TRY(m_table.Initialize(node_storage, entry_storage, NodeSize, sizeof(Entry),
+                                     bktr_entry_count));
+
+            // Set our other fields.
+            m_block_size_max = block_size_max;
+            m_continuous_reading_size_max = continuous_reading_size_max;
+            m_data_storage = data_storage;
+            m_get_decompressor_function = get_decompressor;
+
             R_SUCCEED();
         }
 
         void Finalize() {
-            UNIMPLEMENTED();
+            if (this->IsInitialized()) {
+                m_table.Finalize();
+                m_data_storage = VirtualFile();
+            }
         }
 
         VirtualFile GetDataStorage() {
@@ -686,7 +703,191 @@ private:
         }
 
         Result Read(CompressedStorageCore& core, s64 offset, void* buffer, size_t size) {
-            UNIMPLEMENTED();
+            // If we have nothing to read, succeed.
+            R_SUCCEED_IF(size == 0);
+
+            // Check that we have a buffer to read into.
+            R_UNLESS(buffer != nullptr, ResultNullptrArgument);
+
+            // Check that the read is in bounds.
+            R_UNLESS(offset <= m_storage_size, ResultInvalidOffset);
+
+            // Determine how much we can read.
+            const size_t read_size = std::min<size_t>(size, m_storage_size - offset);
+
+            // Create head/tail ranges.
+            AccessRange head_range = {};
+            AccessRange tail_range = {};
+            bool is_tail_set = false;
+
+            // Operate to determine the head range.
+            R_TRY(core.OperatePerEntry(
+                offset, 1,
+                [&](bool* out_continuous, const Entry& entry, s64 virtual_data_size,
+                    s64 data_offset, s64 data_read_size) -> Result {
+                    // Set the head range.
+                    head_range = {
+                        .virtual_offset = entry.virt_offset,
+                        .virtual_size = virtual_data_size,
+                        .physical_size = static_cast<u32>(entry.phys_size),
+                        .is_block_alignment_required =
+                            CompressionTypeUtility::IsBlockAlignmentRequired(
+                                entry.compression_type),
+                    };
+
+                    // If required, set the tail range.
+                    if (static_cast<s64>(offset + read_size) <=
+                        entry.virt_offset + virtual_data_size) {
+                        tail_range = {
+                            .virtual_offset = entry.virt_offset,
+                            .virtual_size = virtual_data_size,
+                            .physical_size = static_cast<u32>(entry.phys_size),
+                            .is_block_alignment_required =
+                                CompressionTypeUtility::IsBlockAlignmentRequired(
+                                    entry.compression_type),
+                        };
+                        is_tail_set = true;
+                    }
+
+                    // We only want to determine the head range, so we're not continuous.
+                    *out_continuous = false;
+                    R_SUCCEED();
+                }));
+
+            // If necessary, determine the tail range.
+            if (!is_tail_set) {
+                R_TRY(core.OperatePerEntry(
+                    offset + read_size - 1, 1,
+                    [&](bool* out_continuous, const Entry& entry, s64 virtual_data_size,
+                        s64 data_offset, s64 data_read_size) -> Result {
+                        // Set the tail range.
+                        tail_range = {
+                            .virtual_offset = entry.virt_offset,
+                            .virtual_size = virtual_data_size,
+                            .physical_size = static_cast<u32>(entry.phys_size),
+                            .is_block_alignment_required =
+                                CompressionTypeUtility::IsBlockAlignmentRequired(
+                                    entry.compression_type),
+                        };
+
+                        // We only want to determine the tail range, so we're not continuous.
+                        *out_continuous = false;
+                        R_SUCCEED();
+                    }));
+            }
+
+            // Begin performing the accesses.
+            s64 cur_offset = offset;
+            size_t cur_size = read_size;
+            char* cur_dst = static_cast<char*>(buffer);
+
+            // Determine our alignment.
+            const bool head_unaligned = head_range.is_block_alignment_required &&
+                                        (cur_offset != head_range.virtual_offset ||
+                                         static_cast<s64>(cur_size) < head_range.virtual_size);
+            const bool tail_unaligned = [&]() -> bool {
+                if (tail_range.is_block_alignment_required) {
+                    if (static_cast<s64>(cur_size + cur_offset) ==
+                        tail_range.GetEndVirtualOffset()) {
+                        return false;
+                    } else if (!head_unaligned) {
+                        return true;
+                    } else {
+                        return head_range.GetEndVirtualOffset() <
+                               static_cast<s64>(cur_size + cur_offset);
+                    }
+                } else {
+                    return false;
+                }
+            }();
+
+            // Determine start/end offsets.
+            const s64 start_offset =
+                head_range.is_block_alignment_required ? head_range.virtual_offset : cur_offset;
+            const s64 end_offset = tail_range.is_block_alignment_required
+                                       ? tail_range.GetEndVirtualOffset()
+                                       : cur_offset + cur_size;
+
+            // Perform the read.
+            bool is_burst_reading = false;
+            R_TRY(core.Read(
+                start_offset, end_offset - start_offset,
+                [&](size_t size_buffer_required,
+                    const CompressedStorageCore::ReadImplFunction& read_impl) -> Result {
+                    // Determine whether we're burst reading.
+                    const AccessRange* unaligned_range = nullptr;
+                    if (!is_burst_reading) {
+                        // Check whether we're using head, tail, or none as unaligned.
+                        if (head_unaligned && head_range.virtual_offset <= cur_offset &&
+                            cur_offset < head_range.GetEndVirtualOffset()) {
+                            unaligned_range = std::addressof(head_range);
+                        } else if (tail_unaligned && tail_range.virtual_offset <= cur_offset &&
+                                   cur_offset < tail_range.GetEndVirtualOffset()) {
+                            unaligned_range = std::addressof(tail_range);
+                        } else {
+                            is_burst_reading = true;
+                        }
+                    }
+                    ASSERT((is_burst_reading ^ (unaligned_range != nullptr)));
+
+                    // Perform reading by burst, or not.
+                    if (is_burst_reading) {
+                        // Check that the access is valid for burst reading.
+                        ASSERT(size_buffer_required <= cur_size);
+
+                        // Perform the read.
+                        Result rc = read_impl(cur_dst, size_buffer_required);
+                        if (R_FAILED(rc)) {
+                            R_THROW(rc);
+                        }
+
+                        // Advance.
+                        cur_dst += size_buffer_required;
+                        cur_offset += size_buffer_required;
+                        cur_size -= size_buffer_required;
+
+                        // Determine whether we're going to continue burst reading.
+                        const s64 offset_aligned =
+                            tail_unaligned ? tail_range.virtual_offset : end_offset;
+                        ASSERT(cur_offset <= offset_aligned);
+
+                        if (offset_aligned <= cur_offset) {
+                            is_burst_reading = false;
+                        }
+                    } else {
+                        // We're not burst reading, so we have some unaligned range.
+                        ASSERT(unaligned_range != nullptr);
+
+                        // Check that the size is correct.
+                        ASSERT(size_buffer_required ==
+                               static_cast<size_t>(unaligned_range->virtual_size));
+
+                        // Get a pooled buffer for our read.
+                        PooledBuffer pooled_buffer;
+                        pooled_buffer.Allocate(size_buffer_required, size_buffer_required);
+
+                        // Perform read.
+                        Result rc = read_impl(pooled_buffer.GetBuffer(), size_buffer_required);
+                        if (R_FAILED(rc)) {
+                            R_THROW(rc);
+                        }
+
+                        // Copy the data we read to the destination.
+                        const size_t skip_size = cur_offset - unaligned_range->virtual_offset;
+                        const size_t copy_size = std::min<size_t>(
+                            cur_size, unaligned_range->GetEndVirtualOffset() - cur_offset);
+
+                        std::memcpy(cur_dst, pooled_buffer.GetBuffer() + skip_size, copy_size);
+
+                        // Advance.
+                        cur_dst += copy_size;
+                        cur_offset += copy_size;
+                        cur_size -= copy_size;
+                    }
+
+                    R_SUCCEED();
+                }));
+
             R_SUCCEED();
         }
 

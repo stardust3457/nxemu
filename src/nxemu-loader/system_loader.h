@@ -29,7 +29,8 @@ public:
     //ISystemloader
     bool Initialize() override;
     bool SelectAndLoad(void * parentWindow) override;
-    bool LoadRom(const char * romFile) override;
+    bool LoadRom(const char * fileName) override;
+    IRomInfo * RomInfo(const char * fileName) override;
 
     IFileSystemController & FileSystemController() override;
     IVirtualFile * SynthesizeSystemArchive(const uint64_t title_id) override;

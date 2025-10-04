@@ -40,6 +40,25 @@ namespace {
         }
     }
 
+    bool HasSupportedFileExtension(const char * fileName)
+    {
+        static const char * supported_extensions[] = {
+            "nro",
+            "dxci", 
+            "dnsp"
+        };
+
+        std::string ext = Path(fileName).GetExtension();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        for (const char* supported : supported_extensions) 
+        {
+            if (ext == supported) 
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 } // Anonymous namespace
 
 struct Systemloader::Impl {
@@ -104,10 +123,10 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
     return LoadRom(fileName.c_str());
 }
 
-bool Systemloader::LoadRom(const char * romFile)
+bool Systemloader::LoadRom(const char * fileName)
 {
     g_settings->SetBool(NXCoreSetting::RomLoading, true);
-    const FileSys::VirtualFile file = Core::GetGameFileFromPath(impl->m_virtualFilesystem, romFile);
+    const FileSys::VirtualFile file = Core::GetGameFileFromPath(impl->m_virtualFilesystem, fileName);
     impl->app_loader = Loader::GetLoader(*this, file, 0, 0);
     if (!impl->app_loader)
     {
@@ -157,45 +176,64 @@ bool Systemloader::LoadRom(const char * romFile)
         g_settings->SetBool(NXCoreSetting::RomLoading, false);
         return false;
     }
+    std::vector<u8> nacp_data;
+    FileSys::NACP nacp;
+    if (impl->app_loader->ReadControlData(nacp) == LoaderResultStatus::Success)
     {
-        std::vector<u8> nacp_data;
-        FileSys::NACP nacp;
-        if (impl->app_loader->ReadControlData(nacp) == LoaderResultStatus::Success)
-        {
-            nacp_data = nacp.GetRawBytes();
-        }
-        else
-        {
-            nacp_data.resize(sizeof(FileSys::RawNACP));
-        }
-
-        //launch.title_id = process.GetProgramId();
-        FileSys::PatchManager pm{ impl->m_titleID, impl->m_fsController, *impl->m_contentProvider };
-        uint32_t version = pm.GetGameVersion().value_or(0);
-
-        // TODO(DarkLordZach): When FSController/Game Card Support is added, if
-        // current_process_game_card use correct StorageId
-        StorageId baseGameStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(impl->m_titleID, LoaderContentRecordType::Program));
-        StorageId updateStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(FileSys::GetUpdateTitleID(impl->m_titleID), LoaderContentRecordType::Program));
-
-        IOperatingSystem& operatingSystem = impl->m_system.OperatingSystem();
-        operatingSystem.StartApplicationProcess(load_parameters->main_thread_priority, load_parameters->main_thread_stack_size, version, baseGameStorageId, updateStorageId, nacp_data.data(), (uint32_t)nacp_data.size());
+        nacp_data = nacp.GetRawBytes();
     }
+    else
+    {
+        nacp_data.resize(sizeof(FileSys::RawNACP));
+    }
+
+    //launch.title_id = process.GetProgramId();
+    FileSys::PatchManager pm{ impl->m_titleID, impl->m_fsController, *impl->m_contentProvider };
+    uint32_t version = pm.GetGameVersion().value_or(0);
 
     std::string title;
     impl->app_loader->ReadTitle(title);
     g_settings->SetString(NXCoreSetting::GameName, title.c_str());
-    g_settings->SetString(NXCoreSetting::GameFile, romFile);
+    g_settings->SetString(NXCoreSetting::GameFile, fileName);
     g_settings->SetBool(NXCoreSetting::RomLoading, false);
     impl->m_system.StartEmulation();
+
+    // TODO(DarkLordZach): When FSController/Game Card Support is added, if
+    // current_process_game_card use correct StorageId
+    StorageId baseGameStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(impl->m_titleID, LoaderContentRecordType::Program));
+    StorageId updateStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(FileSys::GetUpdateTitleID(impl->m_titleID), LoaderContentRecordType::Program));
+
+    IOperatingSystem& operatingSystem = impl->m_system.OperatingSystem();
+    operatingSystem.StartApplicationProcess(load_parameters->main_thread_priority, load_parameters->main_thread_stack_size, version, baseGameStorageId, updateStorageId, nacp_data.data(), (uint32_t)nacp_data.size());
     return true;
 }
 
-ISwitchSystem & Systemloader::GetSystem() {
+IRomInfo * Systemloader::RomInfo(const char * fileName)
+{
+    if (!HasSupportedFileExtension(fileName))
+    {
+        return nullptr;
+    }
+    const FileSys::VirtualFile file = impl->m_virtualFilesystem->OpenFile(fileName, VirtualFileOpenMode::Read);
+    if (!file)
+    {
+        return nullptr;
+    }
+    std::unique_ptr<Loader::AppLoader> loader = Loader::GetLoader(*this, file);
+    if (!loader)
+    {
+        return nullptr;
+    }
+    return nullptr;
+}
+
+ISwitchSystem & Systemloader::GetSystem() 
+{
     return impl->m_system;
 }
 
-FileSys::ContentProvider & Systemloader::GetContentProvider() {
+FileSys::ContentProvider & Systemloader::GetContentProvider()
+{
     return *impl->m_contentProvider;
 }
 

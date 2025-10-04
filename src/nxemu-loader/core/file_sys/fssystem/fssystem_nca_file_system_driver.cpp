@@ -909,7 +909,49 @@ Result NcaFileSystemDriver::CreateCompressedStorage(VirtualFile* out,
                                                     VirtualFile* out_meta, VirtualFile base_storage,
                                                     const NcaCompressionInfo& compression_info,
                                                     GetDecompressorFunction get_decompressor) {
-    UNIMPLEMENTED();
+    // Check pre-conditions.
+    ASSERT(out != nullptr);
+    ASSERT(base_storage != nullptr);
+    ASSERT(get_decompressor != nullptr);
+
+    // Read and verify the bucket tree header.
+    BucketTree::Header header;
+    std::memcpy(std::addressof(header), compression_info.bucket.header.data(), sizeof(header));
+    R_TRY(header.Verify());
+
+    // Determine the storage extents.
+    const auto table_offset = compression_info.bucket.offset;
+    const auto table_size = compression_info.bucket.size;
+    const auto node_size = CompressedStorage::QueryNodeStorageSize(header.entry_count);
+    const auto entry_size = CompressedStorage::QueryEntryStorageSize(header.entry_count);
+    R_UNLESS(node_size + entry_size <= table_size, ResultInvalidCompressedStorageSize);
+
+    // If we should, set the output meta storage.
+    if (out_meta != nullptr) {
+        auto meta_storage = std::make_shared<OffsetVfsFile>(base_storage, table_size, table_offset);
+        R_UNLESS(meta_storage != nullptr, ResultAllocationMemoryFailedAllocateShared);
+
+        *out_meta = std::move(meta_storage);
+    }
+
+    // Allocate the compressed storage.
+    auto compressed_storage = std::make_shared<CompressedStorage>();
+    R_UNLESS(compressed_storage != nullptr, ResultAllocationMemoryFailedAllocateShared);
+
+    // Initialize the compressed storage.
+    R_TRY(compressed_storage->Initialize(
+        std::make_shared<OffsetVfsFile>(base_storage, table_offset, 0),
+        std::make_shared<OffsetVfsFile>(base_storage, node_size, table_offset),
+        std::make_shared<OffsetVfsFile>(base_storage, entry_size, table_offset + node_size),
+        header.entry_count, 64_KiB, 640_KiB, get_decompressor, 16_KiB, 16_KiB, 32));
+
+    // Potentially set the output compressed storage.
+    if (out_cmp) {
+        *out_cmp = compressed_storage;
+    }
+
+    // Set the output.
+    *out = std::move(compressed_storage);
     R_SUCCEED();
 }
 
