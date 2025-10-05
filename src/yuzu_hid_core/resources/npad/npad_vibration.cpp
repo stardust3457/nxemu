@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "core/hle/service/set/system_settings_server.h"
-#include "hid_result.h"
-#include "resources/npad/npad_vibration.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/resources/npad/npad_vibration.h"
 
 namespace Service::HID {
 

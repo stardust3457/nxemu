@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <fmt/format.h>
 
-#include "frontend/emulated_devices.h"
-#include "frontend/input_converter.h"
+#include "yuzu_hid_core/frontend/emulated_devices.h"
+#include "yuzu_hid_core/frontend/input_converter.h"
 
 namespace Core::HID {
 

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "hid_util.h"
-#include "resources/npad/npad_data.h"
+#include "yuzu_hid_core/hid_util.h"
+#include "yuzu_hid_core/resources/npad/npad_data.h"
 
 namespace Service::HID {
 

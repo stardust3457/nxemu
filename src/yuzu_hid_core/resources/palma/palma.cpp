@@ -5,9 +5,9 @@
 #include "core/hle/kernel/k_event.h"
 #include "core/hle/kernel/k_readable_event.h"
 #include "core/hle/service/kernel_helpers.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "resources/palma/palma.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/resources/palma/palma.h"
 
 namespace Service::HID {
 

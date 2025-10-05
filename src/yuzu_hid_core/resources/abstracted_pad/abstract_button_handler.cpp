@@ -1,15 +1,15 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "hid_result.h"
-#include "hid_util.h"
-#include "resources/abstracted_pad/abstract_button_handler.h"
-#include "resources/abstracted_pad/abstract_pad_holder.h"
-#include "resources/abstracted_pad/abstract_properties_handler.h"
-#include "resources/applet_resource.h"
-#include "resources/npad/npad_resource.h"
-#include "resources/npad/npad_types.h"
-#include "resources/shared_memory_format.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/hid_util.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_button_handler.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_pad_holder.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_properties_handler.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/npad/npad_resource.h"
+#include "yuzu_hid_core/resources/npad/npad_types.h"
+#include "yuzu_hid_core/resources/shared_memory_format.h"
 
 namespace Service::HID {
 

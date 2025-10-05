@@ -3,13 +3,13 @@
 
 #include "yuzu_common/common_types.h"
 #include "core/core_timing.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "hid_result.h"
-#include "hid_util.h"
-#include "resources/npad/npad.h"
-#include "resources/shared_memory_format.h"
-#include "resources/six_axis/six_axis.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/hid_util.h"
+#include "yuzu_hid_core/resources/npad/npad.h"
+#include "yuzu_hid_core/resources/shared_memory_format.h"
+#include "yuzu_hid_core/resources/six_axis/six_axis.h"
 
 namespace Service::HID {
 

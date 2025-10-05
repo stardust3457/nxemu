@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "hidbus/starlink.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hidbus/starlink.h"
 
 namespace Service::HID {
 constexpr u8 DEVICE_ID = 0x28;

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "resources/touch_screen/gesture.h"
-#include "resources/touch_screen/touch_screen_resource.h"
+#include "yuzu_hid_core/resources/touch_screen/gesture.h"
+#include "yuzu_hid_core/resources/touch_screen/touch_screen_resource.h"
 
 namespace Service::HID {
 

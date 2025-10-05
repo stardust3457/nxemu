@@ -4,10 +4,10 @@
 #include "core/core.h"
 #include "core/hle/service/hid/hid_server.h"
 #include "core/hle/service/sm/sm.h"
-#include "frontend/input_interpreter.h"
-#include "hid_types.h"
-#include "resource_manager.h"
-#include "resources/npad/npad.h"
+#include "yuzu_hid_core/frontend/input_interpreter.h"
+#include "yuzu_hid_core/hid_types.h"
+#include "yuzu_hid_core/resource_manager.h"
+#include "yuzu_hid_core/resources/npad/npad.h"
 
 InputInterpreter::InputInterpreter(Core::System& system)
     : npad{system.ServiceManager()

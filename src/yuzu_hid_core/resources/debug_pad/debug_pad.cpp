@@ -3,12 +3,12 @@
 
 #include "yuzu_common/settings.h"
 #include "core/core_timing.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "hid_types.h"
-#include "resources/applet_resource.h"
-#include "resources/debug_pad/debug_pad.h"
-#include "resources/shared_memory_format.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hid_types.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/debug_pad/debug_pad.h"
+#include "yuzu_hid_core/resources/shared_memory_format.h"
 
 namespace Service::HID {
 

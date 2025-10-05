@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "yuzu_common/math_util.h"
-#include "resources/touch_screen/gesture_handler.h"
+#include "yuzu_hid_core/resources/touch_screen/gesture_handler.h"
 
 namespace Service::HID {
 

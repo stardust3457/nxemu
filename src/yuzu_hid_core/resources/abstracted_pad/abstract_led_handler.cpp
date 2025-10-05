@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "core/core_timing.h"
-#include "hid_result.h"
-#include "hid_util.h"
-#include "resources/abstracted_pad/abstract_led_handler.h"
-#include "resources/abstracted_pad/abstract_pad_holder.h"
-#include "resources/abstracted_pad/abstract_properties_handler.h"
-#include "resources/applet_resource.h"
-#include "resources/npad/npad_types.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/hid_util.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_led_handler.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_pad_holder.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_properties_handler.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/npad/npad_types.h"
 
 namespace Service::HID {
 

@@ -5,9 +5,9 @@
 
 #include "core/core.h"
 #include "core/core_timing.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "irsensor/clustering_processor.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/irsensor/clustering_processor.h"
 
 namespace Service::IRS {
 ClusteringProcessor::ClusteringProcessor(Core::System& system_,

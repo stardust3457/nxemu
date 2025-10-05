@@ -3,9 +3,9 @@
 
 #include "core/core.h"
 #include "core/memory.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "irsensor/image_transfer_processor.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/irsensor/image_transfer_processor.h"
 
 namespace Service::IRS {
 ImageTransferProcessor::ImageTransferProcessor(Core::System& system_,

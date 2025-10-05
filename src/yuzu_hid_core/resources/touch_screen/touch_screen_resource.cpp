@@ -7,11 +7,11 @@
 #include "core/hle/kernel/k_shared_memory.h"
 #include "core/hle/service/set/system_settings_server.h"
 #include "core/hle/service/sm/sm.h"
-#include "hid_result.h"
-#include "resources/applet_resource.h"
-#include "resources/shared_memory_format.h"
-#include "resources/touch_screen/touch_screen_driver.h"
-#include "resources/touch_screen/touch_screen_resource.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/shared_memory_format.h"
+#include "yuzu_hid_core/resources/touch_screen/touch_screen_driver.h"
+#include "yuzu_hid_core/resources/touch_screen/touch_screen_resource.h"
 
 namespace Service::HID {
 constexpr auto GestureUpdatePeriod = std::chrono::nanoseconds{4 * 1000 * 1000}; // (4ms, 1000Hz)

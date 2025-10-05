@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "hid_result.h"
-#include "resources/abstracted_pad/abstract_palma_handler.h"
-#include "resources/abstracted_pad/abstract_properties_handler.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_palma_handler.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_properties_handler.h"
 
 namespace Service::HID {
 

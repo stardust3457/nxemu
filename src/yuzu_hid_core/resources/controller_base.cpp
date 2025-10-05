@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "resources/controller_base.h"
+#include "yuzu_hid_core/resources/controller_base.h"
 
 namespace Service::HID {
 

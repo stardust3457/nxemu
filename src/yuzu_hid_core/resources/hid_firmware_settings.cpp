@@ -3,7 +3,7 @@
 
 #include "core/hle/service/set/system_settings_server.h"
 #include "core/hle/service/sm/sm.h"
-#include "resources/hid_firmware_settings.h"
+#include "yuzu_hid_core/resources/hid_firmware_settings.h"
 
 namespace Service::HID {
 

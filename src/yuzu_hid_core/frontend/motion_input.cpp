@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "yuzu_common/math_util.h"
-#include "frontend/motion_input.h"
+#include "yuzu_hid_core/frontend/motion_input.h"
 
 namespace Core::HID {
 

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "yuzu_common/yuzu_assert.h"
-#include "frontend/emulated_console.h"
-#include "frontend/emulated_controller.h"
-#include "frontend/emulated_devices.h"
-#include "hid_core.h"
-#include "hid_util.h"
+#include "yuzu_hid_core/frontend/emulated_console.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/frontend/emulated_devices.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hid_util.h"
 
 namespace Core::HID {
 

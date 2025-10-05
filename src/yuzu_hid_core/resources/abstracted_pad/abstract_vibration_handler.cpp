@@ -1,18 +1,18 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "hid_result.h"
-#include "hid_util.h"
-#include "resources/abstracted_pad/abstract_pad_holder.h"
-#include "resources/abstracted_pad/abstract_properties_handler.h"
-#include "resources/abstracted_pad/abstract_vibration_handler.h"
-#include "resources/applet_resource.h"
-#include "resources/npad/npad_vibration.h"
-#include "resources/vibration/gc_vibration_device.h"
-#include "resources/vibration/n64_vibration_device.h"
-#include "resources/vibration/vibration_device.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/hid_util.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_pad_holder.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_properties_handler.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_vibration_handler.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/npad/npad_vibration.h"
+#include "yuzu_hid_core/resources/vibration/gc_vibration_device.h"
+#include "yuzu_hid_core/resources/vibration/n64_vibration_device.h"
+#include "yuzu_hid_core/resources/vibration/vibration_device.h"
 
 namespace Service::HID {
 

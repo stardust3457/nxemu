@@ -7,9 +7,9 @@
 
 #include "yuzu_common/polyfill_ranges.h"
 #include "yuzu_common/thread.h"
-#include "frontend/emulated_controller.h"
-#include "frontend/input_converter.h"
-#include "hid_util.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/frontend/input_converter.h"
+#include "yuzu_hid_core/hid_util.h"
 
 namespace Core::HID {
 constexpr s32 HID_JOYSTICK_MAX = 0x7fff;

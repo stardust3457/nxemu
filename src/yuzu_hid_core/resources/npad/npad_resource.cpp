@@ -3,10 +3,10 @@
 
 #include "core/hle/kernel/k_event.h"
 #include "core/hle/kernel/k_readable_event.h"
-#include "hid_result.h"
-#include "hid_util.h"
-#include "resources/npad/npad_resource.h"
-#include "resources/npad/npad_types.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/hid_util.h"
+#include "yuzu_hid_core/resources/npad/npad_resource.h"
+#include "yuzu_hid_core/resources/npad/npad_types.h"
 
 namespace Service::HID {
 

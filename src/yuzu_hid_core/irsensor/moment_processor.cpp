@@ -3,9 +3,9 @@
 
 #include "core/core.h"
 #include "core/core_timing.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "irsensor/moment_processor.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/irsensor/moment_processor.h"
 
 namespace Service::IRS {
 static constexpr auto format = Core::IrSensor::ImageTransferProcessorFormat::Size40x30;

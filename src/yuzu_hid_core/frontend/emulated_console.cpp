@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "yuzu_common/settings.h"
-#include "frontend/emulated_console.h"
-#include "frontend/input_converter.h"
+#include "yuzu_hid_core/frontend/emulated_console.h"
+#include "yuzu_hid_core/frontend/input_converter.h"
 
 namespace Core::HID {
 EmulatedConsole::EmulatedConsole() = default;

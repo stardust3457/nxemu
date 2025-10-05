@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2022 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "irsensor/ir_led_processor.h"
+#include "yuzu_hid_core/irsensor/ir_led_processor.h"
 
 namespace Service::IRS {
 IrLedProcessor::IrLedProcessor(Core::IrSensor::DeviceFormat& device_format)

@@ -3,9 +3,9 @@
 
 #include "core/core.h"
 #include "core/hle/kernel/k_shared_memory.h"
-#include "hid_result.h"
-#include "resources/applet_resource.h"
-#include "resources/shared_memory_format.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/shared_memory_format.h"
 
 namespace Service::HID {
 

@@ -14,14 +14,14 @@
 #include "core/hle/kernel/k_event.h"
 #include "core/hle/kernel/k_readable_event.h"
 #include "core/hle/service/kernel_helpers.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "hid_result.h"
-#include "hid_util.h"
-#include "resources/applet_resource.h"
-#include "resources/npad/npad.h"
-#include "resources/npad/npad_vibration.h"
-#include "resources/shared_memory_format.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/hid_util.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/npad/npad.h"
+#include "yuzu_hid_core/resources/npad/npad_vibration.h"
+#include "yuzu_hid_core/resources/shared_memory_format.h"
 
 namespace Service::HID {
 

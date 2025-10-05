@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2022 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "irsensor/pointing_processor.h"
+#include "yuzu_hid_core/irsensor/pointing_processor.h"
 
 namespace Service::IRS {
 PointingProcessor::PointingProcessor(Core::IrSensor::DeviceFormat& device_format)

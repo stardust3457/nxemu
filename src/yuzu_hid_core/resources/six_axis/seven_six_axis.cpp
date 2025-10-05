@@ -6,10 +6,10 @@
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/memory.h"
-#include "frontend/emulated_console.h"
-#include "frontend/emulated_devices.h"
-#include "hid_core.h"
-#include "resources/six_axis/seven_six_axis.h"
+#include "yuzu_hid_core/frontend/emulated_console.h"
+#include "yuzu_hid_core/frontend/emulated_devices.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/resources/six_axis/seven_six_axis.h"
 
 namespace Service::HID {
 SevenSixAxis::SevenSixAxis(Core::System& system_)

@@ -3,11 +3,11 @@
 
 #include "core/hle/kernel/k_event.h"
 #include "core/hle/kernel/k_readable_event.h"
-#include "hid_result.h"
-#include "resources/abstracted_pad/abstract_ir_sensor_handler.h"
-#include "resources/abstracted_pad/abstract_pad_holder.h"
-#include "resources/abstracted_pad/abstract_properties_handler.h"
-#include "resources/npad/npad_types.h"
+#include "yuzu_hid_core/hid_result.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_ir_sensor_handler.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_pad_holder.h"
+#include "yuzu_hid_core/resources/abstracted_pad/abstract_properties_handler.h"
+#include "yuzu_hid_core/resources/npad/npad_types.h"
 
 namespace Service::HID {
 

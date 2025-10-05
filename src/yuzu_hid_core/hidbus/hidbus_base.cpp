@@ -4,8 +4,8 @@
 #include "core/hle/kernel/k_event.h"
 #include "core/hle/kernel/k_readable_event.h"
 #include "core/hle/service/kernel_helpers.h"
-#include "hid_core.h"
-#include "hidbus/hidbus_base.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hidbus/hidbus_base.h"
 
 namespace Service::HID {
 

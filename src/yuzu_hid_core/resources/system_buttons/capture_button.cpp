@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "core/core_timing.h"
-#include "frontend/emulated_controller.h"
-#include "hid_core.h"
-#include "resources/applet_resource.h"
-#include "resources/shared_memory_format.h"
-#include "resources/system_buttons/capture_button.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/resources/applet_resource.h"
+#include "yuzu_hid_core/resources/shared_memory_format.h"
+#include "yuzu_hid_core/resources/system_buttons/capture_button.h"
 
 namespace Service::HID {
 
