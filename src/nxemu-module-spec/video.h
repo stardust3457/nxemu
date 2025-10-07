@@ -73,5 +73,5 @@ __interface IVideo
     void Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size) = 0;
 };
 
-EXPORT IVideo * CALL CreateVideo(IRenderWindow & RenderWindow, ISwitchSystem & System);
-EXPORT void CALL DestroyVideo(IVideo * Video);
+EXPORT IVideo * CALL CreateVideo(IRenderWindow & renderWindow, ISystemModules & modules);
+EXPORT void CALL DestroyVideo(IVideo * video);

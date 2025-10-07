@@ -39,11 +39,11 @@ MICROPROFILE_DEFINE(ARM_CPU3, "ARM", "CPU 3", MP_RGB(255, 64, 64));
 namespace Core {
 
 struct System::Impl {
-    explicit Impl(System & system, ISwitchSystem & switchSystem_) 
+    explicit Impl(System & system, ISystemModules & modules_)
         : kernel{system}, hid_core{}, cpu_manager{system}, room_network{},
-        applet_manager{system}, frontend_applets{system}, switchSystem(switchSystem_),
+        applet_manager{system}, frontend_applets{system}, modules(modules_),
         input_subsystem{std::make_shared<InputCommon::InputSubsystem>()},
-        reporter{system}, fs_controller(switchSystem_.Systemloader().FileSystemController())
+        reporter{system}, fs_controller(modules_.Systemloader().FileSystemController())
     {
         device_memory = std::make_unique<Core::DeviceMemory>();
     }
@@ -195,7 +195,7 @@ struct System::Impl {
     Reporter reporter;
     std::array<u8, 0x20> build_id{};
 
-    ISwitchSystem & switchSystem;
+    ISystemModules & modules;
 
     /// Applets
     Service::AM::AppletManager applet_manager;
@@ -231,7 +231,7 @@ struct System::Impl {
     std::deque<std::vector<u8>> user_channel;
 };
 
-System::System(ISwitchSystem & switchSystem) : impl{std::make_unique<Impl>(*this, switchSystem)} {}
+System::System(ISystemModules & modules) : impl{std::make_unique<Impl>(*this, modules)} {}
 
 System::~System() = default;
 
@@ -306,19 +306,19 @@ void System::GatherGPUDirtyMemory(ICacheInvalidator * invalidator) {
     }
 }
 
-ISwitchSystem & System::GetSwitchSystem()
+ISystemModules & System::GetSystemModules()
 {
-    return impl->switchSystem;
+    return impl->modules;
 }
 
 IVideo & System::GetVideo()
 {
-    return impl->switchSystem.Video();
+    return impl->modules.Video();
 }
 
 ISystemloader & System::GetSystemloader()
 {
-    return impl->switchSystem.Systemloader();
+    return impl->modules.Systemloader();
 }
 
 Kernel::PhysicalCore& System::CurrentPhysicalCore() {

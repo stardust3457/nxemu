@@ -34,7 +34,7 @@ FileType AppLoader_NCA::IdentifyType(const FileSys::VirtualFile& nca_file) {
     return FileType::Error;
 }
 
-AppLoader_NCA::LoadResult AppLoader_NCA::Load(Systemloader & loader) {
+AppLoader_NCA::LoadResult AppLoader_NCA::Load(Systemloader & loader, ISystemModules & systemModules) {
     if (is_loaded) {
         return {LoaderResultStatus::ErrorAlreadyLoaded, {}};
     }
@@ -69,7 +69,7 @@ AppLoader_NCA::LoadResult AppLoader_NCA::Load(Systemloader & loader) {
 
     directory_loader = std::make_unique<AppLoader_DeconstructedRomDirectory>(exefs, true);
 
-    const auto load_result = directory_loader->Load(loader);
+    const auto load_result = directory_loader->Load(loader, systemModules);
     if (load_result.first != LoaderResultStatus::Success) {
         return load_result;
     }

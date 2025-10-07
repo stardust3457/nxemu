@@ -6,7 +6,7 @@ class OSManager :
     public IOperatingSystem
 {
 public:
-    OSManager(ISwitchSystem & System);
+    OSManager(ISystemModules & modules);
     ~OSManager();
 
     void EmulationStarting();
@@ -33,6 +33,6 @@ private:
     OSManager & operator=(const OSManager &) = delete;
 
     Core::System m_coreSystem;
-    ISwitchSystem & m_switchSystem;
+    ISystemModules & m_modules;
     Kernel::KProcess * m_process;
 };

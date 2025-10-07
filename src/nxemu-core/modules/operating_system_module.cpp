@@ -34,7 +34,7 @@ MODULE_TYPE OperatingSystemModule::ModuleType() const
     return MODULE_TYPE_OPERATING_SYSTEM;
 }
 
-IOperatingSystem * OperatingSystemModule::dummyCreateOS(ISwitchSystem & /*System*/)
+IOperatingSystem * OperatingSystemModule::dummyCreateOS(ISystemModules & /*modules*/)
 {
     return nullptr;
 }

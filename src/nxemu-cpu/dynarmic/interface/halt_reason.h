@@ -16,6 +16,7 @@ enum class HaltReason : std::uint32_t {
     UserDefined1 = 0x01000000,
     UserDefined2 = 0x02000000,
     UserDefined3 = 0x04000000,
+    UserDefined2and3 = 0x06000000,
     UserDefined4 = 0x08000000,
     UserDefined5 = 0x10000000,
     UserDefined6 = 0x20000000,

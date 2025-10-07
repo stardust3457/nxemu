@@ -89,14 +89,14 @@ public:
         return IdentifyType(file);
     }
 
-    static std::optional<VAddr> LoadModule(Systemloader & loader,
+    static std::optional<VAddr> LoadModule(Systemloader & loader, ISystemModules& systemModules,
                                            const FileSys::VfsFile& nso_file, VAddr load_base,
                                            bool should_pass_arguments, bool load_into_process,
                                            std::optional<FileSys::PatchManager> pm = {},
                                            std::vector<Core::NCE::Patcher>* patches = nullptr,
                                            s32 patch_index = -1);
 
-    LoadResult Load(Systemloader & loader) override;
+    LoadResult Load(Systemloader & loader, ISystemModules & systemModules) override;
 
     LoaderResultStatus ReadNSOModules(Modules& out_modules) override;
 

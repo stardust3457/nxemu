@@ -130,7 +130,7 @@ FileType AppLoader_DeconstructedRomDirectory::IdentifyType(const FileSys::Virtua
     return FileType::Error;
 }
 
-AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirectory::Load(Systemloader & loader)
+AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirectory::Load(Systemloader & loader, ISystemModules & systemModules)
 {
     if (is_loaded) {
         return { LoaderResultStatus::ErrorAlreadyLoaded, {}};
@@ -198,7 +198,7 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
 
         const bool should_pass_arguments = std::strcmp(module, "rtld") == 0;
         const auto tentative_next_load_addr = AppLoader_NSO::LoadModule(
-            loader, *module_file, code_size, should_pass_arguments, false, {},
+            loader, systemModules, *module_file, code_size, should_pass_arguments, false, {},
             patch_ctx.GetPatchers(), patch_ctx.GetLastIndex());
         if (!tentative_next_load_addr) {
             return {LoaderResultStatus::ErrorLoadingNSO, {}};
@@ -221,7 +221,7 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
     code_size += patch_ctx.GetTotalPatchSize();
 
     // Setup the process code layout
-    IOperatingSystem & operatingSystem = loader.GetSystem().OperatingSystem();
+    IOperatingSystem & operatingSystem = systemModules.OperatingSystem();
     uint64_t base_address = 0;
     uint64_t processID = 0;
     if (!operatingSystem.CreateApplicationProcess(code_size, metadata, base_address, processID, is_hbl))
@@ -246,7 +246,7 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
         const VAddr load_addr{next_load_addr};
         const bool should_pass_arguments = std::strcmp(module, "rtld") == 0;
         const auto tentative_next_load_addr = AppLoader_NSO::LoadModule(
-            loader, *module_file, load_addr, should_pass_arguments, true, pm,
+            loader, systemModules, *module_file, load_addr, should_pass_arguments, true, pm,
             patch_ctx.GetPatchers(), patch_ctx.GetIndex(i));
         if (!tentative_next_load_addr) {
             return {LoaderResultStatus::ErrorLoadingNSO, {}};

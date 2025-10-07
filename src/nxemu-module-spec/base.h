@@ -16,10 +16,10 @@
 
 enum
 {
-    MODULE_LOADER_SPECS_VERSION = 0x010C,
-    MODULE_VIDEO_SPECS_VERSION = 0x010E,
-    MODULE_CPU_SPECS_VERSION = 0x0107,
-    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x010D,
+    MODULE_LOADER_SPECS_VERSION = 0x010D,
+    MODULE_VIDEO_SPECS_VERSION = 0x010F,
+    MODULE_CPU_SPECS_VERSION = 0x0108,
+    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x010E,
 };
 
 enum MODULE_TYPE : uint16_t
@@ -214,7 +214,7 @@ __interface IVideo;
 __interface ICpu;
 __interface ISystemloader;
 
-__interface ISwitchSystem
+__interface ISystemModules
 {
     void StartEmulation() = 0;
 

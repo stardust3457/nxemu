@@ -93,14 +93,14 @@ EXPORT void CALL FlushSettings()
 {
 }
 
-ISystemloader * CALL CreateSystemLoader(ISwitchSystem & System)
+ISystemloader * CALL CreateSystemLoader(ISystemModules & modules)
 {
     if (g_loaderManager.get() != nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return nullptr;
     }
-    g_loaderManager = std::make_unique<Systemloader>(System);
+    g_loaderManager = std::make_unique<Systemloader>(modules);
     return g_loaderManager.get();
 }
 

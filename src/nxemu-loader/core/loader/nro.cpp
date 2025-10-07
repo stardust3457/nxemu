@@ -244,7 +244,9 @@ static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uin
     }();
 
     // Setup the process code layout
-    IOperatingSystem & operatingSystem = loader.GetSystem().OperatingSystem();
+    __debugbreak();
+#ifdef tofix
+    IOperatingSystem & operatingSystem = loader.GetSystemModules().OperatingSystem();
     baseAddress = fastmem_base;
     if (!operatingSystem.CreateApplicationProcess(image_size, FileSys::ProgramMetadata::GetDefault(), baseAddress, processID, false))
     {
@@ -265,15 +267,16 @@ static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uin
     {
         return false;
     }
+#endif
     return true;
 }
 
-bool AppLoader_NRO::LoadNro(Systemloader & loader, const FileSys::VfsFile & nro_file, uint64_t & baseAddress, uint64_t & processID)
+bool AppLoader_NRO::LoadNro(Systemloader & loader, ISystemModules & modules, const FileSys::VfsFile & nro_file, uint64_t & baseAddress, uint64_t & processID)
 {
     return LoadNroImpl(loader, nro_file.ReadAllBytes(), baseAddress, processID);
 }
 
-AppLoader_NRO::LoadResult AppLoader_NRO::Load(Systemloader & loader)
+AppLoader_NRO::LoadResult AppLoader_NRO::Load(Systemloader & loader, ISystemModules & systemModules)
 {
     if (is_loaded) {
         return {LoaderResultStatus::ErrorAlreadyLoaded, {}};
@@ -281,7 +284,7 @@ AppLoader_NRO::LoadResult AppLoader_NRO::Load(Systemloader & loader)
 
     uint64_t processID{};
     uint64_t baseAddress{};
-    if (!LoadNro(loader, *file, baseAddress, processID)) {
+    if (!LoadNro(loader, systemModules, *file, baseAddress, processID)) {
         return {LoaderResultStatus::ErrorLoadingNRO, {}};
     }
 

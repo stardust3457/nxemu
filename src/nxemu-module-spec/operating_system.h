@@ -88,5 +88,5 @@ __interface IOperatingSystem
     void RegisterHostThread() = 0;
 };
 
-EXPORT IOperatingSystem * CALL CreateOperatingSystem(ISwitchSystem & system);
+EXPORT IOperatingSystem * CALL CreateOperatingSystem(ISystemModules & modules);
 EXPORT void CALL DestroyOperatingSystem(IOperatingSystem * operatingSystem);

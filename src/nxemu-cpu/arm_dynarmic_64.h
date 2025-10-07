@@ -8,7 +8,7 @@ class ArmDynarmic64 :
     private Dynarmic::A64::UserCallbacks
 {
 public:
-    ArmDynarmic64(Dynarmic::ExclusiveMonitor * monitor, ISwitchSystem & System, ICpuInfo & CpuInfo, uint32_t coreIndex);
+    ArmDynarmic64(Dynarmic::ExclusiveMonitor * monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex);
 
     IArm64Reg & Reg(void) { return m_reg; }
 
@@ -52,7 +52,7 @@ private:
     std::uint64_t GetCNTPCT();
 
     std::unique_ptr<Dynarmic::A64::Jit> m_jit{};
-    ISwitchSystem & m_system;
+    ISystemModules & m_modules;
     ICpuInfo & m_CpuInfo;
     IMemory & m_memory;
     IOperatingSystem & m_OperatingSystem;

@@ -17,7 +17,7 @@ public:
     Modules();
     ~Modules();
 
-    bool Initialize(IRenderWindow & RenderWindow, ISwitchSystem & System);
+    bool Initialize(IRenderWindow & renderWindow, ISystemModules & modules);
     void StartEmulation(void);
     void StopEmulation(void);
     void FlushSettings(void);

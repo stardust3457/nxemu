@@ -40,7 +40,7 @@ public:
         return IdentifyType(file);
     }
 
-    LoadResult Load(Systemloader& loader) override;
+    LoadResult Load(Systemloader & loader, ISystemModules & systemModules) override;
 
     LoaderResultStatus VerifyIntegrity(std::function<bool(size_t, size_t)> progress_callback) override;
 

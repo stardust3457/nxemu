@@ -35,31 +35,31 @@ Modules::~Modules()
     }
 }
 
-bool Modules::Initialize(IRenderWindow & RenderWindow, ISwitchSystem & System)
+bool Modules::Initialize(IRenderWindow & RenderWindow, ISystemModules & modules)
 {
     if (m_loaderModule.get() == nullptr || m_cpuModule.get() == nullptr || m_videoModule.get() == nullptr || m_operatingsystemModule.get() == nullptr)
     {
         return false;
     }
-    m_systemLoader = m_loaderModule->CreateSystemLoader(System);
+    m_systemLoader = m_loaderModule->CreateSystemLoader(modules);
     if (m_systemLoader == nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return false;
     }
-    m_cpu = m_cpuModule->CreateCpu(System);
+    m_cpu = m_cpuModule->CreateCpu(modules);
     if (m_cpu == nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return false;
     }
-    m_operatingsystem = m_operatingsystemModule->CreateOS(System);
+    m_operatingsystem = m_operatingsystemModule->CreateOS(modules);
     if (m_operatingsystem == nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return false;
     }
-    m_video = m_videoModule->CreateVideo(RenderWindow, System);
+    m_video = m_videoModule->CreateVideo(RenderWindow, modules);
     if (m_video == nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);

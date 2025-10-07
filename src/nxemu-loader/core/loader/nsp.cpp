@@ -74,7 +74,7 @@ FileType AppLoader_NSP::IdentifyType(const FileSys::VirtualFile& nsp_file) {
     return FileType::Error;
 }
 
-AppLoader_NSP::LoadResult AppLoader_NSP::Load(Systemloader & loader) {
+AppLoader_NSP::LoadResult AppLoader_NSP::Load(Systemloader & loader, ISystemModules & systemModules) {
     if (is_loaded) {
         return {LoaderResultStatus::ErrorAlreadyLoaded, {}};
     }
@@ -100,7 +100,7 @@ AppLoader_NSP::LoadResult AppLoader_NSP::Load(Systemloader & loader) {
         return {LoaderResultStatus::ErrorNSPMissingProgramNCA, {}};
     }
 
-    const auto result = secondary_loader->Load(loader);
+    const auto result = secondary_loader->Load(loader, systemModules);
     if (result.first != LoaderResultStatus::Success) {
         return result;
     }

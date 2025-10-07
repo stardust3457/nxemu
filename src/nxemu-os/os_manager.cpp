@@ -16,9 +16,9 @@
 
 extern IModuleSettings * g_settings;
 
-OSManager::OSManager(ISwitchSystem & switchSystem) :
-    m_switchSystem(switchSystem),
-    m_coreSystem(switchSystem),
+OSManager::OSManager(ISystemModules & modules) :
+    m_modules(modules),
+    m_coreSystem(modules),
     m_process(nullptr)
 {
 }

@@ -3,7 +3,7 @@
 #include <nxemu-core/modules/modules.h>
 
 class SwitchSystem :
-    public ISwitchSystem
+    public ISystemModules
 {
 public:
     ~SwitchSystem();
@@ -16,11 +16,11 @@ public:
     void StopEmulation(void);
     void FlushSettings(void);
 
-    //ISwitchSystem
-    ISystemloader & Systemloader();
-    IOperatingSystem & OperatingSystem();
-    IVideo & Video(void);
-    ICpu & Cpu(void);
+    //ISystemModules
+    ISystemloader & Systemloader() override;
+    IOperatingSystem & OperatingSystem() override;
+    IVideo & Video(void) override;
+    ICpu & Cpu(void) override;
 
 private:
     SwitchSystem(const SwitchSystem &) = delete;

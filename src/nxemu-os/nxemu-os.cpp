@@ -96,14 +96,14 @@ EXPORT void CALL FlushSettings()
     SaveOsSettings();
 }
 
-IOperatingSystem * CALL CreateOperatingSystem(ISwitchSystem & System)
+IOperatingSystem * CALL CreateOperatingSystem(ISystemModules & modules)
 {
     if (g_osManager.get() != nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return nullptr;
     }
-    g_osManager = std::make_unique<OSManager>(System);
+    g_osManager = std::make_unique<OSManager>(modules);
     return g_osManager.get();
 }
 

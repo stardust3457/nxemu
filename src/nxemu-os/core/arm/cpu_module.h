@@ -3,7 +3,7 @@
 #include "core/arm/arm_interface.h"
 #include <memory>
 
-__interface ISwitchSystem;
+__interface ISystemModules;
 __interface IArm64Executor;
 
 namespace Core

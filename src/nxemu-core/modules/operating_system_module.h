@@ -6,15 +6,15 @@ class OperatingSystemModule :
     public ModuleBase
 {
 public:
-    typedef IOperatingSystem *(CALL * tyCreateOperatingSystem)(ISwitchSystem & System);
+    typedef IOperatingSystem *(CALL * tyCreateOperatingSystem)(ISystemModules & modules);
     typedef void(CALL * tyDestroyOperatingSystem)(IOperatingSystem * OperatingSystem);
 
     OperatingSystemModule();
     ~OperatingSystemModule() = default;
 
-    IOperatingSystem * CreateOS(ISwitchSystem & System) const
+    IOperatingSystem * CreateOS(ISystemModules & modules) const
     {
-        return m_CreateOS(System);
+        return m_CreateOS(modules);
     }
     void DestroyOS(IOperatingSystem * OperatingSystem) const
     {
@@ -30,7 +30,7 @@ private:
     OperatingSystemModule(const OperatingSystemModule &) = delete;
     OperatingSystemModule & operator=(const OperatingSystemModule &) = delete;
 
-    static IOperatingSystem * CALL dummyCreateOS(ISwitchSystem & System);
+    static IOperatingSystem * CALL dummyCreateOS(ISystemModules & modules);
     static void CALL dummyDestroyOS(IOperatingSystem * OperatingSystem);
 
     tyCreateOperatingSystem m_CreateOS;

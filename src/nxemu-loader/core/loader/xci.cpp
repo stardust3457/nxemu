@@ -54,7 +54,7 @@ FileType AppLoader_XCI::IdentifyType(const FileSys::VirtualFile& xci_file) {
     return FileType::Error;
 }
 
-AppLoader_XCI::LoadResult AppLoader_XCI::Load(Systemloader & loader) {
+AppLoader_XCI::LoadResult AppLoader_XCI::Load(Systemloader & loader, ISystemModules & systemModules) {
     if (is_loaded) {
         return {LoaderResultStatus::ErrorAlreadyLoaded, {}};
     }
@@ -68,7 +68,7 @@ AppLoader_XCI::LoadResult AppLoader_XCI::Load(Systemloader & loader) {
     }
 
 
-    const auto result = nca_loader->Load(loader);
+    const auto result = nca_loader->Load(loader, systemModules);
     if (result.first != LoaderResultStatus::Success) {
         return result;
     }

@@ -14,10 +14,12 @@ class Systemloader :
     public ISystemloader
 {
 public:
-    Systemloader(ISwitchSystem & system);
+    Systemloader(ISystemModules & modules);
     ~Systemloader();
 
-    ISwitchSystem & GetSystem();
+#ifdef tofix
+    ISystemModules & GetSystemModules();
+#endif
     FileSys::ContentProvider & GetContentProvider();
     FileSys::VirtualFilesystem GetFilesystem();
     FileSys::FileSystemController & GetFileSystemController();

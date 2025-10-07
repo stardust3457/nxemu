@@ -4,12 +4,12 @@
 
 extern IModuleNotification * g_notify;
 
-ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor * monitor, ISwitchSystem & System, ICpuInfo & CpuInfo, uint32_t coreIndex) :
+ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor * monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex) :
     m_jit(nullptr),
-    m_system(System),
-    m_CpuInfo(CpuInfo),
-    m_memory(CpuInfo.Memory()),
-    m_OperatingSystem(System.OperatingSystem()),
+    m_modules(modules),
+    m_CpuInfo(cpuInfo),
+    m_memory(cpuInfo.Memory()),
+    m_OperatingSystem(modules.OperatingSystem()),
     m_monitor(monitor),
     m_coreIndex(coreIndex)
 {
@@ -25,7 +25,7 @@ IArm64Executor::HaltReason ArmDynarmic64::Execute()
     {
     case Dynarmic::HaltReason::UserDefined2: return IArm64Executor::HaltReason::BreakLoop;
     case Dynarmic::HaltReason::UserDefined3: return IArm64Executor::HaltReason::SupervisorCall;
-    case (Dynarmic::HaltReason::UserDefined2 | Dynarmic::HaltReason::UserDefined3): return IArm64Executor::HaltReason::SupervisorCallBreakLoop;
+    case (Dynarmic::HaltReason::UserDefined2and3): return IArm64Executor::HaltReason::SupervisorCallBreakLoop;
     }
 
     g_notify->BreakPoint(__FILE__, __LINE__);

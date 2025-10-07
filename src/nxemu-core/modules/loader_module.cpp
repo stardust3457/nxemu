@@ -6,9 +6,9 @@ LoaderModule::LoaderModule() :
 {
 }
 
-ISystemloader * LoaderModule::CreateSystemLoader(ISwitchSystem & system) const
+ISystemloader * LoaderModule::CreateSystemLoader(ISystemModules & modules) const
 {
-    return m_createSystemLoader(system);
+    return m_createSystemLoader(modules);
 }
 
 void LoaderModule::DestroySystemLoader(ISystemloader * loader) const
@@ -46,7 +46,7 @@ MODULE_TYPE LoaderModule::ModuleType() const
     return MODULE_TYPE_LOADER;
 }
 
-ISystemloader * LoaderModule::dummyCreateSystemLoader(ISwitchSystem & /*System*/)
+ISystemloader * LoaderModule::dummyCreateSystemLoader(ISystemModules & /*modules*/)
 {
     return nullptr;
 }

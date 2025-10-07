@@ -44,7 +44,7 @@ public:
         return IdentifyType(file);
     }
 
-    LoadResult Load(Systemloader & loader) override;
+    LoadResult Load(Systemloader & loader, ISystemModules & modules) override;
 
     LoaderResultStatus ReadIcon(std::vector<u8>& buffer) override;
     LoaderResultStatus ReadProgramId(u64& out_program_id) override;
@@ -54,7 +54,7 @@ public:
     bool IsRomFSUpdatable() const override;
 
 private:
-    bool LoadNro(Systemloader & loader, const FileSys::VfsFile & nro_file, uint64_t & baseAddress, uint64_t & processID);
+    bool LoadNro(Systemloader & loader, ISystemModules & systemModules, const FileSys::VfsFile & nro_file, uint64_t & baseAddress, uint64_t & processID);
 
     std::vector<u8> icon_data;
     std::unique_ptr<FileSys::NACP> nacp;

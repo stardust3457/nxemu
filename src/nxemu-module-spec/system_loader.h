@@ -247,5 +247,5 @@ __interface ISystemloader
     IFileSysNACP * GetPMControlMetadata(uint64_t programID) = 0;
 };
 
-EXPORT ISystemloader * CALL CreateSystemLoader(ISwitchSystem & system);
+EXPORT ISystemloader * CALL CreateSystemLoader(ISystemModules & modules);
 EXPORT void CALL DestroySystemLoader(ISystemloader * systemloader);

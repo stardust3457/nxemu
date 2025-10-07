@@ -108,5 +108,5 @@ __interface ICpu
     void DestroyArm64Executor(IArm64Executor * executor) = 0;
 };
 
-EXPORT ICpu * CALL CreateCpu(ISwitchSystem & System);
+EXPORT ICpu * CALL CreateCpu(ISystemModules & modules);
 EXPORT void CALL DestroyCpu(ICpu * Cpu);

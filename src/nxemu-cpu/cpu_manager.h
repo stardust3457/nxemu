@@ -8,7 +8,7 @@ class CpuManager :
     public ICpu
 {
 public:
-    CpuManager(ISwitchSystem & system);
+    CpuManager(ISystemModules & modules);
     ~CpuManager();
 
     //ICpu
@@ -24,5 +24,5 @@ private:
     CpuManager & operator=(const CpuManager &) = delete;
 
     std::unique_ptr<ExclusiveMonitor> m_exclusiveMonitor;
-    ISwitchSystem & m_system;
+    ISystemModules & m_modules;
 };

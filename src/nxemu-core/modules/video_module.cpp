@@ -36,7 +36,7 @@ MODULE_TYPE VideoModule::ModuleType() const
     return MODULE_TYPE_VIDEO;
 }
 
-IVideo * VideoModule::dummyCreateVideo(IRenderWindow & /*RenderWindow*/, ISwitchSystem & /*System*/)
+IVideo * VideoModule::dummyCreateVideo(IRenderWindow & /*RenderWindow*/, ISystemModules & /*modules*/)
 {
     return nullptr;
 }

@@ -93,14 +93,14 @@ EXPORT void CALL FlushSettings()
 {
 }
 
-ICpu * CALL CreateCpu(ISwitchSystem & System)
+ICpu * CALL CreateCpu(ISystemModules & modules)
 {
     if (g_cpuManager.get() != nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return nullptr;
     }
-    g_cpuManager = std::make_unique<CpuManager>(System);
+    g_cpuManager = std::make_unique<CpuManager>(modules);
     return g_cpuManager.get();
 }
 

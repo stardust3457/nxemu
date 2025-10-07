@@ -2,8 +2,8 @@
 #include "arm_dynarmic_64.h"
 #include "exclusive_monitor_interface.h"
 
-CpuManager::CpuManager(ISwitchSystem & system) :
-    m_system(system)
+CpuManager::CpuManager(ISystemModules & modules) :
+    m_modules(modules)
 {
 }
 
@@ -36,7 +36,7 @@ void CpuManager::DestroyExclusiveMonitor(IExclusiveMonitor * monitor)
 
 IArm64Executor * CpuManager::CreateArm64Executor(IExclusiveMonitor * monitor, ICpuInfo & info, uint32_t coreIndex)
 {
-    return new ArmDynarmic64(monitor == m_exclusiveMonitor.get() ? m_exclusiveMonitor.get() : nullptr, m_system, info, coreIndex);
+    return new ArmDynarmic64(monitor == m_exclusiveMonitor.get() ? m_exclusiveMonitor.get() : nullptr, m_modules, info, coreIndex);
 }
 
 void CpuManager::DestroyArm64Executor(IArm64Executor * executor)

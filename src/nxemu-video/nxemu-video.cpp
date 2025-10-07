@@ -99,7 +99,7 @@ EXPORT void CALL FlushSettings()
     SaveVideoSettings();
 }
 
-IVideo * CALL CreateVideo(IRenderWindow & renderWindow, ISwitchSystem & system)
+IVideo * CALL CreateVideo(IRenderWindow & renderWindow, ISystemModules & modules)
 {
     if (g_notify == nullptr)
     {
@@ -110,7 +110,7 @@ IVideo * CALL CreateVideo(IRenderWindow & renderWindow, ISwitchSystem & system)
         g_notify->BreakPoint(__FILE__, __LINE__);
         return nullptr;
     }
-    g_videoManager = std::make_unique<VideoManager>(renderWindow, system);
+    g_videoManager = std::make_unique<VideoManager>(renderWindow, modules);
     return g_videoManager.get();
 }
 

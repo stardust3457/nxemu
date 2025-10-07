@@ -17,7 +17,7 @@
 
 enum class StorageId : uint8_t;
 
-__interface ISwitchSystem;
+__interface ISystemModules;
 __interface IVideo;
 __interface ISystemloader;
 __interface IFileSystemController;
@@ -146,7 +146,7 @@ class System {
 public:
     using CurrentBuildProcessID = std::array<u8, 0x20>;
 
-    explicit System(ISwitchSystem & switchSystem);
+    explicit System(ISystemModules & modules);
 
     ~System();
 
@@ -228,7 +228,7 @@ public:
 
     void GatherGPUDirtyMemory(ICacheInvalidator * invalidator);
 
-    ISwitchSystem & GetSwitchSystem();
+    ISystemModules & GetSystemModules();
     IVideo & GetVideo();
     ISystemloader & GetSystemloader();
 

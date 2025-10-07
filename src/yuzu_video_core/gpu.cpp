@@ -38,8 +38,8 @@ namespace Tegra {
 struct GPU::Impl :
     public ICacheInvalidator
 {
-    explicit Impl(ISwitchSystem & system, GPU & gpu_, Tegra::Host1x::Host1x & host1x_, bool is_async_, bool use_nvdec_)
-        : m_system(system), gpu{gpu_}, host1x{host1x_}, use_nvdec{use_nvdec_},
+    explicit Impl(ISystemModules & modules, GPU & gpu_, Tegra::Host1x::Host1x & host1x_, bool is_async_, bool use_nvdec_)
+        : m_modules(modules), gpu{gpu_}, host1x{host1x_}, use_nvdec{use_nvdec_},
           shader_notify{std::make_unique<VideoCore::ShaderNotify>()}, is_async{is_async_},
           gpu_thread{gpu_, is_async_}, scheduler{std::make_unique<Control::Scheduler>(gpu)} {}
 
@@ -97,7 +97,7 @@ struct GPU::Impl :
 
     /// Synchronizes CPU writes with Host GPU memory.
     void InvalidateGPUCache() {
-        IOperatingSystem & operatingSystem = m_system.OperatingSystem();
+        IOperatingSystem & operatingSystem = m_modules.OperatingSystem();
         operatingSystem.GatherGPUDirtyMemory(this);
     }
 
@@ -197,7 +197,7 @@ struct GPU::Impl :
     }
 
     [[nodiscard]] u64 GetTicks() const {
-        u64 gpu_tick = m_system.OperatingSystem().GetGPUTicks();
+        u64 gpu_tick = m_modules.OperatingSystem().GetGPUTicks();
 
         if (Settings::values.use_fast_gpu_time.GetValue()) {
             gpu_tick /= 256;
@@ -215,7 +215,7 @@ struct GPU::Impl :
     }
 
     void RendererFrameEndNotify() {
-        m_system.OperatingSystem().GameFrameEnd();
+        m_modules.OperatingSystem().GameFrameEnd();
     }
 
     /// Performs any additional setup necessary in order to begin GPU emulation.
@@ -365,10 +365,10 @@ struct GPU::Impl :
 
     void RegisterHostThread()
     {
-        m_system.OperatingSystem().RegisterHostThread();
+        m_modules.OperatingSystem().RegisterHostThread();
     }
 
-    ISwitchSystem& m_system;
+    ISystemModules & m_modules;
     GPU & gpu;
     Host1x::Host1x & host1x;
 
@@ -413,8 +413,8 @@ struct GPU::Impl :
     std::mutex request_swap_mutex;
 };
 
-GPU::GPU(ISwitchSystem & system, Tegra::Host1x::Host1x & host1x, bool is_async, bool use_nvdec)
-    : impl{std::make_unique<Impl>(system, *this, host1x, is_async, use_nvdec)} {}
+GPU::GPU(ISystemModules & modules, Tegra::Host1x::Host1x & host1x, bool is_async, bool use_nvdec)
+    : impl{std::make_unique<Impl>(modules, *this, host1x, is_async, use_nvdec)} {}
 
 GPU::~GPU() = default;
 

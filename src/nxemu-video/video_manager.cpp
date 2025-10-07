@@ -9,17 +9,17 @@
 
 struct VideoManager::Impl 
 {
-    Impl(IRenderWindow & window, ISwitchSystem & system) :
+    Impl(IRenderWindow & window, ISystemModules & modules) :
         m_window(window),
-        m_system(system)
+        m_modules(modules)
     {
     }
 
     bool Initialize(void)
     {
-        m_host1x = std::make_unique<Tegra::Host1x::Host1x>(m_system.OperatingSystem().DeviceMemory());
+        m_host1x = std::make_unique<Tegra::Host1x::Host1x>(m_modules.OperatingSystem().DeviceMemory());
         m_emuWindow = std::make_unique<RenderWindow>(m_window);
-        m_gpuCore = VideoCore::CreateGPU(m_system, *(m_emuWindow.get()), *m_host1x);
+        m_gpuCore = VideoCore::CreateGPU(m_modules, *(m_emuWindow.get()), *m_host1x);
         return true;
     }
     
@@ -34,7 +34,7 @@ struct VideoManager::Impl
         m_emuWindow = std::make_unique<RenderWindow>(m_window);
         m_emuWindow->UpdateCurrentFramebufferLayout(layout.width, layout.height);
         m_gpuCore = nullptr;
-        m_gpuCore = VideoCore::CreateGPU(m_system, *(m_emuWindow.get()), *m_host1x);
+        m_gpuCore = VideoCore::CreateGPU(m_modules, *(m_emuWindow.get()), *m_host1x);
 
         m_gpuCore->Start();
     }
@@ -43,12 +43,12 @@ struct VideoManager::Impl
     std::unique_ptr<RenderWindow> m_emuWindow;
     std::unique_ptr<Tegra::GPU> m_gpuCore;
     IRenderWindow & m_window;
-    ISwitchSystem & m_system;
+    ISystemModules & m_modules;
     Tegra::MemoryManagerRegistry m_memoryManagerRegistry;
 };
 
-VideoManager::VideoManager(IRenderWindow & window, ISwitchSystem & system) :
-    impl{ std::make_unique<Impl>(window, system) } 
+VideoManager::VideoManager(IRenderWindow & window, ISystemModules & modules) :
+    impl{ std::make_unique<Impl>(window, modules) }
 {
 }
 

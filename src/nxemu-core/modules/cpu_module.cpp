@@ -37,7 +37,7 @@ MODULE_TYPE CpuModule::ModuleType() const
     return MODULE_TYPE_CPU;
 }
 
-ICpu * CpuModule::dummyCreateCpu(ISwitchSystem & /*system*/)
+ICpu * CpuModule::dummyCreateCpu(ISystemModules & /*system*/)
 {
     return nullptr;
 }

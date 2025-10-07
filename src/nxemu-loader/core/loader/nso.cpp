@@ -72,7 +72,7 @@ FileType AppLoader_NSO::IdentifyType(const FileSys::VirtualFile& in_file) {
     return FileType::NSO;
 }
 
-std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader,
+std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader, ISystemModules& systemModules,
                                                const FileSys::VfsFile& nso_file, VAddr load_base,
                                                bool should_pass_arguments, bool load_into_process,
                                                std::optional<FileSys::PatchManager> pm,
@@ -190,7 +190,7 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader,
     }
 
     // Load codeset for current process
-    IOperatingSystem & operatingSystem = loader.GetSystem().OperatingSystem();
+    IOperatingSystem & operatingSystem = systemModules.OperatingSystem();
     codeset.memory = std::move(program_image);
     if (!operatingSystem.LoadModule(codeset, load_base))
     {
@@ -199,7 +199,7 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader,
     return load_base + image_size;
 }
 
-AppLoader_NSO::LoadResult AppLoader_NSO::Load(Systemloader & loader) {
+AppLoader_NSO::LoadResult AppLoader_NSO::Load(Systemloader & loader, ISystemModules & systemModules) {
     if (is_loaded) {
         return {LoaderResultStatus::ErrorAlreadyLoaded, {}};
     }

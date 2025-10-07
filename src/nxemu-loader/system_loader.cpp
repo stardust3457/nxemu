@@ -62,9 +62,9 @@ namespace {
 } // Anonymous namespace
 
 struct Systemloader::Impl {
-    explicit Impl(Systemloader & loader, ISwitchSystem& system) :
+    explicit Impl(Systemloader & loader, ISystemModules & modules) :
         m_loader(loader),
-        m_system(system),
+        m_modules(modules),
         m_fsController(loader),
         m_provider(std::make_unique<FileSys::ManualContentProvider>()),
         m_processID(0),
@@ -74,7 +74,7 @@ struct Systemloader::Impl {
 
     std::unique_ptr<Loader::AppLoader> app_loader;
     Systemloader & m_loader;
-    ISwitchSystem & m_system;
+    ISystemModules & m_modules;
     /// RealVfsFilesystem instance
     FileSys::VirtualFilesystem m_virtualFilesystem;
     /// ContentProviderUnion instance
@@ -85,8 +85,8 @@ struct Systemloader::Impl {
     uint64_t m_titleID;
 };
 
-Systemloader::Systemloader(ISwitchSystem & system) :
-    impl(std::make_unique<Impl>(*this, system))
+Systemloader::Systemloader(ISystemModules & modules) :
+    impl(std::make_unique<Impl>(*this, modules))
 {
 }
 
@@ -169,7 +169,7 @@ bool Systemloader::LoadRom(const char * fileName)
         LOG_ERROR(Core, "Failed to read title for ROM!");
     }
 
-    const auto [load_result, load_parameters] = impl->app_loader->Load(*this);
+    const auto [load_result, load_parameters] = impl->app_loader->Load(*this, impl->m_modules);
     if (load_result != LoaderResultStatus::Success)
     {
         LOG_CRITICAL(Core, "Failed to load ROM (Error {})!", load_result);
@@ -196,14 +196,14 @@ bool Systemloader::LoadRom(const char * fileName)
     g_settings->SetString(NXCoreSetting::GameName, title.c_str());
     g_settings->SetString(NXCoreSetting::GameFile, fileName);
     g_settings->SetBool(NXCoreSetting::RomLoading, false);
-    impl->m_system.StartEmulation();
+    impl->m_modules.StartEmulation();
 
     // TODO(DarkLordZach): When FSController/Game Card Support is added, if
     // current_process_game_card use correct StorageId
     StorageId baseGameStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(impl->m_titleID, LoaderContentRecordType::Program));
     StorageId updateStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(FileSys::GetUpdateTitleID(impl->m_titleID), LoaderContentRecordType::Program));
 
-    IOperatingSystem& operatingSystem = impl->m_system.OperatingSystem();
+    IOperatingSystem& operatingSystem = impl->m_modules.OperatingSystem();
     operatingSystem.StartApplicationProcess(load_parameters->main_thread_priority, load_parameters->main_thread_stack_size, version, baseGameStorageId, updateStorageId, nacp_data.data(), (uint32_t)nacp_data.size());
     return true;
 }
@@ -227,10 +227,12 @@ IRomInfo * Systemloader::RomInfo(const char * fileName)
     return nullptr;
 }
 
-ISwitchSystem & Systemloader::GetSystem() 
+#ifdef tofix
+ISystemModules & Systemloader::GetSystemModules()
 {
-    return impl->m_system;
+    return impl->m_modules;
 }
+#endif
 
 FileSys::ContentProvider & Systemloader::GetContentProvider()
 {

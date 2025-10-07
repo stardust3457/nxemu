@@ -40,7 +40,7 @@ public:
         return IdentifyType(file);
     }
 
-    LoadResult Load(Systemloader & loader) override;
+    LoadResult Load(Systemloader & loader, ISystemModules & systemModules) override;
 
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& out_dir) override;
     LoaderResultStatus ReadIcon(std::vector<u8>& out_buffer) override;

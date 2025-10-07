@@ -11,7 +11,7 @@ class VideoManager :
     public IVideo
 {
 public:
-    VideoManager(IRenderWindow & window, ISwitchSystem & system);
+    VideoManager(IRenderWindow & window, ISystemModules & modules);
     ~VideoManager();
 
     void EmulationStarting();

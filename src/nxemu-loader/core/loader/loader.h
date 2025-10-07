@@ -97,7 +97,7 @@ public:
      *
      * @return The status result of the operation.
      */
-    virtual LoadResult Load(Systemloader & loader) = 0;
+    virtual LoadResult Load(Systemloader & loader, ISystemModules & modules) = 0;
 
     /**
      * Try to verify the integrity of the file.

@@ -64,7 +64,7 @@ ArmCpuModule::ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClo
 {
     if (is64Bit)
     {
-        m_arm64Executor = system.GetSwitchSystem().Cpu().CreateArm64Executor(process->GetExclusiveMonitor(), *m_cb, coreIndex);    
+        m_arm64Executor = system.GetSystemModules().Cpu().CreateArm64Executor(process->GetExclusiveMonitor(), *m_cb, coreIndex);    
     }
 }
 
@@ -72,7 +72,7 @@ ArmCpuModule::~ArmCpuModule()
 {
     if (m_arm64Executor != nullptr)
     {
-        m_system.GetSwitchSystem().Cpu().DestroyArm64Executor(m_arm64Executor);
+        m_system.GetSystemModules().Cpu().DestroyArm64Executor(m_arm64Executor);
         m_arm64Executor = nullptr;
     }
 }
