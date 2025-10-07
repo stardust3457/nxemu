@@ -7,75 +7,76 @@
   <header>
     <window-caption role=window-caption><img src="window-icon-32.png" /><span>Configure input</span></window-caption>
     <window-buttons>
-      <window-button role="window-minimize"></window-button>
       <window-button role="window-close"></window-button>
     </window-buttons>
   </header>
+  <style>
+html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: max-content;
+  height: max-content;
+}
+
+    #MainTabNav
+    {
+      flow: horizontal;
+    }
+    #MainTabNav Page
+    {
+      white-space: nowrap;
+    }
+    .tab-button {
+       text-align: center;
+       min-width: 2.5rem;
+    }
+    .tab-button:visited {
+      background: var(--color-config-page);
+      border-color: var(--color-config-page-border);
+      border-bottom: 1px solid var(--color-config-page);
+    }
+
+	.connect {
+		position: absolute;
+		top: -0.5rem;
+		left: 0.2rem;
+		background: var(--color-config-page);
+		padding: 0 8px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		white-space: nowrap;
+	}
+    .controller-select
+    {
+      width: 100%%;
+    }
+button
+{
+  color: #eff0f1;
+  background: #232728;
+  border: 1px solid #55575a;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 0.8rem;
+  padding: 0.2rem;
+  min-width: 5rem;
+}
+
+  </style>
 <body>
-  <div class="tabs">
-    <button class="tab-button active" data-tab="player1">Player 1</button><button class="tab-button" data-tab="player2">Player 2</button><button class="tab-button" data-tab="player3">Player 3</button>
-    <button class="tab-button" data-tab="player4">Player 4</button>
-    <button class="tab-button" data-tab="player5">Player 5</button>
-    <button class="tab-button" data-tab="player6">Player 6</button>
-    <button class="tab-button" data-tab="player7">Player 7</button>
-    <button class="tab-button" data-tab="player8">Player 8</button>
-  </div>
-  <div class="controller-body">
-    <div class="config-left">
-      <div class="input-group">
-        <div class="group-title">Left Stick</div>
-
-        <div class="input-grid-directional">
-          <div class="input-row"><span>Up</span><button>W</button></div>
-          <div class="input-row"><span>Left</span><button>A</button></div>            
-          <div class="input-row"><span>Right</span><button>D</button></div>
-          <div class="input-row"><span>Down</span><button>S</button></div>
-          <div class="input-row"><span>Pressed</span><button>F</button></div>
-          <div class="input-row"><span>Modifier</span><button>Shift</button></div>
-          <label>Modifier Range: <span>51%</span></label>
-          <input type="range" min="0" max="100" value="51" />
-        </div>
-      </div>
-      <div class="input-group">
-        <div class="group-title">D-Pad</div>
-
-        <div class="input-grid-directional">
-          <div class="input-row"><span>Up</span><button>Up</button></div>
-          <div class="input-row"><span>Left</span><button>Left</button></div>            
-          <div class="input-row"><span>Right</span><button>Right</button></div>
-          <div class="input-row"><span>Down</span><button>Down</button></div>
-        </div>
-      </div>
-    </div>
-    <div class="config-center">
-      <!-- Controller image goes here -->
-    </div>
-    <div class="config-right">
-      <div class="input-group">
-        <div class="group-title">Face Buttons</div>
-
-        <div class="input-grid-directional">
-          <div class="input-row"><span>X</span><button>V</button></div>
-          <div class="input-row"><span>Y</span><button>Z</button></div>            
-          <div class="input-row"><span>A</span><button>C</button></div>
-          <div class="input-row"><span>B</span><button>X</button></div>
-        </div>
-      </div>
-      <div class="input-group">
-        <div class="group-title">Right Stick</div>
-
-        <div class="input-grid-directional">
-          <div class="input-row"><span>Up</span><button>I</button></div>
-          <div class="input-row"><span>Left</span><button>J</button></div>            
-          <div class="input-row"><span>Right</span><button>L</button></div>
-          <div class="input-row"><span>Down</span><button>K</button></div>
-          <div class="input-row"><span>Pressed</span><button>G</button></div>
-          <div class="input-row"><span>Modifier</span><button>&nbsp;</button></div>
-          <label>Modifier Range: <span>51%</span></label>
-          <input type="range" min="0" max="100" value="51" />
-        </div>
-      </div>
-    </div>
+  <div class="InputPage">
+    <PageNav id="MainTabNav" target="InputContents">
+      <Page contents="input_config_player.html" label="Player 1" Name="Player1" class="tab-button" />
+      <Page contents="input_config_player.html" label="Player 2" Name="Player2" class="tab-button" />
+      <Page contents="input_config_player.html" label="Player 3" Name="Player3" class="tab-button" />
+      <Page contents="input_config_player.html" label="Player 4" Name="Player4" class="tab-button" />
+      <Page contents="input_config_player.html" label="Player 5" Name="Player5" class="tab-button" />
+      <Page contents="input_config_player.html" label="Player 6" Name="Player6" class="tab-button" />
+      <Page contents="input_config_player.html" label="Player 7" Name="Player7" class="tab-button" />
+      <Page contents="input_config_player.html" label="Player 8" Name="Player8" class="tab-button" />
+    </PageNav>
+    <div id="InputContents"/>
   </div>
   <div class="footer">
     <button>OK</button>

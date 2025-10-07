@@ -1,0 +1,83 @@
+<div class="controller-config">
+  <div class="config-header">
+    <div class="group" style="min-width: 9rem; margin-right: 0.4rem;">
+      <div class="connect">
+        <input type="checkbox" id="connect-controller">
+        <label for="connect-controller">Connect Controller</label>
+      </div>
+      <select id="controller-type" class="controller-select"></select>
+    </div>
+    <div class="group" style="min-width: 14rem; margin-right: 0.4rem;">
+      <div class="group-title">Input Device</div>
+      <select id="input-device" class="controller-select"></select>
+    </div>
+    <div class="group" style="width: 100%%">
+      <div class="group-title">Profile</div>
+      <select id="profile" style="width: 100%%">
+        <option value="">Select Profile</option>
+        <option value="default">Default</option>
+        <option value="custom1">Custom 1</option>
+        <option value="custom2">Custom 2</option>
+      </select>
+	  <button id="profile-save-btn">Save</button>
+	  <button id="profile-new-btn">New</button>
+	  <button id="profile-delete-btn">Delete</button>
+    </div>
+  </div>
+  <div class="controller-body">
+    <div class="config-left">
+      <div class="input-group">
+        <div class="group-title">Left Stick</div>
+
+        <div class="input-grid-directional">
+          <div class="input-row"><span>Up</span><button>W</button></div>
+          <div class="input-row"><span>Left</span><button>A</button></div>            
+          <div class="input-row"><span>Right</span><button>D</button></div>
+          <div class="input-row"><span>Down</span><button>S</button></div>
+          <div class="input-row"><span>Pressed</span><button>F</button></div>
+          <div class="input-row"><span>Modifier</span><button>Shift</button></div>
+          <label>Modifier Range: <span>51%</span></label>
+          <input type="range" min="0" max="100" value="51" />
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="group-title">D-Pad</div>
+
+        <div class="input-grid-directional">
+          <div class="input-row"><span>Up</span><button>Up</button></div>
+          <div class="input-row"><span>Left</span><button>Left</button></div>            
+          <div class="input-row"><span>Right</span><button>Right</button></div>
+          <div class="input-row"><span>Down</span><button>Down</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="config-center">
+	  <img src="controller.svg" />
+    </div>
+    <div class="config-right">
+      <div class="input-group">
+        <div class="group-title">Face Buttons</div>
+
+        <div class="input-grid-directional">
+          <div class="input-row"><span>X</span><button>V</button></div>
+          <div class="input-row"><span>Y</span><button>Z</button></div>            
+          <div class="input-row"><span>A</span><button>C</button></div>
+          <div class="input-row"><span>B</span><button>X</button></div>
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="group-title">Right Stick</div>
+        <div class="input-grid-directional">
+          <div class="input-row"><span>Up</span><button>I</button></div>
+          <div class="input-row"><span>Left</span><button>J</button></div>            
+          <div class="input-row"><span>Right</span><button>L</button></div>
+          <div class="input-row"><span>Down</span><button>K</button></div>
+          <div class="input-row"><span>Pressed</span><button>G</button></div>
+          <div class="input-row"><span>Modifier</span><button>&nbsp;</button></div>
+          <label>Modifier Range: <span>51%</span></label>
+          <input type="range" min="0" max="100" value="51" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
