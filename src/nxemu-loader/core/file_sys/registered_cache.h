@@ -13,9 +13,6 @@
 #include "core/file_sys/vfs/vfs.h"
 #include <nxemu-module-spec/system_loader.h>
 
-enum class LoaderContentRecordType : u8;
-enum class LoaderTitleType : u8;
-
 namespace FileSys {
 class CNMT;
 class NCA;
@@ -42,7 +39,7 @@ enum class InstallResult {
     ErrorBaseInstall,
 };
 
-constexpr u64 GetUpdateTitleID(u64 base_title_id) {
+constexpr uint64_t GetUpdateTitleID(uint64_t base_title_id) {
     return base_title_id | 0x800;
 }
 
@@ -61,18 +58,18 @@ public:
 
     virtual void Refresh() = 0;
 
-    virtual bool HasEntry(u64 title_id, LoaderContentRecordType type) const = 0;
+    virtual bool HasEntry(uint64_t title_id, LoaderContentRecordType type) const = 0;
     bool HasEntry(ContentProviderEntry entry) const;
 
-    virtual std::optional<u32> GetEntryVersion(u64 title_id) const = 0;
+    virtual std::optional<u32> GetEntryVersion(uint64_t title_id) const = 0;
 
-    virtual VirtualFile GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const = 0;
+    virtual VirtualFile GetEntryUnparsed(uint64_t title_id, LoaderContentRecordType type) const = 0;
     VirtualFile GetEntryUnparsed(ContentProviderEntry entry) const;
 
-    virtual VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const = 0;
+    virtual VirtualFile GetEntryRaw(uint64_t title_id, LoaderContentRecordType type) const = 0;
     VirtualFile GetEntryRaw(ContentProviderEntry entry) const;
 
-    virtual std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const = 0;
+    virtual std::unique_ptr<NCA> GetEntryNCA(uint64_t title_id, LoaderContentRecordType type) const = 0;
     std::unique_ptr<NCA> GetEntryNCA(ContentProviderEntry entry) const;
 
     virtual std::vector<ContentProviderEntry> ListEntries() const;
@@ -80,22 +77,22 @@ public:
     // If a parameter is not std::nullopt, it will be filtered for from all entries.
     virtual std::vector<ContentProviderEntry> ListEntriesFilter(
         std::optional<LoaderTitleType> title_type = {}, std::optional<LoaderContentRecordType> record_type = {},
-        std::optional<u64> title_id = {}) const = 0;
+        std::optional<uint64_t> title_id = {}) const = 0;
 };
 
 class PlaceholderCache {
 public:
     explicit PlaceholderCache(VirtualDir dir);
 
-    bool Create(const NcaID& id, u64 size) const;
+    bool Create(const NcaID& id, uint64_t size) const;
     bool Delete(const NcaID& id) const;
     bool Exists(const NcaID& id) const;
-    bool Write(const NcaID& id, u64 offset, const std::vector<u8>& data) const;
+    bool Write(const NcaID& id, uint64_t offset, const std::vector<u8>& data) const;
     bool Register(RegisteredCache* cache, const NcaID& placeholder, const NcaID& install) const;
     bool CleanAll() const;
     std::optional<std::array<u8, 0x10>> GetRightsID(const NcaID& id) const;
-    u64 Size(const NcaID& id) const;
-    bool SetSize(const NcaID& id, u64 new_size) const;
+    uint64_t Size(const NcaID& id) const;
+    bool SetSize(const NcaID& id, uint64_t new_size) const;
     std::vector<NcaID> List() const;
 
     static NcaID Generate();
@@ -137,20 +134,20 @@ public:
 
     void Refresh() override;
 
-    bool HasEntry(u64 title_id, LoaderContentRecordType type) const override;
+    bool HasEntry(uint64_t title_id, LoaderContentRecordType type) const override;
 
-    std::optional<u32> GetEntryVersion(u64 title_id) const override;
+    std::optional<u32> GetEntryVersion(uint64_t title_id) const override;
 
-    VirtualFile GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const override;
+    VirtualFile GetEntryUnparsed(uint64_t title_id, LoaderContentRecordType type) const override;
 
-    VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const override;
+    VirtualFile GetEntryRaw(uint64_t title_id, LoaderContentRecordType type) const override;
 
-    std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const override;
+    std::unique_ptr<NCA> GetEntryNCA(uint64_t title_id, LoaderContentRecordType type) const override;
 
     // If a parameter is not std::nullopt, it will be filtered for from all entries.
     std::vector<ContentProviderEntry> ListEntriesFilter(
         std::optional<LoaderTitleType> title_type = {}, std::optional<LoaderContentRecordType> record_type = {},
-        std::optional<u64> title_id = {}) const override;
+        std::optional<uint64_t> title_id = {}) const override;
 
     // Raw copies all the ncas from the xci/nsp to the csache. Does some quick checks to make sure
     // there is a meta NCA and all of them are accessible.
@@ -171,7 +168,7 @@ public:
                                const VfsCopyFunction& copy = &VfsRawCopy);
 
     // Removes an existing entry based on title id
-    bool RemoveExistingEntry(u64 title_id) const;
+    bool RemoveExistingEntry(uint64_t title_id) const;
 
 private:
     template <typename T>
@@ -181,7 +178,7 @@ private:
     std::vector<NcaID> AccumulateFiles() const;
     void ProcessFiles(const std::vector<NcaID>& ids);
     void AccumulateYuzuMeta();
-    std::optional<NcaID> GetNcaIDFromMetadata(u64 title_id, LoaderContentRecordType type) const;
+    std::optional<NcaID> GetNcaIDFromMetadata(uint64_t title_id, LoaderContentRecordType type) const;
     VirtualFile GetFileAtID(NcaID id) const;
     VirtualFile OpenFileOrDirectoryConcat(const VirtualDir& open_dir, std::string_view path) const;
     InstallResult RawInstallNCA(const NCA& nca, const VfsCopyFunction& copy,
@@ -192,11 +189,11 @@ private:
     ContentProviderParsingFunction parser;
 
     // maps tid -> NcaID of meta
-    std::map<u64, NcaID> meta_id;
+    std::map<uint64_t, NcaID> meta_id;
     // maps tid -> meta
-    std::map<u64, CNMT> meta;
+    std::map<uint64_t, CNMT> meta;
     // maps tid -> meta for CNMT in yuzu_meta
-    std::map<u64, CNMT> yuzu_meta;
+    std::map<uint64_t, CNMT> yuzu_meta;
 };
 
 enum class ContentProviderUnionSlot {
@@ -215,21 +212,21 @@ public:
     void ClearSlot(ContentProviderUnionSlot slot);
 
     void Refresh() override;
-    bool HasEntry(u64 title_id, LoaderContentRecordType type) const override;
-    std::optional<u32> GetEntryVersion(u64 title_id) const override;
-    VirtualFile GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const override;
-    VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const override;
-    std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const override;
+    bool HasEntry(uint64_t title_id, LoaderContentRecordType type) const override;
+    std::optional<u32> GetEntryVersion(uint64_t title_id) const override;
+    VirtualFile GetEntryUnparsed(uint64_t title_id, LoaderContentRecordType type) const override;
+    VirtualFile GetEntryRaw(uint64_t title_id, LoaderContentRecordType type) const override;
+    std::unique_ptr<NCA> GetEntryNCA(uint64_t title_id, LoaderContentRecordType type) const override;
     std::vector<ContentProviderEntry> ListEntriesFilter(
         std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
-        std::optional<u64> title_id) const override;
+        std::optional<uint64_t> title_id) const override;
 
     std::vector<std::pair<ContentProviderUnionSlot, ContentProviderEntry>> ListEntriesFilterOrigin(
         std::optional<ContentProviderUnionSlot> origin = {},
         std::optional<LoaderTitleType> title_type = {}, std::optional<LoaderContentRecordType> record_type = {},
-        std::optional<u64> title_id = {}) const;
+        std::optional<uint64_t> title_id = {}) const;
 
-    std::optional<ContentProviderUnionSlot> GetSlotForEntry(u64 title_id,
+    std::optional<ContentProviderUnionSlot> GetSlotForEntry(uint64_t title_id,
                                                             LoaderContentRecordType type) const;
 
 private:
@@ -240,22 +237,22 @@ class ManualContentProvider : public ContentProvider {
 public:
     ~ManualContentProvider() override;
 
-    void AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, u64 title_id,
+    void AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, uint64_t title_id,
                   VirtualFile file);
     void ClearAllEntries();
 
     void Refresh() override;
-    bool HasEntry(u64 title_id, LoaderContentRecordType type) const override;
-    std::optional<u32> GetEntryVersion(u64 title_id) const override;
-    VirtualFile GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const override;
-    VirtualFile GetEntryRaw(u64 title_id, LoaderContentRecordType type) const override;
-    std::unique_ptr<NCA> GetEntryNCA(u64 title_id, LoaderContentRecordType type) const override;
+    bool HasEntry(uint64_t title_id, LoaderContentRecordType type) const override;
+    std::optional<u32> GetEntryVersion(uint64_t title_id) const override;
+    VirtualFile GetEntryUnparsed(uint64_t title_id, LoaderContentRecordType type) const override;
+    VirtualFile GetEntryRaw(uint64_t title_id, LoaderContentRecordType type) const override;
+    std::unique_ptr<NCA> GetEntryNCA(uint64_t title_id, LoaderContentRecordType type) const override;
     std::vector<ContentProviderEntry> ListEntriesFilter(
         std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
-        std::optional<u64> title_id) const override;
+        std::optional<uint64_t> title_id) const override;
 
 private:
-    std::map<std::tuple<LoaderTitleType, LoaderContentRecordType, u64>, VirtualFile> entries;
+    std::map<std::tuple<LoaderTitleType, LoaderContentRecordType, uint64_t>, VirtualFile> entries;
 };
 
 } // namespace FileSys

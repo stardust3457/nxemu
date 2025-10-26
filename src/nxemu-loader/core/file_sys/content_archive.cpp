@@ -117,7 +117,7 @@ NCAContentType NCA::GetType() const {
     return static_cast<NCAContentType>(reader->GetContentType());
 }
 
-u64 NCA::GetTitleId() const {
+uint64_t NCA::GetTitleId() const {
     if (is_update) {
         return reader->GetProgramId() | 0x800;
     }

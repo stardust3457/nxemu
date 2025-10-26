@@ -47,7 +47,7 @@ public:
     LoadResult Load(Systemloader & loader, ISystemModules & modules) override;
 
     LoaderResultStatus ReadIcon(std::vector<u8>& buffer) override;
-    LoaderResultStatus ReadProgramId(u64& out_program_id) override;
+    LoaderResultStatus ReadProgramId(uint64_t& out_program_id) override;
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& dir) override;
     LoaderResultStatus ReadTitle(std::string& title) override;
     LoaderResultStatus ReadControlData(FileSys::NACP& control) override;

@@ -65,7 +65,7 @@ static std::string GetRelativePathFromNcaID(const std::array<u8, 16>& nca_id, bo
     return fmt::format(format_str, 0, Common::HexToString(nca_id, second_hex_upper));
 }
 
-static std::string GetCNMTName(LoaderTitleType type, u64 title_id) {
+static std::string GetCNMTName(LoaderTitleType type, uint64_t title_id) {
     static constexpr std::array<const char*, 9> TITLE_TYPE_NAMES{
         "SystemProgram",
         "SystemData",
@@ -79,7 +79,7 @@ static std::string GetCNMTName(LoaderTitleType type, u64 title_id) {
     };
 
     auto index = static_cast<std::size_t>(type);
-    // If the index is after the jump in TitleType, subtract it out.
+    // If the index is after the jump in LoaderTitleType, subtract it out.
     if (index >= static_cast<std::size_t>(LoaderTitleType::Application)) {
         index -= static_cast<std::size_t>(LoaderTitleType::Application) -
                  static_cast<std::size_t>(LoaderTitleType::FirmwarePackageB);
@@ -132,7 +132,7 @@ std::vector<ContentProviderEntry> ContentProvider::ListEntries() const {
 
 PlaceholderCache::PlaceholderCache(VirtualDir dir_) : dir(std::move(dir_)) {}
 
-bool PlaceholderCache::Create(const NcaID& id, u64 size) const {
+bool PlaceholderCache::Create(const NcaID& id, uint64_t size) const {
     const auto path = GetRelativePathFromNcaID(id, false, true, false);
 
     if (dir->GetFileRelative(path) != nullptr) {
@@ -178,7 +178,7 @@ bool PlaceholderCache::Exists(const NcaID& id) const {
     return dir->GetFileRelative(path) != nullptr;
 }
 
-bool PlaceholderCache::Write(const NcaID& id, u64 offset, const std::vector<u8>& data) const {
+bool PlaceholderCache::Write(const NcaID& id, uint64_t offset, const std::vector<u8>& data) const {
     const auto path = GetRelativePathFromNcaID(id, false, true, false);
     const auto file = dir->GetFileRelative(path);
 
@@ -229,7 +229,7 @@ std::optional<std::array<u8, 0x10>> PlaceholderCache::GetRightsID(const NcaID& i
     return rights_id;
 }
 
-u64 PlaceholderCache::Size(const NcaID& id) const {
+uint64_t PlaceholderCache::Size(const NcaID& id) const {
     const auto path = GetRelativePathFromNcaID(id, false, true, false);
     const auto file = dir->GetFileRelative(path);
 
@@ -239,7 +239,7 @@ u64 PlaceholderCache::Size(const NcaID& id) const {
     return file->GetSize();
 }
 
-bool PlaceholderCache::SetSize(const NcaID& id, u64 new_size) const {
+bool PlaceholderCache::SetSize(const NcaID& id, uint64_t new_size) const {
     const auto path = GetRelativePathFromNcaID(id, false, true, false);
     const auto file = dir->GetFileRelative(path);
 
@@ -265,14 +265,14 @@ std::vector<NcaID> PlaceholderCache::List() const {
 NcaID PlaceholderCache::Generate() {
     std::random_device device;
     std::mt19937 gen(device());
-    std::uniform_int_distribution<u64> distribution(1, std::numeric_limits<u64>::max());
+    std::uniform_int_distribution<uint64_t> distribution(1, std::numeric_limits<uint64_t>::max());
 
     NcaID out{};
 
     const auto v1 = distribution(gen);
     const auto v2 = distribution(gen);
-    std::memcpy(out.data(), &v1, sizeof(u64));
-    std::memcpy(out.data() + sizeof(u64), &v2, sizeof(u64));
+    std::memcpy(out.data(), &v1, sizeof(uint64_t));
+    std::memcpy(out.data() + sizeof(uint64_t), &v2, sizeof(uint64_t));
 
     return out;
 }
@@ -339,7 +339,7 @@ VirtualFile RegisteredCache::GetFileAtID(NcaID id) const {
     return file;
 }
 
-static std::optional<NcaID> CheckMapForContentRecord(const std::map<u64, CNMT>& map, u64 title_id,
+static std::optional<NcaID> CheckMapForContentRecord(const std::map<uint64_t, CNMT>& map, uint64_t title_id,
                                                      LoaderContentRecordType type) {
     const auto cmnt_iter = map.find(title_id);
     if (cmnt_iter == map.cend()) {
@@ -357,7 +357,7 @@ static std::optional<NcaID> CheckMapForContentRecord(const std::map<u64, CNMT>& 
     return std::make_optional(iter->nca_id);
 }
 
-std::optional<NcaID> RegisteredCache::GetNcaIDFromMetadata(u64 title_id,
+std::optional<NcaID> RegisteredCache::GetNcaIDFromMetadata(uint64_t title_id,
                                                            LoaderContentRecordType type) const {
     if (type == LoaderContentRecordType::Meta && meta_id.find(title_id) != meta_id.end())
         return meta_id.at(title_id);
@@ -462,16 +462,16 @@ RegisteredCache::RegisteredCache(VirtualDir dir_, ContentProviderParsingFunction
 
 RegisteredCache::~RegisteredCache() = default;
 
-bool RegisteredCache::HasEntry(u64 title_id, LoaderContentRecordType type) const {
+bool RegisteredCache::HasEntry(uint64_t title_id, LoaderContentRecordType type) const {
     return GetEntryRaw(title_id, type) != nullptr;
 }
 
-VirtualFile RegisteredCache::GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const {
+VirtualFile RegisteredCache::GetEntryUnparsed(uint64_t title_id, LoaderContentRecordType type) const {
     const auto id = GetNcaIDFromMetadata(title_id, type);
     return id ? GetFileAtID(*id) : nullptr;
 }
 
-std::optional<u32> RegisteredCache::GetEntryVersion(u64 title_id) const {
+std::optional<u32> RegisteredCache::GetEntryVersion(uint64_t title_id) const {
     const auto meta_iter = meta.find(title_id);
     if (meta_iter != meta.cend()) {
         return meta_iter->second.GetTitleVersion();
@@ -485,16 +485,16 @@ std::optional<u32> RegisteredCache::GetEntryVersion(u64 title_id) const {
     return std::nullopt;
 }
 
-VirtualFile RegisteredCache::GetEntryRaw(u64 title_id, LoaderContentRecordType type) const {
+VirtualFile RegisteredCache::GetEntryRaw(uint64_t title_id, LoaderContentRecordType type) const {
     const auto id = GetNcaIDFromMetadata(title_id, type);
     return id ? parser(GetFileAtID(*id), *id) : nullptr;
 }
 
-IFileSysNCA * RegisteredCache::GetEntry(u64 title_id, LoaderContentRecordType type) const {
+IFileSysNCA * RegisteredCache::GetEntry(uint64_t title_id, LoaderContentRecordType type) const {
     return GetEntryNCA(title_id, type).release();
 }
 
-std::unique_ptr<NCA> RegisteredCache::GetEntryNCA(u64 title_id, LoaderContentRecordType type) const {
+std::unique_ptr<NCA> RegisteredCache::GetEntryNCA(uint64_t title_id, LoaderContentRecordType type) const {
     const auto raw = GetEntryRaw(title_id, type);
     if (raw == nullptr)
         return nullptr;
@@ -527,7 +527,7 @@ void RegisteredCache::IterateAllMetadata(
 
 std::vector<ContentProviderEntry> RegisteredCache::ListEntriesFilter(
     std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
-    std::optional<u64> title_id) const {
+    std::optional<uint64_t> title_id) const {
     std::vector<ContentProviderEntry> out;
     IterateAllMetadata<ContentProviderEntry>(
         out,
@@ -616,7 +616,7 @@ InstallResult RegisteredCache::InstallEntry(const NCA& nca, const CNMTHeader& ba
     return RawInstallNCA(nca, copy, overwrite_if_exists, base_record.nca_id);
 }
 
-bool RegisteredCache::RemoveExistingEntry(u64 title_id) const {
+bool RegisteredCache::RemoveExistingEntry(uint64_t title_id) const {
     bool removed_data = false;
 
     const auto delete_nca = [this](const NcaID& id) {
@@ -740,7 +740,7 @@ bool RegisteredCache::RawInstallYuzuMeta(const CNMT& cnmt) {
     }
     Refresh();
     return std::find_if(yuzu_meta.begin(), yuzu_meta.end(),
-                        [&cnmt](const std::pair<u64, CNMT>& kv) {
+                        [&cnmt](const std::pair<uint64_t, CNMT>& kv) {
                             return kv.second.GetType() == cnmt.GetType() &&
                                    kv.second.GetTitleID() == cnmt.GetTitleID();
                         }) != yuzu_meta.end();
@@ -765,7 +765,7 @@ void ContentProviderUnion::Refresh() {
     }
 }
 
-bool ContentProviderUnion::HasEntry(u64 title_id, LoaderContentRecordType type) const {
+bool ContentProviderUnion::HasEntry(uint64_t title_id, LoaderContentRecordType type) const {
     for (const auto& provider : providers) {
         if (provider.second == nullptr)
             continue;
@@ -777,7 +777,7 @@ bool ContentProviderUnion::HasEntry(u64 title_id, LoaderContentRecordType type) 
     return false;
 }
 
-std::optional<u32> ContentProviderUnion::GetEntryVersion(u64 title_id) const {
+std::optional<u32> ContentProviderUnion::GetEntryVersion(uint64_t title_id) const {
     for (const auto& provider : providers) {
         if (provider.second == nullptr)
             continue;
@@ -790,7 +790,7 @@ std::optional<u32> ContentProviderUnion::GetEntryVersion(u64 title_id) const {
     return std::nullopt;
 }
 
-VirtualFile ContentProviderUnion::GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const {
+VirtualFile ContentProviderUnion::GetEntryUnparsed(uint64_t title_id, LoaderContentRecordType type) const {
     for (const auto& provider : providers) {
         if (provider.second == nullptr)
             continue;
@@ -803,7 +803,7 @@ VirtualFile ContentProviderUnion::GetEntryUnparsed(u64 title_id, LoaderContentRe
     return nullptr;
 }
 
-VirtualFile ContentProviderUnion::GetEntryRaw(u64 title_id, LoaderContentRecordType type) const {
+VirtualFile ContentProviderUnion::GetEntryRaw(uint64_t title_id, LoaderContentRecordType type) const {
     for (const auto& provider : providers) {
         if (provider.second == nullptr)
             continue;
@@ -816,7 +816,7 @@ VirtualFile ContentProviderUnion::GetEntryRaw(u64 title_id, LoaderContentRecordT
     return nullptr;
 }
 
-std::unique_ptr<NCA> ContentProviderUnion::GetEntryNCA(u64 title_id, LoaderContentRecordType type) const {
+std::unique_ptr<NCA> ContentProviderUnion::GetEntryNCA(uint64_t title_id, LoaderContentRecordType type) const {
     for (const auto& provider : providers) {
         if (provider.second == nullptr)
             continue;
@@ -831,7 +831,7 @@ std::unique_ptr<NCA> ContentProviderUnion::GetEntryNCA(u64 title_id, LoaderConte
 
 std::vector<ContentProviderEntry> ContentProviderUnion::ListEntriesFilter(
     std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
-    std::optional<u64> title_id) const {
+    std::optional<uint64_t> title_id) const {
     std::vector<ContentProviderEntry> out;
 
     for (const auto& provider : providers) {
@@ -851,7 +851,7 @@ std::vector<std::pair<ContentProviderUnionSlot, ContentProviderEntry>>
 ContentProviderUnion::ListEntriesFilterOrigin(std::optional<ContentProviderUnionSlot> origin,
                                               std::optional<LoaderTitleType> title_type,
                                               std::optional<LoaderContentRecordType> record_type,
-                                              std::optional<u64> title_id) const {
+                                              std::optional<uint64_t> title_id) const {
     std::vector<std::pair<ContentProviderUnionSlot, ContentProviderEntry>> out;
 
     for (const auto& provider : providers) {
@@ -874,7 +874,7 @@ ContentProviderUnion::ListEntriesFilterOrigin(std::optional<ContentProviderUnion
 }
 
 std::optional<ContentProviderUnionSlot> ContentProviderUnion::GetSlotForEntry(
-    u64 title_id, LoaderContentRecordType type) const {
+    uint64_t title_id, LoaderContentRecordType type) const {
     const auto iter =
         std::find_if(providers.begin(), providers.end(), [title_id, type](const auto& provider) {
             return provider.second != nullptr && provider.second->HasEntry(title_id, type);
@@ -890,7 +890,7 @@ std::optional<ContentProviderUnionSlot> ContentProviderUnion::GetSlotForEntry(
 ManualContentProvider::~ManualContentProvider() = default;
 
 void ManualContentProvider::AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type,
-                                     u64 title_id, VirtualFile file) {
+                                     uint64_t title_id, VirtualFile file) {
     entries.insert_or_assign({title_type, content_type, title_id}, file);
 }
 
@@ -900,19 +900,19 @@ void ManualContentProvider::ClearAllEntries() {
 
 void ManualContentProvider::Refresh() {}
 
-bool ManualContentProvider::HasEntry(u64 title_id, LoaderContentRecordType type) const {
+bool ManualContentProvider::HasEntry(uint64_t title_id, LoaderContentRecordType type) const {
     return GetEntryRaw(title_id, type) != nullptr;
 }
 
-std::optional<u32> ManualContentProvider::GetEntryVersion(u64 title_id) const {
+std::optional<u32> ManualContentProvider::GetEntryVersion(uint64_t title_id) const {
     return std::nullopt;
 }
 
-VirtualFile ManualContentProvider::GetEntryUnparsed(u64 title_id, LoaderContentRecordType type) const {
+VirtualFile ManualContentProvider::GetEntryUnparsed(uint64_t title_id, LoaderContentRecordType type) const {
     return GetEntryRaw(title_id, type);
 }
 
-VirtualFile ManualContentProvider::GetEntryRaw(u64 title_id, LoaderContentRecordType type) const {
+VirtualFile ManualContentProvider::GetEntryRaw(uint64_t title_id, LoaderContentRecordType type) const {
     const auto iter =
         std::find_if(entries.begin(), entries.end(), [title_id, type](const auto& entry) {
             const auto content_type = std::get<1>(entry.first);
@@ -924,7 +924,7 @@ VirtualFile ManualContentProvider::GetEntryRaw(u64 title_id, LoaderContentRecord
     return iter->second;
 }
 
-std::unique_ptr<NCA> ManualContentProvider::GetEntryNCA(u64 title_id, LoaderContentRecordType type) const {
+std::unique_ptr<NCA> ManualContentProvider::GetEntryNCA(uint64_t title_id, LoaderContentRecordType type) const {
     const auto res = GetEntryRaw(title_id, type);
     if (res == nullptr)
         return nullptr;
@@ -933,7 +933,7 @@ std::unique_ptr<NCA> ManualContentProvider::GetEntryNCA(u64 title_id, LoaderCont
 
 std::vector<ContentProviderEntry> ManualContentProvider::ListEntriesFilter(
     std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
-    std::optional<u64> title_id) const {
+    std::optional<uint64_t> title_id) const {
     std::vector<ContentProviderEntry> out;
 
     for (const auto& entry : entries) {

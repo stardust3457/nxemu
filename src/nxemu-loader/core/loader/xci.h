@@ -23,7 +23,7 @@ class AppLoader_XCI final : public AppLoader {
 public:
     explicit AppLoader_XCI(FileSys::VirtualFile file_,
                            const FileSys::FileSystemController& fsc,
-                           const FileSys::ContentProvider& content_provider, u64 program_id,
+                           const FileSys::ContentProvider& content_provider, uint64_t program_id,
                            std::size_t program_index);
     ~AppLoader_XCI() override;
 
@@ -46,8 +46,8 @@ public:
 
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& out_file) override;
     LoaderResultStatus ReadUpdateRaw(FileSys::VirtualFile& out_file) override;
-    LoaderResultStatus ReadProgramId(u64& out_program_id) override;
-    LoaderResultStatus ReadProgramIds(std::vector<u64>& out_program_ids) override;
+    LoaderResultStatus ReadProgramId(uint64_t& out_program_id) override;
+    LoaderResultStatus ReadProgramIds(std::vector<uint64_t>& out_program_ids) override;
     LoaderResultStatus ReadIcon(std::vector<u8>& buffer) override;
     LoaderResultStatus ReadTitle(std::string& title) override;
     LoaderResultStatus ReadControlData(FileSys::NACP& control) override;

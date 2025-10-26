@@ -21,10 +21,10 @@ using VirtualFile = std::shared_ptr<VfsFile>;
 using VirtualFilesystem = std::shared_ptr<VfsFilesystem>;
 
 struct FileTimeStampRaw {
-    u64 created{};
-    u64 accessed{};
-    u64 modified{};
-    u64 padding{};
+    uint64_t created{};
+    uint64_t accessed{};
+    uint64_t modified{};
+    uint64_t padding{};
 };
 
 } // namespace FileSys

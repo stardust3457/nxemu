@@ -22,7 +22,7 @@ public:
     ~RomFSBuildContext();
 
     // This finalizes the context.
-    std::vector<std::pair<u64, VirtualFile>> Build();
+    std::vector<std::pair<uint64_t, VirtualFile>> Build();
 
 private:
     VirtualDir base;
@@ -30,13 +30,13 @@ private:
     std::shared_ptr<RomFSBuildDirectoryContext> root;
     std::vector<std::shared_ptr<RomFSBuildDirectoryContext>> directories;
     std::vector<std::shared_ptr<RomFSBuildFileContext>> files;
-    u64 num_dirs = 0;
-    u64 num_files = 0;
-    u64 dir_table_size = 0;
-    u64 file_table_size = 0;
-    u64 dir_hash_table_size = 0;
-    u64 file_hash_table_size = 0;
-    u64 file_partition_size = 0;
+    uint64_t num_dirs = 0;
+    uint64_t num_files = 0;
+    uint64_t dir_table_size = 0;
+    uint64_t file_table_size = 0;
+    uint64_t dir_hash_table_size = 0;
+    uint64_t file_hash_table_size = 0;
+    uint64_t file_partition_size = 0;
 
     void VisitDirectory(VirtualDir filesys, VirtualDir ext_dir,
                         std::shared_ptr<RomFSBuildDirectoryContext> parent);

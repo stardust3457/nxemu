@@ -117,7 +117,7 @@ FileSys::RegisteredCache * FileSystemController::SystemNANDContents() const
     return bis_factory->GetSystemNANDContents();
 }
 
-FileSys::VirtualDir FileSystemController::GetModificationLoadRoot(u64 title_id) const {
+FileSys::VirtualDir FileSystemController::GetModificationLoadRoot(uint64_t title_id) const {
     LOG_TRACE(Service_FS, "Opening mod load root for tid={:016X}", title_id);
 
     if (bis_factory == nullptr)
@@ -126,7 +126,7 @@ FileSys::VirtualDir FileSystemController::GetModificationLoadRoot(u64 title_id) 
     return bis_factory->GetModificationLoadRoot(title_id);
 }
 
-FileSys::VirtualDir FileSystemController::GetSDMCModificationLoadRoot(u64 title_id) const {
+FileSys::VirtualDir FileSystemController::GetSDMCModificationLoadRoot(uint64_t title_id) const {
     LOG_TRACE(Service_FS, "Opening SDMC mod load root for tid={:016X}", title_id);
 
     if (sdmc_factory == nullptr) {
@@ -136,7 +136,7 @@ FileSys::VirtualDir FileSystemController::GetSDMCModificationLoadRoot(u64 title_
     return sdmc_factory->GetSDMCModificationLoadRoot(title_id);
 }
 
-FileSys::VirtualDir FileSystemController::GetModificationDumpRoot(u64 title_id) const {
+FileSys::VirtualDir FileSystemController::GetModificationDumpRoot(uint64_t title_id) const {
     LOG_TRACE(Service_FS, "Opening mod dump root for tid={:016X}", title_id);
 
     if (bis_factory == nullptr)

@@ -49,7 +49,7 @@ const CNMTHeader& CNMT::GetHeader() const {
     return header;
 }
 
-u64 CNMT::GetTitleID() const {
+uint64_t CNMT::GetTitleID() const {
     return header.title_id;
 }
 

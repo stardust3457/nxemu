@@ -165,7 +165,7 @@ size_t AesCtrCounterExtendedStorage::Read(u8* buffer, size_t size, size_t offset
     ASSERT(R_SUCCEEDED(m_table.GetOffsets(std::addressof(table_offsets))));
 
     ASSERT(table_offsets.IsInclude(offset, size));
-        
+
     // Read the data.
     m_data_storage->Read(buffer, size, offset);
 

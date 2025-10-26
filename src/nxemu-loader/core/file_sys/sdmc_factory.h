@@ -20,7 +20,7 @@ public:
 
     VirtualDir Open() const;
 
-    VirtualDir GetSDMCModificationLoadRoot(u64 title_id) const;
+    VirtualDir GetSDMCModificationLoadRoot(uint64_t title_id) const;
     VirtualDir GetSDMCContentDirectory() const;
 
     RegisteredCache* GetSDMCContents() const;
@@ -28,8 +28,8 @@ public:
 
     VirtualDir GetImageDirectory() const;
 
-    u64 GetSDMCFreeSpace() const;
-    u64 GetSDMCTotalSpace() const;
+    uint64_t GetSDMCFreeSpace() const;
+    uint64_t GetSDMCTotalSpace() const;
 
 private:
     VirtualDir sd_dir;

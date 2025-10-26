@@ -15,9 +15,9 @@ namespace {
 
 // A default size for normal/journal save data size if application control metadata cannot be found.
 // This should be large enough to satisfy even the most extreme requirements (~4.2GB)
-constexpr u64 SufficientSaveDataSize = 0xF0000000;
+constexpr uint64_t SufficientSaveDataSize = 0xF0000000;
 
-FileSys::SaveDataSize GetDefaultSaveDataSize(Systemloader & loader, u64 program_id) {
+FileSys::SaveDataSize GetDefaultSaveDataSize(Systemloader & loader, uint64_t program_id) {
     const FileSys::PatchManager pm{program_id, loader.GetFileSystemController(),
                                    loader.GetContentProvider()};
     const auto metadata = pm.GetControlMetadata();
@@ -74,7 +74,7 @@ Result SaveDataController::OpenSaveDataSpace(FileSys::VirtualDir* out_save_data_
     return ResultSuccess;
 }
 
-FileSys::SaveDataSize SaveDataController::ReadSaveDataSize(SaveDataType type, u64 title_id, u128 user_id) 
+FileSys::SaveDataSize SaveDataController::ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id) 
 {
     const auto value = factory->ReadSaveDataSize(type, title_id, user_id);
 
@@ -87,7 +87,7 @@ FileSys::SaveDataSize SaveDataController::ReadSaveDataSize(SaveDataType type, u6
     return value;
 }
 
-void SaveDataController::WriteSaveDataSize(SaveDataType type, u64 title_id, u128 user_id,
+void SaveDataController::WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id,
                                            FileSys::SaveDataSize new_value) {
     factory->WriteSaveDataSize(type, title_id, user_id, new_value);
 }

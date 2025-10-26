@@ -18,7 +18,7 @@ constexpr const char* GetSaveDataSizeFileName() {
     return ".yuzu_save_size";
 }
 
-using ProgramId = u64;
+using ProgramId = uint64_t;
 
 /// File system interface to the SaveData archive
 class SaveDataFactory {
@@ -34,11 +34,11 @@ public:
 
     static std::string GetSaveDataSpaceIdPath(SaveDataSpaceId space);
     static std::string GetFullPath(ProgramId program_id, VirtualDir dir, SaveDataSpaceId space,
-                                   SaveDataType type, u64 title_id, u128 user_id, u64 save_id);
+                                   SaveDataType type, uint64_t title_id, u128 user_id, uint64_t save_id);
     static std::string GetUserGameSaveDataRoot(u128 user_id, bool future);
 
-    SaveDataSize ReadSaveDataSize(SaveDataType type, u64 title_id, u128 user_id) const;
-    void WriteSaveDataSize(SaveDataType type, u64 title_id, u128 user_id,
+    SaveDataSize ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id) const;
+    void WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id,
                            SaveDataSize new_value) const;
 
     void SetAutoCreate(bool state);

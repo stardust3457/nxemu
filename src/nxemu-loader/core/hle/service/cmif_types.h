@@ -57,16 +57,16 @@ struct ClientProcessId {
         return pid != 0;
     }
 
-    const u64& operator*() const {
+    const uint64_t& operator*() const {
         return pid;
     }
 
-    u64 pid;
+    uint64_t pid;
 };
 
 struct ProcessId {
     explicit ProcessId() : pid() {}
-    explicit ProcessId(u64 p) : pid(p) {}
+    explicit ProcessId(uint64_t p) : pid(p) {}
     /* implicit */ ProcessId(const ClientProcessId& c) : pid(c.pid) {}
 
     bool operator==(const ProcessId& rhs) const {
@@ -77,11 +77,11 @@ struct ProcessId {
         return pid != 0;
     }
 
-    const u64& operator*() const {
+    const uint64_t& operator*() const {
         return pid;
     }
 
-    u64 pid;
+    uint64_t pid;
 };
 
 using ClientAppletResourceUserId = ClientProcessId;

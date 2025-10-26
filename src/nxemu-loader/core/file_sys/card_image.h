@@ -10,8 +10,6 @@
 #include "yuzu_common/swap.h"
 #include "core/file_sys/vfs/vfs.h"
 
-enum class LoaderResultStatus : uint16_t;
-
 namespace FileSys {
 
 class NCA;
@@ -71,7 +69,7 @@ enum class XCIPartition : u8 { Update, Normal, Secure, Logo };
 
 class XCI : public ReadOnlyVfsDirectory {
 public:
-    explicit XCI(VirtualFile file, u64 program_id = 0, size_t program_index = 0);
+    explicit XCI(VirtualFile file, uint64_t program_id = 0, size_t program_index = 0);
     ~XCI() override;
 
     LoaderResultStatus GetStatus() const;
@@ -96,10 +94,10 @@ public:
     VirtualFile GetUpdatePartitionRaw() const;
     VirtualFile GetLogoPartitionRaw() const;
 
-    u64 GetProgramTitleID() const;
-    std::vector<u64> GetProgramTitleIDs() const;
+    uint64_t GetProgramTitleID() const;
+    std::vector<uint64_t> GetProgramTitleIDs() const;
     u32 GetSystemUpdateVersion();
-    u64 GetSystemUpdateTitleID() const;
+    uint64_t GetSystemUpdateTitleID() const;
 
     bool HasProgramNCA() const;
     VirtualFile GetProgramNCAFile() const;
@@ -134,6 +132,6 @@ private:
     std::shared_ptr<NCA> program;
     std::vector<std::shared_ptr<NCA>> ncas;
 
-    u64 update_normal_partition_end;
+    uint64_t update_normal_partition_end;
 };
 } // namespace FileSys

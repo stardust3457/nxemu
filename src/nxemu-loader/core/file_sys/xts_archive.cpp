@@ -17,7 +17,7 @@
 
 namespace FileSys {
 
-constexpr u64 NAX_HEADER_PADDING_SIZE = 0x4000;
+constexpr uint64_t NAX_HEADER_PADDING_SIZE = 0x4000;
 
 
 NAX::NAX(VirtualFile file_)

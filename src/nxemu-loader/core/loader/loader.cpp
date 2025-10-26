@@ -11,7 +11,7 @@
 #include "core/loader/nro.h"
 #include "core/loader/nsp.h"
 #include "core/loader/xci.h"
-#include <nxemu-loader/system_loader.h>
+#include "system_loader.h"
 
 namespace Loader {
 
@@ -80,7 +80,7 @@ AppLoader::~AppLoader() = default;
  * @return std::unique_ptr<AppLoader> a pointer to a loader object;  nullptr for unsupported type
  */
 static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::VirtualFile file,
-                                                FileType type, u64 program_id,
+                                                FileType type, uint64_t program_id,
                                                 std::size_t program_index) {
     switch (type) {
     // NX NRO file format.
@@ -101,7 +101,7 @@ static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::
 }
 
 std::unique_ptr<AppLoader> GetLoader(Systemloader& loader, FileSys::VirtualFile file,
-                                     u64 program_id, std::size_t program_index) {
+                                     uint64_t program_id, std::size_t program_index) {
     if (!file) {
         return nullptr;
     }

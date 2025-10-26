@@ -23,13 +23,13 @@ VirtualDir SystemVersion() {
     file->WriteObject(HLE::ApiVersion::SDK_REVISION_MAJOR, 4);
     file->WriteObject(HLE::ApiVersion::SDK_REVISION_MINOR, 5);
     file->WriteArray(HLE::ApiVersion::PLATFORM_STRING,
-                     std::min<u64>(sizeof(HLE::ApiVersion::PLATFORM_STRING), 0x20ULL), 0x8);
+                     std::min<uint64_t>(sizeof(HLE::ApiVersion::PLATFORM_STRING), 0x20ULL), 0x8);
     file->WriteArray(HLE::ApiVersion::VERSION_HASH,
-                     std::min<u64>(sizeof(HLE::ApiVersion::VERSION_HASH), 0x40ULL), 0x28);
+                     std::min<uint64_t>(sizeof(HLE::ApiVersion::VERSION_HASH), 0x40ULL), 0x28);
     file->WriteArray(HLE::ApiVersion::DISPLAY_VERSION,
-                     std::min<u64>(sizeof(HLE::ApiVersion::DISPLAY_VERSION), 0x18ULL), 0x68);
+                     std::min<uint64_t>(sizeof(HLE::ApiVersion::DISPLAY_VERSION), 0x18ULL), 0x68);
     file->WriteArray(HLE::ApiVersion::DISPLAY_TITLE,
-                     std::min<u64>(sizeof(HLE::ApiVersion::DISPLAY_TITLE), 0x80ULL), 0x80);
+                     std::min<uint64_t>(sizeof(HLE::ApiVersion::DISPLAY_TITLE), 0x80ULL), 0x80);
     return std::make_shared<VectorVfsDirectory>(std::vector<VirtualFile>{file},
                                                 std::vector<VirtualDir>{}, "data");
 }

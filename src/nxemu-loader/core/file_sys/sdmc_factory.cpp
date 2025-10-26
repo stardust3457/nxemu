@@ -9,7 +9,7 @@
 
 namespace FileSys {
 
-constexpr u64 SDMC_TOTAL_SIZE = 0x10000000000; // 1 TiB
+constexpr uint64_t SDMC_TOTAL_SIZE = 0x10000000000; // 1 TiB
 
 SDMCFactory::SDMCFactory(VirtualDir sd_dir_, VirtualDir sd_mod_dir_)
     : sd_dir(std::move(sd_dir_)), sd_mod_dir(std::move(sd_mod_dir_)),
@@ -27,7 +27,7 @@ VirtualDir SDMCFactory::Open() const {
     return sd_dir;
 }
 
-VirtualDir SDMCFactory::GetSDMCModificationLoadRoot(u64 title_id) const {
+VirtualDir SDMCFactory::GetSDMCModificationLoadRoot(uint64_t title_id) const {
     // LayeredFS doesn't work on updates and title id-less homebrew
     if (title_id == 0 || (title_id & 0xFFF) == 0x800) {
         return nullptr;
@@ -51,11 +51,11 @@ VirtualDir SDMCFactory::GetImageDirectory() const {
     return GetOrCreateDirectoryRelative(sd_dir, "/Nintendo/Album");
 }
 
-u64 SDMCFactory::GetSDMCFreeSpace() const {
+uint64_t SDMCFactory::GetSDMCFreeSpace() const {
     return GetSDMCTotalSpace() - sd_dir->GetSize();
 }
 
-u64 SDMCFactory::GetSDMCTotalSpace() const {
+uint64_t SDMCFactory::GetSDMCTotalSpace() const {
     return SDMC_TOTAL_SIZE;
 }
 

@@ -22,7 +22,7 @@ namespace Loader {
 
 AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
                              const FileSys::FileSystemController& fsc,
-                             const FileSys::ContentProvider& content_provider, u64 program_id,
+                             const FileSys::ContentProvider& content_provider, uint64_t program_id,
                              std::size_t program_index)
     : AppLoader(file_), nsp(std::make_unique<FileSys::NSP>(file_, program_id, program_index)) {
 
@@ -180,7 +180,7 @@ LoaderResultStatus AppLoader_NSP::ReadUpdateRaw(FileSys::VirtualFile& out_file) 
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadProgramId(u64& out_program_id) {
+LoaderResultStatus AppLoader_NSP::ReadProgramId(uint64_t& out_program_id) {
     out_program_id = nsp->GetProgramTitleID();
     if (out_program_id == 0) {
         return LoaderResultStatus::ErrorNotInitialized;
@@ -188,7 +188,7 @@ LoaderResultStatus AppLoader_NSP::ReadProgramId(u64& out_program_id) {
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadProgramIds(std::vector<u64>& out_program_ids) {
+LoaderResultStatus AppLoader_NSP::ReadProgramIds(std::vector<uint64_t>& out_program_ids) {
     out_program_ids = nsp->GetProgramTitleIDs();
     return LoaderResultStatus::Success;
 }

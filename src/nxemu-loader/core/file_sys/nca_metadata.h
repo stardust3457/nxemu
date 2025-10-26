@@ -69,7 +69,7 @@ public:
     ~CNMT();
 
     const CNMTHeader& GetHeader() const;
-    u64 GetTitleID() const;
+    uint64_t GetTitleID() const;
     u32 GetTitleVersion() const;
     LoaderTitleType GetType() const;
 

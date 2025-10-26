@@ -44,7 +44,7 @@ public:
 
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& out_dir) override;
     LoaderResultStatus ReadIcon(std::vector<u8>& out_buffer) override;
-    LoaderResultStatus ReadProgramId(u64& out_program_id) override;
+    LoaderResultStatus ReadProgramId(uint64_t& out_program_id) override;
     LoaderResultStatus ReadTitle(std::string& title) override;
     bool IsRomFSUpdatable() const override;
 
@@ -57,7 +57,7 @@ private:
 
     std::vector<u8> icon_data;
     std::string name;
-    u64 title_id{};
+    uint64_t title_id{};
     bool override_update;
     bool is_hbl;
 

@@ -97,8 +97,8 @@ struct NcaHeader {
     ContentType content_type;
     u8 key_generation;
     u8 key_index;
-    u64 content_size;
-    u64 program_id;
+    uint64_t content_size;
+    uint64_t program_id;
     u32 content_index;
     u32 sdk_addon_version;
     u8 key_generation_2;
@@ -110,11 +110,11 @@ struct NcaHeader {
     std::array<Hash, FsCountMax> fs_header_hash;
     std::array<u8, EncryptedKeyAreaSize> encrypted_key_area;
 
-    static constexpr u64 SectorToByte(u32 sector) {
-        return static_cast<u64>(sector) << SectorShift;
+    static constexpr uint64_t SectorToByte(u32 sector) {
+        return static_cast<uint64_t>(sector) << SectorShift;
     }
 
-    static constexpr u32 ByteToSector(u64 byte) {
+    static constexpr u32 ByteToSector(uint64_t byte) {
         return static_cast<u32>(byte >> SectorShift);
     }
 
@@ -148,7 +148,7 @@ struct NcaPatchInfo {
 static_assert(std::is_trivial_v<NcaPatchInfo>);
 
 union NcaAesCtrUpperIv {
-    u64 value;
+    uint64_t value;
     struct {
         u32 generation;
         u32 secure_value;

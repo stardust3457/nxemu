@@ -90,14 +90,14 @@ bool IsDirValidAndNonEmpty(const VirtualDir& dir) {
 }
 } // Anonymous namespace
 
-PatchManager::PatchManager(u64 title_id_,
+PatchManager::PatchManager(uint64_t title_id_,
                            const FileSystemController& fs_controller_,
                            const ContentProvider& content_provider_)
     : title_id{title_id_}, fs_controller{fs_controller_}, content_provider{content_provider_} {}
 
 PatchManager::~PatchManager() = default;
 
-u64 PatchManager::GetTitleID() const {
+uint64_t PatchManager::GetTitleID() const {
     return title_id;
 }
 
@@ -225,7 +225,7 @@ bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) 
     return !CollectPatches(patch_dirs, build_id).empty();
 }
 
-static void ApplyLayeredFS(VirtualFile& romfs, u64 title_id, LoaderContentRecordType type,
+static void ApplyLayeredFS(VirtualFile& romfs, uint64_t title_id, LoaderContentRecordType type,
                            const FileSystemController& fs_controller) {
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
     const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);

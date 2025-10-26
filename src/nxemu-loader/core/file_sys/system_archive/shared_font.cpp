@@ -20,7 +20,7 @@ VirtualFile PackBFTTF(const std::array<u8, Size>& data, const std::string& name)
     std::vector<u32> vec(Size / sizeof(u32));
     std::memcpy(vec.data(), data.data(), vec.size() * sizeof(u32));
 
-    std::vector<u8> bfttf(Size + sizeof(u64));
+    std::vector<u8> bfttf(Size + sizeof(uint64_t));
 
     size_t offset = 0;
     Service::NS::EncryptSharedFont(vec, bfttf, offset);

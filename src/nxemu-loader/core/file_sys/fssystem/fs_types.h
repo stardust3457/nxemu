@@ -12,8 +12,8 @@ struct Int64 {
     u32 high;
 
     constexpr void Set(s64 v) {
-        this->low = static_cast<u32>((v & static_cast<u64>(0x00000000FFFFFFFFULL)) >> 0);
-        this->high = static_cast<u32>((v & static_cast<u64>(0xFFFFFFFF00000000ULL)) >> 32);
+        this->low = static_cast<u32>((v & static_cast<uint64_t>(0x00000000FFFFFFFFULL)) >> 0);
+        this->high = static_cast<u32>((v & static_cast<uint64_t>(0xFFFFFFFF00000000ULL)) >> 32);
     }
 
     constexpr s64 Get() const {

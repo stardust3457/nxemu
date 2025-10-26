@@ -13,23 +13,23 @@
 
 namespace FileSys {
 
-constexpr u64 FS_MAX_PATH = 0x301;
+constexpr uint64_t FS_MAX_PATH = 0x301;
 
 constexpr u32 ROMFS_ENTRY_EMPTY = 0xFFFFFFFF;
 constexpr u32 ROMFS_FILEPARTITION_OFS = 0x200;
 
 // Types for building a RomFS.
 struct RomFSHeader {
-    u64 header_size;
-    u64 dir_hash_table_ofs;
-    u64 dir_hash_table_size;
-    u64 dir_table_ofs;
-    u64 dir_table_size;
-    u64 file_hash_table_ofs;
-    u64 file_hash_table_size;
-    u64 file_table_ofs;
-    u64 file_table_size;
-    u64 file_partition_ofs;
+    uint64_t header_size;
+    uint64_t dir_hash_table_ofs;
+    uint64_t dir_hash_table_size;
+    uint64_t dir_table_ofs;
+    uint64_t dir_table_size;
+    uint64_t file_hash_table_ofs;
+    uint64_t file_hash_table_size;
+    uint64_t file_table_ofs;
+    uint64_t file_table_size;
+    uint64_t file_partition_ofs;
 };
 static_assert(sizeof(RomFSHeader) == 0x50, "RomFSHeader has incorrect size.");
 
@@ -46,8 +46,8 @@ static_assert(sizeof(RomFSDirectoryEntry) == 0x18, "RomFSDirectoryEntry has inco
 struct RomFSFileEntry {
     u32 parent;
     u32 sibling;
-    u64 offset;
-    u64 size;
+    uint64_t offset;
+    uint64_t size;
     u32 hash;
     u32 name_size;
 };
@@ -71,8 +71,8 @@ struct RomFSBuildFileContext {
     u32 cur_path_ofs = 0;
     u32 path_len = 0;
     u32 entry_offset = 0;
-    u64 offset = 0;
-    u64 size = 0;
+    uint64_t offset = 0;
+    uint64_t size = 0;
     std::shared_ptr<RomFSBuildDirectoryContext> parent;
     std::shared_ptr<RomFSBuildFileContext> sibling;
     VirtualFile source;
@@ -89,7 +89,7 @@ static u32 romfs_calc_path_hash(u32 parent, std::string_view path, u32 start,
     return hash;
 }
 
-static u64 romfs_get_hash_table_count(u64 num_entries) {
+static uint64_t romfs_get_hash_table_count(uint64_t num_entries) {
     if (num_entries < 3) {
         return 3;
     }
@@ -98,7 +98,7 @@ static u64 romfs_get_hash_table_count(u64 num_entries) {
         return num_entries | 1;
     }
 
-    u64 count = num_entries;
+    uint64_t count = num_entries;
     while (count % 2 == 0 || count % 3 == 0 || count % 5 == 0 || count % 7 == 0 ||
            count % 11 == 0 || count % 13 == 0 || count % 17 == 0) {
         count++;
@@ -199,9 +199,9 @@ RomFSBuildContext::RomFSBuildContext(VirtualDir base_, VirtualDir ext_)
 
 RomFSBuildContext::~RomFSBuildContext() = default;
 
-std::vector<std::pair<u64, VirtualFile>> RomFSBuildContext::Build() {
-    const u64 dir_hash_table_entry_count = romfs_get_hash_table_count(num_dirs);
-    const u64 file_hash_table_entry_count = romfs_get_hash_table_count(num_files);
+std::vector<std::pair<uint64_t, VirtualFile>> RomFSBuildContext::Build() {
+    const uint64_t dir_hash_table_entry_count = romfs_get_hash_table_count(num_dirs);
+    const uint64_t file_hash_table_entry_count = romfs_get_hash_table_count(num_files);
     dir_hash_table_size = 4 * dir_hash_table_entry_count;
     file_hash_table_size = 4 * file_hash_table_entry_count;
 
@@ -268,7 +268,7 @@ std::vector<std::pair<u64, VirtualFile>> RomFSBuildContext::Build() {
     }
 
     // Create output map.
-    std::vector<std::pair<u64, VirtualFile>> out;
+    std::vector<std::pair<uint64_t, VirtualFile>> out;
     out.reserve(num_files + 2);
 
     // Set header fields.

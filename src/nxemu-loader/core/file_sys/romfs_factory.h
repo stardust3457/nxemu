@@ -9,8 +9,6 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/hle/result.h"
 
-enum class LoaderContentRecordType : u8;
-
 namespace Loader {
 class AppLoader;
 } // namespace Loader
@@ -32,12 +30,12 @@ public:
     ~RomFSFactory();
 
     void SetPackedUpdate(VirtualFile packed_update_raw);
-    [[nodiscard]] VirtualFile OpenCurrentProcess(u64 current_process_title_id) const;
-    [[nodiscard]] VirtualFile OpenPatchedRomFS(u64 title_id, LoaderContentRecordType type) const;
-    [[nodiscard]] VirtualFile OpenPatchedRomFSWithProgramIndex(u64 title_id, u8 program_index,
+    [[nodiscard]] VirtualFile OpenCurrentProcess(uint64_t current_process_title_id) const;
+    [[nodiscard]] VirtualFile OpenPatchedRomFS(uint64_t title_id, LoaderContentRecordType type) const;
+    [[nodiscard]] VirtualFile OpenPatchedRomFSWithProgramIndex(uint64_t title_id, u8 program_index,
                                                                LoaderContentRecordType type) const;
-    [[nodiscard]] VirtualFile Open(u64 title_id, StorageId storage, LoaderContentRecordType type) const;
-    [[nodiscard]] std::shared_ptr<NCA> GetEntry(u64 title_id, StorageId storage,
+    [[nodiscard]] VirtualFile Open(uint64_t title_id, StorageId storage, LoaderContentRecordType type) const;
+    [[nodiscard]] std::shared_ptr<NCA> GetEntry(uint64_t title_id, StorageId storage,
                                                 LoaderContentRecordType type) const;
 
 private:

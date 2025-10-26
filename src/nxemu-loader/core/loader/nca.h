@@ -42,7 +42,7 @@ public:
     LoaderResultStatus VerifyIntegrity(std::function<bool(size_t, size_t)> progress_callback) override;
 
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& dir) override;
-    LoaderResultStatus ReadProgramId(u64& out_program_id) override;
+    LoaderResultStatus ReadProgramId(uint64_t& out_program_id) override;
 
     LoaderResultStatus ReadBanner(std::vector<u8>& buffer) override;
     LoaderResultStatus ReadLogo(std::vector<u8>& buffer) override;

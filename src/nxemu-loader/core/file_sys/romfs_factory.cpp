@@ -27,7 +27,7 @@ void RomFSFactory::SetPackedUpdate(VirtualFile update_raw_file) {
     packed_update_raw = std::move(update_raw_file);
 }
 
-VirtualFile RomFSFactory::OpenCurrentProcess(u64 current_process_title_id) const {
+VirtualFile RomFSFactory::OpenCurrentProcess(uint64_t current_process_title_id) const {
     if (!updatable) {
         return file;
     }
@@ -39,19 +39,19 @@ VirtualFile RomFSFactory::OpenCurrentProcess(u64 current_process_title_id) const
     return patch_manager.PatchRomFS(nca.get(), file, LoaderContentRecordType::Program, packed_update_raw);
 }
 
-VirtualFile RomFSFactory::OpenPatchedRomFS(u64 title_id, LoaderContentRecordType type) const {
+VirtualFile RomFSFactory::OpenPatchedRomFS(uint64_t title_id, LoaderContentRecordType type) const {
     UNIMPLEMENTED();
     return nullptr;
 }
 
-VirtualFile RomFSFactory::OpenPatchedRomFSWithProgramIndex(u64 title_id, u8 program_index,
+VirtualFile RomFSFactory::OpenPatchedRomFSWithProgramIndex(uint64_t title_id, u8 program_index,
                                                            LoaderContentRecordType type) const {
     const auto res_title_id = GetBaseTitleIDWithProgramIndex(title_id, program_index);
 
     return OpenPatchedRomFS(res_title_id, type);
 }
 
-VirtualFile RomFSFactory::Open(u64 title_id, StorageId storage, LoaderContentRecordType type) const {
+VirtualFile RomFSFactory::Open(uint64_t title_id, StorageId storage, LoaderContentRecordType type) const {
     const std::shared_ptr<NCA> res = GetEntry(title_id, storage, type);
     if (res == nullptr) {
         return nullptr;
@@ -60,7 +60,7 @@ VirtualFile RomFSFactory::Open(u64 title_id, StorageId storage, LoaderContentRec
     return res->RomFS();
 }
 
-std::shared_ptr<NCA> RomFSFactory::GetEntry(u64 title_id, StorageId storage,
+std::shared_ptr<NCA> RomFSFactory::GetEntry(uint64_t title_id, StorageId storage,
                                             LoaderContentRecordType type) const {
     UNIMPLEMENTED();
     return nullptr;

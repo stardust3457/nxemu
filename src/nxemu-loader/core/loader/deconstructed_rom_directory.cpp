@@ -209,7 +209,7 @@ AppLoader_DeconstructedRomDirectory::LoadResult AppLoader_DeconstructedRomDirect
     }
 
     // Enable direct memory mapping in case of NCE.
-    const u64 fastmem_base = [&]() -> size_t {
+    const uint64_t fastmem_base = [&]() -> size_t {
         if (is_application && Settings::IsNceEnabled()) {
             UNIMPLEMENTED();
             return 0;
@@ -280,7 +280,7 @@ LoaderResultStatus AppLoader_DeconstructedRomDirectory::ReadIcon(std::vector<u8>
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_DeconstructedRomDirectory::ReadProgramId(u64& out_program_id) {
+LoaderResultStatus AppLoader_DeconstructedRomDirectory::ReadProgramId(uint64_t& out_program_id) {
     out_program_id = title_id;
     return LoaderResultStatus::Success;
 }

@@ -11,8 +11,6 @@
 #include "yuzu_common/swap.h"
 #include "core/file_sys/vfs/vfs.h"
 
-enum class LoaderResultStatus : uint16_t;
-
 namespace FileSys {
 
 /**
@@ -26,8 +24,8 @@ public:
 
     LoaderResultStatus GetStatus() const;
 
-    std::map<std::string, u64> GetFileOffsets() const;
-    std::map<std::string, u64> GetFileSizes() const;
+    std::map<std::string, uint64_t> GetFileOffsets() const;
+    std::map<std::string, uint64_t> GetFileSizes() const;
 
     std::vector<VirtualFile> GetFiles() const override;
     std::vector<VirtualDir> GetSubdirectories() const override;
@@ -80,8 +78,8 @@ private:
     bool is_hfs = false;
     std::size_t content_offset = 0;
 
-    std::map<std::string, u64> offsets;
-    std::map<std::string, u64> sizes;
+    std::map<std::string, uint64_t> offsets;
+    std::map<std::string, uint64_t> sizes;
 
     std::vector<VirtualFile> pfs_files;
 };

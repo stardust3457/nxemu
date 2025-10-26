@@ -20,15 +20,15 @@ class PartitionFilesystem;
 
 class NSP : public ReadOnlyVfsDirectory {
 public:
-    explicit NSP(VirtualFile file_, u64 title_id = 0, std::size_t program_index_ = 0);
+    explicit NSP(VirtualFile file_, uint64_t title_id = 0, std::size_t program_index_ = 0);
     ~NSP() override;
 
     LoaderResultStatus GetStatus() const;
     LoaderResultStatus GetProgramStatus() const;
     // Should only be used when one title id can be assured.
-    u64 GetProgramTitleID() const;
-    u64 GetExtractedTitleID() const;
-    std::vector<u64> GetProgramTitleIDs() const;
+    uint64_t GetProgramTitleID() const;
+    uint64_t GetExtractedTitleID() const;
+    std::vector<uint64_t> GetProgramTitleIDs() const;
 
     bool IsExtractedType() const;
 
@@ -38,12 +38,12 @@ public:
 
     // Type 0 Only (Collection of NCAs + Certificate + Ticket + Meta XML)
     std::vector<std::shared_ptr<NCA>> GetNCAsCollapsed() const;
-    std::multimap<u64, std::shared_ptr<NCA>> GetNCAsByTitleID() const;
-    std::map<u64, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>> GetNCAs()
+    std::multimap<uint64_t, std::shared_ptr<NCA>> GetNCAsByTitleID() const;
+    std::map<uint64_t, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>> GetNCAs()
         const;
-    std::shared_ptr<NCA> GetNCA(u64 title_id, LoaderContentRecordType type,
+    std::shared_ptr<NCA> GetNCA(uint64_t title_id, LoaderContentRecordType type,
                                 LoaderTitleType title_type = LoaderTitleType::Application) const;
-    VirtualFile GetNCAFile(u64 title_id, LoaderContentRecordType type,
+    VirtualFile GetNCAFile(uint64_t title_id, LoaderContentRecordType type,
                            LoaderTitleType title_type = LoaderTitleType::Application) const;
 
     std::vector<VirtualFile> GetFiles() const override;
@@ -60,17 +60,17 @@ private:
 
     VirtualFile file;
 
-    const u64 expected_program_id;
+    const uint64_t expected_program_id;
     const std::size_t program_index;
 
     bool extracted = false;
     LoaderResultStatus status;
-    std::map<u64, LoaderResultStatus> program_status;
+    std::map<uint64_t, LoaderResultStatus> program_status;
 
     std::shared_ptr<PartitionFilesystem> pfs;
     // Map title id -> {map type -> NCA}
-    std::map<u64, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>> ncas;
-    std::set<u64> program_ids;
+    std::map<uint64_t, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>> ncas;
+    std::set<uint64_t> program_ids;
     std::vector<VirtualFile> ticket_files;
 
     VirtualFile romfs;

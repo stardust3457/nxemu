@@ -84,7 +84,7 @@ AppLoader_NRO::AppLoader_NRO(FileSys::VirtualFile file_) : AppLoader(std::move(f
     }
 
     if (file->GetSize() >= nro_header.file_size + sizeof(AssetHeader)) {
-        const u64 offset = nro_header.file_size;
+        const uint64_t offset = nro_header.file_size;
         AssetHeader asset_header{};
         if (file->ReadObject(&asset_header, offset) != sizeof(AssetHeader)) {
             return;
@@ -143,8 +143,8 @@ bool AppLoader_NRO::IsHomebrew() {
 
 static constexpr u32 PageAlignSize(u32 size) {
     constexpr std::size_t YUZU_PAGEBITS = 12;
-    constexpr u64 YUZU_PAGESIZE = 1ULL << YUZU_PAGEBITS;
-    constexpr u64 YUZU_PAGEMASK = YUZU_PAGESIZE - 1;
+    constexpr uint64_t YUZU_PAGESIZE = 1ULL << YUZU_PAGEBITS;
+    constexpr uint64_t YUZU_PAGEMASK = YUZU_PAGESIZE - 1;
     return static_cast<u32>((size + YUZU_PAGEMASK) & ~YUZU_PAGEMASK);
 }
 
@@ -235,7 +235,7 @@ static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uin
 #endif
 
     // Enable direct memory mapping in case of NCE.
-    const u64 fastmem_base = [&]() -> size_t {
+    const uint64_t fastmem_base = [&]() -> size_t {
         if (Settings::IsNceEnabled()) {
             UNIMPLEMENTED();
             return 0;
@@ -292,7 +292,7 @@ AppLoader_NRO::LoadResult AppLoader_NRO::Load(Systemloader & loader, ISystemModu
     if (ReadRomFS(romFS) != LoaderResultStatus::Success) {
         LOG_WARNING(Service_FS, "Unable to read base RomFS");
     }
-    u64 program_id{};
+    uint64_t program_id{};
     ReadProgramId(program_id);
     loader.GetFileSystemController().RegisterProcess(
         processID, program_id,
@@ -313,7 +313,7 @@ LoaderResultStatus AppLoader_NRO::ReadIcon(std::vector<u8>& buffer) {
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NRO::ReadProgramId(u64& out_program_id) {
+LoaderResultStatus AppLoader_NRO::ReadProgramId(uint64_t& out_program_id) {
     if (nacp == nullptr) {
         return LoaderResultStatus::ErrorNoControl;
     }

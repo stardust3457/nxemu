@@ -80,11 +80,11 @@ LoaderResultStatus PartitionFilesystem::GetStatus() const {
     return status;
 }
 
-std::map<std::string, u64> PartitionFilesystem::GetFileOffsets() const {
+std::map<std::string, uint64_t> PartitionFilesystem::GetFileOffsets() const {
     return offsets;
 }
 
-std::map<std::string, u64> PartitionFilesystem::GetFileSizes() const {
+std::map<std::string, uint64_t> PartitionFilesystem::GetFileSizes() const {
     return sizes;
 }
 

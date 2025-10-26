@@ -101,12 +101,12 @@ u8 NcaReader::GetKeyIndex() const {
     return m_header.key_index;
 }
 
-u64 NcaReader::GetContentSize() const {
+uint64_t NcaReader::GetContentSize() const {
     ASSERT(m_body_storage != nullptr);
     return m_header.content_size;
 }
 
-u64 NcaReader::GetProgramId() const {
+uint64_t NcaReader::GetProgramId() const {
     ASSERT(m_body_storage != nullptr);
     return m_header.program_id;
 }
@@ -163,19 +163,19 @@ void NcaReader::GetFsInfo(NcaHeader::FsInfo* dst, s32 index) const {
     std::memcpy(dst, std::addressof(m_header.fs_info[index]), sizeof(*dst));
 }
 
-u64 NcaReader::GetFsOffset(s32 index) const {
+uint64_t NcaReader::GetFsOffset(s32 index) const {
     ASSERT(m_body_storage != nullptr);
     ASSERT(0 <= index && index < NcaHeader::FsCountMax);
     return NcaHeader::SectorToByte(m_header.fs_info[index].start_sector);
 }
 
-u64 NcaReader::GetFsEndOffset(s32 index) const {
+uint64_t NcaReader::GetFsEndOffset(s32 index) const {
     ASSERT(m_body_storage != nullptr);
     ASSERT(0 <= index && index < NcaHeader::FsCountMax);
     return NcaHeader::SectorToByte(m_header.fs_info[index].end_sector);
 }
 
-u64 NcaReader::GetFsSize(s32 index) const {
+uint64_t NcaReader::GetFsSize(s32 index) const {
     ASSERT(m_body_storage != nullptr);
     ASSERT(0 <= index && index < NcaHeader::FsCountMax);
     return NcaHeader::SectorToByte(m_header.fs_info[index].end_sector -

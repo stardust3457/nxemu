@@ -78,7 +78,7 @@ VirtualFile PatchIPS(const VirtualFile& in, const VirtualFile& ips) {
     }
 
     std::vector<u8> temp(type == IPSFileType::IPS ? 3 : 4);
-    u64 offset = 5; // After header
+    uint64_t offset = 5; // After header
     while (ips->Read(temp.data(), temp.size(), offset) == temp.size()) {
         offset += temp.size();
         if (IsEOF(type, temp)) {

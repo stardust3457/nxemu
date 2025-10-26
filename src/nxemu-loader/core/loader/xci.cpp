@@ -20,7 +20,7 @@ namespace Loader {
 
 AppLoader_XCI::AppLoader_XCI(FileSys::VirtualFile file_,
                              const FileSys::FileSystemController& fsc,
-                             const FileSys::ContentProvider& content_provider, u64 program_id,
+                             const FileSys::ContentProvider& content_provider, uint64_t program_id,
                              std::size_t program_index)
     : AppLoader(file_), xci(std::make_unique<FileSys::XCI>(file_, program_id, program_index)),
       nca_loader(std::make_unique<AppLoader_NCA>(xci->GetProgramNCAFile())) {
@@ -96,7 +96,7 @@ LoaderResultStatus AppLoader_XCI::ReadRomFS(FileSys::VirtualFile& out_file) {
 }
 
 LoaderResultStatus AppLoader_XCI::ReadUpdateRaw(FileSys::VirtualFile& out_file) {
-    u64 program_id{};
+    uint64_t program_id{};
     nca_loader->ReadProgramId(program_id);
     if (program_id == 0) {
         return LoaderResultStatus::ErrorXCIMissingProgramNCA;
@@ -117,11 +117,11 @@ LoaderResultStatus AppLoader_XCI::ReadUpdateRaw(FileSys::VirtualFile& out_file) 
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_XCI::ReadProgramId(u64& out_program_id) {
+LoaderResultStatus AppLoader_XCI::ReadProgramId(uint64_t& out_program_id) {
     return nca_loader->ReadProgramId(out_program_id);
 }
 
-LoaderResultStatus AppLoader_XCI::ReadProgramIds(std::vector<u64>& out_program_ids) {
+LoaderResultStatus AppLoader_XCI::ReadProgramIds(std::vector<uint64_t>& out_program_ids) {
     out_program_ids = xci->GetProgramTitleIDs();
     return LoaderResultStatus::Success;
 }

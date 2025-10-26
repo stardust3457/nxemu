@@ -8,6 +8,6 @@
 
 namespace FileSys::SystemArchive {
 
-VirtualFile SynthesizeSystemArchive(u64 title_id);
+VirtualFile SynthesizeSystemArchive(uint64_t title_id);
 
 } // namespace FileSys::SystemArchive

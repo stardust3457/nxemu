@@ -20,7 +20,7 @@ bool ShouldSaveDataBeAutomaticallyCreated(SaveDataSpaceId space, const SaveDataA
             attr.program_id == 0 && attr.system_save_data_id == 0);
 }
 
-std::string GetFutureSaveDataPath(SaveDataSpaceId space_id, SaveDataType type, u64 title_id,
+std::string GetFutureSaveDataPath(SaveDataSpaceId space_id, SaveDataType type, uint64_t title_id,
                                   u128 user_id) {
     // Only detect nand user saves.
     const auto space_id_path = [space_id]() -> std::string_view {
@@ -102,8 +102,8 @@ std::string SaveDataFactory::GetSaveDataSpaceIdPath(SaveDataSpaceId space) {
 }
 
 std::string SaveDataFactory::GetFullPath(ProgramId program_id, VirtualDir dir,
-                                         SaveDataSpaceId space, SaveDataType type, u64 title_id,
-                                         u128 user_id, u64 save_id) {
+                                         SaveDataSpaceId space, SaveDataType type, uint64_t title_id,
+                                         u128 user_id, uint64_t save_id) {
     // According to switchbrew, if a save is of type SaveData and the title id field is 0, it should
     // be interpreted as the title id of the current process.
     if (type == SaveDataType::Account || type == SaveDataType::Device) {
@@ -152,7 +152,7 @@ std::string SaveDataFactory::GetUserGameSaveDataRoot(u128 user_id, bool future) 
     return fmt::format("/user/save/{:016X}/{:016X}{:016X}", 0, user_id[1], user_id[0]);
 }
 
-SaveDataSize SaveDataFactory::ReadSaveDataSize(SaveDataType type, u64 title_id,
+SaveDataSize SaveDataFactory::ReadSaveDataSize(SaveDataType type, uint64_t title_id,
                                                u128 user_id) const {
     const auto path =
         GetFullPath(program_id, dir, SaveDataSpaceId::User, type, title_id, user_id, 0);
@@ -171,7 +171,7 @@ SaveDataSize SaveDataFactory::ReadSaveDataSize(SaveDataType type, u64 title_id,
     return out;
 }
 
-void SaveDataFactory::WriteSaveDataSize(SaveDataType type, u64 title_id, u128 user_id,
+void SaveDataFactory::WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id,
                                         SaveDataSize new_value) const {
     const auto path =
         GetFullPath(program_id, dir, SaveDataSpaceId::User, type, title_id, user_id, 0);

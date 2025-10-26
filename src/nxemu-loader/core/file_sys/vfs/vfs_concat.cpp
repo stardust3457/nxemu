@@ -16,7 +16,7 @@ ConcatenatedVfsFile::ConcatenatedVfsFile(std::string&& name_, ConcatenationMap&&
 }
 
 bool ConcatenatedVfsFile::VerifyContinuity() const {
-    u64 last_offset = 0;
+    uint64_t last_offset = 0;
     for (auto& entry : concatenation_map) {
         if (entry.offset != last_offset) {
             return false;
@@ -43,7 +43,7 @@ VirtualFile ConcatenatedVfsFile::MakeConcatenatedFile(std::string&& name,
     // Make the concatenation map from the input.
     std::vector<ConcatenationEntry> concatenation_map;
     concatenation_map.reserve(files.size());
-    u64 last_offset = 0;
+    uint64_t last_offset = 0;
 
     for (auto& file : files) {
         const auto size = file->GetSize();
@@ -60,7 +60,7 @@ VirtualFile ConcatenatedVfsFile::MakeConcatenatedFile(std::string&& name,
 }
 
 VirtualFile ConcatenatedVfsFile::MakeConcatenatedFile(
-    u8 filler_byte, std::string&& name, std::vector<std::pair<u64, VirtualFile>>&& files) {
+    u8 filler_byte, std::string&& name, std::vector<std::pair<uint64_t, VirtualFile>>&& files) {
     // Fold trivial cases.
     if (files.empty()) {
         return nullptr;
@@ -73,7 +73,7 @@ VirtualFile ConcatenatedVfsFile::MakeConcatenatedFile(
     std::vector<ConcatenationEntry> concatenation_map;
 
     concatenation_map.reserve(files.size());
-    u64 last_offset = 0;
+    uint64_t last_offset = 0;
 
     // Iteration of a multimap is ordered, so offset will be strictly non-decreasing.
     for (auto& [offset, file] : files) {
@@ -147,14 +147,14 @@ std::size_t ConcatenatedVfsFile::Read(u8* data, std::size_t length, std::size_t 
     // Binary search to find the iterator to the first position we can check.
     // It must exist, since we are not empty and are comparing unsigned integers.
     auto it = std::prev(std::upper_bound(concatenation_map.begin(), concatenation_map.end(), key));
-    u64 cur_length = length;
-    u64 cur_offset = offset;
+    uint64_t cur_length = length;
+    uint64_t cur_offset = offset;
 
     while (cur_length > 0 && it != concatenation_map.end()) {
         // Check if we can read the file at this position.
         const auto& file = it->file;
-        const u64 map_offset = it->offset;
-        const u64 file_size = file->GetSize();
+        const uint64_t map_offset = it->offset;
+        const uint64_t file_size = file->GetSize();
 
         if (cur_offset > map_offset + file_size) {
             // Entirely out of bounds read.
@@ -162,9 +162,9 @@ std::size_t ConcatenatedVfsFile::Read(u8* data, std::size_t length, std::size_t 
         }
 
         // Read the file at this position.
-        const u64 file_seek = cur_offset - map_offset;
-        const u64 intended_read_size = std::min<u64>(cur_length, file_size - file_seek);
-        const u64 actual_read_size =
+        const uint64_t file_seek = cur_offset - map_offset;
+        const uint64_t intended_read_size = std::min<uint64_t>(cur_length, file_size - file_seek);
+        const uint64_t actual_read_size =
             file->Read(data + (cur_offset - offset), intended_read_size, file_seek);
 
         // Update tracking.

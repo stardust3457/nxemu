@@ -136,7 +136,7 @@ LoaderResultStatus AppLoader_NCA::ReadRomFS(FileSys::VirtualFile& dir) {
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NCA::ReadProgramId(u64& out_program_id) {
+LoaderResultStatus AppLoader_NCA::ReadProgramId(uint64_t& out_program_id) {
     if (nca == nullptr || nca->GetStatus() != LoaderResultStatus::Success) {
         return LoaderResultStatus::ErrorNotInitialized;
     }

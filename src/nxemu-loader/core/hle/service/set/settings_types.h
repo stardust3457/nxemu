@@ -170,8 +170,8 @@ enum class Language : u32 {
     BrazilianPortuguese,
 };
 
-/// This is "nn::settings::LanguageCode", which is a NUL-terminated string stored in a u64.
-enum class LanguageCode : u64 {
+/// This is "nn::settings::LanguageCode", which is a NUL-terminated string stored in a uint64_t.
+enum class LanguageCode : uint64_t {
     JA = 0x000000000000616A,
     EN_US = 0x00000053552D6E65,
     FR = 0x0000000000007266,

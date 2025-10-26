@@ -73,9 +73,9 @@ public:
 
     struct LoadParameters {
         s32 main_thread_priority;
-        u64 main_thread_stack_size;
-        u64 base_address;
-        u64 process_id;
+        uint64_t main_thread_stack_size;
+        uint64_t base_address;
+        uint64_t process_id;
     };
     using LoadResult = std::pair<LoaderResultStatus, std::optional<LoadParameters>>;
 
@@ -161,7 +161,7 @@ public:
      *
      * @return LoaderResultStatus result of function
      */
-    virtual LoaderResultStatus ReadProgramId(u64& out_program_id) {
+    virtual LoaderResultStatus ReadProgramId(uint64_t& out_program_id) {
         return LoaderResultStatus::ErrorNotImplemented;
     }
 
@@ -172,7 +172,7 @@ public:
      *
      * @return LoaderResultStatus result of function
      */
-    virtual LoaderResultStatus ReadProgramIds(std::vector<u64>& out_program_ids) {
+    virtual LoaderResultStatus ReadProgramIds(std::vector<uint64_t>& out_program_ids) {
         return LoaderResultStatus::ErrorNotImplemented;
     }
 

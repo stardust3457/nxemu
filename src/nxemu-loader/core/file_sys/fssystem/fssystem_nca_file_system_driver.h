@@ -43,8 +43,8 @@ public:
     u8 GetHeaderSign1KeyGeneration() const;
     u8 GetKeyGeneration() const;
     u8 GetKeyIndex() const;
-    u64 GetContentSize() const;
-    u64 GetProgramId() const;
+    uint64_t GetContentSize() const;
+    uint64_t GetProgramId() const;
     u32 GetContentIndex() const;
     u32 GetSdkAddonVersion() const;
     void GetRightsId(u8* dst, size_t dst_size) const;
@@ -53,9 +53,9 @@ public:
     const Hash& GetFsHeaderHash(s32 index) const;
     void GetFsHeaderHash(Hash* dst, s32 index) const;
     void GetFsInfo(NcaHeader::FsInfo* dst, s32 index) const;
-    u64 GetFsOffset(s32 index) const;
-    u64 GetFsEndOffset(s32 index) const;
-    u64 GetFsSize(s32 index) const;
+    uint64_t GetFsOffset(s32 index) const;
+    uint64_t GetFsEndOffset(s32 index) const;
+    uint64_t GetFsSize(s32 index) const;
     void GetEncryptedKey(void* dst, size_t size) const;
     bool IsSoftwareAesPrioritized() const;
     void PrioritizeSoftwareAes();

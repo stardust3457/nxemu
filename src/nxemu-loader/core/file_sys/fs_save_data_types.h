@@ -11,19 +11,14 @@
 
 namespace FileSys {
 
-using SaveDataId = u64;
-using SystemSaveDataId = u64;
+using SaveDataId = uint64_t;
+using SystemSaveDataId = uint64_t;
 using SystemBcatSaveDataId = SystemSaveDataId;
-using ProgramId = u64;
-
-enum class SaveDataRank : u8 {
-    Primary = 0,
-    Secondary = 1,
-};
+using ProgramId = uint64_t;
 
 struct SaveDataSize {
-    u64 normal;
-    u64 journal;
+    uint64_t normal;
+    uint64_t journal;
 };
 static_assert(sizeof(SaveDataSize) == 0x10, "SaveDataSize has invalid size.");
 
@@ -61,19 +56,18 @@ struct SaveDataCreationInfo {
     s64 size;
     s64 journal_size;
     s64 block_size;
-    u64 owner_id;
+    uint64_t owner_id;
     u32 flags;
     SaveDataSpaceId space_id;
     bool pseudo;
     INSERT_PADDING_BYTES(0x1A);
 };
-static_assert(std::is_trivially_copyable_v<SaveDataCreationInfo>,
-              "Data type must be trivially copyable.");
+static_assert(std::is_trivially_copyable_v<SaveDataCreationInfo>, "Data type must be trivially copyable.");
 static_assert(sizeof(SaveDataCreationInfo) == 0x40, "SaveDataCreationInfo has invalid size.");
 
 struct SaveDataExtraData {
     SaveDataAttribute attr;
-    u64 owner_id;
+    uint64_t owner_id;
     s64 timestamp;
     u32 flags;
     INSERT_PADDING_BYTES(4);

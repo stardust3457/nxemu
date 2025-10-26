@@ -16,7 +16,7 @@ class FileSystemController;
 
 namespace NS {
 
-enum class FontArchives : u64 {
+enum class FontArchives : uint64_t {
     Extension = 0x0100000000000810,
     Standard = 0x0100000000000811,
     Korean = 0x0100000000000812,

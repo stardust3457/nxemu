@@ -15,8 +15,6 @@
 #include "core/file_sys/vfs/vfs.h"
 #include <nxemu-module-spec/system_loader.h>
 
-enum class LoaderResultStatus : uint16_t;
-
 namespace FileSys {
 
 class NcaReader;
@@ -75,7 +73,7 @@ public:
     VirtualDir GetParentDirectory() const override;
 
     NCAContentType GetType() const;
-    u64 GetTitleId() const;
+    uint64_t GetTitleId() const;
     RightsId GetRightsId() const;
     u32 GetSDKVersion() const;
     u8 GetKeyGeneration() const;

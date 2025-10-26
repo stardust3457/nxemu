@@ -17,7 +17,7 @@ enum class LoaderResultStatus : uint16_t;
 
 namespace FileSys {
 
-enum class ProgramFilePermission : u64 {
+enum class ProgramFilePermission : uint64_t {
     MountContent = 1ULL << 0,
     SaveDataBackup = 1ULL << 5,
     SdCard = 1ULL << 21,
@@ -54,8 +54,8 @@ public:
 
     /// Load from parameters instead of NPDM file, used for KIP
     void LoadManual(bool is_64_bit, ProgramAddressSpaceType address_space, s32 main_thread_prio,
-                    u32 main_thread_core, u32 main_thread_stack_size, u64 title_id,
-                    u64 filesystem_permissions, u32 system_resource_size,
+                    u32 main_thread_core, u32 main_thread_stack_size, uint64_t title_id,
+                    uint64_t filesystem_permissions, u32 system_resource_size,
                     KernelCapabilityDescriptors capabilities);
 
     bool Is64BitProgram() const;
@@ -63,8 +63,8 @@ public:
     u8 GetMainThreadPriority() const;
     u8 GetMainThreadCore() const;
     u32 GetMainThreadStackSize() const;
-    u64 GetTitleID() const;
-    u64 GetFilesystemPermissions() const;
+    uint64_t GetTitleID() const;
+    uint64_t GetFilesystemPermissions() const;
     u32 GetSystemResourceSize() const;
     PoolPartition GetPoolPartition() const;
     const uint32_t * GetKernelCapabilities() const;

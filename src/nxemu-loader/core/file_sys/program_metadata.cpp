@@ -87,8 +87,8 @@ LoaderResultStatus ProgramMetadata::Load(VirtualFile file) {
     }
 
     aci_kernel_capabilities.resize(aci_header.kac_size / sizeof(u32));
-    const u64 read_size = aci_header.kac_size;
-    const u64 read_offset = npdm_header.aci_offset + aci_header.kac_offset;
+    const uint64_t read_size = aci_header.kac_size;
+    const uint64_t read_offset = npdm_header.aci_offset + aci_header.kac_offset;
     if (file->ReadBytes(aci_kernel_capabilities.data(), read_size, read_offset) != read_size) {
         return LoaderResultStatus::ErrorBadKernelCapabilityDescriptors;
     }
@@ -97,7 +97,7 @@ LoaderResultStatus ProgramMetadata::Load(VirtualFile file) {
 }
 
 LoaderResultStatus ProgramMetadata::Reload(VirtualFile file) {
-    const u64 original_program_id = aci_header.title_id;
+    const uint64_t original_program_id = aci_header.title_id;
     SCOPE_EXIT {
         aci_header.title_id = original_program_id;
     };
@@ -122,8 +122,8 @@ LoaderResultStatus ProgramMetadata::Reload(VirtualFile file) {
 
 void ProgramMetadata::LoadManual(bool is_64_bit, ProgramAddressSpaceType address_space,
                                  s32 main_thread_prio, u32 main_thread_core,
-                                 u32 main_thread_stack_size, u64 title_id,
-                                 u64 filesystem_permissions, u32 system_resource_size,
+                                 u32 main_thread_stack_size, uint64_t title_id,
+                                 uint64_t filesystem_permissions, u32 system_resource_size,
                                  KernelCapabilityDescriptors capabilities) {
     npdm_header.has_64_bit_instructions.Assign(is_64_bit);
     npdm_header.address_space_type.Assign(address_space);
@@ -156,11 +156,11 @@ u32 ProgramMetadata::GetMainThreadStackSize() const {
     return npdm_header.main_stack_size;
 }
 
-u64 ProgramMetadata::GetTitleID() const {
+uint64_t ProgramMetadata::GetTitleID() const {
     return aci_header.title_id;
 }
 
-u64 ProgramMetadata::GetFilesystemPermissions() const {
+uint64_t ProgramMetadata::GetFilesystemPermissions() const {
     return aci_file_access.permissions;
 }
 

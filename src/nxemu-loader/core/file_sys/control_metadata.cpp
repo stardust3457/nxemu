@@ -103,11 +103,11 @@ std::string NACP::GetDeveloperName() const {
     return GetLanguageEntry().GetDeveloperName();
 }
 
-u64 NACP::GetTitleId() const {
+uint64_t NACP::GetTitleId() const {
     return raw.save_data_owner_id;
 }
 
-u64 NACP::GetDLCBaseTitleId() const {
+uint64_t NACP::GetDLCBaseTitleId() const {
     return raw.dlc_base_title_id;
 }
 
@@ -115,11 +115,11 @@ const char * NACP::GetVersionString() const {
     return version.c_str();
 }
 
-u64 NACP::GetDefaultNormalSaveSize() const {
+uint64_t NACP::GetDefaultNormalSaveSize() const {
     return raw.user_account_save_data_size;
 }
 
-u64 NACP::GetDefaultJournalSaveSize() const {
+uint64_t NACP::GetDefaultJournalSaveSize() const {
     return raw.user_account_save_data_journal_size;
 }
 
@@ -131,7 +131,7 @@ u32 NACP::GetSupportedLanguages() const {
     return raw.supported_languages;
 }
 
-u64 NACP::GetDeviceSaveDataSize() const {
+uint64_t NACP::GetDeviceSaveDataSize() const {
     return raw.device_save_data_size;
 }
 

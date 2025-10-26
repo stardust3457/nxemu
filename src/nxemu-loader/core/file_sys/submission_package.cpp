@@ -17,7 +17,7 @@
 
 namespace FileSys {
 
-NSP::NSP(VirtualFile file_, u64 title_id_, std::size_t program_index_)
+NSP::NSP(VirtualFile file_, uint64_t title_id_, std::size_t program_index_)
     : file(std::move(file_)), expected_program_id(title_id_),
       program_index(program_index_), status{LoaderResultStatus::Success},
       pfs(std::make_shared<PartitionFilesystem>(file)) {
@@ -53,7 +53,7 @@ LoaderResultStatus NSP::GetProgramStatus() const {
     return iter->second;
 }
 
-u64 NSP::GetProgramTitleID() const {
+uint64_t NSP::GetProgramTitleID() const {
     if (IsExtractedType()) {
         return GetExtractedTitleID() + program_index;
     }
@@ -72,11 +72,11 @@ u64 NSP::GetProgramTitleID() const {
 
     const auto ids = GetProgramTitleIDs();
     const auto iter =
-        std::find_if(ids.begin(), ids.end(), [](u64 tid) { return (tid & 0x800) == 0; });
+        std::find_if(ids.begin(), ids.end(), [](uint64_t tid) { return (tid & 0x800) == 0; });
     return iter == ids.end() ? 0 : *iter;
 }
 
-u64 NSP::GetExtractedTitleID() const {
+uint64_t NSP::GetExtractedTitleID() const {
     if (GetExeFS() == nullptr || !IsDirectoryExeFS(GetExeFS())) {
         return 0;
     }
@@ -89,12 +89,12 @@ u64 NSP::GetExtractedTitleID() const {
     }
 }
 
-std::vector<u64> NSP::GetProgramTitleIDs() const {
+std::vector<uint64_t> NSP::GetProgramTitleIDs() const {
     if (IsExtractedType()) {
         return {GetExtractedTitleID()};
     }
 
-    std::vector<u64> out{program_ids.cbegin(), program_ids.cend()};
+    std::vector<uint64_t> out{program_ids.cbegin(), program_ids.cend()};
     return out;
 }
 
@@ -121,10 +121,10 @@ std::vector<std::shared_ptr<NCA>> NSP::GetNCAsCollapsed() const {
     return out;
 }
 
-std::multimap<u64, std::shared_ptr<NCA>> NSP::GetNCAsByTitleID() const {
+std::multimap<uint64_t, std::shared_ptr<NCA>> NSP::GetNCAsByTitleID() const {
     if (extracted)
         LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
-    std::multimap<u64, std::shared_ptr<NCA>> out;
+    std::multimap<uint64_t, std::shared_ptr<NCA>> out;
     for (const auto& map : ncas) {
         for (const auto& inner_map : map.second)
             out.emplace(map.first, inner_map.second);
@@ -132,12 +132,12 @@ std::multimap<u64, std::shared_ptr<NCA>> NSP::GetNCAsByTitleID() const {
     return out;
 }
 
-std::map<u64, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>>
+std::map<uint64_t, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>>
 NSP::GetNCAs() const {
     return ncas;
 }
 
-std::shared_ptr<NCA> NSP::GetNCA(u64 title_id, LoaderContentRecordType type, LoaderTitleType title_type) const {
+std::shared_ptr<NCA> NSP::GetNCA(uint64_t title_id, LoaderContentRecordType type, LoaderTitleType title_type) const {
     if (extracted)
         LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
 
@@ -152,7 +152,7 @@ std::shared_ptr<NCA> NSP::GetNCA(u64 title_id, LoaderContentRecordType type, Loa
     return type_iter->second;
 }
 
-VirtualFile NSP::GetNCAFile(u64 title_id, LoaderContentRecordType type, LoaderTitleType title_type) const {
+VirtualFile NSP::GetNCAFile(uint64_t title_id, LoaderContentRecordType type, LoaderTitleType title_type) const {
     if (extracted)
         LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
     const auto nca = GetNCA(title_id, type, title_type);

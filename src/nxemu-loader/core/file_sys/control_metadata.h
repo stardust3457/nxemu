@@ -109,13 +109,13 @@ public:
     const LanguageEntry& GetLanguageEntry() const;
     std::string GetApplicationName() const;
     std::string GetDeveloperName() const;
-    u64 GetTitleId() const;
-    u64 GetDLCBaseTitleId() const;
-    u64 GetDefaultNormalSaveSize() const;
-    u64 GetDefaultJournalSaveSize() const;
+    uint64_t GetTitleId() const;
+    uint64_t GetDLCBaseTitleId() const;
+    uint64_t GetDefaultNormalSaveSize() const;
+    uint64_t GetDefaultJournalSaveSize() const;
     std::vector<u8> GetRawBytes() const;
     bool GetUserAccountSwitchLock() const;
-    u64 GetDeviceSaveDataSize() const;
+    uint64_t GetDeviceSaveDataSize() const;
 
     //IFileSysNACP
     uint32_t GetSupportedLanguages() const override;

@@ -19,8 +19,8 @@ public:
     Result OpenSaveData(FileSys::VirtualDir* out_save_data, SaveDataSpaceId space, const SaveDataAttribute& attribute);
     Result OpenSaveDataSpace(FileSys::VirtualDir* out_save_data_space, SaveDataSpaceId space);
 
-    FileSys::SaveDataSize ReadSaveDataSize(SaveDataType type, u64 title_id, u128 user_id);
-    void WriteSaveDataSize(SaveDataType type, u64 title_id, u128 user_id,FileSys::SaveDataSize new_value);
+    FileSys::SaveDataSize ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id);
+    void WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id,FileSys::SaveDataSize new_value);
     void SetAutoCreate(bool state);
 
 private:

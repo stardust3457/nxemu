@@ -19,8 +19,8 @@ class BISFactory;
 class VfsFilesystem;
 class RegisteredCache;
 
-using ProcessId = u64;
-using ProgramId = u64;
+using ProcessId = uint64_t;
+using ProgramId = uint64_t;
 
 class FileSystemController :
     public IFileSystemController
@@ -34,9 +34,9 @@ public:
 
     FileSys::RegisteredCache * SystemNANDContents() const;
 
-    FileSys::VirtualDir GetSDMCModificationLoadRoot(u64 title_id) const;
-    FileSys::VirtualDir GetModificationLoadRoot(u64 title_id) const;
-    FileSys::VirtualDir GetModificationDumpRoot(u64 title_id) const;
+    FileSys::VirtualDir GetSDMCModificationLoadRoot(uint64_t title_id) const;
+    FileSys::VirtualDir GetModificationLoadRoot(uint64_t title_id) const;
+    FileSys::VirtualDir GetModificationDumpRoot(uint64_t title_id) const;
 
     void CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite = true);
 

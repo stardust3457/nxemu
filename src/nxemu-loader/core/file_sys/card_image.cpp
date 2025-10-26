@@ -19,7 +19,7 @@
 
 namespace FileSys {
 
-constexpr u64 GAMECARD_CERTIFICATE_OFFSET = 0x7000;
+constexpr uint64_t GAMECARD_CERTIFICATE_OFFSET = 0x7000;
 constexpr std::array partition_names{
     "update",
     "normal",
@@ -27,7 +27,7 @@ constexpr std::array partition_names{
     "logo",
 };
 
-XCI::XCI(VirtualFile file_, u64 program_id, size_t program_index)
+XCI::XCI(VirtualFile file_, uint64_t program_id, size_t program_index)
     : file(std::move(file_)), program_nca_status{LoaderResultStatus::ErrorXCIMissingProgramNCA},
       partitions(partition_names.size()),
       partitions_raw(partition_names.size()) {
@@ -164,11 +164,11 @@ VirtualFile XCI::GetLogoPartitionRaw() const {
     return GetPartitionRaw(XCIPartition::Logo);
 }
 
-u64 XCI::GetProgramTitleID() const {
+uint64_t XCI::GetProgramTitleID() const {
     return secure_partition->GetProgramTitleID();
 }
 
-std::vector<u64> XCI::GetProgramTitleIDs() const {
+std::vector<uint64_t> XCI::GetProgramTitleIDs() const {
     return secure_partition->GetProgramTitleIDs();
 }
 
@@ -206,7 +206,7 @@ u32 XCI::GetSystemUpdateVersion() {
     return 0;
 }
 
-u64 XCI::GetSystemUpdateTitleID() const {
+uint64_t XCI::GetSystemUpdateTitleID() const {
     return 0x0100000000000816;
 }
 

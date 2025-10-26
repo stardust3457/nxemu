@@ -47,21 +47,21 @@ public:
     PlaceholderCache* GetSystemNANDPlaceholder() const;
     PlaceholderCache* GetUserNANDPlaceholder() const;
 
-    VirtualDir GetModificationLoadRoot(u64 title_id) const;
-    VirtualDir GetModificationDumpRoot(u64 title_id) const;
+    VirtualDir GetModificationLoadRoot(uint64_t title_id) const;
+    VirtualDir GetModificationDumpRoot(uint64_t title_id) const;
 
     VirtualDir OpenPartition(BisPartitionId id) const;
     VirtualFile OpenPartitionStorage(BisPartitionId id, VirtualFilesystem file_system) const;
 
     VirtualDir GetImageDirectory() const;
 
-    u64 GetSystemNANDFreeSpace() const;
-    u64 GetSystemNANDTotalSpace() const;
-    u64 GetUserNANDFreeSpace() const;
-    u64 GetUserNANDTotalSpace() const;
-    u64 GetFullNANDTotalSpace() const;
+    uint64_t GetSystemNANDFreeSpace() const;
+    uint64_t GetSystemNANDTotalSpace() const;
+    uint64_t GetUserNANDFreeSpace() const;
+    uint64_t GetUserNANDTotalSpace() const;
+    uint64_t GetFullNANDTotalSpace() const;
 
-    VirtualDir GetBCATDirectory(u64 title_id) const;
+    VirtualDir GetBCATDirectory(uint64_t title_id) const;
 
 private:
     VirtualDir nand_root;

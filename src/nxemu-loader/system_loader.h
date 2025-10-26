@@ -17,9 +17,6 @@ public:
     Systemloader(ISystemModules & modules);
     ~Systemloader();
 
-#ifdef tofix
-    ISystemModules & GetSystemModules();
-#endif
     FileSys::ContentProvider & GetContentProvider();
     FileSys::VirtualFilesystem GetFilesystem();
     FileSys::FileSystemController & GetFileSystemController();

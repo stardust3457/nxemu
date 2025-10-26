@@ -142,7 +142,7 @@ bool Systemloader::LoadRom(const char * fileName)
         g_settings->SetBool(NXCoreSetting::RomLoading, false);
         return false;
     }
-    u64 program_id = 0;
+    uint64_t program_id = 0;
     const LoaderResultStatus res = impl->app_loader->ReadProgramId(program_id);
     if (res == LoaderResultStatus::Success && file_type == Loader::FileType::NCA) 
     {
@@ -278,7 +278,7 @@ uint32_t Systemloader::GetContentProviderEntriesCount(bool useTitleType, LoaderT
     const FileSys::ContentProviderUnion & rcu = *impl->m_contentProvider;
     std::optional<LoaderTitleType> title = useTitleType ? std::optional<LoaderTitleType>((LoaderTitleType)titleType) : std::nullopt;
     std::optional<LoaderContentRecordType> record = useContentRecordType ? std::optional<LoaderContentRecordType>((LoaderContentRecordType)contentRecordType) : std::nullopt;
-    std::optional<u64> id = useTitleId ? std::optional<u64>(titleId) : std::nullopt;
+    std::optional<uint64_t> id = useTitleId ? std::optional<uint64_t>(titleId) : std::nullopt;
     const std::vector<ContentProviderEntry> list = rcu.ListEntriesFilter(title, record, id);
     return (uint32_t)list.size();
 }
@@ -292,7 +292,7 @@ uint32_t Systemloader::GetContentProviderEntries(bool useTitleType, LoaderTitleT
     const FileSys::ContentProviderUnion& rcu = *impl->m_contentProvider;
     std::optional<LoaderTitleType> title = useTitleType ? std::optional<LoaderTitleType>((LoaderTitleType)titleType) : std::nullopt;
     std::optional<LoaderContentRecordType> record = useContentRecordType ? std::optional<LoaderContentRecordType>((LoaderContentRecordType)contentRecordType) : std::nullopt;
-    std::optional<u64> id = useTitleId ? std::optional<u64>(titleId) : std::nullopt;
+    std::optional<uint64_t> id = useTitleId ? std::optional<uint64_t>(titleId) : std::nullopt;
     const std::vector<ContentProviderEntry> list = rcu.ListEntriesFilter(title, record, id);
     entryCount = std::min((uint32_t)list.size(), entryCount);
     memcpy(entries, list.data(), entryCount * sizeof(ContentProviderEntry));

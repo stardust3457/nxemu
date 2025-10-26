@@ -21,7 +21,7 @@
 #endif
 
 #ifdef ANDROID
-#include "common/fs/fs_android.h"
+#include "yuzu_common/fs/fs_android.h"
 #endif
 
 namespace FileSys {
@@ -75,7 +75,7 @@ VfsEntryType RealVfsFilesystem::GetEntryType(std::string_view path_) const {
     return VfsEntryType::File;
 }
 
-VirtualFile RealVfsFilesystem::OpenFileFromEntry(std::string_view path_, std::optional<u64> size,
+VirtualFile RealVfsFilesystem::OpenFileFromEntry(std::string_view path_, std::optional<uint64_t> size,
                                                  VirtualFileOpenMode perms) {
     const auto path = FS::SanitizePath(path_, FS::DirectorySeparator::PlatformDefault);
     std::scoped_lock lk{list_lock};
@@ -268,7 +268,7 @@ void RealVfsFilesystem::RemoveReferenceFromListLocked(FileReference& reference) 
 }
 
 RealVfsFile::RealVfsFile(RealVfsFilesystem& base_, std::unique_ptr<FileReference> reference_,
-                         const std::string& path_, VirtualFileOpenMode perms_, std::optional<u64> size_)
+                         const std::string& path_, VirtualFileOpenMode perms_, std::optional<uint64_t> size_)
     : base(base_), reference(std::move(reference_)), path(path_),
       parent_path(FS::GetParentPath(path_)), path_components(FS::SplitPathComponentsCopy(path_)),
       size(size_), perms(perms_) {}
@@ -453,9 +453,9 @@ FileTimeStampRaw RealVfsDirectory::GetFileTimeStamp(std::string_view path_) cons
     }
 
     return {
-        .created{static_cast<u64>(file_status.st_ctime)},
-        .accessed{static_cast<u64>(file_status.st_atime)},
-        .modified{static_cast<u64>(file_status.st_mtime)},
+        .created{static_cast<uint64_t>(file_status.st_ctime)},
+        .accessed{static_cast<uint64_t>(file_status.st_atime)},
+        .modified{static_cast<uint64_t>(file_status.st_mtime)},
     };
 }
 

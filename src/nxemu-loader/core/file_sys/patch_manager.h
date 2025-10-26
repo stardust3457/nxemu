@@ -29,8 +29,8 @@ struct Patch {
     std::string name;
     std::string version;
     PatchType type;
-    u64 program_id;
-    u64 title_id;
+    uint64_t program_id;
+    uint64_t title_id;
 };
 
 // A centralized class to manage patches to games.
@@ -39,12 +39,12 @@ public:
     using BuildID = std::array<u8, 0x20>;
     using Metadata = std::pair<std::unique_ptr<NACP>, VirtualFile>;
 
-    explicit PatchManager(u64 title_id_,
+    explicit PatchManager(uint64_t title_id_,
                           const FileSys::FileSystemController& fs_controller_,
                           const ContentProvider& content_provider_);
     ~PatchManager();
 
-    [[nodiscard]] u64 GetTitleID() const;
+    [[nodiscard]] uint64_t GetTitleID() const;
 
     // Currently tracked ExeFS patches:
     // - Game Updates
@@ -87,7 +87,7 @@ private:
     [[nodiscard]] std::vector<VirtualFile> CollectPatches(const std::vector<VirtualDir>& patch_dirs,
                                                           const std::string& build_id) const;
 
-    u64 title_id;
+    uint64_t title_id;
     const FileSystemController& fs_controller;
     const ContentProvider& content_provider;
 };
