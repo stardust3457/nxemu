@@ -2,6 +2,7 @@
 #include "settings/input_config.h"
 #include "settings/system_config.h"
 #include "settings/ui_settings.h"
+#include "user_interface/settings/system_config.h"
 #include <common/std_string.h>
 #include <nxemu-core/machine/switch_system.h>
 #include <nxemu-core/settings/identifiers.h>
@@ -21,7 +22,6 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_window(nullptr),
     m_renderWindow(nullptr),
     m_windowTitle(windowTitle),
-    m_systemConfig(sciterUI, m_vkDeviceRecords),
     m_volumePopup(false)
 {
     SettingsStore & settings = SettingsStore::GetInstance();
@@ -31,6 +31,10 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     settings.RegisterCallback(NXCoreSetting::RomLoading, SciterMainWindow::RomLoadingChanged, this);
     settings.RegisterCallback(NXCoreSetting::DisplayedFrames, SciterMainWindow::DisplayedFramesChanged, this);
     settings.RegisterCallback(NXOsSetting::AudioVolume, SciterMainWindow::SettingChanged, this);
+}
+
+SciterMainWindow::~SciterMainWindow()
+{
 }
 
 void SciterMainWindow::ResetMenu()
@@ -466,12 +470,14 @@ void SciterMainWindow::OnFileExit(void)
 
 void SciterMainWindow::OnSystemConfig(void)
 {
-    m_systemConfig.Display((void*)m_window->GetHandle());
+    m_systemConfig.reset(new SystemConfig(m_sciterUI, m_vkDeviceRecords));
+    m_systemConfig->Display((void*)m_window->GetHandle());
 }
 
 void SciterMainWindow::OnInputConfig(void)
 {
-    InputConfig(m_sciterUI).Display((void *)m_window->GetHandle());
+    m_inputConfig.reset(new InputConfig(m_sciterUI));
+    m_inputConfig->Display((void*)m_window->GetHandle());
 }
         
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)

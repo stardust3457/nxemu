@@ -4,8 +4,10 @@
 #include <sciter_ui.h>
 #include <sciter_handler.h>
 #include <widgets/menubar.h>
-#include "user_interface/settings/system_config.h"
 #include "startup_checks.h"
+
+class SystemConfig;
+class InputConfig;
 
 class SciterMainWindow :
     public IWindowDestroySink,
@@ -34,6 +36,7 @@ class SciterMainWindow :
 
 public:
     SciterMainWindow(ISciterUI & sciterUI, const char * windowTitle);
+    ~SciterMainWindow();
 
     void ResetMenu();
     bool Show(void);
@@ -98,6 +101,7 @@ private:
     std::shared_ptr<IMenuBar> m_menuBar;
     void * m_renderWindow;
     std::string m_windowTitle;
-    SystemConfig m_systemConfig;
+    std::unique_ptr<SystemConfig> m_systemConfig;
+    std::unique_ptr<InputConfig> m_inputConfig;
     bool m_volumePopup;
 };

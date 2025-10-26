@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 enum VulkanCheckResult {
     EXIT_VULKAN_AVAILABLE = 0,

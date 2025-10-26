@@ -26,6 +26,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)external\fmt\include;$(SolutionDir)external\vulkan-headers\include;$(SolutionDir)external\sciterui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <PreBuildEvent>
       <Command>IF NOT EXIST "$(SolutionDir)config\NxEmu.config" (copy  "$(SolutionDir)config\NxEmu.config.development" "$(SolutionDir)config\NxEmu.config")
