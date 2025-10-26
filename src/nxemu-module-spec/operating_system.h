@@ -18,7 +18,8 @@ enum class PoolPartition : uint32_t
     SystemNonSecure = 3,
 };
 
-enum class StorageId : uint8_t {
+enum class StorageId : uint8_t 
+{
     None = 0,
     Host = 1,
     GameCard = 2,
@@ -86,6 +87,7 @@ __interface IOperatingSystem
     void AudioGetSyncIDs(uint32_t * ids, uint32_t maxCount, uint32_t * actualCount) = 0;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void * userData) = 0;
     void RegisterHostThread() = 0;
+    void PumpInputEvents() const = 0;
 };
 
 EXPORT IOperatingSystem * CALL CreateOperatingSystem(ISystemModules & modules);

@@ -407,7 +407,7 @@ const Core::SpeedLimiter& System::SpeedLimiter() const {
     return impl->speed_limiter;
 }
 
-std::shared_ptr<InputCommon::InputSubsystem> & System::InputSubsystem()
+std::shared_ptr<InputCommon::InputSubsystem> & System::InputSubsystem() const
 {
     return impl->input_subsystem;
 }

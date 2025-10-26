@@ -3,6 +3,7 @@
 #include "settings/system_config.h"
 #include "settings/ui_settings.h"
 #include "user_interface/settings/system_config.h"
+#include "user_interface/settings/input_config.h"
 #include <common/std_string.h>
 #include <nxemu-core/machine/switch_system.h>
 #include <nxemu-core/settings/identifiers.h>
@@ -117,6 +118,9 @@ bool SciterMainWindow::Show(void)
     m_sciterUI.AttachHandler(rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink*)this);
     m_sciterUI.AttachHandler(rootElement.GetElementByID("volume"), IID_ICLICKSINK, (IClickSink*)this);
     m_sciterUI.AttachHandler(rootElement.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink*)this);
+
+    m_sciterUI.AttachHandler(rootElement, IID_ITIMERSINK, (ITimerSink*)this);
+    rootElement.SetTimer(25, (uint32_t*)TIMER_UPDATE_INPUT);
 
     if (!uiSettings.hasBrokenVulkan)
     {
@@ -327,6 +331,16 @@ void SciterMainWindow::DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int3
     }
     m_sciterUI.PopupHide(rootElement.GetElementByID("VolumePopup"));
     m_volumePopup = false;
+}
+
+void SciterMainWindow::UpdateInputDrivers()
+{
+    SwitchSystem * system = SwitchSystem::GetInstance();
+    if (system != nullptr)
+    {
+        IOperatingSystem & operatingSystem = system->OperatingSystem();
+        operatingSystem.PumpInputEvents();
+    }
 }
 
 void SciterMainWindow::CreateRenderWindow(void)
@@ -646,4 +660,13 @@ void SciterMainWindow::SettingChanged(const char * setting, void * userData)
     {
         impl->UpdateStatusbar();
     }
+}
+
+bool SciterMainWindow::OnTimer(SCITER_ELEMENT Element, uint32_t* TimerId)
+{
+    if (TimerId == (uint32_t*)TIMER_UPDATE_INPUT)
+    {
+        UpdateInputDrivers();
+    }
+    return true;
 }

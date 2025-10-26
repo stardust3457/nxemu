@@ -17,7 +17,8 @@ class SciterMainWindow :
     public IResizeSink,
     public IClickSink,
     public IMouseUpDownSink,
-    public IStateChangeSink
+    public IStateChangeSink,
+    public ITimerSink
 {
     enum MainMenuID
     {
@@ -32,6 +33,11 @@ class SciterMainWindow :
         // Recent files
         ID_RECENT_FILE_START,
         ID_RECENT_FILE_END = ID_RECENT_FILE_START + 20,
+    };
+
+    enum
+    {
+        TIMER_UPDATE_INPUT = 5000,
     };
 
 public:
@@ -62,6 +68,7 @@ private:
     int32_t SciterKeyToVKCode(SciterKeys vkcode);
     void UpdateStatusbar();
     void DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int32_t y);
+    void UpdateInputDrivers();
 
     void OnOpenFile(void);
     void OnFileExit(void);
@@ -92,6 +99,9 @@ private:
 
     // IStateChangeSink
     bool OnStateChange(SCITER_ELEMENT elem, uint32_t eventReason, void* data) override;
+
+    // ITimerSink    
+    bool OnTimer(SCITER_ELEMENT Element, uint32_t* TimerId) override;
 
     static void SettingChanged(const char* setting, void* userData);
 

@@ -309,7 +309,7 @@ public:
     /// Provides a constant reference to the speed limiter
     [[nodiscard]] const Core::SpeedLimiter& SpeedLimiter() const;
 
-    std::shared_ptr<InputCommon::InputSubsystem> & InputSubsystem();
+    std::shared_ptr<InputCommon::InputSubsystem> & InputSubsystem() const;
 
     [[nodiscard]] u64 GetApplicationProcessProgramID() const;
 
