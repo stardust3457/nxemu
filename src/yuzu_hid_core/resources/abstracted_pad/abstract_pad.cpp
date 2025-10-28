@@ -63,7 +63,7 @@ void AbstractPad::SetExternals(AppletResourceHolder* applet_resource,
     palma_handler.SetPalmaResource(palma_resource);
 }
 
-void AbstractPad::SetNpadId(Core::HID::NpadIdType npad_id) {
+void AbstractPad::SetNpadId(NpadIdType npad_id) {
     properties_handler.SetNpadId(npad_id);
 }
 
@@ -245,7 +245,7 @@ NpadGcVibrationDevice* AbstractPad::GetGCVibrationDevice() {
     return &vibration_gc;
 }
 
-Core::HID::NpadIdType AbstractPad::GetLastActiveNpad() {
+NpadIdType AbstractPad::GetLastActiveNpad() {
     return properties_handler.GetNpadId();
 }
 

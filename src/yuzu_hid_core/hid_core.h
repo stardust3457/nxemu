@@ -7,6 +7,7 @@
 
 #include "yuzu_common/common_funcs.h"
 #include "yuzu_hid_core/hid_types.h"
+#include <nxemu-module-spec/operating_system.h>
 
 namespace Core::HID {
 class EmulatedConsole;

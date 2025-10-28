@@ -13,7 +13,7 @@
 namespace Service::HID {
 
 DebugPad::DebugPad(Core::HID::HIDCore& hid_core_) : ControllerBase{hid_core_} {
-    controller = hid_core.GetEmulatedController(Core::HID::NpadIdType::Other);
+    controller = hid_core.GetEmulatedController(NpadIdType::Other);
 }
 
 DebugPad::~DebugPad() = default;

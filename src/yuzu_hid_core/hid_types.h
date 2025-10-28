@@ -10,6 +10,8 @@
 #include "yuzu_common/uuid.h"
 #include "yuzu_common/vector_math.h"
 
+#include <nxemu-module-spec/operating_system.h> 
+
 namespace Core::HID {
 
 enum class DeviceIndex : u8 {
@@ -201,22 +203,6 @@ enum class KeyboardKeyIndex : u32 {
     RightShift = 229,
     RightAlt = 230,
     RightGui = 231,
-};
-
-// This is nn::hid::NpadIdType
-enum class NpadIdType : u32 {
-    Player1 = 0x0,
-    Player2 = 0x1,
-    Player3 = 0x2,
-    Player4 = 0x3,
-    Player5 = 0x4,
-    Player6 = 0x5,
-    Player7 = 0x6,
-    Player8 = 0x7,
-    Other = 0x10,
-    Handheld = 0x20,
-
-    Invalid = 0xFFFFFFFF,
 };
 
 enum class NpadInterfaceType : u8 {

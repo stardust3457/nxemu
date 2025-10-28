@@ -54,7 +54,7 @@ IRS::IRS(Core::System& system_) : ServiceFramework{system_, "irs"} {
     RegisterHandlers(functions);
     shared_memory = std::construct_at(reinterpret_cast<StatusManager*>(raw_shared_memory));
 
-    npad_device = system.HIDCore().GetEmulatedController(Core::HID::NpadIdType::Player1);
+    npad_device = system.HIDCore().GetEmulatedController(NpadIdType::Player1);
 }
 IRS::~IRS() = default;
 
@@ -197,7 +197,7 @@ Result IRS::RunTeraPluginProcessor(Core::IrSensor::IrCameraHandle camera_handle,
 }
 
 Result IRS::GetNpadIrCameraHandle(Out<Core::IrSensor::IrCameraHandle> out_camera_handle,
-                                  Core::HID::NpadIdType npad_id) {
+                                  NpadIdType npad_id) {
     R_UNLESS(HID::IsNpadIdValid(npad_id), HID::ResultInvalidNpadId);
 
     *out_camera_handle = {
@@ -348,7 +348,7 @@ Result IRS::ActivateIrsensorWithFunctionLevel(Core::IrSensor::PackedFunctionLeve
 
 Result IRS::IsIrCameraHandleValid(const Core::IrSensor::IrCameraHandle& camera_handle) const {
     if (camera_handle.npad_id >
-        static_cast<u8>(HID::NpadIdTypeToIndex(Core::HID::NpadIdType::Handheld))) {
+        static_cast<u8>(HID::NpadIdTypeToIndex(NpadIdType::Handheld))) {
         return InvalidIrCameraHandle;
     }
     if (camera_handle.npad_type != Core::HID::NpadStyleIndex::None) {

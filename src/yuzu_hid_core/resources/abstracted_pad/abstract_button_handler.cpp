@@ -46,7 +46,7 @@ Result NpadAbstractButtonHandler::DecrementRefCounter() {
 }
 
 Result NpadAbstractButtonHandler::UpdateAllButtonWithHomeProtection(u64 aruid) {
-    const Core::HID::NpadIdType npad_id = properties_handler->GetNpadId();
+    const NpadIdType npad_id = properties_handler->GetNpadId();
     auto* data = applet_resource_holder->applet_resource->GetAruidData(aruid);
 
     if (data == nullptr) {
@@ -71,7 +71,7 @@ Result NpadAbstractButtonHandler::UpdateAllButtonWithHomeProtection(u64 aruid) {
 }
 
 void NpadAbstractButtonHandler::UpdateAllButtonLifo() {
-    Core::HID::NpadIdType npad_id = properties_handler->GetNpadId();
+    NpadIdType npad_id = properties_handler->GetNpadId();
     for (std::size_t i = 0; i < AruidIndexMax; i++) {
         auto* data = applet_resource_holder->applet_resource->GetAruidDataByIndex(i);
         auto& npad_entry = data->shared_memory_format->npad.npad_entry[NpadIdTypeToIndex(npad_id)];
@@ -80,7 +80,7 @@ void NpadAbstractButtonHandler::UpdateAllButtonLifo() {
 }
 
 void NpadAbstractButtonHandler::UpdateCoreBatteryState() {
-    Core::HID::NpadIdType npad_id = properties_handler->GetNpadId();
+    NpadIdType npad_id = properties_handler->GetNpadId();
     for (std::size_t i = 0; i < AruidIndexMax; i++) {
         auto* data = applet_resource_holder->applet_resource->GetAruidDataByIndex(i);
         auto& npad_entry = data->shared_memory_format->npad.npad_entry[NpadIdTypeToIndex(npad_id)];
@@ -89,7 +89,7 @@ void NpadAbstractButtonHandler::UpdateCoreBatteryState() {
 }
 
 void NpadAbstractButtonHandler::UpdateButtonState(u64 aruid) {
-    Core::HID::NpadIdType npad_id = properties_handler->GetNpadId();
+    NpadIdType npad_id = properties_handler->GetNpadId();
     auto* data = applet_resource_holder->applet_resource->GetAruidData(aruid);
     if (data == nullptr) {
         return;
@@ -99,7 +99,7 @@ void NpadAbstractButtonHandler::UpdateButtonState(u64 aruid) {
 }
 
 Result NpadAbstractButtonHandler::SetHomeProtection(bool is_enabled, u64 aruid) {
-    const Core::HID::NpadIdType npad_id = properties_handler->GetNpadId();
+    const NpadIdType npad_id = properties_handler->GetNpadId();
     auto result = applet_resource_holder->shared_npad_resource->SetHomeProtectionEnabled(
         aruid, npad_id, is_enabled);
     if (result.IsError()) {

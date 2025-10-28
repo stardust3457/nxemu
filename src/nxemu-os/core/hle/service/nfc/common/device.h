@@ -24,13 +24,12 @@ class System;
 namespace Core::HID {
 class EmulatedController;
 enum class ControllerTriggerType;
-enum class NpadIdType : u32;
 } // namespace Core::HID
 
 namespace Service::NFC {
 class NfcDevice {
 public:
-    NfcDevice(Core::HID::NpadIdType npad_id_, Core::System& system_,
+    NfcDevice(NpadIdType npad_id_, Core::System& system_,
               KernelHelpers::ServiceContext& service_context_,
               Kernel::KEvent* availability_change_event_);
     ~NfcDevice();
@@ -93,7 +92,7 @@ public:
 
     u64 GetHandle() const;
     DeviceState GetCurrentState() const;
-    Result GetNpadId(Core::HID::NpadIdType& out_npad_id) const;
+    Result GetNpadId(NpadIdType& out_npad_id) const;
 
     Kernel::KReadableEvent& GetActivateEvent() const;
     Kernel::KReadableEvent& GetDeactivateEvent() const;
@@ -117,7 +116,7 @@ private:
 
     bool is_controller_set{};
     int callback_key;
-    const Core::HID::NpadIdType npad_id;
+    const NpadIdType npad_id;
     Core::System& system;
     Core::HID::EmulatedController* npad_device = nullptr;
     KernelHelpers::ServiceContext& service_context;

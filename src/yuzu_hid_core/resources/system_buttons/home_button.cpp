@@ -38,7 +38,7 @@ void HomeButton::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
     const auto& last_entry = shared_memory.home_lifo.ReadCurrentEntry().state;
     next_state.sampling_number = last_entry.sampling_number + 1;
 
-    auto* controller = hid_core.GetEmulatedController(Core::HID::NpadIdType::Player1);
+    auto* controller = hid_core.GetEmulatedController(NpadIdType::Player1);
     next_state.buttons.raw = controller->GetHomeButtons().raw;
 
     shared_memory.home_lifo.WriteNextEntry(next_state);

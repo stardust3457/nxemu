@@ -625,6 +625,15 @@
     <ClInclude Include="core\hle\service\glue\time\time_zone.h" />
     <ClInclude Include="core\hle\service\glue\time\time_zone_binary.h" />
     <ClInclude Include="core\hle\service\glue\time\worker.h" />
+    <ClInclude Include="core\hle\service\hid\active_vibration_device_list.h" />
+    <ClInclude Include="core\hle\service\hid\applet_resource.h" />
+    <ClInclude Include="core\hle\service\hid\hid.h" />
+    <ClInclude Include="core\hle\service\hid\hidbus.h" />
+    <ClInclude Include="core\hle\service\hid\hid_debug_server.h" />
+    <ClInclude Include="core\hle\service\hid\hid_server.h" />
+    <ClInclude Include="core\hle\service\hid\hid_system_server.h" />
+    <ClInclude Include="core\hle\service\hid\irs.h" />
+    <ClInclude Include="core\hle\service\hid\xcd.h" />
     <ClInclude Include="core\hle\service\hle_ipc.h" />
     <ClInclude Include="core\hle\service\ipc_helpers.h" />
     <ClInclude Include="core\hle\service\nfc\common\device.h" />

@@ -100,7 +100,7 @@ std::optional<std::size_t> Hidbus::GetDeviceIndexFromHandle(BusHandle handle) co
 }
 
 Result Hidbus::GetBusHandle(Out<bool> out_is_valid, Out<BusHandle> out_bus_handle,
-                            Core::HID::NpadIdType npad_id, BusType bus_type,
+                            NpadIdType npad_id, BusType bus_type,
                             AppletResourceUserId aruid) {
     LOG_INFO(Service_HID, "called, npad_id={}, bus_type={}, applet_resource_user_id={}", npad_id,
              bus_type, aruid.pid);
@@ -113,7 +113,7 @@ Result Hidbus::GetBusHandle(Out<bool> out_is_valid, Out<BusHandle> out_bus_handl
         if (!handle.is_valid) {
             continue;
         }
-        if (handle.player_number.As<Core::HID::NpadIdType>() == npad_id &&
+        if (handle.player_number.As<NpadIdType>() == npad_id &&
             handle.bus_type_id == static_cast<u8>(bus_type)) {
             is_handle_found = true;
             handle_index = i;

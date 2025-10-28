@@ -36,7 +36,7 @@
 #include "yuzu_hid_core/hid_types.h"
 
 namespace Service::NFC {
-NfcDevice::NfcDevice(Core::HID::NpadIdType npad_id_, Core::System& system_,
+NfcDevice::NfcDevice(NpadIdType npad_id_, Core::System& system_,
                      KernelHelpers::ServiceContext& service_context_,
                      Kernel::KEvent* availability_change_event_)
     : npad_id{npad_id_}, system{system_}, service_context{service_context_},
@@ -1329,7 +1329,7 @@ DeviceState NfcDevice::GetCurrentState() const {
     return device_state;
 }
 
-Result NfcDevice::GetNpadId(Core::HID::NpadIdType& out_npad_id) const {
+Result NfcDevice::GetNpadId(NpadIdType& out_npad_id) const {
     // TODO: This should get the npad id from nn::hid::system::GetXcdHandleForNpadWithNfc
     out_npad_id = npad_id;
     return ResultSuccess;

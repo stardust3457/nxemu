@@ -30,9 +30,9 @@ public:
 
     void SetAbstractPadHolder(NpadAbstractedPadHolder* holder);
     void SetAppletResource(AppletResourceHolder* applet_resource);
-    void SetNpadId(Core::HID::NpadIdType npad_id);
+    void SetNpadId(NpadIdType npad_id);
 
-    Core::HID::NpadIdType GetNpadId() const;
+    NpadIdType GetNpadId() const;
 
     Result IncrementRefCounter();
     Result DecrementRefCounter();
@@ -69,7 +69,7 @@ public:
 private:
     AppletResourceHolder* applet_resource_holder{nullptr};
     NpadAbstractedPadHolder* abstract_pad_holder{nullptr};
-    Core::HID::NpadIdType npad_id_type{Core::HID::NpadIdType::Invalid};
+    NpadIdType npad_id_type{NpadIdType::Invalid};
     s32 ref_counter{};
     Core::HID::DeviceIndex device_type{};
     AppletDetailedUiType applet_ui_type{};

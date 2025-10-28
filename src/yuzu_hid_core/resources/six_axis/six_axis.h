@@ -102,8 +102,8 @@ private:
         const Core::HID::SixAxisSensorHandle& device_handle);
     const NpadControllerData& GetControllerFromHandle(
         const Core::HID::SixAxisSensorHandle& device_handle) const;
-    NpadControllerData& GetControllerFromNpadIdType(Core::HID::NpadIdType npad_id);
-    const NpadControllerData& GetControllerFromNpadIdType(Core::HID::NpadIdType npad_id) const;
+    NpadControllerData& GetControllerFromNpadIdType(NpadIdType npad_id);
+    const NpadControllerData& GetControllerFromNpadIdType(NpadIdType npad_id) const;
 
     std::shared_ptr<NPad> npad;
     std::array<NpadControllerData, NPAD_COUNT> controller_data{};

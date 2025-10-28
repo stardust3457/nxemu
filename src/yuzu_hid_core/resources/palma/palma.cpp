@@ -13,7 +13,7 @@ namespace Service::HID {
 
 Palma::Palma(Core::HID::HIDCore& hid_core_, KernelHelpers::ServiceContext& service_context_)
     : ControllerBase{hid_core_}, service_context{service_context_} {
-    controller = hid_core.GetEmulatedController(Core::HID::NpadIdType::Other);
+    controller = hid_core.GetEmulatedController(NpadIdType::Other);
     operation_complete_event = service_context.CreateEvent("hid:PalmaOperationCompleteEvent");
 }
 
@@ -31,7 +31,7 @@ void Palma::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
     }
 }
 
-Result Palma::GetPalmaConnectionHandle(Core::HID::NpadIdType npad_id,
+Result Palma::GetPalmaConnectionHandle(NpadIdType npad_id,
                                        PalmaConnectionHandle& handle) {
     active_handle.npad_id = npad_id;
     handle = active_handle;

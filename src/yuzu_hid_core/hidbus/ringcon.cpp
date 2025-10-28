@@ -14,7 +14,7 @@ namespace Service::HID {
 RingController::RingController(Core::System& system_,
                                KernelHelpers::ServiceContext& service_context_)
     : HidbusBase(system_, service_context_) {
-    input = system.HIDCore().GetEmulatedController(Core::HID::NpadIdType::Player1);
+    input = system.HIDCore().GetEmulatedController(NpadIdType::Player1);
 }
 
 RingController::~RingController() = default;

@@ -48,32 +48,32 @@ void NpadAbstractLedHandler::SetNpadLedHandlerLedPattern() {
     const auto npad_id = properties_handler->GetNpadId();
 
     switch (npad_id) {
-    case Core::HID::NpadIdType::Player1:
+    case NpadIdType::Player1:
         left_pattern = Core::HID::LedPattern{1, 0, 0, 0};
         break;
-    case Core::HID::NpadIdType::Player2:
+    case NpadIdType::Player2:
         left_pattern = Core::HID::LedPattern{1, 1, 0, 0};
         break;
-    case Core::HID::NpadIdType::Player3:
+    case NpadIdType::Player3:
         left_pattern = Core::HID::LedPattern{1, 1, 1, 0};
         break;
-    case Core::HID::NpadIdType::Player4:
+    case NpadIdType::Player4:
         left_pattern = Core::HID::LedPattern{1, 1, 1, 1};
         break;
-    case Core::HID::NpadIdType::Player5:
+    case NpadIdType::Player5:
         left_pattern = Core::HID::LedPattern{1, 0, 0, 1};
         break;
-    case Core::HID::NpadIdType::Player6:
+    case NpadIdType::Player6:
         left_pattern = Core::HID::LedPattern{1, 0, 1, 0};
         break;
-    case Core::HID::NpadIdType::Player7:
+    case NpadIdType::Player7:
         left_pattern = Core::HID::LedPattern{1, 0, 1, 1};
         break;
-    case Core::HID::NpadIdType::Player8:
+    case NpadIdType::Player8:
         left_pattern = Core::HID::LedPattern{0, 1, 1, 0};
         break;
-    case Core::HID::NpadIdType::Other:
-    case Core::HID::NpadIdType::Handheld:
+    case NpadIdType::Other:
+    case NpadIdType::Handheld:
         left_pattern = Core::HID::LedPattern{0, 0, 0, 0};
         break;
     default:
@@ -82,32 +82,32 @@ void NpadAbstractLedHandler::SetNpadLedHandlerLedPattern() {
     }
 
     switch (npad_id) {
-    case Core::HID::NpadIdType::Player1:
+    case NpadIdType::Player1:
         right_pattern = Core::HID::LedPattern{0, 0, 0, 1};
         break;
-    case Core::HID::NpadIdType::Player2:
+    case NpadIdType::Player2:
         right_pattern = Core::HID::LedPattern{0, 1, 1, 1};
         break;
-    case Core::HID::NpadIdType::Player3:
+    case NpadIdType::Player3:
         right_pattern = Core::HID::LedPattern{0, 1, 1, 1};
         break;
-    case Core::HID::NpadIdType::Player4:
+    case NpadIdType::Player4:
         right_pattern = Core::HID::LedPattern{1, 1, 1, 1};
         break;
-    case Core::HID::NpadIdType::Player5:
+    case NpadIdType::Player5:
         right_pattern = Core::HID::LedPattern{1, 0, 0, 1};
         break;
-    case Core::HID::NpadIdType::Player6:
+    case NpadIdType::Player6:
         right_pattern = Core::HID::LedPattern{0, 1, 0, 1};
         break;
-    case Core::HID::NpadIdType::Player7:
+    case NpadIdType::Player7:
         right_pattern = Core::HID::LedPattern{1, 1, 0, 1};
         break;
-    case Core::HID::NpadIdType::Player8:
+    case NpadIdType::Player8:
         right_pattern = Core::HID::LedPattern{0, 1, 1, 0};
         break;
-    case Core::HID::NpadIdType::Other:
-    case Core::HID::NpadIdType::Handheld:
+    case NpadIdType::Other:
+    case NpadIdType::Handheld:
         right_pattern = Core::HID::LedPattern{0, 0, 0, 0};
         break;
     default:

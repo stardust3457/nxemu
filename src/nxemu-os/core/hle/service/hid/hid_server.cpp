@@ -604,7 +604,7 @@ Result IHidServer::GetSupportedNpadStyleSet(Out<Core::HID::NpadStyleSet> out_sup
 
 Result IHidServer::SetSupportedNpadIdType(
     ClientAppletResourceUserId aruid,
-    InArray<Core::HID::NpadIdType, BufferAttr_HipcPointer> supported_npad_list) {
+    InArray<NpadIdType, BufferAttr_HipcPointer> supported_npad_list) {
     LOG_DEBUG(Service_HID, "called, applet_resource_user_id={}", aruid.pid);
 
     R_RETURN(
@@ -628,7 +628,7 @@ Result IHidServer::DeactivateNpad(ClientAppletResourceUserId aruid) {
 }
 
 Result IHidServer::AcquireNpadStyleSetUpdateEventHandle(
-    OutCopyHandle<Kernel::KReadableEvent> out_event, Core::HID::NpadIdType npad_id,
+    OutCopyHandle<Kernel::KReadableEvent> out_event, NpadIdType npad_id,
     ClientAppletResourceUserId aruid, u64 unknown) {
     LOG_DEBUG(Service_HID, "called, npad_id={}, applet_resource_user_id={}, unknown={}", npad_id,
               aruid.pid, unknown);
@@ -637,39 +637,39 @@ Result IHidServer::AcquireNpadStyleSetUpdateEventHandle(
         aruid.pid, out_event, npad_id));
 }
 
-Result IHidServer::DisconnectNpad(Core::HID::NpadIdType npad_id, ClientAppletResourceUserId aruid) {
+Result IHidServer::DisconnectNpad(NpadIdType npad_id, ClientAppletResourceUserId aruid) {
     LOG_DEBUG(Service_HID, "called, npad_id={}, applet_resource_user_id={}", npad_id, aruid.pid);
 
     R_RETURN(GetResourceManager()->GetNpad()->DisconnectNpad(aruid.pid, npad_id));
 }
 
 Result IHidServer::GetPlayerLedPattern(Out<Core::HID::LedPattern> out_led_pattern,
-                                       Core::HID::NpadIdType npad_id) {
+                                       NpadIdType npad_id) {
     LOG_DEBUG(Service_HID, "called, npad_id={}", npad_id);
 
     switch (npad_id) {
-    case Core::HID::NpadIdType::Player1:
+    case NpadIdType::Player1:
         *out_led_pattern = Core::HID::LedPattern{1, 0, 0, 0};
         R_SUCCEED();
-    case Core::HID::NpadIdType::Player2:
+    case NpadIdType::Player2:
         *out_led_pattern = Core::HID::LedPattern{1, 1, 0, 0};
         R_SUCCEED();
-    case Core::HID::NpadIdType::Player3:
+    case NpadIdType::Player3:
         *out_led_pattern = Core::HID::LedPattern{1, 1, 1, 0};
         R_SUCCEED();
-    case Core::HID::NpadIdType::Player4:
+    case NpadIdType::Player4:
         *out_led_pattern = Core::HID::LedPattern{1, 1, 1, 1};
         R_SUCCEED();
-    case Core::HID::NpadIdType::Player5:
+    case NpadIdType::Player5:
         *out_led_pattern = Core::HID::LedPattern{1, 0, 0, 1};
         R_SUCCEED();
-    case Core::HID::NpadIdType::Player6:
+    case NpadIdType::Player6:
         *out_led_pattern = Core::HID::LedPattern{1, 0, 1, 0};
         R_SUCCEED();
-    case Core::HID::NpadIdType::Player7:
+    case NpadIdType::Player7:
         *out_led_pattern = Core::HID::LedPattern{1, 0, 1, 1};
         R_SUCCEED();
-    case Core::HID::NpadIdType::Player8:
+    case NpadIdType::Player8:
         *out_led_pattern = Core::HID::LedPattern{0, 1, 1, 0};
         R_SUCCEED();
     default:
@@ -705,40 +705,40 @@ Result IHidServer::GetNpadJoyHoldType(Out<NpadJoyHoldType> out_hold_type,
     R_RETURN(GetResourceManager()->GetNpad()->GetNpadJoyHoldType(aruid.pid, *out_hold_type));
 }
 
-Result IHidServer::SetNpadJoyAssignmentModeSingleByDefault(Core::HID::NpadIdType npad_id,
+Result IHidServer::SetNpadJoyAssignmentModeSingleByDefault(NpadIdType npad_id,
                                                            ClientAppletResourceUserId aruid) {
     LOG_INFO(Service_HID, "called, npad_id={}, applet_resource_user_id={}", npad_id, aruid.pid);
 
-    Core::HID::NpadIdType new_npad_id{};
+    NpadIdType new_npad_id{};
     GetResourceManager()->GetNpad()->SetNpadMode(
         aruid.pid, new_npad_id, npad_id, NpadJoyDeviceType::Left, NpadJoyAssignmentMode::Single);
     R_SUCCEED();
 }
 
-Result IHidServer::SetNpadJoyAssignmentModeSingle(Core::HID::NpadIdType npad_id,
+Result IHidServer::SetNpadJoyAssignmentModeSingle(NpadIdType npad_id,
                                                   ClientAppletResourceUserId aruid,
                                                   NpadJoyDeviceType npad_joy_device_type) {
     LOG_INFO(Service_HID, "called, npad_id={}, applet_resource_user_id={}, npad_joy_device_type={}",
              npad_id, aruid.pid, npad_joy_device_type);
 
-    Core::HID::NpadIdType new_npad_id{};
+    NpadIdType new_npad_id{};
     GetResourceManager()->GetNpad()->SetNpadMode(
         aruid.pid, new_npad_id, npad_id, npad_joy_device_type, NpadJoyAssignmentMode::Single);
     R_SUCCEED();
 }
 
-Result IHidServer::SetNpadJoyAssignmentModeDual(Core::HID::NpadIdType npad_id,
+Result IHidServer::SetNpadJoyAssignmentModeDual(NpadIdType npad_id,
                                                 ClientAppletResourceUserId aruid) {
     LOG_DEBUG(Service_HID, "called, npad_id={}, applet_resource_user_id={}", npad_id, aruid.pid);
 
-    Core::HID::NpadIdType new_npad_id{};
+    NpadIdType new_npad_id{};
     GetResourceManager()->GetNpad()->SetNpadMode(aruid.pid, new_npad_id, npad_id, {},
                                                  NpadJoyAssignmentMode::Dual);
     R_SUCCEED();
 }
 
-Result IHidServer::MergeSingleJoyAsDualJoy(Core::HID::NpadIdType npad_id_1,
-                                           Core::HID::NpadIdType npad_id_2,
+Result IHidServer::MergeSingleJoyAsDualJoy(NpadIdType npad_id_1,
+                                           NpadIdType npad_id_2,
                                            ClientAppletResourceUserId aruid) {
     LOG_DEBUG(Service_HID, "called, npad_id_1={}, npad_id_2={}, applet_resource_user_id={}",
               npad_id_1, npad_id_2, aruid.pid);
@@ -784,8 +784,8 @@ Result IHidServer::GetNpadHandheldActivationMode(
                                                                             *out_activation_mode));
 }
 
-Result IHidServer::SwapNpadAssignment(Core::HID::NpadIdType npad_id_1,
-                                      Core::HID::NpadIdType npad_id_2,
+Result IHidServer::SwapNpadAssignment(NpadIdType npad_id_1,
+                                      NpadIdType npad_id_2,
                                       ClientAppletResourceUserId aruid) {
     LOG_DEBUG(Service_HID, "called, npad_id_1={}, npad_id_2={}, applet_resource_user_id={}",
               npad_id_1, npad_id_2, aruid.pid);
@@ -794,7 +794,7 @@ Result IHidServer::SwapNpadAssignment(Core::HID::NpadIdType npad_id_1,
 }
 
 Result IHidServer::IsUnintendedHomeButtonInputProtectionEnabled(Out<bool> out_is_enabled,
-                                                                Core::HID::NpadIdType npad_id,
+                                                                NpadIdType npad_id,
                                                                 ClientAppletResourceUserId aruid) {
     LOG_INFO(Service_HID, "called, npad_id={}, applet_resource_user_id={}", npad_id, aruid.pid);
 
@@ -804,7 +804,7 @@ Result IHidServer::IsUnintendedHomeButtonInputProtectionEnabled(Out<bool> out_is
 }
 
 Result IHidServer::EnableUnintendedHomeButtonInputProtection(bool is_enabled,
-                                                             Core::HID::NpadIdType npad_id,
+                                                             NpadIdType npad_id,
                                                              ClientAppletResourceUserId aruid) {
     LOG_DEBUG(Service_HID, "called, is_enabled={}, npad_id={}, applet_resource_user_id={}",
               is_enabled, npad_id, aruid.pid);
@@ -815,8 +815,8 @@ Result IHidServer::EnableUnintendedHomeButtonInputProtection(bool is_enabled,
 }
 
 Result IHidServer::SetNpadJoyAssignmentModeSingleWithDestination(
-    Out<bool> out_is_reassigned, Out<Core::HID::NpadIdType> out_new_npad_id,
-    Core::HID::NpadIdType npad_id, ClientAppletResourceUserId aruid,
+    Out<bool> out_is_reassigned, Out<NpadIdType> out_new_npad_id,
+    NpadIdType npad_id, ClientAppletResourceUserId aruid,
     NpadJoyDeviceType npad_joy_device_type) {
     LOG_INFO(Service_HID, "called, npad_id={}, applet_resource_user_id={}, npad_joy_device_type={}",
              npad_id, aruid.pid, npad_joy_device_type);
@@ -1151,7 +1151,7 @@ Result IHidServer::IsUsbFullKeyControllerEnabled(Out<bool> out_is_enabled,
 }
 
 Result IHidServer::GetPalmaConnectionHandle(Out<Palma::PalmaConnectionHandle> out_handle,
-                                            Core::HID::NpadIdType npad_id,
+                                            NpadIdType npad_id,
                                             ClientAppletResourceUserId aruid) {
     LOG_WARNING(Service_HID, "(STUBBED) called, npad_id={}, applet_resource_user_id={}", npad_id,
                 aruid.pid);

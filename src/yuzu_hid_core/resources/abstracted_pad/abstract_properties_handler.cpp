@@ -25,7 +25,7 @@ void NpadAbstractPropertiesHandler::SetAppletResource(AppletResourceHolder* appl
     return;
 }
 
-void NpadAbstractPropertiesHandler::SetNpadId(Core::HID::NpadIdType npad_id) {
+void NpadAbstractPropertiesHandler::SetNpadId(NpadIdType npad_id) {
     if (!IsNpadIdValid(npad_id)) {
         ASSERT_MSG(false, "Invalid npad id");
     }
@@ -33,7 +33,7 @@ void NpadAbstractPropertiesHandler::SetNpadId(Core::HID::NpadIdType npad_id) {
     npad_id_type = npad_id;
 }
 
-Core::HID::NpadIdType NpadAbstractPropertiesHandler::GetNpadId() const {
+NpadIdType NpadAbstractPropertiesHandler::GetNpadId() const {
     return npad_id_type;
 }
 

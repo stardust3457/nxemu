@@ -32,7 +32,7 @@ bool NPadData::GetNpadSystemExtState() const {
     return status.system_ext_state.As<bool>();
 }
 
-Result NPadData::SetSupportedNpadIdType(std::span<const Core::HID::NpadIdType> list) {
+Result NPadData::SetSupportedNpadIdType(std::span<const NpadIdType> list) {
     // Note: Real limit is 11. But array size is 10. N's bug?
     if (list.size() > MaxSupportedNpadIdTypes) {
         return ResultInvalidArraySize;
@@ -40,21 +40,21 @@ Result NPadData::SetSupportedNpadIdType(std::span<const Core::HID::NpadIdType> l
 
     supported_npad_id_types_count = list.size();
     memcpy(supported_npad_id_types.data(), list.data(),
-           list.size() * sizeof(Core::HID::NpadIdType));
+           list.size() * sizeof(NpadIdType));
 
     return ResultSuccess;
 }
 
-std::size_t NPadData::GetSupportedNpadIdType(std::span<Core::HID::NpadIdType> out_list) const {
+std::size_t NPadData::GetSupportedNpadIdType(std::span<NpadIdType> out_list) const {
     std::size_t out_size = std::min(supported_npad_id_types_count, out_list.size());
 
     memcpy(out_list.data(), supported_npad_id_types.data(),
-           out_size * sizeof(Core::HID::NpadIdType));
+           out_size * sizeof(NpadIdType));
 
     return out_size;
 }
 
-bool NPadData::IsNpadIdTypeSupported(Core::HID::NpadIdType npad_id) const {
+bool NPadData::IsNpadIdTypeSupported(NpadIdType npad_id) const {
     for (std::size_t i = 0; i < supported_npad_id_types_count; i++) {
         if (supported_npad_id_types[i] == npad_id) {
             return true;
@@ -78,16 +78,16 @@ void NPadData::SetNpadSystemCommonPolicy(bool is_full_policy) {
     }
 
     supported_npad_id_types_count = 10;
-    supported_npad_id_types[0] = Core::HID::NpadIdType::Player1;
-    supported_npad_id_types[1] = Core::HID::NpadIdType::Player2;
-    supported_npad_id_types[2] = Core::HID::NpadIdType::Player3;
-    supported_npad_id_types[3] = Core::HID::NpadIdType::Player4;
-    supported_npad_id_types[4] = Core::HID::NpadIdType::Player5;
-    supported_npad_id_types[5] = Core::HID::NpadIdType::Player6;
-    supported_npad_id_types[6] = Core::HID::NpadIdType::Player7;
-    supported_npad_id_types[7] = Core::HID::NpadIdType::Player8;
-    supported_npad_id_types[8] = Core::HID::NpadIdType::Other;
-    supported_npad_id_types[9] = Core::HID::NpadIdType::Handheld;
+    supported_npad_id_types[0] = NpadIdType::Player1;
+    supported_npad_id_types[1] = NpadIdType::Player2;
+    supported_npad_id_types[2] = NpadIdType::Player3;
+    supported_npad_id_types[3] = NpadIdType::Player4;
+    supported_npad_id_types[4] = NpadIdType::Player5;
+    supported_npad_id_types[5] = NpadIdType::Player6;
+    supported_npad_id_types[6] = NpadIdType::Player7;
+    supported_npad_id_types[7] = NpadIdType::Player8;
+    supported_npad_id_types[8] = NpadIdType::Other;
+    supported_npad_id_types[9] = NpadIdType::Handheld;
 
     for (auto& input_protection : is_unintended_home_button_input_protection) {
         input_protection = true;
@@ -105,16 +105,16 @@ void NPadData::ClearNpadSystemCommonPolicy() {
     }
 
     supported_npad_id_types_count = 10;
-    supported_npad_id_types[0] = Core::HID::NpadIdType::Player1;
-    supported_npad_id_types[1] = Core::HID::NpadIdType::Player2;
-    supported_npad_id_types[2] = Core::HID::NpadIdType::Player3;
-    supported_npad_id_types[3] = Core::HID::NpadIdType::Player4;
-    supported_npad_id_types[4] = Core::HID::NpadIdType::Player5;
-    supported_npad_id_types[5] = Core::HID::NpadIdType::Player6;
-    supported_npad_id_types[6] = Core::HID::NpadIdType::Player7;
-    supported_npad_id_types[7] = Core::HID::NpadIdType::Player8;
-    supported_npad_id_types[8] = Core::HID::NpadIdType::Other;
-    supported_npad_id_types[9] = Core::HID::NpadIdType::Handheld;
+    supported_npad_id_types[0] = NpadIdType::Player1;
+    supported_npad_id_types[1] = NpadIdType::Player2;
+    supported_npad_id_types[2] = NpadIdType::Player3;
+    supported_npad_id_types[3] = NpadIdType::Player4;
+    supported_npad_id_types[4] = NpadIdType::Player5;
+    supported_npad_id_types[5] = NpadIdType::Player6;
+    supported_npad_id_types[6] = NpadIdType::Player7;
+    supported_npad_id_types[7] = NpadIdType::Player8;
+    supported_npad_id_types[8] = NpadIdType::Other;
+    supported_npad_id_types[9] = NpadIdType::Handheld;
 
     for (auto& input_protection : is_unintended_home_button_input_protection) {
         input_protection = true;
@@ -194,11 +194,11 @@ bool NPadData::GetAssigningSingleOnSlSrPress() const {
     return status.assigning_single_on_sl_sr_press.As<bool>();
 }
 
-void NPadData::SetHomeProtectionEnabled(bool is_enabled, Core::HID::NpadIdType npad_id) {
+void NPadData::SetHomeProtectionEnabled(bool is_enabled, NpadIdType npad_id) {
     is_unintended_home_button_input_protection[NpadIdTypeToIndex(npad_id)] = is_enabled;
 }
 
-bool NPadData::GetHomeProtectionEnabled(Core::HID::NpadIdType npad_id) const {
+bool NPadData::GetHomeProtectionEnabled(NpadIdType npad_id) const {
     return is_unintended_home_button_input_protection[NpadIdTypeToIndex(npad_id)];
 }
 

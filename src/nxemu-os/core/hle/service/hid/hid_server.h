@@ -110,26 +110,26 @@ private:
                                     ClientAppletResourceUserId aruid);
     Result SetSupportedNpadIdType(
         ClientAppletResourceUserId aruid,
-        InArray<Core::HID::NpadIdType, BufferAttr_HipcPointer> supported_npad_list);
+        InArray<NpadIdType, BufferAttr_HipcPointer> supported_npad_list);
     Result ActivateNpad(ClientAppletResourceUserId aruid);
     Result DeactivateNpad(ClientAppletResourceUserId aruid);
     Result AcquireNpadStyleSetUpdateEventHandle(OutCopyHandle<Kernel::KReadableEvent> out_event,
-                                                Core::HID::NpadIdType npad_id,
+                                                NpadIdType npad_id,
                                                 ClientAppletResourceUserId aruid, u64 unknown);
-    Result DisconnectNpad(Core::HID::NpadIdType npad_id, ClientAppletResourceUserId aruid);
+    Result DisconnectNpad(NpadIdType npad_id, ClientAppletResourceUserId aruid);
     Result GetPlayerLedPattern(Out<Core::HID::LedPattern> out_led_pattern,
-                               Core::HID::NpadIdType npad_id);
+                               NpadIdType npad_id);
     Result ActivateNpadWithRevision(NpadRevision revision, ClientAppletResourceUserId aruid);
     Result SetNpadJoyHoldType(ClientAppletResourceUserId aruid, NpadJoyHoldType hold_type);
     Result GetNpadJoyHoldType(Out<NpadJoyHoldType> out_hold_type, ClientAppletResourceUserId aruid);
-    Result SetNpadJoyAssignmentModeSingleByDefault(Core::HID::NpadIdType npad_id,
+    Result SetNpadJoyAssignmentModeSingleByDefault(NpadIdType npad_id,
                                                    ClientAppletResourceUserId aruid);
-    Result SetNpadJoyAssignmentModeSingle(Core::HID::NpadIdType npad_id,
+    Result SetNpadJoyAssignmentModeSingle(NpadIdType npad_id,
                                           ClientAppletResourceUserId aruid,
                                           NpadJoyDeviceType npad_joy_device_type);
-    Result SetNpadJoyAssignmentModeDual(Core::HID::NpadIdType npad_id,
+    Result SetNpadJoyAssignmentModeDual(NpadIdType npad_id,
                                         ClientAppletResourceUserId aruid);
-    Result MergeSingleJoyAsDualJoy(Core::HID::NpadIdType npad_id_1, Core::HID::NpadIdType npad_id_2,
+    Result MergeSingleJoyAsDualJoy(NpadIdType npad_id_1, NpadIdType npad_id_2,
                                    ClientAppletResourceUserId aruid);
     Result StartLrAssignmentMode(ClientAppletResourceUserId aruid);
     Result StopLrAssignmentMode(ClientAppletResourceUserId aruid);
@@ -137,16 +137,16 @@ private:
                                          NpadHandheldActivationMode activation_mode);
     Result GetNpadHandheldActivationMode(Out<NpadHandheldActivationMode> out_activation_mode,
                                          ClientAppletResourceUserId aruid);
-    Result SwapNpadAssignment(Core::HID::NpadIdType npad_id_1, Core::HID::NpadIdType npad_id_2,
+    Result SwapNpadAssignment(NpadIdType npad_id_1, NpadIdType npad_id_2,
                               ClientAppletResourceUserId aruid);
     Result IsUnintendedHomeButtonInputProtectionEnabled(Out<bool> out_is_enabled,
-                                                        Core::HID::NpadIdType npad_id,
+                                                        NpadIdType npad_id,
                                                         ClientAppletResourceUserId aruid);
-    Result EnableUnintendedHomeButtonInputProtection(bool is_enabled, Core::HID::NpadIdType npad_id,
+    Result EnableUnintendedHomeButtonInputProtection(bool is_enabled, NpadIdType npad_id,
                                                      ClientAppletResourceUserId aruid);
     Result SetNpadJoyAssignmentModeSingleWithDestination(Out<bool> out_is_reassigned,
-                                                         Out<Core::HID::NpadIdType> out_new_npad_id,
-                                                         Core::HID::NpadIdType npad_id,
+                                                         Out<NpadIdType> out_new_npad_id,
+                                                         NpadIdType npad_id,
                                                          ClientAppletResourceUserId aruid,
                                                          NpadJoyDeviceType npad_joy_device_type);
     Result SetNpadAnalogStickUseCenterClamp(bool use_center_clamp,
@@ -201,7 +201,7 @@ private:
     Result IsUsbFullKeyControllerEnabled(Out<bool> out_is_enabled,
                                          ClientAppletResourceUserId aruid);
     Result GetPalmaConnectionHandle(Out<Palma::PalmaConnectionHandle> out_handle,
-                                    Core::HID::NpadIdType npad_id,
+                                    NpadIdType npad_id,
                                     ClientAppletResourceUserId aruid);
     Result InitializePalma(Palma::PalmaConnectionHandle connection_handle);
     Result AcquirePalmaOperationCompleteEvent(OutCopyHandle<Kernel::KReadableEvent> out_event,

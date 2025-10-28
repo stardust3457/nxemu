@@ -43,9 +43,9 @@ public:
     void SetNpadSystemExtStateEnabled(bool is_enabled);
     bool GetNpadSystemExtState() const;
 
-    Result SetSupportedNpadIdType(std::span<const Core::HID::NpadIdType> list);
-    std::size_t GetSupportedNpadIdType(std::span<Core::HID::NpadIdType> out_list) const;
-    bool IsNpadIdTypeSupported(Core::HID::NpadIdType npad_id) const;
+    Result SetSupportedNpadIdType(std::span<const NpadIdType> list);
+    std::size_t GetSupportedNpadIdType(std::span<NpadIdType> out_list) const;
+    bool IsNpadIdTypeSupported(NpadIdType npad_id) const;
 
     void SetNpadSystemCommonPolicy(bool is_full_policy);
     void ClearNpadSystemCommonPolicy();
@@ -66,8 +66,8 @@ public:
     void SetAssigningSingleOnSlSrPress(bool is_enabled);
     bool GetAssigningSingleOnSlSrPress() const;
 
-    void SetHomeProtectionEnabled(bool is_enabled, Core::HID::NpadIdType npad_id);
-    bool GetHomeProtectionEnabled(Core::HID::NpadIdType npad_id) const;
+    void SetHomeProtectionEnabled(bool is_enabled, NpadIdType npad_id);
+    bool GetHomeProtectionEnabled(NpadIdType npad_id) const;
 
     void SetCaptureButtonAssignment(Core::HID::NpadButton button_assignment,
                                     std::size_t style_index);
@@ -79,7 +79,7 @@ private:
     Core::HID::NpadStyleSet supported_npad_style_set{Core::HID::NpadStyleSet::All};
     NpadJoyHoldType npad_hold_type{NpadJoyHoldType::Vertical};
     NpadHandheldActivationMode handheld_activation_mode{};
-    std::array<Core::HID::NpadIdType, MaxSupportedNpadIdTypes> supported_npad_id_types{};
+    std::array<NpadIdType, MaxSupportedNpadIdTypes> supported_npad_id_types{};
     std::array<Core::HID::NpadButton, StyleIndexCount> npad_button_assignment{};
     std::size_t supported_npad_id_types_count{};
     std::array<bool, MaxSupportedNpadIdTypes> is_unintended_home_button_input_protection{};

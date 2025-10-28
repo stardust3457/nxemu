@@ -101,7 +101,7 @@ private:
     };
 
     Result GetBusHandle(Out<bool> out_is_valid, Out<BusHandle> out_bus_handle,
-                        Core::HID::NpadIdType npad_id, BusType bus_type,
+                        NpadIdType npad_id, BusType bus_type,
                         AppletResourceUserId aruid);
 
     Result IsExternalDeviceConnected(Out<bool> out_is_connected, BusHandle bus_handle);

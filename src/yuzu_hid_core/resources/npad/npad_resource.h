@@ -85,7 +85,7 @@ public:
                                          u64 aruid) const;
 
     Result SetSupportedNpadIdType(u64 aruid,
-                                  std::span<const Core::HID::NpadIdType> supported_npad_list);
+                                  std::span<const NpadIdType> supported_npad_list);
     bool IsControllerSupported(u64 aruid, Core::HID::NpadStyleIndex style_index) const;
 
     Result SetLrAssignmentMode(u64 aruid, bool is_enabled);
@@ -95,18 +95,18 @@ public:
     Result IsAssigningSingleOnSlSrPressEnabled(bool& is_enabled, u64 aruid) const;
 
     Result AcquireNpadStyleSetUpdateEventHandle(u64 aruid, Kernel::KReadableEvent** out_event,
-                                                Core::HID::NpadIdType npad_id);
-    Result SignalStyleSetUpdateEvent(u64 aruid, Core::HID::NpadIdType npad_id);
+                                                NpadIdType npad_id);
+    Result SignalStyleSetUpdateEvent(u64 aruid, NpadIdType npad_id);
 
     Result GetHomeProtectionEnabled(bool& is_enabled, u64 aruid,
-                                    Core::HID::NpadIdType npad_id) const;
-    Result SetHomeProtectionEnabled(u64 aruid, Core::HID::NpadIdType npad_id, bool is_enabled);
+                                    NpadIdType npad_id) const;
+    Result SetHomeProtectionEnabled(u64 aruid, NpadIdType npad_id, bool is_enabled);
 
     Result SetNpadAnalogStickUseCenterClamp(u64 aruid, bool is_enabled);
 
-    Result SetButtonConfig(u64 aruid, Core::HID::NpadIdType npad_id, std::size_t index,
+    Result SetButtonConfig(u64 aruid, NpadIdType npad_id, std::size_t index,
                            Core::HID::NpadButton button_config);
-    Core::HID::NpadButton GetButtonConfig(u64 aruid, Core::HID::NpadIdType npad_id,
+    Core::HID::NpadButton GetButtonConfig(u64 aruid, NpadIdType npad_id,
                                           std::size_t index, Core::HID::NpadButton mask,
                                           bool is_enabled);
     void ResetButtonConfig();

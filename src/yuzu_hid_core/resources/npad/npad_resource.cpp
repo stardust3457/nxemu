@@ -431,7 +431,7 @@ Result NPadResource::GetNpadHandheldActivationMode(NpadHandheldActivationMode& a
 }
 
 Result NPadResource::SetSupportedNpadIdType(
-    u64 aruid, std::span<const Core::HID::NpadIdType> supported_npad_list) {
+    u64 aruid, std::span<const NpadIdType> supported_npad_list) {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
         return ResultNpadNotConnected;
@@ -504,7 +504,7 @@ Result NPadResource::IsAssigningSingleOnSlSrPressEnabled(bool& is_enabled, u64 a
 
 Result NPadResource::AcquireNpadStyleSetUpdateEventHandle(u64 aruid,
                                                           Kernel::KReadableEvent** out_event,
-                                                          Core::HID::NpadIdType npad_id) {
+                                                          NpadIdType npad_id) {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
         return ResultNpadNotConnected;
@@ -529,7 +529,7 @@ Result NPadResource::AcquireNpadStyleSetUpdateEventHandle(u64 aruid,
     return ResultSuccess;
 }
 
-Result NPadResource::SignalStyleSetUpdateEvent(u64 aruid, Core::HID::NpadIdType npad_id) {
+Result NPadResource::SignalStyleSetUpdateEvent(u64 aruid, NpadIdType npad_id) {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
         return ResultNpadNotConnected;
@@ -542,7 +542,7 @@ Result NPadResource::SignalStyleSetUpdateEvent(u64 aruid, Core::HID::NpadIdType 
 }
 
 Result NPadResource::GetHomeProtectionEnabled(bool& is_enabled, u64 aruid,
-                                              Core::HID::NpadIdType npad_id) const {
+                                              NpadIdType npad_id) const {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
         return ResultNpadNotConnected;
@@ -552,7 +552,7 @@ Result NPadResource::GetHomeProtectionEnabled(bool& is_enabled, u64 aruid,
     return ResultSuccess;
 }
 
-Result NPadResource::SetHomeProtectionEnabled(u64 aruid, Core::HID::NpadIdType npad_id,
+Result NPadResource::SetHomeProtectionEnabled(u64 aruid, NpadIdType npad_id,
                                               bool is_enabled) {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
@@ -579,7 +579,7 @@ Result NPadResource::SetNpadAnalogStickUseCenterClamp(u64 aruid, bool is_enabled
     return ResultSuccess;
 }
 
-Result NPadResource::SetButtonConfig(u64 aruid, Core::HID::NpadIdType npad_id, std::size_t index,
+Result NPadResource::SetButtonConfig(u64 aruid, NpadIdType npad_id, std::size_t index,
                                      Core::HID::NpadButton button_config) {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
@@ -590,7 +590,7 @@ Result NPadResource::SetButtonConfig(u64 aruid, Core::HID::NpadIdType npad_id, s
     return ResultSuccess;
 }
 
-Core::HID::NpadButton NPadResource::GetButtonConfig(u64 aruid, Core::HID::NpadIdType npad_id,
+Core::HID::NpadButton NPadResource::GetButtonConfig(u64 aruid, NpadIdType npad_id,
                                                     std::size_t index, Core::HID::NpadButton mask,
                                                     bool is_enabled) {
     const u64 aruid_index = GetIndexFromAruid(aruid);

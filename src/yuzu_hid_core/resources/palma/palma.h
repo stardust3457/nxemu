@@ -116,7 +116,7 @@ public:
     static_assert(sizeof(PalmaActivityEntry) == 0x20, "PalmaActivityEntry is an invalid size");
 
     struct PalmaConnectionHandle {
-        alignas(8) Core::HID::NpadIdType npad_id;
+        alignas(8) NpadIdType npad_id;
     };
     static_assert(sizeof(PalmaConnectionHandle) == 0x8,
                   "PalmaConnectionHandle has incorrect size.");
@@ -133,7 +133,7 @@ public:
     // When the controller is requesting an update for the shared memory
     void OnUpdate(const Core::Timing::CoreTiming& core_timing) override;
 
-    Result GetPalmaConnectionHandle(Core::HID::NpadIdType npad_id, PalmaConnectionHandle& handle);
+    Result GetPalmaConnectionHandle(NpadIdType npad_id, PalmaConnectionHandle& handle);
     Result InitializePalma(const PalmaConnectionHandle& handle);
     Kernel::KReadableEvent& AcquirePalmaOperationCompleteEvent(
         const PalmaConnectionHandle& handle) const;

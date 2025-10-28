@@ -54,7 +54,7 @@ u64 NpadAbstractSixAxisHandler::IsFirmwareUpdateAvailable() {
 }
 
 Result NpadAbstractSixAxisHandler::UpdateSixAxisState() {
-    Core::HID::NpadIdType npad_id = properties_handler->GetNpadId();
+    NpadIdType npad_id = properties_handler->GetNpadId();
     for (std::size_t i = 0; i < AruidIndexMax; i++) {
         auto* data = applet_resource_holder->applet_resource->GetAruidDataByIndex(i);
         if (data == nullptr || !data->flag.is_assigned) {
@@ -68,7 +68,7 @@ Result NpadAbstractSixAxisHandler::UpdateSixAxisState() {
 }
 
 Result NpadAbstractSixAxisHandler::UpdateSixAxisState(u64 aruid) {
-    Core::HID::NpadIdType npad_id = properties_handler->GetNpadId();
+    NpadIdType npad_id = properties_handler->GetNpadId();
     auto* data = applet_resource_holder->applet_resource->GetAruidData(aruid);
     if (data == nullptr) {
         return ResultSuccess;

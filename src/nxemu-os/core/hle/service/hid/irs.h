@@ -68,7 +68,7 @@ private:
                                   ClientAppletResourceUserId aruid);
 
     Result GetNpadIrCameraHandle(Out<Core::IrSensor::IrCameraHandle> out_camera_handle,
-                                 Core::HID::NpadIdType npad_id);
+                                 NpadIdType npad_id);
 
     Result RunPointingProcessor(
         Core::IrSensor::IrCameraHandle camera_handle,

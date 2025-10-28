@@ -289,7 +289,7 @@ void IHidSystemServer::DisableAssigningSingleOnSlSrPress(HLERequestContext& ctx)
 }
 
 void IHidSystemServer::GetLastActiveNpad(HLERequestContext& ctx) {
-    Core::HID::NpadIdType npad_id{};
+    NpadIdType npad_id{};
     const Result result = GetResourceManager()->GetNpad()->GetLastActiveNpad(npad_id);
 
     LOG_DEBUG(Service_HID, "called, npad_id={}", npad_id);
@@ -313,7 +313,7 @@ void IHidSystemServer::ApplyNpadSystemCommonPolicyFull(HLERequestContext& ctx) {
 
 void IHidSystemServer::GetNpadFullKeyGripColor(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    const auto npad_id_type{rp.PopEnum<Core::HID::NpadIdType>()};
+    const auto npad_id_type{rp.PopEnum<NpadIdType>()};
 
     LOG_DEBUG(Service_HID, "(STUBBED) called, npad_id_type={}",
               npad_id_type); // Spams a lot when controller applet is running
@@ -381,7 +381,7 @@ void IHidSystemServer::GetNpadCaptureButtonAssignment(HLERequestContext& ctx) {
 
 void IHidSystemServer::GetAppletDetailedUiType(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    const auto npad_id_type{rp.PopEnum<Core::HID::NpadIdType>()};
+    const auto npad_id_type{rp.PopEnum<NpadIdType>()};
 
     LOG_DEBUG(Service_HID, "called, npad_id_type={}",
               npad_id_type); // Spams a lot when controller applet is running
@@ -396,7 +396,7 @@ void IHidSystemServer::GetAppletDetailedUiType(HLERequestContext& ctx) {
 
 void IHidSystemServer::GetNpadInterfaceType(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    const auto npad_id_type{rp.PopEnum<Core::HID::NpadIdType>()};
+    const auto npad_id_type{rp.PopEnum<NpadIdType>()};
 
     LOG_DEBUG(Service_HID, "(STUBBED) called, npad_id_type={}",
               npad_id_type); // Spams a lot when controller applet is running
@@ -408,7 +408,7 @@ void IHidSystemServer::GetNpadInterfaceType(HLERequestContext& ctx) {
 
 void IHidSystemServer::GetNpadLeftRightInterfaceType(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    const auto npad_id_type{rp.PopEnum<Core::HID::NpadIdType>()};
+    const auto npad_id_type{rp.PopEnum<NpadIdType>()};
 
     LOG_DEBUG(Service_HID, "(STUBBED) called, npad_id_type={}",
               npad_id_type); // Spams a lot when controller applet is running
@@ -421,7 +421,7 @@ void IHidSystemServer::GetNpadLeftRightInterfaceType(HLERequestContext& ctx) {
 
 void IHidSystemServer::HasBattery(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    const auto npad_id_type{rp.PopEnum<Core::HID::NpadIdType>()};
+    const auto npad_id_type{rp.PopEnum<NpadIdType>()};
 
     LOG_DEBUG(Service_HID, "(STUBBED) called, npad_id_type={}",
               npad_id_type); // Spams a lot when controller applet is running
@@ -433,7 +433,7 @@ void IHidSystemServer::HasBattery(HLERequestContext& ctx) {
 
 void IHidSystemServer::HasLeftRightBattery(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    const auto npad_id_type{rp.PopEnum<Core::HID::NpadIdType>()};
+    const auto npad_id_type{rp.PopEnum<NpadIdType>()};
 
     LOG_DEBUG(Service_HID, "(STUBBED) called, npad_id_type={}",
               npad_id_type); // Spams a lot when controller applet is running
@@ -455,7 +455,7 @@ void IHidSystemServer::HasLeftRightBattery(HLERequestContext& ctx) {
 
 void IHidSystemServer::GetUniquePadsFromNpad(HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx};
-    const auto npad_id_type{rp.PopEnum<Core::HID::NpadIdType>()};
+    const auto npad_id_type{rp.PopEnum<NpadIdType>()};
 
     LOG_DEBUG(Service_HID, "(STUBBED) called, npad_id_type={}",
               npad_id_type); // Spams a lot when controller applet is running

@@ -33,7 +33,7 @@ public:
     Result ListDevices(std::vector<u64>& nfp_devices, std::size_t max_allowed_devices,
                        bool skip_fatal_errors) const;
     DeviceState GetDeviceState(u64 device_handle) const;
-    Result GetNpadId(u64 device_handle, Core::HID::NpadIdType& npad_id);
+    Result GetNpadId(u64 device_handle, NpadIdType& npad_id);
     Kernel::KReadableEvent& AttachAvailabilityChangeEvent() const;
     Result StartDetection(u64 device_handle, NfcProtocol tag_protocol);
     Result StopDetection(u64 device_handle);

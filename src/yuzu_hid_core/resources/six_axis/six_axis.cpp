@@ -157,7 +157,7 @@ void SixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
             sixaxis_right_lifo_state.sampling_number =
                 sixaxis_right_lifo.lifo.ReadCurrentEntry().state.sampling_number + 1;
 
-            if (IndexToNpadIdType(i) == Core::HID::NpadIdType::Handheld) {
+            if (IndexToNpadIdType(i) == NpadIdType::Handheld) {
                 // This buffer only is updated on handheld on HW
                 sixaxis_handheld_lifo.lifo.WriteNextEntry(sixaxis_handheld_state);
             } else {
@@ -395,30 +395,30 @@ const SixAxis::SixaxisParameters& SixAxis::GetSixaxisState(
 
 SixAxis::NpadControllerData& SixAxis::GetControllerFromHandle(
     const Core::HID::SixAxisSensorHandle& device_handle) {
-    const auto npad_id = static_cast<Core::HID::NpadIdType>(device_handle.npad_id);
+    const auto npad_id = static_cast<NpadIdType>(device_handle.npad_id);
     return GetControllerFromNpadIdType(npad_id);
 }
 
 const SixAxis::NpadControllerData& SixAxis::GetControllerFromHandle(
     const Core::HID::SixAxisSensorHandle& device_handle) const {
-    const auto npad_id = static_cast<Core::HID::NpadIdType>(device_handle.npad_id);
+    const auto npad_id = static_cast<NpadIdType>(device_handle.npad_id);
     return GetControllerFromNpadIdType(npad_id);
 }
 
-SixAxis::NpadControllerData& SixAxis::GetControllerFromNpadIdType(Core::HID::NpadIdType npad_id) {
+SixAxis::NpadControllerData& SixAxis::GetControllerFromNpadIdType(NpadIdType npad_id) {
     if (!IsNpadIdValid(npad_id)) {
         LOG_ERROR(Service_HID, "Invalid NpadIdType npad_id:{}", npad_id);
-        npad_id = Core::HID::NpadIdType::Player1;
+        npad_id = NpadIdType::Player1;
     }
     const auto npad_index = NpadIdTypeToIndex(npad_id);
     return controller_data[npad_index];
 }
 
 const SixAxis::NpadControllerData& SixAxis::GetControllerFromNpadIdType(
-    Core::HID::NpadIdType npad_id) const {
+    NpadIdType npad_id) const {
     if (!IsNpadIdValid(npad_id)) {
         LOG_ERROR(Service_HID, "Invalid NpadIdType npad_id:{}", npad_id);
-        npad_id = Core::HID::NpadIdType::Player1;
+        npad_id = NpadIdType::Player1;
     }
     const auto npad_index = NpadIdTypeToIndex(npad_id);
     return controller_data[npad_index];

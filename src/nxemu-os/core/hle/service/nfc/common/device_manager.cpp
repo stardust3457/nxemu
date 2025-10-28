@@ -131,7 +131,7 @@ DeviceState DeviceManager::GetDeviceState(u64 device_handle) const {
     return DeviceState::Finalized;
 }
 
-Result DeviceManager::GetNpadId(u64 device_handle, Core::HID::NpadIdType& npad_id) {
+Result DeviceManager::GetNpadId(u64 device_handle, NpadIdType& npad_id) {
     std::scoped_lock lock{mutex};
 
     std::shared_ptr<NfcDevice> device = nullptr;

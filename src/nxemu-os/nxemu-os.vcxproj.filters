@@ -517,6 +517,9 @@
     <Filter Include="Header Files\core\hle\service\nfc\common">
       <UniqueIdentifier>{f9770dc8-cbb7-49fb-a6a2-2facf4aa44ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\core\hle\service\hid">
+      <UniqueIdentifier>{77d48f6a-4e17-4274-bf79-1e78da385d84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nxemu-os.h">
@@ -1949,6 +1952,33 @@
     </ClInclude>
     <ClInclude Include="core\reporter.h">
       <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\active_vibration_device_list.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\applet_resource.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\hid.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\hid_debug_server.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\hid_server.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\hid_system_server.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\hidbus.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\irs.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\hid\xcd.h">
+      <Filter>Header Files\core\hle\service\hid</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -57,7 +57,7 @@ public:
                       HomeButtonResource* home_button_resource, SixAxisResource* sixaxis_resource,
                       PalmaResource* palma_resource, NpadVibration* vibration,
                       Core::HID::HIDCore* core);
-    void SetNpadId(Core::HID::NpadIdType npad_id);
+    void SetNpadId(NpadIdType npad_id);
 
     Result Activate();
     Result Deactivate();
@@ -79,7 +79,7 @@ public:
     NpadVibrationDevice* GetVibrationDevice(Core::HID::DeviceIndex device_index);
     NpadGcVibrationDevice* GetGCVibrationDevice();
 
-    Core::HID::NpadIdType GetLastActiveNpad();
+    NpadIdType GetLastActiveNpad();
     void UpdateInterfaceType();
     void Update();
 
