@@ -273,44 +273,44 @@ AnalogMapping Mouse::GetAnalogMappingForDevice(
     return mapping;
 }
 
-Common::Input::ButtonNames Mouse::GetUIButtonName(const Common::ParamPackage& params) const {
+ButtonNames Mouse::GetUIButtonName(const Common::ParamPackage& params) const {
     const auto button = static_cast<MouseButton>(params.Get("button", 0));
     switch (button) {
     case MouseButton::Left:
-        return Common::Input::ButtonNames::ButtonLeft;
+        return ButtonNames::ButtonLeft;
     case MouseButton::Right:
-        return Common::Input::ButtonNames::ButtonRight;
+        return ButtonNames::ButtonRight;
     case MouseButton::Wheel:
-        return Common::Input::ButtonNames::ButtonMouseWheel;
+        return ButtonNames::ButtonMouseWheel;
     case MouseButton::Backward:
-        return Common::Input::ButtonNames::ButtonBackward;
+        return ButtonNames::ButtonBackward;
     case MouseButton::Forward:
-        return Common::Input::ButtonNames::ButtonForward;
+        return ButtonNames::ButtonForward;
     case MouseButton::Task:
-        return Common::Input::ButtonNames::ButtonTask;
+        return ButtonNames::ButtonTask;
     case MouseButton::Extra:
-        return Common::Input::ButtonNames::ButtonExtra;
+        return ButtonNames::ButtonExtra;
     case MouseButton::Undefined:
     default:
-        return Common::Input::ButtonNames::Undefined;
+        return ButtonNames::Undefined;
     }
 }
 
-Common::Input::ButtonNames Mouse::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames Mouse::GetUIName(const Common::ParamPackage& params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }
     if (params.Has("axis")) {
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
     if (params.Has("axis_x") && params.Has("axis_y") && params.Has("axis_z")) {
-        return Common::Input::ButtonNames::Engine;
+        return ButtonNames::Engine;
     }
     if (params.Has("motion")) {
-        return Common::Input::ButtonNames::Engine;
+        return ButtonNames::Engine;
     }
 
-    return Common::Input::ButtonNames::Invalid;
+    return ButtonNames::Invalid;
 }
 
 } // namespace InputCommon

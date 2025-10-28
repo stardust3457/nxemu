@@ -12,10 +12,6 @@ namespace Common {
 class ParamPackage;
 }
 
-namespace Common::Input {
-enum class ButtonNames;
-}
-
 namespace InputSettings::NativeAnalog {
 enum Values : int;
 }
@@ -140,8 +136,7 @@ public:
     [[nodiscard]] MotionMapping GetMotionMappingForDevice(const Common::ParamPackage& device) const;
 
     /// Returns an enum containing the name to be displayed from the input engine.
-    [[nodiscard]] Common::Input::ButtonNames GetButtonName(
-        const Common::ParamPackage& params) const;
+    [[nodiscard]] ButtonNames GetButtonName(const Common::ParamPackage& params) const;
 
     /// Returns true if device is a controller.
     [[nodiscard]] bool IsController(const Common::ParamPackage& params) const;

@@ -230,14 +230,14 @@ struct InputSubsystem::Impl {
         return input_engine->GetMotionMappingForDevice(params);
     }
 
-    Common::Input::ButtonNames GetButtonName(const Common::ParamPackage& params) const {
+    ButtonNames GetButtonName(const Common::ParamPackage& params) const {
         if (!params.Has("engine") || params.Get("engine", "") == "any") {
-            return Common::Input::ButtonNames::Undefined;
+            return ButtonNames::Undefined;
         }
         const auto input_engine = GetInputEngine(params);
 
         if (input_engine == nullptr) {
-            return Common::Input::ButtonNames::Invalid;
+            return ButtonNames::Invalid;
         }
 
         return input_engine->GetUIName(params);
@@ -451,7 +451,7 @@ MotionMapping InputSubsystem::GetMotionMappingForDevice(const Common::ParamPacka
     return impl->GetMotionMappingForDevice(device);
 }
 
-Common::Input::ButtonNames InputSubsystem::GetButtonName(const Common::ParamPackage& params) const {
+ButtonNames InputSubsystem::GetButtonName(const Common::ParamPackage& params) const {
     return impl->GetButtonName(params);
 }
 

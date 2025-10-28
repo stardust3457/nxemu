@@ -489,64 +489,64 @@ MotionMapping UDPClient::GetMotionMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-Common::Input::ButtonNames UDPClient::GetUIButtonName(const Common::ParamPackage& params) const {
+ButtonNames UDPClient::GetUIButtonName(const Common::ParamPackage& params) const {
     PadButton button = static_cast<PadButton>(params.Get("button", 0));
     switch (button) {
     case PadButton::Left:
-        return Common::Input::ButtonNames::ButtonLeft;
+        return ButtonNames::ButtonLeft;
     case PadButton::Right:
-        return Common::Input::ButtonNames::ButtonRight;
+        return ButtonNames::ButtonRight;
     case PadButton::Down:
-        return Common::Input::ButtonNames::ButtonDown;
+        return ButtonNames::ButtonDown;
     case PadButton::Up:
-        return Common::Input::ButtonNames::ButtonUp;
+        return ButtonNames::ButtonUp;
     case PadButton::L1:
-        return Common::Input::ButtonNames::L1;
+        return ButtonNames::L1;
     case PadButton::L2:
-        return Common::Input::ButtonNames::L2;
+        return ButtonNames::L2;
     case PadButton::L3:
-        return Common::Input::ButtonNames::L3;
+        return ButtonNames::L3;
     case PadButton::R1:
-        return Common::Input::ButtonNames::R1;
+        return ButtonNames::R1;
     case PadButton::R2:
-        return Common::Input::ButtonNames::R2;
+        return ButtonNames::R2;
     case PadButton::R3:
-        return Common::Input::ButtonNames::R3;
+        return ButtonNames::R3;
     case PadButton::Circle:
-        return Common::Input::ButtonNames::Circle;
+        return ButtonNames::Circle;
     case PadButton::Cross:
-        return Common::Input::ButtonNames::Cross;
+        return ButtonNames::Cross;
     case PadButton::Square:
-        return Common::Input::ButtonNames::Square;
+        return ButtonNames::Square;
     case PadButton::Triangle:
-        return Common::Input::ButtonNames::Triangle;
+        return ButtonNames::Triangle;
     case PadButton::Share:
-        return Common::Input::ButtonNames::Share;
+        return ButtonNames::Share;
     case PadButton::Options:
-        return Common::Input::ButtonNames::Options;
+        return ButtonNames::Options;
     case PadButton::Home:
-        return Common::Input::ButtonNames::Home;
+        return ButtonNames::Home;
     case PadButton::Touch1:
     case PadButton::Touch2:
     case PadButton::TouchHardPress:
-        return Common::Input::ButtonNames::Touch;
+        return ButtonNames::Touch;
     default:
-        return Common::Input::ButtonNames::Undefined;
+        return ButtonNames::Undefined;
     }
 }
 
-Common::Input::ButtonNames UDPClient::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames UDPClient::GetUIName(const Common::ParamPackage& params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }
     if (params.Has("axis")) {
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
     if (params.Has("motion")) {
-        return Common::Input::ButtonNames::Engine;
+        return ButtonNames::Engine;
     }
 
-    return Common::Input::ButtonNames::Invalid;
+    return ButtonNames::Invalid;
 }
 
 bool UDPClient::IsStickInverted(const Common::ParamPackage& params) {

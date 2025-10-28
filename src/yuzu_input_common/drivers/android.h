@@ -84,7 +84,7 @@ public:
 
     ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
 
-    Common::Input::ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
 
 private:
     std::unordered_map<PadIdentifier, jobject> input_devices;

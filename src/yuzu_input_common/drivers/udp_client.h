@@ -61,7 +61,7 @@ public:
     ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
     AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
     MotionMapping GetMotionMappingForDevice(const Common::ParamPackage& params) override;
-    Common::Input::ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
 
     bool IsStickInverted(const Common::ParamPackage& params) override;
 
@@ -151,7 +151,7 @@ private:
     PadIdentifier GetPadIdentifier(std::size_t pad_index) const;
     Common::UUID GetHostUUID(const std::string& host) const;
 
-    Common::Input::ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
+    ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
 
     // Allocate clients for 8 udp servers
     static constexpr std::size_t MAX_UDP_CLIENTS = 8;

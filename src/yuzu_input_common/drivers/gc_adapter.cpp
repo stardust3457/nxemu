@@ -486,47 +486,47 @@ AnalogMapping GCAdapter::GetAnalogMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-Common::Input::ButtonNames GCAdapter::GetUIButtonName(const Common::ParamPackage& params) const {
+ButtonNames GCAdapter::GetUIButtonName(const Common::ParamPackage& params) const {
     PadButton button = static_cast<PadButton>(params.Get("button", 0));
     switch (button) {
     case PadButton::ButtonLeft:
-        return Common::Input::ButtonNames::ButtonLeft;
+        return ButtonNames::ButtonLeft;
     case PadButton::ButtonRight:
-        return Common::Input::ButtonNames::ButtonRight;
+        return ButtonNames::ButtonRight;
     case PadButton::ButtonDown:
-        return Common::Input::ButtonNames::ButtonDown;
+        return ButtonNames::ButtonDown;
     case PadButton::ButtonUp:
-        return Common::Input::ButtonNames::ButtonUp;
+        return ButtonNames::ButtonUp;
     case PadButton::TriggerZ:
-        return Common::Input::ButtonNames::TriggerZ;
+        return ButtonNames::TriggerZ;
     case PadButton::TriggerR:
-        return Common::Input::ButtonNames::TriggerR;
+        return ButtonNames::TriggerR;
     case PadButton::TriggerL:
-        return Common::Input::ButtonNames::TriggerL;
+        return ButtonNames::TriggerL;
     case PadButton::ButtonA:
-        return Common::Input::ButtonNames::ButtonA;
+        return ButtonNames::ButtonA;
     case PadButton::ButtonB:
-        return Common::Input::ButtonNames::ButtonB;
+        return ButtonNames::ButtonB;
     case PadButton::ButtonX:
-        return Common::Input::ButtonNames::ButtonX;
+        return ButtonNames::ButtonX;
     case PadButton::ButtonY:
-        return Common::Input::ButtonNames::ButtonY;
+        return ButtonNames::ButtonY;
     case PadButton::ButtonStart:
-        return Common::Input::ButtonNames::ButtonStart;
+        return ButtonNames::ButtonStart;
     default:
-        return Common::Input::ButtonNames::Undefined;
+        return ButtonNames::Undefined;
     }
 }
 
-Common::Input::ButtonNames GCAdapter::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames GCAdapter::GetUIName(const Common::ParamPackage& params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }
     if (params.Has("axis")) {
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
 
-    return Common::Input::ButtonNames::Invalid;
+    return ButtonNames::Invalid;
 }
 
 bool GCAdapter::IsStickInverted(const Common::ParamPackage& params) {

@@ -1035,25 +1035,25 @@ MotionMapping SDLDriver::GetMotionMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-Common::Input::ButtonNames SDLDriver::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames SDLDriver::GetUIName(const Common::ParamPackage& params) const {
     if (params.Has("button")) {
         // TODO(German77): Find how to substitute the values for real button names
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
     if (params.Has("hat")) {
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
     if (params.Has("axis")) {
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
     if (params.Has("axis_x") && params.Has("axis_y") && params.Has("axis_z")) {
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
     if (params.Has("motion")) {
-        return Common::Input::ButtonNames::Engine;
+        return ButtonNames::Engine;
     }
 
-    return Common::Input::ButtonNames::Invalid;
+    return ButtonNames::Invalid;
 }
 
 std::string SDLDriver::GetHatButtonName(u8 direction_value) const {

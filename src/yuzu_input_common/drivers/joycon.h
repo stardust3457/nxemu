@@ -60,7 +60,7 @@ public:
     ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
     AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
     MotionMapping GetMotionMappingForDevice(const Common::ParamPackage& params) override;
-    Common::Input::ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
 
 private:
     static constexpr std::size_t MaxSupportedControllers = 8;
@@ -106,7 +106,7 @@ private:
 
     std::string JoyconName(std::size_t port) const;
 
-    Common::Input::ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
+    ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
 
     /// Returns the name of the device in text format
     std::string JoyconName(Joycon::ControllerType type) const;

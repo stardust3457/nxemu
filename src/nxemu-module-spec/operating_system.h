@@ -28,6 +28,66 @@ enum class StorageId : uint8_t
     SdCard = 5,
 };
 
+// List of buttons to be passed to Qt that can be translated
+enum class ButtonNames : uint32_t
+{
+    Undefined,
+    Invalid,
+    // This will display the engine name instead of the button name
+    Engine,
+    // This will display the button by value instead of the button name
+    Value,
+
+    // Joycon button names
+    ButtonLeft,
+    ButtonRight,
+    ButtonDown,
+    ButtonUp,
+    ButtonA,
+    ButtonB,
+    ButtonX,
+    ButtonY,
+    ButtonPlus,
+    ButtonMinus,
+    ButtonHome,
+    ButtonCapture,
+    ButtonStickL,
+    ButtonStickR,
+    TriggerL,
+    TriggerZL,
+    TriggerSL,
+    TriggerR,
+    TriggerZR,
+    TriggerSR,
+
+    // GC button names
+    TriggerZ,
+    ButtonStart,
+
+    // DS4 button names
+    L1,
+    L2,
+    L3,
+    R1,
+    R2,
+    R3,
+    Circle,
+    Cross,
+    Square,
+    Triangle,
+    Share,
+    Options,
+    Home,
+    Touch,
+
+    // Mouse buttons
+    ButtonMouseWheel,
+    ButtonBackward,
+    ButtonForward,
+    ButtonTask,
+    ButtonExtra,
+};
+
 __interface IProgramMetadata
 {
     bool Is64BitProgram() const = 0;

@@ -748,68 +748,68 @@ MotionMapping Joycons::GetMotionMappingForDevice(const Common::ParamPackage& par
     return mapping;
 }
 
-Common::Input::ButtonNames Joycons::GetUIButtonName(const Common::ParamPackage& params) const {
+ButtonNames Joycons::GetUIButtonName(const Common::ParamPackage& params) const {
     const auto button = static_cast<Joycon::PadButton>(params.Get("button", 0));
     switch (button) {
     case Joycon::PadButton::Left:
-        return Common::Input::ButtonNames::ButtonLeft;
+        return ButtonNames::ButtonLeft;
     case Joycon::PadButton::Right:
-        return Common::Input::ButtonNames::ButtonRight;
+        return ButtonNames::ButtonRight;
     case Joycon::PadButton::Down:
-        return Common::Input::ButtonNames::ButtonDown;
+        return ButtonNames::ButtonDown;
     case Joycon::PadButton::Up:
-        return Common::Input::ButtonNames::ButtonUp;
+        return ButtonNames::ButtonUp;
     case Joycon::PadButton::LeftSL:
     case Joycon::PadButton::RightSL:
-        return Common::Input::ButtonNames::TriggerSL;
+        return ButtonNames::TriggerSL;
     case Joycon::PadButton::LeftSR:
     case Joycon::PadButton::RightSR:
-        return Common::Input::ButtonNames::TriggerSR;
+        return ButtonNames::TriggerSR;
     case Joycon::PadButton::L:
-        return Common::Input::ButtonNames::TriggerL;
+        return ButtonNames::TriggerL;
     case Joycon::PadButton::R:
-        return Common::Input::ButtonNames::TriggerR;
+        return ButtonNames::TriggerR;
     case Joycon::PadButton::ZL:
-        return Common::Input::ButtonNames::TriggerZL;
+        return ButtonNames::TriggerZL;
     case Joycon::PadButton::ZR:
-        return Common::Input::ButtonNames::TriggerZR;
+        return ButtonNames::TriggerZR;
     case Joycon::PadButton::A:
-        return Common::Input::ButtonNames::ButtonA;
+        return ButtonNames::ButtonA;
     case Joycon::PadButton::B:
-        return Common::Input::ButtonNames::ButtonB;
+        return ButtonNames::ButtonB;
     case Joycon::PadButton::X:
-        return Common::Input::ButtonNames::ButtonX;
+        return ButtonNames::ButtonX;
     case Joycon::PadButton::Y:
-        return Common::Input::ButtonNames::ButtonY;
+        return ButtonNames::ButtonY;
     case Joycon::PadButton::Plus:
-        return Common::Input::ButtonNames::ButtonPlus;
+        return ButtonNames::ButtonPlus;
     case Joycon::PadButton::Minus:
-        return Common::Input::ButtonNames::ButtonMinus;
+        return ButtonNames::ButtonMinus;
     case Joycon::PadButton::Home:
-        return Common::Input::ButtonNames::ButtonHome;
+        return ButtonNames::ButtonHome;
     case Joycon::PadButton::Capture:
-        return Common::Input::ButtonNames::ButtonCapture;
+        return ButtonNames::ButtonCapture;
     case Joycon::PadButton::StickL:
-        return Common::Input::ButtonNames::ButtonStickL;
+        return ButtonNames::ButtonStickL;
     case Joycon::PadButton::StickR:
-        return Common::Input::ButtonNames::ButtonStickR;
+        return ButtonNames::ButtonStickR;
     default:
-        return Common::Input::ButtonNames::Undefined;
+        return ButtonNames::Undefined;
     }
 }
 
-Common::Input::ButtonNames Joycons::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames Joycons::GetUIName(const Common::ParamPackage& params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }
     if (params.Has("axis")) {
-        return Common::Input::ButtonNames::Value;
+        return ButtonNames::Value;
     }
     if (params.Has("motion")) {
-        return Common::Input::ButtonNames::Engine;
+        return ButtonNames::Engine;
     }
 
-    return Common::Input::ButtonNames::Invalid;
+    return ButtonNames::Invalid;
 }
 
 std::string Joycons::JoyconName(Joycon::ControllerType type) const {
