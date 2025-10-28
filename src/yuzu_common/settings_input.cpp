@@ -29,7 +29,7 @@ const std::array<const char*, NumVibrations> mapping = {{
 }
 
 namespace NativeMotion {
-const std::array<const char*, NumMotions> mapping = {{
+const std::array<const char*, (size_t)NativeMotionValues::NumMotions> mapping = {{
     "motionleft",
     "motionright",
 }};

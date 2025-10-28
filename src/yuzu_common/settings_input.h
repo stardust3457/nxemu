@@ -67,18 +67,11 @@ extern const std::array<const char*, NumVibrations> mapping;
 }; // namespace NativeVibration
 
 namespace NativeMotion {
-enum Values : int {
-    MotionLeft,
-    MotionRight,
+constexpr int MOTION_HID_BEGIN = (int)NativeMotionValues::MotionLeft;
+constexpr int MOTION_HID_END = (int)NativeMotionValues::NumMotions;
+constexpr int NUM_MOTIONS_HID = (int)NativeMotionValues::NumMotions;
 
-    NumMotions,
-};
-
-constexpr int MOTION_HID_BEGIN = MotionLeft;
-constexpr int MOTION_HID_END = NumMotions;
-constexpr int NUM_MOTIONS_HID = NumMotions;
-
-extern const std::array<const char*, NumMotions> mapping;
+extern const std::array<const char*, (size_t)NativeMotionValues::NumMotions> mapping;
 } // namespace NativeMotion
 
 namespace NativeMouseButton {
@@ -329,7 +322,7 @@ constexpr int NUM_KEYBOARD_MODS_HID = NumKeyboardMods;
 
 using AnalogsRaw = std::array<std::string, NativeAnalog::NumAnalogs>;
 using ButtonsRaw = std::array<std::string, (size_t)NativeButtonValues::NumButtons>;
-using MotionsRaw = std::array<std::string, NativeMotion::NumMotions>;
+using MotionsRaw = std::array<std::string, (size_t)NativeMotionValues::NumMotions>;
 using RingconRaw = std::string;
 
 constexpr u32 JOYCON_BODY_NEON_RED = 0xFF3C28;

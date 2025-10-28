@@ -1016,18 +1016,18 @@ MotionMapping SDLDriver::GetMotionMappingForDevice(const Common::ParamPackage& p
     joystick->EnableMotion();
 
     if (joystick->HasMotion()) {
-        mapping.insert_or_assign(InputSettings::NativeMotion::MotionRight,
+        mapping.insert_or_assign(NativeMotionValues::MotionRight,
                                  BuildMotionParam(joystick->GetPort(), joystick->GetGUID()));
     }
     if (params.Has("guid2")) {
         joystick2->EnableMotion();
         if (joystick2->HasMotion()) {
-            mapping.insert_or_assign(InputSettings::NativeMotion::MotionLeft,
+            mapping.insert_or_assign(NativeMotionValues::MotionLeft,
                                      BuildMotionParam(joystick2->GetPort(), joystick2->GetGUID()));
         }
     } else {
         if (joystick->HasMotion()) {
-            mapping.insert_or_assign(InputSettings::NativeMotion::MotionLeft,
+            mapping.insert_or_assign(NativeMotionValues::MotionLeft,
                                      BuildMotionParam(joystick->GetPort(), joystick->GetGUID()));
         }
     }

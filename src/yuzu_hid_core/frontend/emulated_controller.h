@@ -34,7 +34,7 @@ using ButtonDevices =
 using StickDevices =
     std::array<std::unique_ptr<Common::Input::InputDevice>, InputSettings::NativeAnalog::NumAnalogs>;
 using ControllerMotionDevices =
-    std::array<std::unique_ptr<Common::Input::InputDevice>, InputSettings::NativeMotion::NumMotions>;
+    std::array<std::unique_ptr<Common::Input::InputDevice>, (size_t)NativeMotionValues::NumMotions>;
 using TriggerDevices =
     std::array<std::unique_ptr<Common::Input::InputDevice>, InputSettings::NativeTrigger::NumTriggers>;
 using ColorDevices =
@@ -51,7 +51,7 @@ using OutputDevices = std::array<std::unique_ptr<Common::Input::OutputDevice>, o
 
 using ButtonParams = std::array<Common::ParamPackage, (size_t)NativeButtonValues::NumButtons>;
 using StickParams = std::array<Common::ParamPackage, InputSettings::NativeAnalog::NumAnalogs>;
-using ControllerMotionParams = std::array<Common::ParamPackage, InputSettings::NativeMotion::NumMotions>;
+using ControllerMotionParams = std::array<Common::ParamPackage, (size_t)NativeMotionValues::NumMotions>;
 using TriggerParams = std::array<Common::ParamPackage, InputSettings::NativeTrigger::NumTriggers>;
 using ColorParams = std::array<Common::ParamPackage, max_emulated_controllers>;
 using BatteryParams = std::array<Common::ParamPackage, max_emulated_controllers>;
@@ -64,7 +64,7 @@ using ButtonValues = std::array<Common::Input::ButtonStatus, (size_t)NativeButto
 using SticksValues = std::array<Common::Input::StickStatus, InputSettings::NativeAnalog::NumAnalogs>;
 using TriggerValues =
     std::array<Common::Input::TriggerStatus, InputSettings::NativeTrigger::NumTriggers>;
-using ControllerMotionValues = std::array<ControllerMotionInfo, InputSettings::NativeMotion::NumMotions>;
+using ControllerMotionValues = std::array<ControllerMotionInfo, (size_t)NativeMotionValues::NumMotions>;
 using ColorValues = std::array<Common::Input::BodyColorStatus, max_emulated_controllers>;
 using BatteryValues = std::array<Common::Input::BatteryStatus, max_emulated_controllers>;
 using CameraValues = Common::Input::CameraStatus;

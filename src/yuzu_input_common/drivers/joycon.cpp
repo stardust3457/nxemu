@@ -741,10 +741,10 @@ MotionMapping Joycons::GetMotionMappingForDevice(const Common::ParamPackage& par
     MotionMapping mapping = {};
     Common::ParamPackage left_motion_params = GetParamPackage(port, pad_left);
     left_motion_params.Set("motion", 0);
-    mapping.insert_or_assign(InputSettings::NativeMotion::MotionLeft, std::move(left_motion_params));
+    mapping.insert_or_assign(NativeMotionValues::MotionLeft, std::move(left_motion_params));
     Common::ParamPackage right_Motion_params = GetParamPackage(port, pad_right);
     right_Motion_params.Set("motion", 1);
-    mapping.insert_or_assign(InputSettings::NativeMotion::MotionRight, std::move(right_Motion_params));
+    mapping.insert_or_assign(NativeMotionValues::MotionRight, std::move(right_Motion_params));
     return mapping;
 }
 

@@ -77,6 +77,14 @@ enum class NativeButtonValues : uint32_t
     NumButtons,
 };
 
+enum class NativeMotionValues : uint32_t
+{
+    MotionLeft,
+    MotionRight,
+
+    NumMotions,
+};
+
 enum class ButtonNames : uint32_t
 {
     Undefined,
