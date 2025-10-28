@@ -73,6 +73,7 @@ NACP& NACP::operator=(const NACP& other)
     if (this != &other) 
     {
         raw = other.raw;
+        version = other.version;
     }
     return *this;
 }
