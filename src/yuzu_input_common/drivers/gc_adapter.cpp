@@ -415,22 +415,22 @@ ButtonMapping GCAdapter::GetButtonMappingForDevice(const Common::ParamPackage& p
     // This list is missing ZL/ZR since those are not considered buttons.
     // We will add those afterwards
     // This list also excludes any button that can't be really mapped
-    static constexpr std::array<std::pair<InputSettings::NativeButton::Values, PadButton>, 14>
+    static constexpr std::array<std::pair<NativeButtonValues, PadButton>, 14>
         switch_to_gcadapter_button = {
-            std::pair{InputSettings::NativeButton::A, PadButton::ButtonA},
-            {InputSettings::NativeButton::B, PadButton::ButtonB},
-            {InputSettings::NativeButton::X, PadButton::ButtonX},
-            {InputSettings::NativeButton::Y, PadButton::ButtonY},
-            {InputSettings::NativeButton::Plus, PadButton::ButtonStart},
-            {InputSettings::NativeButton::DLeft, PadButton::ButtonLeft},
-            {InputSettings::NativeButton::DUp, PadButton::ButtonUp},
-            {InputSettings::NativeButton::DRight, PadButton::ButtonRight},
-            {InputSettings::NativeButton::DDown, PadButton::ButtonDown},
-            {InputSettings::NativeButton::SLLeft, PadButton::TriggerL},
-            {InputSettings::NativeButton::SRLeft, PadButton::TriggerR},
-            {InputSettings::NativeButton::SLRight, PadButton::TriggerL},
-            {InputSettings::NativeButton::SRRight, PadButton::TriggerR},
-            {InputSettings::NativeButton::R, PadButton::TriggerZ},
+            std::pair{NativeButtonValues::A, PadButton::ButtonA},
+            {NativeButtonValues::B, PadButton::ButtonB},
+            {NativeButtonValues::X, PadButton::ButtonX},
+            {NativeButtonValues::Y, PadButton::ButtonY},
+            {NativeButtonValues::Plus, PadButton::ButtonStart},
+            {NativeButtonValues::DLeft, PadButton::ButtonLeft},
+            {NativeButtonValues::DUp, PadButton::ButtonUp},
+            {NativeButtonValues::DRight, PadButton::ButtonRight},
+            {NativeButtonValues::DDown, PadButton::ButtonDown},
+            {NativeButtonValues::SLLeft, PadButton::TriggerL},
+            {NativeButtonValues::SRLeft, PadButton::TriggerR},
+            {NativeButtonValues::SLRight, PadButton::TriggerL},
+            {NativeButtonValues::SRRight, PadButton::TriggerR},
+            {NativeButtonValues::R, PadButton::TriggerZ},
         };
     if (!params.Has("port")) {
         return {};
@@ -446,10 +446,10 @@ ButtonMapping GCAdapter::GetButtonMappingForDevice(const Common::ParamPackage& p
     }
 
     // Add the missing bindings for ZL/ZR
-    static constexpr std::array<std::tuple<InputSettings::NativeButton::Values, PadButton, PadAxes>, 2>
+    static constexpr std::array<std::tuple<NativeButtonValues, PadButton, PadAxes>, 2>
         switch_to_gcadapter_axis = {
-            std::tuple{InputSettings::NativeButton::ZL, PadButton::TriggerL, PadAxes::TriggerLeft},
-            {InputSettings::NativeButton::ZR, PadButton::TriggerR, PadAxes::TriggerRight},
+            std::tuple{NativeButtonValues::ZL, PadButton::TriggerL, PadAxes::TriggerLeft},
+            {NativeButtonValues::ZR, PadButton::TriggerR, PadAxes::TriggerRight},
         };
     for (const auto& [switch_button, gcadapter_button, gcadapter_axis] : switch_to_gcadapter_axis) {
         Common::ParamPackage button_params{};

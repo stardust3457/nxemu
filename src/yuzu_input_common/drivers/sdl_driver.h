@@ -24,9 +24,9 @@ namespace InputCommon {
 class SDLJoystick;
 
 using ButtonBindings =
-    std::array<std::pair<InputSettings::NativeButton::Values, SDL_GameControllerButton>, 20>;
+    std::array<std::pair<NativeButtonValues, SDL_GameControllerButton>, 20>;
 using ZButtonBindings =
-    std::array<std::pair<InputSettings::NativeButton::Values, SDL_GameControllerAxis>, 2>;
+    std::array<std::pair<NativeButtonValues, SDL_GameControllerAxis>, 2>;
 
 class SDLDriver : public InputEngine {
 public:
@@ -110,7 +110,7 @@ private:
                                            const ZButtonBindings& switch_to_sdl_axis) const;
 
     /// Returns true if the button is on the left joycon
-    bool IsButtonOnLeftSide(InputSettings::NativeButton::Values button) const;
+    bool IsButtonOnLeftSide(NativeButtonValues button) const;
 
     /// Queue of vibration request to controllers
     Common::SPSCQueue<VibrationRequest> vibration_queue;

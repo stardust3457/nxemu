@@ -631,27 +631,27 @@ std::vector<Common::ParamPackage> Joycons::GetInputDevices() const {
 }
 
 ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& params) {
-    static constexpr std::array<std::tuple<InputSettings::NativeButton::Values, Joycon::PadButton, bool>,
+    static constexpr std::array<std::tuple<NativeButtonValues, Joycon::PadButton, bool>,
                                 18>
         switch_to_joycon_button = {
-            std::tuple{InputSettings::NativeButton::A, Joycon::PadButton::A, true},
-            {InputSettings::NativeButton::B, Joycon::PadButton::B, true},
-            {InputSettings::NativeButton::X, Joycon::PadButton::X, true},
-            {InputSettings::NativeButton::Y, Joycon::PadButton::Y, true},
-            {InputSettings::NativeButton::DLeft, Joycon::PadButton::Left, false},
-            {InputSettings::NativeButton::DUp, Joycon::PadButton::Up, false},
-            {InputSettings::NativeButton::DRight, Joycon::PadButton::Right, false},
-            {InputSettings::NativeButton::DDown, Joycon::PadButton::Down, false},
-            {InputSettings::NativeButton::L, Joycon::PadButton::L, false},
-            {InputSettings::NativeButton::R, Joycon::PadButton::R, true},
-            {InputSettings::NativeButton::ZL, Joycon::PadButton::ZL, false},
-            {InputSettings::NativeButton::ZR, Joycon::PadButton::ZR, true},
-            {InputSettings::NativeButton::Plus, Joycon::PadButton::Plus, true},
-            {InputSettings::NativeButton::Minus, Joycon::PadButton::Minus, false},
-            {InputSettings::NativeButton::Home, Joycon::PadButton::Home, true},
-            {InputSettings::NativeButton::Screenshot, Joycon::PadButton::Capture, false},
-            {InputSettings::NativeButton::LStick, Joycon::PadButton::StickL, false},
-            {InputSettings::NativeButton::RStick, Joycon::PadButton::StickR, true},
+            std::tuple{NativeButtonValues::A, Joycon::PadButton::A, true},
+            {NativeButtonValues::B, Joycon::PadButton::B, true},
+            {NativeButtonValues::X, Joycon::PadButton::X, true},
+            {NativeButtonValues::Y, Joycon::PadButton::Y, true},
+            {NativeButtonValues::DLeft, Joycon::PadButton::Left, false},
+            {NativeButtonValues::DUp, Joycon::PadButton::Up, false},
+            {NativeButtonValues::DRight, Joycon::PadButton::Right, false},
+            {NativeButtonValues::DDown, Joycon::PadButton::Down, false},
+            {NativeButtonValues::L, Joycon::PadButton::L, false},
+            {NativeButtonValues::R, Joycon::PadButton::R, true},
+            {NativeButtonValues::ZL, Joycon::PadButton::ZL, false},
+            {NativeButtonValues::ZR, Joycon::PadButton::ZR, true},
+            {NativeButtonValues::Plus, Joycon::PadButton::Plus, true},
+            {NativeButtonValues::Minus, Joycon::PadButton::Minus, false},
+            {NativeButtonValues::Home, Joycon::PadButton::Home, true},
+            {NativeButtonValues::Screenshot, Joycon::PadButton::Capture, false},
+            {NativeButtonValues::LStick, Joycon::PadButton::StickL, false},
+            {NativeButtonValues::RStick, Joycon::PadButton::StickR, true},
         };
 
     if (!params.Has("port")) {
@@ -680,8 +680,8 @@ ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& par
         Common::ParamPackage sr_button_params = button_params;
         sl_button_params.Set("button", static_cast<int>(Joycon::PadButton::LeftSL));
         sr_button_params.Set("button", static_cast<int>(Joycon::PadButton::LeftSR));
-        mapping.insert_or_assign(InputSettings::NativeButton::SLLeft, std::move(sl_button_params));
-        mapping.insert_or_assign(InputSettings::NativeButton::SRLeft, std::move(sr_button_params));
+        mapping.insert_or_assign(NativeButtonValues::SLLeft, std::move(sl_button_params));
+        mapping.insert_or_assign(NativeButtonValues::SRLeft, std::move(sr_button_params));
     }
 
     // Map SL and SR buttons for right joycons
@@ -693,8 +693,8 @@ ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& par
         Common::ParamPackage sr_button_params = button_params;
         sl_button_params.Set("button", static_cast<int>(Joycon::PadButton::RightSL));
         sr_button_params.Set("button", static_cast<int>(Joycon::PadButton::RightSR));
-        mapping.insert_or_assign(InputSettings::NativeButton::SLRight, std::move(sl_button_params));
-        mapping.insert_or_assign(InputSettings::NativeButton::SRRight, std::move(sr_button_params));
+        mapping.insert_or_assign(NativeButtonValues::SLRight, std::move(sl_button_params));
+        mapping.insert_or_assign(NativeButtonValues::SRRight, std::move(sr_button_params));
     }
 
     return mapping;

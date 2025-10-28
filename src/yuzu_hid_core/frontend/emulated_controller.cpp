@@ -150,12 +150,12 @@ void EmulatedController::ReloadColorsFromSettings() {
 
 void EmulatedController::LoadDevices() {
     // TODO(german77): Use more buttons to detect the correct device
-    const auto & left_joycon = button_params[InputSettings::NativeButton::DRight];
-    const auto & right_joycon = button_params[InputSettings::NativeButton::A];
+    const auto & left_joycon = button_params[(size_t)NativeButtonValues::DRight];
+    const auto & right_joycon = button_params[(size_t)NativeButtonValues::A];
 
     // Triggers for GC controllers
-    trigger_params[LeftIndex] = button_params[InputSettings::NativeButton::ZL];
-    trigger_params[RightIndex] = button_params[InputSettings::NativeButton::ZR];
+    trigger_params[LeftIndex] = button_params[(size_t)NativeButtonValues::ZL];
+    trigger_params[RightIndex] = button_params[(size_t)NativeButtonValues::ZR];
 
     color_params[LeftIndex] = left_joycon;
     color_params[RightIndex] = right_joycon;
@@ -240,28 +240,28 @@ void EmulatedController::LoadTASParams() {
     }
 
     // TODO(german77): Replace this with an input profile or something better
-    tas_button_params[InputSettings::NativeButton::A].Set("button", 0);
-    tas_button_params[InputSettings::NativeButton::B].Set("button", 1);
-    tas_button_params[InputSettings::NativeButton::X].Set("button", 2);
-    tas_button_params[InputSettings::NativeButton::Y].Set("button", 3);
-    tas_button_params[InputSettings::NativeButton::LStick].Set("button", 4);
-    tas_button_params[InputSettings::NativeButton::RStick].Set("button", 5);
-    tas_button_params[InputSettings::NativeButton::L].Set("button", 6);
-    tas_button_params[InputSettings::NativeButton::R].Set("button", 7);
-    tas_button_params[InputSettings::NativeButton::ZL].Set("button", 8);
-    tas_button_params[InputSettings::NativeButton::ZR].Set("button", 9);
-    tas_button_params[InputSettings::NativeButton::Plus].Set("button", 10);
-    tas_button_params[InputSettings::NativeButton::Minus].Set("button", 11);
-    tas_button_params[InputSettings::NativeButton::DLeft].Set("button", 12);
-    tas_button_params[InputSettings::NativeButton::DUp].Set("button", 13);
-    tas_button_params[InputSettings::NativeButton::DRight].Set("button", 14);
-    tas_button_params[InputSettings::NativeButton::DDown].Set("button", 15);
-    tas_button_params[InputSettings::NativeButton::SLLeft].Set("button", 16);
-    tas_button_params[InputSettings::NativeButton::SRLeft].Set("button", 17);
-    tas_button_params[InputSettings::NativeButton::Home].Set("button", 18);
-    tas_button_params[InputSettings::NativeButton::Screenshot].Set("button", 19);
-    tas_button_params[InputSettings::NativeButton::SLRight].Set("button", 20);
-    tas_button_params[InputSettings::NativeButton::SRRight].Set("button", 21);
+    tas_button_params[(size_t)NativeButtonValues::A].Set("button", 0);
+    tas_button_params[(size_t)NativeButtonValues::B].Set("button", 1);
+    tas_button_params[(size_t)NativeButtonValues::X].Set("button", 2);
+    tas_button_params[(size_t)NativeButtonValues::Y].Set("button", 3);
+    tas_button_params[(size_t)NativeButtonValues::LStick].Set("button", 4);
+    tas_button_params[(size_t)NativeButtonValues::RStick].Set("button", 5);
+    tas_button_params[(size_t)NativeButtonValues::L].Set("button", 6);
+    tas_button_params[(size_t)NativeButtonValues::R].Set("button", 7);
+    tas_button_params[(size_t)NativeButtonValues::ZL].Set("button", 8);
+    tas_button_params[(size_t)NativeButtonValues::ZR].Set("button", 9);
+    tas_button_params[(size_t)NativeButtonValues::Plus].Set("button", 10);
+    tas_button_params[(size_t)NativeButtonValues::Minus].Set("button", 11);
+    tas_button_params[(size_t)NativeButtonValues::DLeft].Set("button", 12);
+    tas_button_params[(size_t)NativeButtonValues::DUp].Set("button", 13);
+    tas_button_params[(size_t)NativeButtonValues::DRight].Set("button", 14);
+    tas_button_params[(size_t)NativeButtonValues::DDown].Set("button", 15);
+    tas_button_params[(size_t)NativeButtonValues::SLLeft].Set("button", 16);
+    tas_button_params[(size_t)NativeButtonValues::SRLeft].Set("button", 17);
+    tas_button_params[(size_t)NativeButtonValues::Home].Set("button", 18);
+    tas_button_params[(size_t)NativeButtonValues::Screenshot].Set("button", 19);
+    tas_button_params[(size_t)NativeButtonValues::SLRight].Set("button", 20);
+    tas_button_params[(size_t)NativeButtonValues::SRRight].Set("button", 21);
 
     tas_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_x", 0);
     tas_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_y", 1);
@@ -295,28 +295,28 @@ void EmulatedController::LoadVirtualGamepadParams() {
     }
 
     // TODO(german77): Replace this with an input profile or something better
-    virtual_button_params[InputSettings::NativeButton::A].Set("button", 0);
-    virtual_button_params[InputSettings::NativeButton::B].Set("button", 1);
-    virtual_button_params[InputSettings::NativeButton::X].Set("button", 2);
-    virtual_button_params[InputSettings::NativeButton::Y].Set("button", 3);
-    virtual_button_params[InputSettings::NativeButton::LStick].Set("button", 4);
-    virtual_button_params[InputSettings::NativeButton::RStick].Set("button", 5);
-    virtual_button_params[InputSettings::NativeButton::L].Set("button", 6);
-    virtual_button_params[InputSettings::NativeButton::R].Set("button", 7);
-    virtual_button_params[InputSettings::NativeButton::ZL].Set("button", 8);
-    virtual_button_params[InputSettings::NativeButton::ZR].Set("button", 9);
-    virtual_button_params[InputSettings::NativeButton::Plus].Set("button", 10);
-    virtual_button_params[InputSettings::NativeButton::Minus].Set("button", 11);
-    virtual_button_params[InputSettings::NativeButton::DLeft].Set("button", 12);
-    virtual_button_params[InputSettings::NativeButton::DUp].Set("button", 13);
-    virtual_button_params[InputSettings::NativeButton::DRight].Set("button", 14);
-    virtual_button_params[InputSettings::NativeButton::DDown].Set("button", 15);
-    virtual_button_params[InputSettings::NativeButton::SLLeft].Set("button", 16);
-    virtual_button_params[InputSettings::NativeButton::SRLeft].Set("button", 17);
-    virtual_button_params[InputSettings::NativeButton::Home].Set("button", 18);
-    virtual_button_params[InputSettings::NativeButton::Screenshot].Set("button", 19);
-    virtual_button_params[InputSettings::NativeButton::SLRight].Set("button", 20);
-    virtual_button_params[InputSettings::NativeButton::SRRight].Set("button", 21);
+    virtual_button_params[(size_t)NativeButtonValues::A].Set("button", 0);
+    virtual_button_params[(size_t)NativeButtonValues::B].Set("button", 1);
+    virtual_button_params[(size_t)NativeButtonValues::X].Set("button", 2);
+    virtual_button_params[(size_t)NativeButtonValues::Y].Set("button", 3);
+    virtual_button_params[(size_t)NativeButtonValues::LStick].Set("button", 4);
+    virtual_button_params[(size_t)NativeButtonValues::RStick].Set("button", 5);
+    virtual_button_params[(size_t)NativeButtonValues::L].Set("button", 6);
+    virtual_button_params[(size_t)NativeButtonValues::R].Set("button", 7);
+    virtual_button_params[(size_t)NativeButtonValues::ZL].Set("button", 8);
+    virtual_button_params[(size_t)NativeButtonValues::ZR].Set("button", 9);
+    virtual_button_params[(size_t)NativeButtonValues::Plus].Set("button", 10);
+    virtual_button_params[(size_t)NativeButtonValues::Minus].Set("button", 11);
+    virtual_button_params[(size_t)NativeButtonValues::DLeft].Set("button", 12);
+    virtual_button_params[(size_t)NativeButtonValues::DUp].Set("button", 13);
+    virtual_button_params[(size_t)NativeButtonValues::DRight].Set("button", 14);
+    virtual_button_params[(size_t)NativeButtonValues::DDown].Set("button", 15);
+    virtual_button_params[(size_t)NativeButtonValues::SLLeft].Set("button", 16);
+    virtual_button_params[(size_t)NativeButtonValues::SRLeft].Set("button", 17);
+    virtual_button_params[(size_t)NativeButtonValues::Home].Set("button", 18);
+    virtual_button_params[(size_t)NativeButtonValues::Screenshot].Set("button", 19);
+    virtual_button_params[(size_t)NativeButtonValues::SLRight].Set("button", 20);
+    virtual_button_params[(size_t)NativeButtonValues::SRRight].Set("button", 21);
 
     virtual_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_x", 0);
     virtual_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_y", 1);
@@ -818,96 +818,96 @@ void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback
 
     // GC controllers have triggers not buttons
     if (npad_type == NpadStyleIndex::GameCube) {
-        if (index == InputSettings::NativeButton::ZR) {
+        if (index == (size_t)NativeButtonValues::ZR) {
             return;
         }
-        if (index == InputSettings::NativeButton::ZL) {
+        if (index == (size_t)NativeButtonValues::ZL) {
             return;
         }
     }
 
-    switch (index) {
-    case InputSettings::NativeButton::A:
+    switch ((NativeButtonValues)index) {
+    case NativeButtonValues::A:
         controller.npad_button_state.a.Assign(current_status.value);
         controller.debug_pad_button_state.a.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::B:
+    case NativeButtonValues::B:
         controller.npad_button_state.b.Assign(current_status.value);
         controller.debug_pad_button_state.b.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::X:
+    case NativeButtonValues::X:
         controller.npad_button_state.x.Assign(current_status.value);
         controller.debug_pad_button_state.x.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::Y:
+    case NativeButtonValues::Y:
         controller.npad_button_state.y.Assign(current_status.value);
         controller.debug_pad_button_state.y.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::LStick:
+    case NativeButtonValues::LStick:
         controller.npad_button_state.stick_l.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::RStick:
+    case NativeButtonValues::RStick:
         controller.npad_button_state.stick_r.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::L:
+    case NativeButtonValues::L:
         controller.npad_button_state.l.Assign(current_status.value);
         controller.debug_pad_button_state.l.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::R:
+    case NativeButtonValues::R:
         controller.npad_button_state.r.Assign(current_status.value);
         controller.debug_pad_button_state.r.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::ZL:
+    case NativeButtonValues::ZL:
         controller.npad_button_state.zl.Assign(current_status.value);
         controller.debug_pad_button_state.zl.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::ZR:
+    case NativeButtonValues::ZR:
         controller.npad_button_state.zr.Assign(current_status.value);
         controller.debug_pad_button_state.zr.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::Plus:
+    case NativeButtonValues::Plus:
         controller.npad_button_state.plus.Assign(current_status.value);
         controller.debug_pad_button_state.plus.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::Minus:
+    case NativeButtonValues::Minus:
         controller.npad_button_state.minus.Assign(current_status.value);
         controller.debug_pad_button_state.minus.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::DLeft:
+    case NativeButtonValues::DLeft:
         controller.npad_button_state.left.Assign(current_status.value);
         controller.debug_pad_button_state.d_left.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::DUp:
+    case NativeButtonValues::DUp:
         controller.npad_button_state.up.Assign(current_status.value);
         controller.debug_pad_button_state.d_up.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::DRight:
+    case NativeButtonValues::DRight:
         controller.npad_button_state.right.Assign(current_status.value);
         controller.debug_pad_button_state.d_right.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::DDown:
+    case NativeButtonValues::DDown:
         controller.npad_button_state.down.Assign(current_status.value);
         controller.debug_pad_button_state.d_down.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::SLLeft:
+    case NativeButtonValues::SLLeft:
         controller.npad_button_state.left_sl.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::SLRight:
+    case NativeButtonValues::SLRight:
         controller.npad_button_state.right_sl.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::SRLeft:
+    case NativeButtonValues::SRLeft:
         controller.npad_button_state.left_sr.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::SRRight:
+    case NativeButtonValues::SRRight:
         controller.npad_button_state.right_sr.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::Home:
+    case NativeButtonValues::Home:
         if (!system_buttons_enabled) {
             break;
         }
         controller.home_button_state.home.Assign(current_status.value);
         break;
-    case InputSettings::NativeButton::Screenshot:
+    case NativeButtonValues::Screenshot:
         if (!system_buttons_enabled) {
             break;
         }
@@ -2002,53 +2002,53 @@ NpadButton EmulatedController::GetTurboButtonMask() const {
             continue;
         }
 
-        switch (index) {
-        case InputSettings::NativeButton::A:
+        switch ((NativeButtonValues)index) {
+        case NativeButtonValues::A:
             button_mask.a.Assign(1);
             break;
-        case InputSettings::NativeButton::B:
+        case NativeButtonValues::B:
             button_mask.b.Assign(1);
             break;
-        case InputSettings::NativeButton::X:
+        case NativeButtonValues::X:
             button_mask.x.Assign(1);
             break;
-        case InputSettings::NativeButton::Y:
+        case NativeButtonValues::Y:
             button_mask.y.Assign(1);
             break;
-        case InputSettings::NativeButton::L:
+        case NativeButtonValues::L:
             button_mask.l.Assign(1);
             break;
-        case InputSettings::NativeButton::R:
+        case NativeButtonValues::R:
             button_mask.r.Assign(1);
             break;
-        case InputSettings::NativeButton::ZL:
+        case NativeButtonValues::ZL:
             button_mask.zl.Assign(1);
             break;
-        case InputSettings::NativeButton::ZR:
+        case NativeButtonValues::ZR:
             button_mask.zr.Assign(1);
             break;
-        case InputSettings::NativeButton::DLeft:
+        case NativeButtonValues::DLeft:
             button_mask.left.Assign(1);
             break;
-        case InputSettings::NativeButton::DUp:
+        case NativeButtonValues::DUp:
             button_mask.up.Assign(1);
             break;
-        case InputSettings::NativeButton::DRight:
+        case NativeButtonValues::DRight:
             button_mask.right.Assign(1);
             break;
-        case InputSettings::NativeButton::DDown:
+        case NativeButtonValues::DDown:
             button_mask.down.Assign(1);
             break;
-        case InputSettings::NativeButton::SLLeft:
+        case NativeButtonValues::SLLeft:
             button_mask.left_sl.Assign(1);
             break;
-        case InputSettings::NativeButton::SLRight:
+        case NativeButtonValues::SLRight:
             button_mask.right_sl.Assign(1);
             break;
-        case InputSettings::NativeButton::SRLeft:
+        case NativeButtonValues::SRLeft:
             button_mask.left_sr.Assign(1);
             break;
-        case InputSettings::NativeButton::SRRight:
+        case NativeButtonValues::SRRight:
             button_mask.right_sr.Assign(1);
             break;
         default:

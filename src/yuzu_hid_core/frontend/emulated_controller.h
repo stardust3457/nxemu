@@ -19,6 +19,8 @@
 #include "yuzu_hid_core/hid_types.h"
 #include "yuzu_hid_core/irsensor/irs_types.h"
 
+#include <nxemu-module-spec/operating_system.h>
+
 namespace Core::HID {
 const std::size_t max_emulated_controllers = 2;
 const std::size_t output_devices_size = 5;
@@ -28,7 +30,7 @@ struct ControllerMotionInfo {
 };
 
 using ButtonDevices =
-    std::array<std::unique_ptr<Common::Input::InputDevice>, InputSettings::NativeButton::NumButtons>;
+    std::array<std::unique_ptr<Common::Input::InputDevice>, (size_t)NativeButtonValues::NumButtons>;
 using StickDevices =
     std::array<std::unique_ptr<Common::Input::InputDevice>, InputSettings::NativeAnalog::NumAnalogs>;
 using ControllerMotionDevices =
@@ -47,7 +49,7 @@ using NfcDevices =
     std::array<std::unique_ptr<Common::Input::InputDevice>, max_emulated_controllers>;
 using OutputDevices = std::array<std::unique_ptr<Common::Input::OutputDevice>, output_devices_size>;
 
-using ButtonParams = std::array<Common::ParamPackage, InputSettings::NativeButton::NumButtons>;
+using ButtonParams = std::array<Common::ParamPackage, (size_t)NativeButtonValues::NumButtons>;
 using StickParams = std::array<Common::ParamPackage, InputSettings::NativeAnalog::NumAnalogs>;
 using ControllerMotionParams = std::array<Common::ParamPackage, InputSettings::NativeMotion::NumMotions>;
 using TriggerParams = std::array<Common::ParamPackage, InputSettings::NativeTrigger::NumTriggers>;
@@ -58,7 +60,7 @@ using RingAnalogParams = std::array<Common::ParamPackage, max_emulated_controlle
 using NfcParams = std::array<Common::ParamPackage, max_emulated_controllers>;
 using OutputParams = std::array<Common::ParamPackage, output_devices_size>;
 
-using ButtonValues = std::array<Common::Input::ButtonStatus, InputSettings::NativeButton::NumButtons>;
+using ButtonValues = std::array<Common::Input::ButtonStatus, (size_t)NativeButtonValues::NumButtons>;
 using SticksValues = std::array<Common::Input::StickStatus, InputSettings::NativeAnalog::NumAnalogs>;
 using TriggerValues =
     std::array<Common::Input::TriggerStatus, InputSettings::NativeTrigger::NumTriggers>;

@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <nxemu-module-spec/operating_system.h>
 
 namespace Common {
 class ParamPackage;
@@ -50,7 +51,7 @@ enum class InputType { None, Button, Stick, Motion, Touch };
  * mapping for the device.
  */
 using AnalogMapping = std::unordered_map<InputSettings::NativeAnalog::Values, Common::ParamPackage>;
-using ButtonMapping = std::unordered_map<InputSettings::NativeButton::Values, Common::ParamPackage>;
+using ButtonMapping = std::unordered_map<NativeButtonValues, Common::ParamPackage>;
 using MotionMapping = std::unordered_map<InputSettings::NativeMotion::Values, Common::ParamPackage>;
 
 class InputSubsystem {

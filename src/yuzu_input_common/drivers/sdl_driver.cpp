@@ -808,8 +808,8 @@ ButtonMapping SDLDriver::GetButtonMappingForDevice(const Common::ParamPackage& p
 
     // Add the missing bindings for ZL/ZR
     static constexpr ZButtonBindings switch_to_sdl_axis{{
-        {InputSettings::NativeButton::ZL, SDL_CONTROLLER_AXIS_TRIGGERLEFT},
-        {InputSettings::NativeButton::ZR, SDL_CONTROLLER_AXIS_TRIGGERRIGHT},
+        {NativeButtonValues::ZL, SDL_CONTROLLER_AXIS_TRIGGERLEFT},
+        {NativeButtonValues::ZR, SDL_CONTROLLER_AXIS_TRIGGERRIGHT},
     }};
 
     // Parameters contain two joysticks return dual
@@ -843,26 +843,26 @@ ButtonBindings SDLDriver::GetDefaultButtonBinding(
     }
 
     return {
-        std::pair{InputSettings::NativeButton::A, SDL_CONTROLLER_BUTTON_B},
-        {InputSettings::NativeButton::B, SDL_CONTROLLER_BUTTON_A},
-        {InputSettings::NativeButton::X, SDL_CONTROLLER_BUTTON_Y},
-        {InputSettings::NativeButton::Y, SDL_CONTROLLER_BUTTON_X},
-        {InputSettings::NativeButton::LStick, SDL_CONTROLLER_BUTTON_LEFTSTICK},
-        {InputSettings::NativeButton::RStick, SDL_CONTROLLER_BUTTON_RIGHTSTICK},
-        {InputSettings::NativeButton::L, SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
-        {InputSettings::NativeButton::R, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
-        {InputSettings::NativeButton::Plus, SDL_CONTROLLER_BUTTON_START},
-        {InputSettings::NativeButton::Minus, SDL_CONTROLLER_BUTTON_BACK},
-        {InputSettings::NativeButton::DLeft, SDL_CONTROLLER_BUTTON_DPAD_LEFT},
-        {InputSettings::NativeButton::DUp, SDL_CONTROLLER_BUTTON_DPAD_UP},
-        {InputSettings::NativeButton::DRight, SDL_CONTROLLER_BUTTON_DPAD_RIGHT},
-        {InputSettings::NativeButton::DDown, SDL_CONTROLLER_BUTTON_DPAD_DOWN},
-        {InputSettings::NativeButton::SLLeft, sll_button},
-        {InputSettings::NativeButton::SRLeft, srl_button},
-        {InputSettings::NativeButton::SLRight, slr_button},
-        {InputSettings::NativeButton::SRRight, srr_button},
-        {InputSettings::NativeButton::Home, SDL_CONTROLLER_BUTTON_GUIDE},
-        {InputSettings::NativeButton::Screenshot, SDL_CONTROLLER_BUTTON_MISC1},
+        std::pair{NativeButtonValues::A, SDL_CONTROLLER_BUTTON_B},
+        {NativeButtonValues::B, SDL_CONTROLLER_BUTTON_A},
+        {NativeButtonValues::X, SDL_CONTROLLER_BUTTON_Y},
+        {NativeButtonValues::Y, SDL_CONTROLLER_BUTTON_X},
+        {NativeButtonValues::LStick, SDL_CONTROLLER_BUTTON_LEFTSTICK},
+        {NativeButtonValues::RStick, SDL_CONTROLLER_BUTTON_RIGHTSTICK},
+        {NativeButtonValues::L, SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
+        {NativeButtonValues::R, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
+        {NativeButtonValues::Plus, SDL_CONTROLLER_BUTTON_START},
+        {NativeButtonValues::Minus, SDL_CONTROLLER_BUTTON_BACK},
+        {NativeButtonValues::DLeft, SDL_CONTROLLER_BUTTON_DPAD_LEFT},
+        {NativeButtonValues::DUp, SDL_CONTROLLER_BUTTON_DPAD_UP},
+        {NativeButtonValues::DRight, SDL_CONTROLLER_BUTTON_DPAD_RIGHT},
+        {NativeButtonValues::DDown, SDL_CONTROLLER_BUTTON_DPAD_DOWN},
+        {NativeButtonValues::SLLeft, sll_button},
+        {NativeButtonValues::SRLeft, srl_button},
+        {NativeButtonValues::SLRight, slr_button},
+        {NativeButtonValues::SRRight, srr_button},
+        {NativeButtonValues::Home, SDL_CONTROLLER_BUTTON_GUIDE},
+        {NativeButtonValues::Screenshot, SDL_CONTROLLER_BUTTON_MISC1},
     };
 }
 
@@ -928,17 +928,17 @@ ButtonMapping SDLDriver::GetDualControllerMapping(const std::shared_ptr<SDLJoyst
     return mapping;
 }
 
-bool SDLDriver::IsButtonOnLeftSide(InputSettings::NativeButton::Values button) const {
+bool SDLDriver::IsButtonOnLeftSide(NativeButtonValues button) const {
     switch (button) {
-    case InputSettings::NativeButton::DDown:
-    case InputSettings::NativeButton::DLeft:
-    case InputSettings::NativeButton::DRight:
-    case InputSettings::NativeButton::DUp:
-    case InputSettings::NativeButton::L:
-    case InputSettings::NativeButton::LStick:
-    case InputSettings::NativeButton::Minus:
-    case InputSettings::NativeButton::Screenshot:
-    case InputSettings::NativeButton::ZL:
+    case NativeButtonValues::DDown:
+    case NativeButtonValues::DLeft:
+    case NativeButtonValues::DRight:
+    case NativeButtonValues::DUp:
+    case NativeButtonValues::L:
+    case NativeButtonValues::LStick:
+    case NativeButtonValues::Minus:
+    case NativeButtonValues::Screenshot:
+    case NativeButtonValues::ZL:
         return true;
     default:
         return false;

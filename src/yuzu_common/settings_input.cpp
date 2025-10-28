@@ -5,7 +5,7 @@
 
 namespace InputSettings {
 namespace NativeButton {
-const std::array<const char*, NumButtons> mapping = {{
+const std::array<const char*, (size_t)NativeButtonValues::NumButtons> mapping = {{
     "button_a",       "button_b",       "button_x",      "button_y",    "button_lstick",
     "button_rstick",  "button_l",       "button_r",      "button_zl",   "button_zr",
     "button_plus",    "button_minus",   "button_dleft",  "button_dup",  "button_dright",

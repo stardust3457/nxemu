@@ -7,50 +7,21 @@
 #include <string>
 
 #include "yuzu_common/common_types.h"
+#include <nxemu-module-spec/operating_system.h>
 
 namespace InputSettings {
 namespace NativeButton {
-enum Values : int {
-    A,
-    B,
-    X,
-    Y,
-    LStick,
-    RStick,
-    L,
-    R,
-    ZL,
-    ZR,
-    Plus,
-    Minus,
 
-    DLeft,
-    DUp,
-    DRight,
-    DDown,
-
-    SLLeft,
-    SRLeft,
-
-    Home,
-    Screenshot,
-
-    SLRight,
-    SRRight,
-
-    NumButtons,
-};
-
-constexpr int BUTTON_HID_BEGIN = A;
-constexpr int BUTTON_NS_BEGIN = Home;
+constexpr int BUTTON_HID_BEGIN = (int)NativeButtonValues::A;
+constexpr int BUTTON_NS_BEGIN = (int)NativeButtonValues::Home;
 
 constexpr int BUTTON_HID_END = BUTTON_NS_BEGIN;
-constexpr int BUTTON_NS_END = NumButtons;
+constexpr int BUTTON_NS_END = (int)NativeButtonValues::NumButtons;
 
 constexpr int NUM_BUTTONS_HID = BUTTON_HID_END - BUTTON_HID_BEGIN;
 constexpr int NUM_BUTTONS_NS = BUTTON_NS_END - BUTTON_NS_BEGIN;
 
-extern const std::array<const char*, NumButtons> mapping;
+extern const std::array<const char*, (int)NativeButtonValues::NumButtons> mapping;
 
 } // namespace NativeButton
 
@@ -357,7 +328,7 @@ constexpr int NUM_KEYBOARD_MODS_HID = NumKeyboardMods;
 } // namespace NativeKeyboard
 
 using AnalogsRaw = std::array<std::string, NativeAnalog::NumAnalogs>;
-using ButtonsRaw = std::array<std::string, NativeButton::NumButtons>;
+using ButtonsRaw = std::array<std::string, (size_t)NativeButtonValues::NumButtons>;
 using MotionsRaw = std::array<std::string, NativeMotion::NumMotions>;
 using RingconRaw = std::string;
 

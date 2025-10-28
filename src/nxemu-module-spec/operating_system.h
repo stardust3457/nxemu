@@ -28,7 +28,38 @@ enum class StorageId : uint8_t
     SdCard = 5,
 };
 
-// List of buttons to be passed to Qt that can be translated
+enum class NativeButtonValues : uint32_t
+{
+    A,
+    B,
+    X,
+    Y,
+    LStick,
+    RStick,
+    L,
+    R,
+    ZL,
+    ZR,
+    Plus,
+    Minus,
+
+    DLeft,
+    DUp,
+    DRight,
+    DDown,
+
+    SLLeft,
+    SRLeft,
+
+    Home,
+    Screenshot,
+
+    SLRight,
+    SRRight,
+
+    NumButtons,
+};
+
 enum class ButtonNames : uint32_t
 {
     Undefined,
