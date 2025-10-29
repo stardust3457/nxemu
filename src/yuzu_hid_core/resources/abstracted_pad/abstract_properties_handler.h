@@ -47,7 +47,7 @@ public:
     Core::HID::NpadInterfaceType GetFullkeyInterfaceType();
     Core::HID::NpadInterfaceType GetInterfaceType();
 
-    Core::HID::NpadStyleSet GetStyleSet(u64 aruid);
+    NpadStyleSet GetStyleSet(u64 aruid);
     std::size_t GetAbstractedPadsWithStyleTag(std::span<IAbstractedPad*> list,
                                               Core::HID::NpadStyleTag style);
     std::size_t GetAbstractedPads(std::span<IAbstractedPad*> list);

@@ -334,7 +334,7 @@ void IHidSystemServer::GetMaskedSupportedNpadStyleSet(HLERequestContext& ctx) {
 
     LOG_INFO(Service_HID, "called, applet_resource_user_id={}", applet_resource_user_id);
 
-    Core::HID::NpadStyleSet supported_styleset{};
+    NpadStyleSet supported_styleset{};
     const auto& npad = GetResourceManager()->GetNpad();
     const Result result =
         npad->GetMaskedSupportedNpadStyleSet(applet_resource_user_id, supported_styleset);
@@ -352,7 +352,7 @@ void IHidSystemServer::SetSupportedNpadStyleSetAll(HLERequestContext& ctx) {
 
     const auto& npad = GetResourceManager()->GetNpad();
     const auto result =
-        npad->SetSupportedNpadStyleSet(applet_resource_user_id, Core::HID::NpadStyleSet::All);
+        npad->SetSupportedNpadStyleSet(applet_resource_user_id, NpadStyleSet::All);
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(result);

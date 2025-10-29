@@ -124,22 +124,22 @@ constexpr NpadIdType IndexToNpadIdType(size_t index) {
     }
 }
 
-constexpr Core::HID::NpadStyleSet GetStylesetByIndex(std::size_t index) {
+constexpr NpadStyleSet GetStylesetByIndex(std::size_t index) {
     switch (index) {
     case 0:
-        return Core::HID::NpadStyleSet::Fullkey;
+        return NpadStyleSet::Fullkey;
     case 1:
-        return Core::HID::NpadStyleSet::Handheld;
+        return NpadStyleSet::Handheld;
     case 2:
-        return Core::HID::NpadStyleSet::JoyDual;
+        return NpadStyleSet::JoyDual;
     case 3:
-        return Core::HID::NpadStyleSet::JoyLeft;
+        return NpadStyleSet::JoyLeft;
     case 4:
-        return Core::HID::NpadStyleSet::JoyRight;
+        return NpadStyleSet::JoyRight;
     case 5:
-        return Core::HID::NpadStyleSet::Palma;
+        return NpadStyleSet::Palma;
     default:
-        return Core::HID::NpadStyleSet::None;
+        return NpadStyleSet::None;
     }
 }
 

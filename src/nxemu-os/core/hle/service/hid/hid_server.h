@@ -104,9 +104,9 @@ private:
     Result ResetIsSixAxisSensorDeviceNewlyAssigned(Core::HID::SixAxisSensorHandle sixaxis_handle,
                                                    ClientAppletResourceUserId aruid);
     Result ActivateGesture(u32 basic_gesture_id, ClientAppletResourceUserId aruid);
-    Result SetSupportedNpadStyleSet(Core::HID::NpadStyleSet supported_style_set,
+    Result SetSupportedNpadStyleSet(NpadStyleSet supported_style_set,
                                     ClientAppletResourceUserId aruid);
-    Result GetSupportedNpadStyleSet(Out<Core::HID::NpadStyleSet> out_supported_style_set,
+    Result GetSupportedNpadStyleSet(Out<NpadStyleSet> out_supported_style_set,
                                     ClientAppletResourceUserId aruid);
     Result SetSupportedNpadIdType(
         ClientAppletResourceUserId aruid,
@@ -151,7 +151,7 @@ private:
                                                          NpadJoyDeviceType npad_joy_device_type);
     Result SetNpadAnalogStickUseCenterClamp(bool use_center_clamp,
                                             ClientAppletResourceUserId aruid);
-    Result SetNpadCaptureButtonAssignment(Core::HID::NpadStyleSet npad_styleset,
+    Result SetNpadCaptureButtonAssignment(NpadStyleSet npad_styleset,
                                           ClientAppletResourceUserId aruid,
                                           Core::HID::NpadButton button);
     Result ClearNpadCaptureButtonAssignment(ClientAppletResourceUserId aruid);

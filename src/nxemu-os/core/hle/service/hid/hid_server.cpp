@@ -576,7 +576,7 @@ Result IHidServer::ActivateGesture(u32 basic_gesture_id, ClientAppletResourceUse
     R_RETURN(GetResourceManager()->GetGesture()->Activate(aruid.pid, basic_gesture_id));
 }
 
-Result IHidServer::SetSupportedNpadStyleSet(Core::HID::NpadStyleSet supported_style_set,
+Result IHidServer::SetSupportedNpadStyleSet(NpadStyleSet supported_style_set,
                                             ClientAppletResourceUserId aruid) {
     LOG_DEBUG(Service_HID, "called, supported_style_set={}, applet_resource_user_id={}",
               supported_style_set, aruid.pid);
@@ -594,7 +594,7 @@ Result IHidServer::SetSupportedNpadStyleSet(Core::HID::NpadStyleSet supported_st
     R_SUCCEED()
 }
 
-Result IHidServer::GetSupportedNpadStyleSet(Out<Core::HID::NpadStyleSet> out_supported_style_set,
+Result IHidServer::GetSupportedNpadStyleSet(Out<NpadStyleSet> out_supported_style_set,
                                             ClientAppletResourceUserId aruid) {
     LOG_DEBUG(Service_HID, "called, applet_resource_user_id={}", aruid.pid);
 
@@ -836,7 +836,7 @@ Result IHidServer::SetNpadAnalogStickUseCenterClamp(bool use_center_clamp,
     R_SUCCEED();
 }
 
-Result IHidServer::SetNpadCaptureButtonAssignment(Core::HID::NpadStyleSet npad_styleset,
+Result IHidServer::SetNpadCaptureButtonAssignment(NpadStyleSet npad_styleset,
                                                   ClientAppletResourceUserId aruid,
                                                   Core::HID::NpadButton button) {
     LOG_INFO(Service_HID, "called, npad_styleset={}, applet_resource_user_id={}, button={}",

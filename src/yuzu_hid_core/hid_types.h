@@ -213,29 +213,6 @@ enum class NpadInterfaceType : u8 {
     Embedded = 4,
 };
 
-// This is nn::hid::NpadStyleSet
-enum class NpadStyleSet : u32 {
-    None = 0,
-    Fullkey = 1U << 0,
-    Handheld = 1U << 1,
-    JoyDual = 1U << 2,
-    JoyLeft = 1U << 3,
-    JoyRight = 1U << 4,
-    Gc = 1U << 5,
-    Palma = 1U << 6,
-    Lark = 1U << 7,
-    HandheldLark = 1U << 8,
-    Lucia = 1U << 9,
-    Lagoon = 1U << 10,
-    Lager = 1U << 11,
-    SystemExt = 1U << 29,
-    System = 1U << 30,
-
-    All = 0xFFFFFFFFU,
-};
-static_assert(sizeof(NpadStyleSet) == 4, "NpadStyleSet is an invalid size");
-DECLARE_ENUM_FLAG_OPERATORS(NpadStyleSet)
-
 // This is nn::hid::VibrationDevicePosition
 enum class VibrationDevicePosition : u32 {
     None = 0,

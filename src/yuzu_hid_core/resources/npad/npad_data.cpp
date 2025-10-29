@@ -65,8 +65,8 @@ bool NPadData::IsNpadIdTypeSupported(NpadIdType npad_id) const {
 }
 
 void NPadData::SetNpadSystemCommonPolicy(bool is_full_policy) {
-    supported_npad_style_set = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::JoyDual |
-                               Core::HID::NpadStyleSet::SystemExt | Core::HID::NpadStyleSet::System;
+    supported_npad_style_set = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::JoyDual |
+                               (uint32_t)NpadStyleSet::SystemExt | (uint32_t)NpadStyleSet::System);
     handheld_activation_mode = NpadHandheldActivationMode::Dual;
 
     status.is_supported_styleset_set.Assign(true);
@@ -96,7 +96,7 @@ void NPadData::SetNpadSystemCommonPolicy(bool is_full_policy) {
 
 void NPadData::ClearNpadSystemCommonPolicy() {
     status.raw = 0;
-    supported_npad_style_set = Core::HID::NpadStyleSet::All;
+    supported_npad_style_set = NpadStyleSet::All;
     npad_hold_type = NpadJoyHoldType::Vertical;
     handheld_activation_mode = NpadHandheldActivationMode::Dual;
 
@@ -138,13 +138,13 @@ NpadHandheldActivationMode NPadData::GetHandheldActivationMode() const {
     return handheld_activation_mode;
 }
 
-void NPadData::SetSupportedNpadStyleSet(Core::HID::NpadStyleSet style_set) {
+void NPadData::SetSupportedNpadStyleSet(NpadStyleSet style_set) {
     supported_npad_style_set = style_set;
     status.is_supported_styleset_set.Assign(true);
     status.is_hold_type_set.Assign(true);
 }
 
-Core::HID::NpadStyleSet NPadData::GetSupportedNpadStyleSet() const {
+NpadStyleSet NPadData::GetSupportedNpadStyleSet() const {
     return supported_npad_style_set;
 }
 
@@ -214,9 +214,9 @@ Core::HID::NpadButton NPadData::GetCaptureButtonAssignment(std::size_t style_ind
 std::size_t NPadData::GetNpadCaptureButtonAssignmentList(
     std::span<Core::HID::NpadButton> out_list) const {
     for (std::size_t i = 0; i < out_list.size(); i++) {
-        Core::HID::NpadStyleSet style_set = GetStylesetByIndex(i);
-        if ((style_set & supported_npad_style_set) == Core::HID::NpadStyleSet::None ||
-            npad_button_assignment[i] == Core::HID::NpadButton::None) {
+        NpadStyleSet style_set = GetStylesetByIndex(i);
+        if (((uint32_t)style_set & (uint32_t)supported_npad_style_set) == (uint32_t)NpadStyleSet::None || npad_button_assignment[i] == Core::HID::NpadButton::None) 
+        {
             return i;
         }
         out_list[i] = npad_button_assignment[i];

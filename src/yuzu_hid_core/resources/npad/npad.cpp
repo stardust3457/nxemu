@@ -183,7 +183,7 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
     }
 
     // Reset memory values
-    shared_memory->style_tag.raw = Core::HID::NpadStyleSet::None;
+    shared_memory->style_tag.raw = NpadStyleSet::None;
     shared_memory->device_type.raw = 0;
     shared_memory->system_properties.raw = 0;
     shared_memory->joycon_color.attribute = ColorAttribute::NoController;
@@ -617,7 +617,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
     }
 }
 
-Result NPad::SetSupportedNpadStyleSet(u64 aruid, Core::HID::NpadStyleSet supported_style_set) {
+Result NPad::SetSupportedNpadStyleSet(u64 aruid, NpadStyleSet supported_style_set) {
     std::scoped_lock lock{mutex};
     hid_core.SetSupportedStyleTag({supported_style_set});
     const Result result = npad_resource.SetSupportedNpadStyleSet(aruid, supported_style_set);
@@ -628,12 +628,12 @@ Result NPad::SetSupportedNpadStyleSet(u64 aruid, Core::HID::NpadStyleSet support
 }
 
 Result NPad::GetSupportedNpadStyleSet(u64 aruid,
-                                      Core::HID::NpadStyleSet& out_supported_style_set) const {
+                                      NpadStyleSet& out_supported_style_set) const {
     std::scoped_lock lock{mutex};
     const Result result = npad_resource.GetSupportedNpadStyleSet(out_supported_style_set, aruid);
 
     if (result == ResultUndefinedStyleset) {
-        out_supported_style_set = Core::HID::NpadStyleSet::None;
+        out_supported_style_set = NpadStyleSet::None;
         return ResultSuccess;
     }
 
@@ -641,13 +641,13 @@ Result NPad::GetSupportedNpadStyleSet(u64 aruid,
 }
 
 Result NPad::GetMaskedSupportedNpadStyleSet(
-    u64 aruid, Core::HID::NpadStyleSet& out_supported_style_set) const {
+    u64 aruid, NpadStyleSet& out_supported_style_set) const {
     std::scoped_lock lock{mutex};
     const Result result =
         npad_resource.GetMaskedSupportedNpadStyleSet(out_supported_style_set, aruid);
 
     if (result == ResultUndefinedStyleset) {
-        out_supported_style_set = Core::HID::NpadStyleSet::None;
+        out_supported_style_set = NpadStyleSet::None;
         return ResultSuccess;
     }
 
@@ -798,7 +798,7 @@ Result NPad::DisconnectNpad(u64 aruid, NpadIdType npad_id) {
 
     auto* shared_memory = controller.shared_memory;
     // Don't reset shared_memory->assignment_mode this value is persistent
-    shared_memory->style_tag.raw = Core::HID::NpadStyleSet::None; // Zero out
+    shared_memory->style_tag.raw = NpadStyleSet::None; // Zero out
     shared_memory->device_type.raw = 0;
     shared_memory->system_properties.raw = 0;
     shared_memory->button_properties.raw = 0;
@@ -1196,7 +1196,7 @@ AppletDetailedUiType NPad::GetAppletDetailedUiType(NpadIdType npad_id) {
     };
 }
 
-Result NPad::SetNpadCaptureButtonAssignment(u64 aruid, Core::HID::NpadStyleSet npad_style_set,
+Result NPad::SetNpadCaptureButtonAssignment(u64 aruid, NpadStyleSet npad_style_set,
                                             Core::HID::NpadButton button_assignment) {
     std::scoped_lock lock{mutex};
     return npad_resource.SetNpadCaptureButtonAssignment(aruid, npad_style_set, button_assignment);

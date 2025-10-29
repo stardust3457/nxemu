@@ -56,8 +56,8 @@ public:
     void SetHandheldActivationMode(NpadHandheldActivationMode activation_mode);
     NpadHandheldActivationMode GetHandheldActivationMode() const;
 
-    void SetSupportedNpadStyleSet(Core::HID::NpadStyleSet style_set);
-    Core::HID::NpadStyleSet GetSupportedNpadStyleSet() const;
+    void SetSupportedNpadStyleSet(NpadStyleSet style_set);
+    NpadStyleSet GetSupportedNpadStyleSet() const;
     bool IsNpadStyleIndexSupported(NpadStyleIndex style_index) const;
 
     void SetLrAssignmentMode(bool is_enabled);
@@ -76,7 +76,7 @@ public:
 
 private:
     NpadStatus status{};
-    Core::HID::NpadStyleSet supported_npad_style_set{Core::HID::NpadStyleSet::All};
+    NpadStyleSet supported_npad_style_set{NpadStyleSet::All};
     NpadJoyHoldType npad_hold_type{NpadJoyHoldType::Vertical};
     NpadHandheldActivationMode handheld_activation_mode{};
     std::array<NpadIdType, MaxSupportedNpadIdTypes> supported_npad_id_types{};

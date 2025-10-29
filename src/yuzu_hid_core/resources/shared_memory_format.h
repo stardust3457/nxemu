@@ -121,7 +121,7 @@ struct NpadSixAxisSensorLifo {
 
 // This is nn::hid::detail::NpadInternalState
 struct NpadInternalState {
-    Core::HID::NpadStyleTag style_tag{Core::HID::NpadStyleSet::None};
+    Core::HID::NpadStyleTag style_tag{NpadStyleSet::None};
     NpadJoyAssignmentMode assignment_mode{NpadJoyAssignmentMode::Dual};
     NpadFullKeyColorState fullkey_color{};
     NpadJoyColorState joycon_color{};

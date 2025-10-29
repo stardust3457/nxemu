@@ -70,7 +70,7 @@ Result NpadAbstractPropertiesHandler::IncrementRefCounter() {
         internal_state.sixaxis_left_lifo.lifo.buffer_count = 0;
         internal_state.sixaxis_right_lifo.lifo.buffer_count = 0;
 
-        internal_state.style_tag = {Core::HID::NpadStyleSet::None};
+        internal_state.style_tag = {NpadStyleSet::None};
         internal_state.assignment_mode = NpadJoyAssignmentMode::Dual;
         internal_state.joycon_color = {};
         internal_state.fullkey_color = {};
@@ -188,9 +188,9 @@ Core::HID::NpadInterfaceType NpadAbstractPropertiesHandler::GetInterfaceType() {
     return Core::HID::NpadInterfaceType::None;
 }
 
-Core::HID::NpadStyleSet NpadAbstractPropertiesHandler::GetStyleSet(u64 aruid) {
+NpadStyleSet NpadAbstractPropertiesHandler::GetStyleSet(u64 aruid) {
     // TODO
-    return Core::HID::NpadStyleSet::None;
+    return NpadStyleSet::None;
 }
 
 std::size_t NpadAbstractPropertiesHandler::GetAbstractedPadsWithStyleTag(

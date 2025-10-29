@@ -67,10 +67,10 @@ public:
     Result ApplyNpadSystemCommonPolicy(u64 aruid, bool is_full_policy);
     Result ClearNpadSystemCommonPolicy(u64 aruid);
 
-    Result SetSupportedNpadStyleSet(u64 aruid, Core::HID::NpadStyleSet style_set);
-    Result GetSupportedNpadStyleSet(Core::HID::NpadStyleSet& out_style_Set, u64 aruid) const;
-    Result GetMaskedSupportedNpadStyleSet(Core::HID::NpadStyleSet& out_style_set, u64 aruid) const;
-    Result GetAvailableStyleset(Core::HID::NpadStyleSet& out_style_set, u64 aruid) const;
+    Result SetSupportedNpadStyleSet(u64 aruid, NpadStyleSet style_set);
+    Result GetSupportedNpadStyleSet(NpadStyleSet& out_style_Set, u64 aruid) const;
+    Result GetMaskedSupportedNpadStyleSet(NpadStyleSet& out_style_set, u64 aruid) const;
+    Result GetAvailableStyleset(NpadStyleSet& out_style_set, u64 aruid) const;
 
     NpadRevision GetNpadRevision(u64 aruid) const;
     void SetNpadRevision(u64 aruid, NpadRevision revision);
@@ -111,7 +111,7 @@ public:
                                           bool is_enabled);
     void ResetButtonConfig();
 
-    Result SetNpadCaptureButtonAssignment(u64 aruid, Core::HID::NpadStyleSet npad_style_set,
+    Result SetNpadCaptureButtonAssignment(u64 aruid, NpadStyleSet npad_style_set,
                                           Core::HID::NpadButton button_assignment);
     Result ClearNpadCaptureButtonAssignment(u64 aruid);
     std::size_t GetNpadCaptureButtonAssignment(std::span<Core::HID::NpadButton> out_list,

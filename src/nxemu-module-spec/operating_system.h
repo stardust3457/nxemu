@@ -171,6 +171,27 @@ enum class NpadStyleIndex : uint8_t {
     MaxNpadType = 34,
 };
 
+// This is nn::hid::NpadStyleSet
+enum class NpadStyleSet : uint32_t {
+    None = 0,
+    Fullkey = 1U << 0,
+    Handheld = 1U << 1,
+    JoyDual = 1U << 2,
+    JoyLeft = 1U << 3,
+    JoyRight = 1U << 4,
+    Gc = 1U << 5,
+    Palma = 1U << 6,
+    Lark = 1U << 7,
+    HandheldLark = 1U << 8,
+    Lucia = 1U << 9,
+    Lagoon = 1U << 10,
+    Lager = 1U << 11,
+    SystemExt = 1U << 29,
+    System = 1U << 30,
+
+    All = 0xFFFFFFFFU,
+};
+
 __interface IProgramMetadata
 {
     bool Is64BitProgram() const = 0;

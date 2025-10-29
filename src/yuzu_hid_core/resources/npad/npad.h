@@ -63,11 +63,11 @@ public:
     // When the controller is requesting an update for the shared memory
     void OnUpdate(const Core::Timing::CoreTiming& core_timing);
 
-    Result SetSupportedNpadStyleSet(u64 aruid, Core::HID::NpadStyleSet supported_style_set);
+    Result SetSupportedNpadStyleSet(u64 aruid, NpadStyleSet supported_style_set);
     Result GetSupportedNpadStyleSet(u64 aruid,
-                                    Core::HID::NpadStyleSet& out_supported_style_set) const;
+                                    NpadStyleSet& out_supported_style_set) const;
     Result GetMaskedSupportedNpadStyleSet(u64 aruid,
-                                          Core::HID::NpadStyleSet& out_supported_style_set) const;
+                                          NpadStyleSet& out_supported_style_set) const;
 
     Result SetSupportedNpadIdType(u64 aruid,
                                   std::span<const NpadIdType> supported_npad_list);
@@ -138,7 +138,7 @@ public:
 
     AppletDetailedUiType GetAppletDetailedUiType(NpadIdType npad_id);
 
-    Result SetNpadCaptureButtonAssignment(u64 aruid, Core::HID::NpadStyleSet npad_style_set,
+    Result SetNpadCaptureButtonAssignment(u64 aruid, NpadStyleSet npad_style_set,
                                           Core::HID::NpadButton button_assignment);
     Result ClearNpadCaptureButtonAssignment(u64 aruid);
     std::size_t GetNpadCaptureButtonAssignment(std::span<Core::HID::NpadButton> out_list,

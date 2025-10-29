@@ -218,7 +218,7 @@ Result NPadResource::ClearNpadSystemCommonPolicy(u64 aruid) {
     return ResultSuccess;
 }
 
-Result NPadResource::SetSupportedNpadStyleSet(u64 aruid, Core::HID::NpadStyleSet style_set) {
+Result NPadResource::SetSupportedNpadStyleSet(u64 aruid, NpadStyleSet style_set) {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
         return ResultNpadNotConnected;
@@ -233,7 +233,7 @@ Result NPadResource::SetSupportedNpadStyleSet(u64 aruid, Core::HID::NpadStyleSet
     return ResultSuccess;
 }
 
-Result NPadResource::GetSupportedNpadStyleSet(Core::HID::NpadStyleSet& out_style_Set,
+Result NPadResource::GetSupportedNpadStyleSet(NpadStyleSet& out_style_Set,
                                               u64 aruid) const {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
@@ -249,13 +249,13 @@ Result NPadResource::GetSupportedNpadStyleSet(Core::HID::NpadStyleSet& out_style
     return ResultSuccess;
 }
 
-Result NPadResource::GetMaskedSupportedNpadStyleSet(Core::HID::NpadStyleSet& out_style_set,
+Result NPadResource::GetMaskedSupportedNpadStyleSet(NpadStyleSet& out_style_set,
                                                     u64 aruid) const {
     if (aruid == SystemAruid) {
-        out_style_set = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-                        Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-                        Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::Palma |
-                        Core::HID::NpadStyleSet::SystemExt | Core::HID::NpadStyleSet::System;
+        out_style_set = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+                        (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+                        (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::Palma |
+                        (uint32_t)NpadStyleSet::SystemExt | (uint32_t)NpadStyleSet::System);
         return ResultSuccess;
     }
 
@@ -269,46 +269,46 @@ Result NPadResource::GetMaskedSupportedNpadStyleSet(Core::HID::NpadStyleSet& out
         return ResultUndefinedStyleset;
     }
 
-    Core::HID::NpadStyleSet mask{Core::HID::NpadStyleSet::None};
+    NpadStyleSet mask{NpadStyleSet::None};
     out_style_set = data.GetSupportedNpadStyleSet();
 
     switch (state[aruid_index].npad_revision) {
     case NpadRevision::Revision1:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::Gc |
-               Core::HID::NpadStyleSet::Palma | Core::HID::NpadStyleSet::SystemExt |
-               Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::Gc |
+               (uint32_t)NpadStyleSet::Palma | (uint32_t)NpadStyleSet::SystemExt |
+               (uint32_t)NpadStyleSet::System);
         break;
     case NpadRevision::Revision2:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::Gc |
-               Core::HID::NpadStyleSet::Palma | Core::HID::NpadStyleSet::Lark |
-               Core::HID::NpadStyleSet::SystemExt | Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::Gc |
+               (uint32_t)NpadStyleSet::Palma | (uint32_t)NpadStyleSet::Lark |
+               (uint32_t)NpadStyleSet::SystemExt | (uint32_t)NpadStyleSet::System);
         break;
     case NpadRevision::Revision3:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::Gc |
-               Core::HID::NpadStyleSet::Palma | Core::HID::NpadStyleSet::Lark |
-               Core::HID::NpadStyleSet::HandheldLark | Core::HID::NpadStyleSet::Lucia |
-               Core::HID::NpadStyleSet::Lagoon | Core::HID::NpadStyleSet::Lager |
-               Core::HID::NpadStyleSet::SystemExt | Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::Gc |
+               (uint32_t)NpadStyleSet::Palma | (uint32_t)NpadStyleSet::Lark |
+               (uint32_t)NpadStyleSet::HandheldLark | (uint32_t)NpadStyleSet::Lucia |
+               (uint32_t)NpadStyleSet::Lagoon | (uint32_t)NpadStyleSet::Lager |
+               (uint32_t)NpadStyleSet::SystemExt | (uint32_t)NpadStyleSet::System);
         break;
     default:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::SystemExt |
-               Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::SystemExt |
+               (uint32_t)NpadStyleSet::System);
         break;
     }
 
-    out_style_set = out_style_set & mask;
+    out_style_set = (NpadStyleSet)((uint32_t)out_style_set & (uint32_t)mask);
     return ResultSuccess;
 }
 
-Result NPadResource::GetAvailableStyleset(Core::HID::NpadStyleSet& out_style_set, u64 aruid) const {
+Result NPadResource::GetAvailableStyleset(NpadStyleSet& out_style_set, u64 aruid) const {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
         return ResultNpadNotConnected;
@@ -319,42 +319,42 @@ Result NPadResource::GetAvailableStyleset(Core::HID::NpadStyleSet& out_style_set
         return ResultUndefinedStyleset;
     }
 
-    Core::HID::NpadStyleSet mask{Core::HID::NpadStyleSet::None};
+    NpadStyleSet mask{NpadStyleSet::None};
     out_style_set = data.GetSupportedNpadStyleSet();
 
     switch (state[aruid_index].npad_revision) {
     case NpadRevision::Revision1:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::Gc |
-               Core::HID::NpadStyleSet::Palma | Core::HID::NpadStyleSet::SystemExt |
-               Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::Gc |
+               (uint32_t)NpadStyleSet::Palma | (uint32_t)NpadStyleSet::SystemExt |
+               (uint32_t)NpadStyleSet::System);
         break;
     case NpadRevision::Revision2:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::Gc |
-               Core::HID::NpadStyleSet::Palma | Core::HID::NpadStyleSet::Lark |
-               Core::HID::NpadStyleSet::SystemExt | Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::Gc |
+               (uint32_t)NpadStyleSet::Palma | (uint32_t)NpadStyleSet::Lark |
+               (uint32_t)NpadStyleSet::SystemExt | (uint32_t)NpadStyleSet::System);
         break;
     case NpadRevision::Revision3:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::Gc |
-               Core::HID::NpadStyleSet::Palma | Core::HID::NpadStyleSet::Lark |
-               Core::HID::NpadStyleSet::HandheldLark | Core::HID::NpadStyleSet::Lucia |
-               Core::HID::NpadStyleSet::Lagoon | Core::HID::NpadStyleSet::Lager |
-               Core::HID::NpadStyleSet::SystemExt | Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::Gc |
+               (uint32_t)NpadStyleSet::Palma | (uint32_t)NpadStyleSet::Lark |
+               (uint32_t)NpadStyleSet::HandheldLark | (uint32_t)NpadStyleSet::Lucia |
+               (uint32_t)NpadStyleSet::Lagoon | (uint32_t)NpadStyleSet::Lager |
+               (uint32_t)NpadStyleSet::SystemExt | (uint32_t)NpadStyleSet::System);
         break;
     default:
-        mask = Core::HID::NpadStyleSet::Fullkey | Core::HID::NpadStyleSet::Handheld |
-               Core::HID::NpadStyleSet::JoyDual | Core::HID::NpadStyleSet::JoyLeft |
-               Core::HID::NpadStyleSet::JoyRight | Core::HID::NpadStyleSet::SystemExt |
-               Core::HID::NpadStyleSet::System;
+        mask = (NpadStyleSet)((uint32_t)NpadStyleSet::Fullkey | (uint32_t)NpadStyleSet::Handheld |
+               (uint32_t)NpadStyleSet::JoyDual | (uint32_t)NpadStyleSet::JoyLeft |
+               (uint32_t)NpadStyleSet::JoyRight | (uint32_t)NpadStyleSet::SystemExt |
+               (uint32_t)NpadStyleSet::System);
         break;
     }
 
-    out_style_set = out_style_set & mask;
+    out_style_set = (NpadStyleSet)((uint32_t)out_style_set & (uint32_t)mask);
     return ResultSuccess;
 }
 
@@ -615,7 +615,7 @@ void NPadResource::ResetButtonConfig() {
 }
 
 Result NPadResource::SetNpadCaptureButtonAssignment(u64 aruid,
-                                                    Core::HID::NpadStyleSet npad_style_set,
+                                                    NpadStyleSet npad_style_set,
                                                     Core::HID::NpadButton button_assignment) {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
@@ -629,7 +629,7 @@ Result NPadResource::SetNpadCaptureButtonAssignment(u64 aruid,
     }
 
     std::size_t style_index{};
-    Core::HID::NpadStyleSet style_selected{};
+    NpadStyleSet style_selected{};
     for (style_index = 0; style_index < StyleIndexCount; ++style_index) {
         style_selected = GetStylesetByIndex(style_index);
         if (npad_style_set == style_selected) {
@@ -637,7 +637,7 @@ Result NPadResource::SetNpadCaptureButtonAssignment(u64 aruid,
         }
     }
 
-    if (style_selected == Core::HID::NpadStyleSet::None) {
+    if (style_selected == NpadStyleSet::None) {
         return ResultMultipleStyleSetSelected;
     }
 
