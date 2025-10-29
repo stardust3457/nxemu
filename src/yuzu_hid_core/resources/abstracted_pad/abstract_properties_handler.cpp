@@ -154,7 +154,7 @@ Core::HID::NpadInterfaceType NpadAbstractPropertiesHandler::GetFullkeyInterfaceT
         if (!abstract_pad->internal_flags.is_connected) {
             continue;
         }
-        if (abstract_pad->device_type != Core::HID::NpadStyleIndex::Fullkey) {
+        if (abstract_pad->device_type != NpadStyleIndex::Fullkey) {
             continue;
         }
         if (abstract_pad->interface_type >= Core::HID::NpadInterfaceType::Embedded) {

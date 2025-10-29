@@ -86,7 +86,7 @@ public:
 
     Result SetSupportedNpadIdType(u64 aruid,
                                   std::span<const NpadIdType> supported_npad_list);
-    bool IsControllerSupported(u64 aruid, Core::HID::NpadStyleIndex style_index) const;
+    bool IsControllerSupported(u64 aruid, NpadStyleIndex style_index) const;
 
     Result SetLrAssignmentMode(u64 aruid, bool is_enabled);
     Result GetLrAssignmentMode(bool& is_enabled, u64 aruid) const;

@@ -202,7 +202,7 @@ Result IRS::GetNpadIrCameraHandle(Out<Core::IrSensor::IrCameraHandle> out_camera
 
     *out_camera_handle = {
         .npad_id = static_cast<u8>(HID::NpadIdTypeToIndex(npad_id)),
-        .npad_type = Core::HID::NpadStyleIndex::None,
+        .npad_type = NpadStyleIndex::None,
     };
 
     LOG_INFO(Service_IRS, "called, npad_id={}, camera_npad_id={}, camera_npad_type={}", npad_id,
@@ -351,7 +351,7 @@ Result IRS::IsIrCameraHandleValid(const Core::IrSensor::IrCameraHandle& camera_h
         static_cast<u8>(HID::NpadIdTypeToIndex(NpadIdType::Handheld))) {
         return InvalidIrCameraHandle;
     }
-    if (camera_handle.npad_type != Core::HID::NpadStyleIndex::None) {
+    if (camera_handle.npad_type != NpadStyleIndex::None) {
         return InvalidIrCameraHandle;
     }
     return ResultSuccess;

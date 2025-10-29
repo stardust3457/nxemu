@@ -406,18 +406,18 @@ Result ResourceManager::GetVibrationDeviceInfo(Core::HID::VibrationDeviceInfo& d
     }
 
     switch (handle.npad_type) {
-    case Core::HID::NpadStyleIndex::Fullkey:
-    case Core::HID::NpadStyleIndex::Handheld:
-    case Core::HID::NpadStyleIndex::JoyconDual:
-    case Core::HID::NpadStyleIndex::JoyconLeft:
-    case Core::HID::NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Handheld:
+    case NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconRight:
         device_info.type = Core::HID::VibrationDeviceType::LinearResonantActuator;
         check_device_index = true;
         break;
-    case Core::HID::NpadStyleIndex::GameCube:
+    case NpadStyleIndex::GameCube:
         device_info.type = Core::HID::VibrationDeviceType::GcErm;
         break;
-    case Core::HID::NpadStyleIndex::N64:
+    case NpadStyleIndex::N64:
         device_info.type = Core::HID::VibrationDeviceType::N64;
         break;
     default:

@@ -49,7 +49,7 @@ void SixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                 continue;
             }
 
-            if (controller_type == Core::HID::NpadStyleIndex::None ||
+            if (controller_type == NpadStyleIndex::None ||
                 !controller.device->IsConnected()) {
                 continue;
             }
@@ -116,26 +116,26 @@ void SixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
             };
 
             switch (controller_type) {
-            case Core::HID::NpadStyleIndex::None:
+            case NpadStyleIndex::None:
                 ASSERT(false);
                 break;
-            case Core::HID::NpadStyleIndex::Fullkey:
+            case NpadStyleIndex::Fullkey:
                 set_motion_state(sixaxis_fullkey_state, motion_state[0]);
                 break;
-            case Core::HID::NpadStyleIndex::Handheld:
+            case NpadStyleIndex::Handheld:
                 set_motion_state(sixaxis_handheld_state, motion_state[0]);
                 break;
-            case Core::HID::NpadStyleIndex::JoyconDual:
+            case NpadStyleIndex::JoyconDual:
                 set_motion_state(sixaxis_dual_left_state, motion_state[0]);
                 set_motion_state(sixaxis_dual_right_state, motion_state[1]);
                 break;
-            case Core::HID::NpadStyleIndex::JoyconLeft:
+            case NpadStyleIndex::JoyconLeft:
                 set_motion_state(sixaxis_left_lifo_state, motion_state[0]);
                 break;
-            case Core::HID::NpadStyleIndex::JoyconRight:
+            case NpadStyleIndex::JoyconRight:
                 set_motion_state(sixaxis_right_lifo_state, motion_state[1]);
                 break;
-            case Core::HID::NpadStyleIndex::Pokeball:
+            case NpadStyleIndex::Pokeball:
                 using namespace std::literals::chrono_literals;
                 set_motion_state(sixaxis_fullkey_state, motion_state[0]);
                 sixaxis_fullkey_state.delta_time = std::chrono::nanoseconds(15ms).count();
@@ -351,19 +351,19 @@ SixAxis::SixaxisParameters& SixAxis::GetSixaxisState(
     const Core::HID::SixAxisSensorHandle& sixaxis_handle) {
     auto& controller = GetControllerFromHandle(sixaxis_handle);
     switch (sixaxis_handle.npad_type) {
-    case Core::HID::NpadStyleIndex::Fullkey:
-    case Core::HID::NpadStyleIndex::Pokeball:
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Pokeball:
         return controller.sixaxis_fullkey;
-    case Core::HID::NpadStyleIndex::Handheld:
+    case NpadStyleIndex::Handheld:
         return controller.sixaxis_handheld;
-    case Core::HID::NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconDual:
         if (sixaxis_handle.device_index == Core::HID::DeviceIndex::Left) {
             return controller.sixaxis_dual_left;
         }
         return controller.sixaxis_dual_right;
-    case Core::HID::NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconLeft:
         return controller.sixaxis_left;
-    case Core::HID::NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::JoyconRight:
         return controller.sixaxis_right;
     default:
         return controller.sixaxis_unknown;
@@ -374,19 +374,19 @@ const SixAxis::SixaxisParameters& SixAxis::GetSixaxisState(
     const Core::HID::SixAxisSensorHandle& sixaxis_handle) const {
     const auto& controller = GetControllerFromHandle(sixaxis_handle);
     switch (sixaxis_handle.npad_type) {
-    case Core::HID::NpadStyleIndex::Fullkey:
-    case Core::HID::NpadStyleIndex::Pokeball:
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Pokeball:
         return controller.sixaxis_fullkey;
-    case Core::HID::NpadStyleIndex::Handheld:
+    case NpadStyleIndex::Handheld:
         return controller.sixaxis_handheld;
-    case Core::HID::NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconDual:
         if (sixaxis_handle.device_index == Core::HID::DeviceIndex::Left) {
             return controller.sixaxis_dual_left;
         }
         return controller.sixaxis_dual_right;
-    case Core::HID::NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconLeft:
         return controller.sixaxis_left;
-    case Core::HID::NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::JoyconRight:
         return controller.sixaxis_right;
     default:
         return controller.sixaxis_unknown;

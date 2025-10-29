@@ -343,7 +343,7 @@ struct IAbstractedPad {
     FeatureType feature_set;
     FeatureType disabled_feature_set;
     AssignmentStyle assignment_style;
-    Core::HID::NpadStyleIndex device_type;
+    NpadStyleIndex device_type;
     Core::HID::NpadInterfaceType interface_type;
     Core::HID::NpadPowerInfo power_info;
     u32 pad_state;

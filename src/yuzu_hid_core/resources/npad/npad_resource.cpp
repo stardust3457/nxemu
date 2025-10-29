@@ -448,7 +448,7 @@ Result NPadResource::SetSupportedNpadIdType(
     return result;
 }
 
-bool NPadResource::IsControllerSupported(u64 aruid, Core::HID::NpadStyleIndex style_index) const {
+bool NPadResource::IsControllerSupported(u64 aruid, NpadStyleIndex style_index) const {
     const u64 aruid_index = GetIndexFromAruid(aruid);
     if (aruid_index >= AruidIndexMax) {
         return false;

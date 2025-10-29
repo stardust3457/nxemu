@@ -148,30 +148,30 @@ Core::HID::NpadStyleSet NPadData::GetSupportedNpadStyleSet() const {
     return supported_npad_style_set;
 }
 
-bool NPadData::IsNpadStyleIndexSupported(Core::HID::NpadStyleIndex style_index) const {
+bool NPadData::IsNpadStyleIndexSupported(NpadStyleIndex style_index) const {
     Core::HID::NpadStyleTag style = {supported_npad_style_set};
     switch (style_index) {
-    case Core::HID::NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Fullkey:
         return style.fullkey.As<bool>();
-    case Core::HID::NpadStyleIndex::Handheld:
+    case NpadStyleIndex::Handheld:
         return style.handheld.As<bool>();
-    case Core::HID::NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconDual:
         return style.joycon_dual.As<bool>();
-    case Core::HID::NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconLeft:
         return style.joycon_left.As<bool>();
-    case Core::HID::NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::JoyconRight:
         return style.joycon_right.As<bool>();
-    case Core::HID::NpadStyleIndex::GameCube:
+    case NpadStyleIndex::GameCube:
         return style.gamecube.As<bool>();
-    case Core::HID::NpadStyleIndex::Pokeball:
+    case NpadStyleIndex::Pokeball:
         return style.palma.As<bool>();
-    case Core::HID::NpadStyleIndex::NES:
+    case NpadStyleIndex::NES:
         return style.lark.As<bool>();
-    case Core::HID::NpadStyleIndex::SNES:
+    case NpadStyleIndex::SNES:
         return style.lucia.As<bool>();
-    case Core::HID::NpadStyleIndex::N64:
+    case NpadStyleIndex::N64:
         return style.lagoon.As<bool>();
-    case Core::HID::NpadStyleIndex::SegaGenesis:
+    case NpadStyleIndex::SegaGenesis:
         return style.lager.As<bool>();
     default:
         return false;

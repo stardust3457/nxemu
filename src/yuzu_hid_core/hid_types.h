@@ -213,26 +213,6 @@ enum class NpadInterfaceType : u8 {
     Embedded = 4,
 };
 
-// This is nn::hid::NpadStyleIndex
-enum class NpadStyleIndex : u8 {
-    None = 0,
-    Fullkey = 3,
-    Handheld = 4,
-    HandheldNES = 4,
-    JoyconDual = 5,
-    JoyconLeft = 6,
-    JoyconRight = 7,
-    GameCube = 8,
-    Pokeball = 9,
-    NES = 10,
-    SNES = 12,
-    N64 = 13,
-    SegaGenesis = 14,
-    SystemExt = 32,
-    System = 33,
-    MaxNpadType = 34,
-};
-
 // This is nn::hid::NpadStyleSet
 enum class NpadStyleSet : u32 {
     None = 0,

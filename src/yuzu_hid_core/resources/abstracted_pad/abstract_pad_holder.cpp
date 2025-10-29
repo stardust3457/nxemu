@@ -89,7 +89,7 @@ NpadJoyAssignmentMode NpadAbstractedPadHolder::GetAssignmentMode() const {
 }
 
 std::size_t NpadAbstractedPadHolder::GetStyleIndexList(
-    std::span<Core::HID::NpadStyleIndex> list) const {
+    std::span<NpadStyleIndex> list) const {
     for (std::size_t i = 0; i < list_size; i++) {
         list[i] = assignment_list[i].device_type;
     }

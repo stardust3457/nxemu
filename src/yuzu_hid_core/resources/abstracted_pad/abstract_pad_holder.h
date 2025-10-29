@@ -17,7 +17,7 @@ struct IAbstractedPad;
 
 struct AbstractAssignmentHolder {
     IAbstractedPad* abstracted_pad;
-    Core::HID::NpadStyleIndex device_type;
+    NpadStyleIndex device_type;
     Core::HID::NpadInterfaceType interface_type;
     INSERT_PADDING_BYTES(0x6);
     u64 controller_id;
@@ -37,7 +37,7 @@ public:
     void SetAssignmentMode(const NpadJoyAssignmentMode& mode);
     NpadJoyAssignmentMode GetAssignmentMode() const;
 
-    std::size_t GetStyleIndexList(std::span<Core::HID::NpadStyleIndex> list) const;
+    std::size_t GetStyleIndexList(std::span<NpadStyleIndex> list) const;
 
 private:
     std::array<AbstractAssignmentHolder, 5> assignment_list{};

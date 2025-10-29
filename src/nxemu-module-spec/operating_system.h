@@ -151,6 +151,26 @@ enum class ButtonNames : uint32_t
     ButtonExtra,
 };
 
+// This is nn::hid::NpadStyleIndex
+enum class NpadStyleIndex : uint8_t {
+    None = 0,
+    Fullkey = 3,
+    Handheld = 4,
+    HandheldNES = 4,
+    JoyconDual = 5,
+    JoyconLeft = 6,
+    JoyconRight = 7,
+    GameCube = 8,
+    Pokeball = 9,
+    NES = 10,
+    SNES = 12,
+    N64 = 13,
+    SegaGenesis = 14,
+    SystemExt = 32,
+    System = 33,
+    MaxNpadType = 34,
+};
+
 __interface IProgramMetadata
 {
     bool Is64BitProgram() const = 0;

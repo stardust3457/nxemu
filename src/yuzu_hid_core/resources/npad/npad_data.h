@@ -58,7 +58,7 @@ public:
 
     void SetSupportedNpadStyleSet(Core::HID::NpadStyleSet style_set);
     Core::HID::NpadStyleSet GetSupportedNpadStyleSet() const;
-    bool IsNpadStyleIndexSupported(Core::HID::NpadStyleIndex style_index) const;
+    bool IsNpadStyleIndexSupported(NpadStyleIndex style_index) const;
 
     void SetLrAssignmentMode(bool is_enabled);
     bool GetLrAssignmentMode() const;

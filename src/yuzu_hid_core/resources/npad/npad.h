@@ -85,10 +85,10 @@ public:
                                                 NpadIdType npad_id);
 
     // Adds a new controller at an index.
-    void AddNewControllerAt(u64 aruid, Core::HID::NpadStyleIndex controller,
+    void AddNewControllerAt(u64 aruid, NpadStyleIndex controller,
                             NpadIdType npad_id);
     // Adds a new controller at an index with connection status.
-    void UpdateControllerAt(u64 aruid, Core::HID::NpadStyleIndex controller,
+    void UpdateControllerAt(u64 aruid, NpadStyleIndex controller,
                             NpadIdType npad_id, bool connected);
 
     Result DisconnectNpad(u64 aruid, NpadIdType npad_id);

@@ -177,7 +177,7 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
     const auto& body_colors = controller.device->GetColors();
     const auto& battery_level = controller.device->GetBattery();
     auto* shared_memory = controller.shared_memory;
-    if (controller_type == Core::HID::NpadStyleIndex::None) {
+    if (controller_type == NpadStyleIndex::None) {
         npad_resource.SignalStyleSetUpdateEvent(aruid, npad_id);
         return;
     }
@@ -196,10 +196,10 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
     shared_memory->battery_level_right = {};
 
     switch (controller_type) {
-    case Core::HID::NpadStyleIndex::None:
+    case NpadStyleIndex::None:
         ASSERT(false);
         break;
-    case Core::HID::NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Fullkey:
         shared_memory->fullkey_color.attribute = ColorAttribute::Ok;
         shared_memory->fullkey_color.fullkey = body_colors.fullkey;
         shared_memory->battery_level_dual = battery_level.dual.battery_level;
@@ -213,7 +213,7 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
         shared_memory->applet_footer_type = AppletFooterUiType::SwitchProController;
         shared_memory->sixaxis_fullkey_properties.is_newly_assigned.Assign(1);
         break;
-    case Core::HID::NpadStyleIndex::Handheld:
+    case NpadStyleIndex::Handheld:
         shared_memory->fullkey_color.attribute = ColorAttribute::Ok;
         shared_memory->joycon_color.attribute = ColorAttribute::Ok;
         shared_memory->fullkey_color.fullkey = body_colors.fullkey;
@@ -236,7 +236,7 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
         shared_memory->applet_footer_type = AppletFooterUiType::HandheldJoyConLeftJoyConRight;
         shared_memory->sixaxis_handheld_properties.is_newly_assigned.Assign(1);
         break;
-    case Core::HID::NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconDual:
         shared_memory->fullkey_color.attribute = ColorAttribute::Ok;
         shared_memory->joycon_color.attribute = ColorAttribute::Ok;
         shared_memory->style_tag.joycon_dual.Assign(1);
@@ -282,7 +282,7 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
                 battery_level.right.is_charging);
         }
         break;
-    case Core::HID::NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconLeft:
         shared_memory->fullkey_color.attribute = ColorAttribute::Ok;
         shared_memory->fullkey_color.fullkey = body_colors.left;
         shared_memory->joycon_color.attribute = ColorAttribute::Ok;
@@ -297,7 +297,7 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
         shared_memory->applet_footer_type = AppletFooterUiType::JoyLeftHorizontal;
         shared_memory->sixaxis_left_properties.is_newly_assigned.Assign(1);
         break;
-    case Core::HID::NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::JoyconRight:
         shared_memory->fullkey_color.attribute = ColorAttribute::Ok;
         shared_memory->fullkey_color.fullkey = body_colors.right;
         shared_memory->joycon_color.attribute = ColorAttribute::Ok;
@@ -312,32 +312,32 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
         shared_memory->applet_footer_type = AppletFooterUiType::JoyRightHorizontal;
         shared_memory->sixaxis_right_properties.is_newly_assigned.Assign(1);
         break;
-    case Core::HID::NpadStyleIndex::GameCube:
+    case NpadStyleIndex::GameCube:
         shared_memory->style_tag.gamecube.Assign(1);
         shared_memory->device_type.fullkey.Assign(1);
         shared_memory->system_properties.is_vertical.Assign(1);
         shared_memory->system_properties.use_plus.Assign(1);
         break;
-    case Core::HID::NpadStyleIndex::Pokeball:
+    case NpadStyleIndex::Pokeball:
         shared_memory->style_tag.palma.Assign(1);
         shared_memory->device_type.palma.Assign(1);
         shared_memory->sixaxis_fullkey_properties.is_newly_assigned.Assign(1);
         break;
-    case Core::HID::NpadStyleIndex::NES:
+    case NpadStyleIndex::NES:
         shared_memory->style_tag.lark.Assign(1);
         shared_memory->device_type.fullkey.Assign(1);
         break;
-    case Core::HID::NpadStyleIndex::SNES:
+    case NpadStyleIndex::SNES:
         shared_memory->style_tag.lucia.Assign(1);
         shared_memory->device_type.fullkey.Assign(1);
         shared_memory->applet_footer_type = AppletFooterUiType::Lucia;
         break;
-    case Core::HID::NpadStyleIndex::N64:
+    case NpadStyleIndex::N64:
         shared_memory->style_tag.lagoon.Assign(1);
         shared_memory->device_type.fullkey.Assign(1);
         shared_memory->applet_footer_type = AppletFooterUiType::Lagon;
         break;
-    case Core::HID::NpadStyleIndex::SegaGenesis:
+    case NpadStyleIndex::SegaGenesis:
         shared_memory->style_tag.lager.Assign(1);
         shared_memory->device_type.fullkey.Assign(1);
         break;
@@ -348,7 +348,7 @@ void NPad::InitNewlyAddedController(u64 aruid, NpadIdType npad_id) {
     controller.is_connected = true;
     controller.device->Connect();
     controller.device->SetLedPattern();
-    if (controller_type == Core::HID::NpadStyleIndex::JoyconDual) {
+    if (controller_type == NpadStyleIndex::JoyconDual) {
         if (controller.is_dual_left_connected) {
             controller.device->SetPollingMode(Core::HID::EmulatedDeviceIndex::LeftIndex,
                                               Common::Input::PollingMode::Active);
@@ -415,7 +415,7 @@ void NPad::RequestPadStateUpdate(u64 aruid, NpadIdType npad_id) {
 
     using btn = Core::HID::NpadButton;
     pad_entry.npad_buttons.raw = btn::None;
-    if (controller_type != Core::HID::NpadStyleIndex::JoyconLeft) {
+    if (controller_type != NpadStyleIndex::JoyconLeft) {
         constexpr btn right_button_mask = btn::A | btn::B | btn::X | btn::Y | btn::StickR | btn::R |
                                           btn::ZR | btn::Plus | btn::StickRLeft | btn::StickRUp |
                                           btn::StickRRight | btn::StickRDown;
@@ -423,7 +423,7 @@ void NPad::RequestPadStateUpdate(u64 aruid, NpadIdType npad_id) {
         pad_entry.r_stick = stick_state.right;
     }
 
-    if (controller_type != Core::HID::NpadStyleIndex::JoyconRight) {
+    if (controller_type != NpadStyleIndex::JoyconRight) {
         constexpr btn left_button_mask =
             btn::Left | btn::Up | btn::Right | btn::Down | btn::StickL | btn::L | btn::ZL |
             btn::Minus | btn::StickLLeft | btn::StickLUp | btn::StickLRight | btn::StickLDown;
@@ -431,19 +431,19 @@ void NPad::RequestPadStateUpdate(u64 aruid, NpadIdType npad_id) {
         pad_entry.l_stick = stick_state.left;
     }
 
-    if (controller_type == Core::HID::NpadStyleIndex::JoyconLeft ||
-        controller_type == Core::HID::NpadStyleIndex::JoyconDual) {
+    if (controller_type == NpadStyleIndex::JoyconLeft ||
+        controller_type == NpadStyleIndex::JoyconDual) {
         pad_entry.npad_buttons.left_sl.Assign(button_state.left_sl);
         pad_entry.npad_buttons.left_sr.Assign(button_state.left_sr);
     }
 
-    if (controller_type == Core::HID::NpadStyleIndex::JoyconRight ||
-        controller_type == Core::HID::NpadStyleIndex::JoyconDual) {
+    if (controller_type == NpadStyleIndex::JoyconRight ||
+        controller_type == NpadStyleIndex::JoyconDual) {
         pad_entry.npad_buttons.right_sl.Assign(button_state.right_sl);
         pad_entry.npad_buttons.right_sr.Assign(button_state.right_sr);
     }
 
-    if (controller_type == Core::HID::NpadStyleIndex::GameCube) {
+    if (controller_type == NpadStyleIndex::GameCube) {
         const auto& trigger_state = controller.device->GetTriggers();
         trigger_entry.l_analog = trigger_state.left;
         trigger_entry.r_analog = trigger_state.right;
@@ -487,7 +487,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
 
             const auto& controller_type = controller.device->GetNpadStyleIndex();
 
-            if (controller_type == Core::HID::NpadStyleIndex::None ||
+            if (controller_type == NpadStyleIndex::None ||
                 !controller.device->IsConnected()) {
                 continue;
             }
@@ -510,14 +510,14 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
             libnx_state.connection_status.raw = 0;
             libnx_state.connection_status.is_connected.Assign(1);
             switch (controller_type) {
-            case Core::HID::NpadStyleIndex::None:
+            case NpadStyleIndex::None:
                 ASSERT(false);
                 break;
-            case Core::HID::NpadStyleIndex::Fullkey:
-            case Core::HID::NpadStyleIndex::NES:
-            case Core::HID::NpadStyleIndex::SNES:
-            case Core::HID::NpadStyleIndex::N64:
-            case Core::HID::NpadStyleIndex::SegaGenesis:
+            case NpadStyleIndex::Fullkey:
+            case NpadStyleIndex::NES:
+            case NpadStyleIndex::SNES:
+            case NpadStyleIndex::N64:
+            case NpadStyleIndex::SegaGenesis:
                 pad_state.connection_status.raw = 0;
                 pad_state.connection_status.is_connected.Assign(1);
                 pad_state.connection_status.is_wired.Assign(1);
@@ -527,7 +527,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                     npad->fullkey_lifo.ReadCurrentEntry().state.sampling_number + 1;
                 npad->fullkey_lifo.WriteNextEntry(pad_state);
                 break;
-            case Core::HID::NpadStyleIndex::Handheld:
+            case NpadStyleIndex::Handheld:
                 pad_state.connection_status.raw = 0;
                 pad_state.connection_status.is_connected.Assign(1);
                 pad_state.connection_status.is_wired.Assign(1);
@@ -545,7 +545,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                     npad->handheld_lifo.ReadCurrentEntry().state.sampling_number + 1;
                 npad->handheld_lifo.WriteNextEntry(pad_state);
                 break;
-            case Core::HID::NpadStyleIndex::JoyconDual:
+            case NpadStyleIndex::JoyconDual:
                 pad_state.connection_status.raw = 0;
                 pad_state.connection_status.is_connected.Assign(1);
                 if (controller.is_dual_left_connected) {
@@ -561,7 +561,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                     npad->joy_dual_lifo.ReadCurrentEntry().state.sampling_number + 1;
                 npad->joy_dual_lifo.WriteNextEntry(pad_state);
                 break;
-            case Core::HID::NpadStyleIndex::JoyconLeft:
+            case NpadStyleIndex::JoyconLeft:
                 pad_state.connection_status.raw = 0;
                 pad_state.connection_status.is_connected.Assign(1);
                 pad_state.connection_status.is_left_connected.Assign(1);
@@ -571,7 +571,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                     npad->joy_left_lifo.ReadCurrentEntry().state.sampling_number + 1;
                 npad->joy_left_lifo.WriteNextEntry(pad_state);
                 break;
-            case Core::HID::NpadStyleIndex::JoyconRight:
+            case NpadStyleIndex::JoyconRight:
                 pad_state.connection_status.raw = 0;
                 pad_state.connection_status.is_connected.Assign(1);
                 pad_state.connection_status.is_right_connected.Assign(1);
@@ -581,7 +581,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                     npad->joy_right_lifo.ReadCurrentEntry().state.sampling_number + 1;
                 npad->joy_right_lifo.WriteNextEntry(pad_state);
                 break;
-            case Core::HID::NpadStyleIndex::GameCube:
+            case NpadStyleIndex::GameCube:
                 pad_state.connection_status.raw = 0;
                 pad_state.connection_status.is_connected.Assign(1);
                 pad_state.connection_status.is_wired.Assign(1);
@@ -594,7 +594,7 @@ void NPad::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                 npad->fullkey_lifo.WriteNextEntry(pad_state);
                 npad->gc_trigger_lifo.WriteNextEntry(trigger_state);
                 break;
-            case Core::HID::NpadStyleIndex::Pokeball:
+            case NpadStyleIndex::Pokeball:
                 pad_state.connection_status.raw = 0;
                 pad_state.connection_status.is_connected.Assign(1);
                 pad_state.sampling_number =
@@ -711,18 +711,18 @@ bool NPad::SetNpadMode(u64 aruid, NpadIdType& new_npad_id, NpadIdType npad_id,
     }
 
     if (assignment_mode == NpadJoyAssignmentMode::Dual) {
-        if (controller.device->GetNpadStyleIndex() == Core::HID::NpadStyleIndex::JoyconLeft) {
+        if (controller.device->GetNpadStyleIndex() == NpadStyleIndex::JoyconLeft) {
             DisconnectNpad(aruid, npad_id);
             controller.is_dual_left_connected = true;
             controller.is_dual_right_connected = false;
-            UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconDual, npad_id, true);
+            UpdateControllerAt(aruid, NpadStyleIndex::JoyconDual, npad_id, true);
             return false;
         }
-        if (controller.device->GetNpadStyleIndex() == Core::HID::NpadStyleIndex::JoyconRight) {
+        if (controller.device->GetNpadStyleIndex() == NpadStyleIndex::JoyconRight) {
             DisconnectNpad(aruid, npad_id);
             controller.is_dual_left_connected = false;
             controller.is_dual_right_connected = true;
-            UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconDual, npad_id, true);
+            UpdateControllerAt(aruid, NpadStyleIndex::JoyconDual, npad_id, true);
             return false;
         }
         return false;
@@ -731,18 +731,18 @@ bool NPad::SetNpadMode(u64 aruid, NpadIdType& new_npad_id, NpadIdType npad_id,
     // This is for NpadJoyAssignmentMode::Single
 
     // Only JoyconDual get affected by this function
-    if (controller.device->GetNpadStyleIndex() != Core::HID::NpadStyleIndex::JoyconDual) {
+    if (controller.device->GetNpadStyleIndex() != NpadStyleIndex::JoyconDual) {
         return false;
     }
 
     if (controller.is_dual_left_connected && !controller.is_dual_right_connected) {
         DisconnectNpad(aruid, npad_id);
-        UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconLeft, npad_id, true);
+        UpdateControllerAt(aruid, NpadStyleIndex::JoyconLeft, npad_id, true);
         return false;
     }
     if (!controller.is_dual_left_connected && controller.is_dual_right_connected) {
         DisconnectNpad(aruid, npad_id);
-        UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconRight, npad_id, true);
+        UpdateControllerAt(aruid, NpadStyleIndex::JoyconRight, npad_id, true);
         return false;
     }
 
@@ -751,15 +751,15 @@ bool NPad::SetNpadMode(u64 aruid, NpadIdType& new_npad_id, NpadIdType npad_id,
     auto& controller_2 = GetControllerFromNpadIdType(aruid, new_npad_id);
     DisconnectNpad(aruid, npad_id);
     if (npad_device_type == NpadJoyDeviceType::Left) {
-        UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconLeft, npad_id, true);
+        UpdateControllerAt(aruid, NpadStyleIndex::JoyconLeft, npad_id, true);
         controller_2.is_dual_left_connected = false;
         controller_2.is_dual_right_connected = true;
-        UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconDual, new_npad_id, true);
+        UpdateControllerAt(aruid, NpadStyleIndex::JoyconDual, new_npad_id, true);
     } else {
-        UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconRight, npad_id, true);
+        UpdateControllerAt(aruid, NpadStyleIndex::JoyconRight, npad_id, true);
         controller_2.is_dual_left_connected = true;
         controller_2.is_dual_right_connected = false;
-        UpdateControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconDual, new_npad_id, true);
+        UpdateControllerAt(aruid, NpadStyleIndex::JoyconDual, new_npad_id, true);
     }
     return true;
 }
@@ -770,12 +770,12 @@ Result NPad::AcquireNpadStyleSetUpdateEventHandle(u64 aruid, Kernel::KReadableEv
     return npad_resource.AcquireNpadStyleSetUpdateEventHandle(aruid, out_event, npad_id);
 }
 
-void NPad::AddNewControllerAt(u64 aruid, Core::HID::NpadStyleIndex controller,
+void NPad::AddNewControllerAt(u64 aruid, NpadStyleIndex controller,
                               NpadIdType npad_id) {
     UpdateControllerAt(aruid, controller, npad_id, true);
 }
 
-void NPad::UpdateControllerAt(u64 aruid, Core::HID::NpadStyleIndex type,
+void NPad::UpdateControllerAt(u64 aruid, NpadStyleIndex type,
                               NpadIdType npad_id, bool connected) {
     auto& controller = GetControllerFromNpadIdType(aruid, npad_id);
     if (!connected) {
@@ -872,44 +872,44 @@ Result NPad::MergeSingleJoyAsDualJoy(u64 aruid, NpadIdType npad_id_1,
     auto controller_style_2 = controller_2.device->GetNpadStyleIndex();
 
     // Simplify this code by converting dualjoycon with only a side connected to single joycons
-    if (controller_style_1 == Core::HID::NpadStyleIndex::JoyconDual) {
+    if (controller_style_1 == NpadStyleIndex::JoyconDual) {
         if (controller_1.is_dual_left_connected && !controller_1.is_dual_right_connected) {
-            controller_style_1 = Core::HID::NpadStyleIndex::JoyconLeft;
+            controller_style_1 = NpadStyleIndex::JoyconLeft;
         }
         if (!controller_1.is_dual_left_connected && controller_1.is_dual_right_connected) {
-            controller_style_1 = Core::HID::NpadStyleIndex::JoyconRight;
+            controller_style_1 = NpadStyleIndex::JoyconRight;
         }
     }
-    if (controller_style_2 == Core::HID::NpadStyleIndex::JoyconDual) {
+    if (controller_style_2 == NpadStyleIndex::JoyconDual) {
         if (controller_2.is_dual_left_connected && !controller_2.is_dual_right_connected) {
-            controller_style_2 = Core::HID::NpadStyleIndex::JoyconLeft;
+            controller_style_2 = NpadStyleIndex::JoyconLeft;
         }
         if (!controller_2.is_dual_left_connected && controller_2.is_dual_right_connected) {
-            controller_style_2 = Core::HID::NpadStyleIndex::JoyconRight;
+            controller_style_2 = NpadStyleIndex::JoyconRight;
         }
     }
 
     // Invalid merge errors
-    if (controller_style_1 == Core::HID::NpadStyleIndex::JoyconDual ||
-        controller_style_2 == Core::HID::NpadStyleIndex::JoyconDual) {
+    if (controller_style_1 == NpadStyleIndex::JoyconDual ||
+        controller_style_2 == NpadStyleIndex::JoyconDual) {
         return NpadIsDualJoycon;
     }
-    if (controller_style_1 == Core::HID::NpadStyleIndex::JoyconLeft &&
-        controller_style_2 == Core::HID::NpadStyleIndex::JoyconLeft) {
+    if (controller_style_1 == NpadStyleIndex::JoyconLeft &&
+        controller_style_2 == NpadStyleIndex::JoyconLeft) {
         return NpadIsSameType;
     }
-    if (controller_style_1 == Core::HID::NpadStyleIndex::JoyconRight &&
-        controller_style_2 == Core::HID::NpadStyleIndex::JoyconRight) {
+    if (controller_style_1 == NpadStyleIndex::JoyconRight &&
+        controller_style_2 == NpadStyleIndex::JoyconRight) {
         return NpadIsSameType;
     }
 
     // These exceptions are handled as if they where dual joycon
-    if (controller_style_1 != Core::HID::NpadStyleIndex::JoyconLeft &&
-        controller_style_1 != Core::HID::NpadStyleIndex::JoyconRight) {
+    if (controller_style_1 != NpadStyleIndex::JoyconLeft &&
+        controller_style_1 != NpadStyleIndex::JoyconRight) {
         return NpadIsDualJoycon;
     }
-    if (controller_style_2 != Core::HID::NpadStyleIndex::JoyconLeft &&
-        controller_style_2 != Core::HID::NpadStyleIndex::JoyconRight) {
+    if (controller_style_2 != NpadStyleIndex::JoyconLeft &&
+        controller_style_2 != NpadStyleIndex::JoyconRight) {
         return NpadIsDualJoycon;
     }
 
@@ -918,7 +918,7 @@ Result NPad::MergeSingleJoyAsDualJoy(u64 aruid, NpadIdType npad_id_1,
     DisconnectNpad(aruid, npad_id_2);
     controller_1.is_dual_left_connected = true;
     controller_1.is_dual_right_connected = true;
-    AddNewControllerAt(aruid, Core::HID::NpadStyleIndex::JoyconDual, npad_id_1);
+    AddNewControllerAt(aruid, NpadStyleIndex::JoyconDual, npad_id_1);
     return ResultSuccess;
 }
 
@@ -995,9 +995,9 @@ void NPad::ClearAllConnectedControllers() {
     for (std::size_t aruid_index = 0; aruid_index < AruidIndexMax; aruid_index++) {
         for (auto& controller : controller_data[aruid_index]) {
             if (controller.device->IsConnected() &&
-                controller.device->GetNpadStyleIndex() != Core::HID::NpadStyleIndex::None) {
+                controller.device->GetNpadStyleIndex() != NpadStyleIndex::None) {
                 controller.device->Disconnect();
-                controller.device->SetNpadStyleIndex(Core::HID::NpadStyleIndex::None);
+                controller.device->SetNpadStyleIndex(NpadStyleIndex::None);
             }
         }
     }
@@ -1014,7 +1014,7 @@ void NPad::DisconnectAllConnectedControllers() {
 void NPad::ConnectAllDisconnectedControllers() {
     for (std::size_t aruid_index = 0; aruid_index < AruidIndexMax; aruid_index++) {
         for (auto& controller : controller_data[aruid_index]) {
-            if (controller.device->GetNpadStyleIndex() != Core::HID::NpadStyleIndex::None &&
+            if (controller.device->GetNpadStyleIndex() != NpadStyleIndex::None &&
                 !controller.device->IsConnected()) {
                 controller.device->Connect();
             }
@@ -1026,7 +1026,7 @@ void NPad::ClearAllControllers() {
     for (std::size_t aruid_index = 0; aruid_index < AruidIndexMax; aruid_index++) {
         for (auto& controller : controller_data[aruid_index]) {
             controller.device->Disconnect();
-            controller.device->SetNpadStyleIndex(Core::HID::NpadStyleIndex::None);
+            controller.device->SetNpadStyleIndex(NpadStyleIndex::None);
         }
     }
 }
@@ -1144,19 +1144,19 @@ Core::HID::SixAxisSensorProperties& NPad::GetSixaxisProperties(
     u64 aruid, const Core::HID::SixAxisSensorHandle& sixaxis_handle) {
     auto& controller = GetControllerFromHandle(aruid, sixaxis_handle);
     switch (sixaxis_handle.npad_type) {
-    case Core::HID::NpadStyleIndex::Fullkey:
-    case Core::HID::NpadStyleIndex::Pokeball:
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Pokeball:
         return controller.shared_memory->sixaxis_fullkey_properties;
-    case Core::HID::NpadStyleIndex::Handheld:
+    case NpadStyleIndex::Handheld:
         return controller.shared_memory->sixaxis_handheld_properties;
-    case Core::HID::NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconDual:
         if (sixaxis_handle.device_index == Core::HID::DeviceIndex::Left) {
             return controller.shared_memory->sixaxis_dual_left_properties;
         }
         return controller.shared_memory->sixaxis_dual_right_properties;
-    case Core::HID::NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconLeft:
         return controller.shared_memory->sixaxis_left_properties;
-    case Core::HID::NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::JoyconRight:
         return controller.shared_memory->sixaxis_right_properties;
     default:
         return controller.shared_memory->sixaxis_fullkey_properties;
@@ -1167,19 +1167,19 @@ const Core::HID::SixAxisSensorProperties& NPad::GetSixaxisProperties(
     u64 aruid, const Core::HID::SixAxisSensorHandle& sixaxis_handle) const {
     const auto& controller = GetControllerFromHandle(aruid, sixaxis_handle);
     switch (sixaxis_handle.npad_type) {
-    case Core::HID::NpadStyleIndex::Fullkey:
-    case Core::HID::NpadStyleIndex::Pokeball:
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Pokeball:
         return controller.shared_memory->sixaxis_fullkey_properties;
-    case Core::HID::NpadStyleIndex::Handheld:
+    case NpadStyleIndex::Handheld:
         return controller.shared_memory->sixaxis_handheld_properties;
-    case Core::HID::NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconDual:
         if (sixaxis_handle.device_index == Core::HID::DeviceIndex::Left) {
             return controller.shared_memory->sixaxis_dual_left_properties;
         }
         return controller.shared_memory->sixaxis_dual_right_properties;
-    case Core::HID::NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconLeft:
         return controller.shared_memory->sixaxis_left_properties;
-    case Core::HID::NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::JoyconRight:
         return controller.shared_memory->sixaxis_right_properties;
     default:
         return controller.shared_memory->sixaxis_fullkey_properties;
@@ -1277,11 +1277,11 @@ NpadVibrationBase* NPad::GetVibrationDevice(const Core::HID::VibrationDeviceHand
     }
 
     const auto npad_index = NpadIdTypeToIndex(static_cast<NpadIdType>(handle.npad_id));
-    const auto style_inde = static_cast<Core::HID::NpadStyleIndex>(handle.npad_type);
-    if (style_inde == Core::HID::NpadStyleIndex::GameCube) {
+    const auto style_inde = static_cast<NpadStyleIndex>(handle.npad_type);
+    if (style_inde == NpadStyleIndex::GameCube) {
         return abstracted_pads[npad_index].GetGCVibrationDevice();
     }
-    if (style_inde == Core::HID::NpadStyleIndex::N64) {
+    if (style_inde == NpadStyleIndex::N64) {
         return abstracted_pads[npad_index].GetN64VibrationDevice();
     }
     return abstracted_pads[npad_index].GetVibrationDevice(handle.device_index);
@@ -1294,8 +1294,8 @@ NpadN64VibrationDevice* NPad::GetN64VibrationDevice(
     }
 
     const auto npad_index = NpadIdTypeToIndex(static_cast<NpadIdType>(handle.npad_id));
-    const auto style_inde = static_cast<Core::HID::NpadStyleIndex>(handle.npad_type);
-    if (style_inde != Core::HID::NpadStyleIndex::N64) {
+    const auto style_inde = static_cast<NpadStyleIndex>(handle.npad_type);
+    if (style_inde != NpadStyleIndex::N64) {
         return nullptr;
     }
     return abstracted_pads[npad_index].GetN64VibrationDevice();
@@ -1307,9 +1307,9 @@ NpadVibrationDevice* NPad::GetNSVibrationDevice(const Core::HID::VibrationDevice
     }
 
     const auto npad_index = NpadIdTypeToIndex(static_cast<NpadIdType>(handle.npad_id));
-    const auto style_inde = static_cast<Core::HID::NpadStyleIndex>(handle.npad_type);
-    if (style_inde == Core::HID::NpadStyleIndex::GameCube ||
-        style_inde == Core::HID::NpadStyleIndex::N64) {
+    const auto style_inde = static_cast<NpadStyleIndex>(handle.npad_type);
+    if (style_inde == NpadStyleIndex::GameCube ||
+        style_inde == NpadStyleIndex::N64) {
         return nullptr;
     }
 
@@ -1322,8 +1322,8 @@ NpadGcVibrationDevice* NPad::GetGcVibrationDevice(const Core::HID::VibrationDevi
     }
 
     const auto npad_index = NpadIdTypeToIndex(static_cast<NpadIdType>(handle.npad_id));
-    const auto style_inde = static_cast<Core::HID::NpadStyleIndex>(handle.npad_type);
-    if (style_inde != Core::HID::NpadStyleIndex::GameCube) {
+    const auto style_inde = static_cast<NpadStyleIndex>(handle.npad_type);
+    if (style_inde != NpadStyleIndex::GameCube) {
         return nullptr;
     }
     return abstracted_pads[npad_index].GetGCVibrationDevice();

@@ -170,7 +170,7 @@ static_assert(sizeof(PackedCameraConfig) == 0x10, "PackedCameraConfig is an inva
 // This is nn::irsensor::IrCameraHandle
 struct IrCameraHandle {
     u8 npad_id{};
-    Core::HID::NpadStyleIndex npad_type{Core::HID::NpadStyleIndex::None};
+    NpadStyleIndex npad_type{NpadStyleIndex::None};
     INSERT_PADDING_BYTES(2);
 };
 static_assert(sizeof(IrCameraHandle) == 4, "IrCameraHandle is an invalid size");

@@ -42,15 +42,15 @@ constexpr Result IsSixaxisHandleValid(const Core::HID::SixAxisSensorHandle& hand
 
 constexpr Result IsVibrationHandleValid(const Core::HID::VibrationDeviceHandle& handle) {
     switch (handle.npad_type) {
-    case Core::HID::NpadStyleIndex::Fullkey:
-    case Core::HID::NpadStyleIndex::Handheld:
-    case Core::HID::NpadStyleIndex::JoyconDual:
-    case Core::HID::NpadStyleIndex::JoyconLeft:
-    case Core::HID::NpadStyleIndex::JoyconRight:
-    case Core::HID::NpadStyleIndex::GameCube:
-    case Core::HID::NpadStyleIndex::N64:
-    case Core::HID::NpadStyleIndex::SystemExt:
-    case Core::HID::NpadStyleIndex::System:
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Handheld:
+    case NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconRight:
+    case NpadStyleIndex::GameCube:
+    case NpadStyleIndex::N64:
+    case NpadStyleIndex::SystemExt:
+    case NpadStyleIndex::System:
         // These support vibration
         break;
     default:
