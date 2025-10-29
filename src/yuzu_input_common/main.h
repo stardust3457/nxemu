@@ -50,7 +50,7 @@ enum class InputType { None, Button, Stick, Motion, Touch };
  * Given a ParamPackage for a Device returned from `GetInputDevices`, attempt to get the default
  * mapping for the device.
  */
-using AnalogMapping = std::unordered_map<InputSettings::NativeAnalog::Values, Common::ParamPackage>;
+using AnalogMapping = std::unordered_map<NativeAnalogValues, Common::ParamPackage>;
 using ButtonMapping = std::unordered_map<NativeButtonValues, Common::ParamPackage>;
 using MotionMapping = std::unordered_map<NativeMotionValues, Common::ParamPackage>;
 

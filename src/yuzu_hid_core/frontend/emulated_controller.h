@@ -32,7 +32,7 @@ struct ControllerMotionInfo {
 using ButtonDevices =
     std::array<std::unique_ptr<Common::Input::InputDevice>, (size_t)NativeButtonValues::NumButtons>;
 using StickDevices =
-    std::array<std::unique_ptr<Common::Input::InputDevice>, InputSettings::NativeAnalog::NumAnalogs>;
+    std::array<std::unique_ptr<Common::Input::InputDevice>, (size_t)NativeAnalogValues::NumAnalogs>;
 using ControllerMotionDevices =
     std::array<std::unique_ptr<Common::Input::InputDevice>, (size_t)NativeMotionValues::NumMotions>;
 using TriggerDevices =
@@ -50,7 +50,7 @@ using NfcDevices =
 using OutputDevices = std::array<std::unique_ptr<Common::Input::OutputDevice>, output_devices_size>;
 
 using ButtonParams = std::array<Common::ParamPackage, (size_t)NativeButtonValues::NumButtons>;
-using StickParams = std::array<Common::ParamPackage, InputSettings::NativeAnalog::NumAnalogs>;
+using StickParams = std::array<Common::ParamPackage, (size_t)NativeAnalogValues::NumAnalogs>;
 using ControllerMotionParams = std::array<Common::ParamPackage, (size_t)NativeMotionValues::NumMotions>;
 using TriggerParams = std::array<Common::ParamPackage, InputSettings::NativeTrigger::NumTriggers>;
 using ColorParams = std::array<Common::ParamPackage, max_emulated_controllers>;
@@ -61,7 +61,7 @@ using NfcParams = std::array<Common::ParamPackage, max_emulated_controllers>;
 using OutputParams = std::array<Common::ParamPackage, output_devices_size>;
 
 using ButtonValues = std::array<Common::Input::ButtonStatus, (size_t)NativeButtonValues::NumButtons>;
-using SticksValues = std::array<Common::Input::StickStatus, InputSettings::NativeAnalog::NumAnalogs>;
+using SticksValues = std::array<Common::Input::StickStatus, (size_t)NativeAnalogValues::NumAnalogs>;
 using TriggerValues =
     std::array<Common::Input::TriggerStatus, InputSettings::NativeTrigger::NumTriggers>;
 using ControllerMotionValues = std::array<ControllerMotionInfo, (size_t)NativeMotionValues::NumMotions>;

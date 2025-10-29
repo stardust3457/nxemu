@@ -15,7 +15,7 @@ const std::array<const char*, (size_t)NativeButtonValues::NumButtons> mapping = 
 }
 
 namespace NativeAnalog {
-const std::array<const char*, NumAnalogs> mapping = {{
+const std::array<const char*, (size_t)NativeAnalogValues::NumAnalogs> mapping = {{
     "lstick",
     "rstick",
 }};

@@ -269,7 +269,7 @@ AnalogMapping Mouse::GetAnalogMappingForDevice(
     right_analog_params.Set("threshold", 0.5f);
     right_analog_params.Set("range", 1.0f);
     right_analog_params.Set("deadzone", 0.0f);
-    mapping.insert_or_assign(InputSettings::NativeAnalog::RStick, std::move(right_analog_params));
+    mapping.insert_or_assign(NativeAnalogValues::RStick, std::move(right_analog_params));
     return mapping;
 }
 

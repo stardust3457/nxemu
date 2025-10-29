@@ -717,11 +717,11 @@ AnalogMapping Joycons::GetAnalogMappingForDevice(const Common::ParamPackage& par
     Common::ParamPackage left_analog_params = GetParamPackage(port, pad_left);
     left_analog_params.Set("axis_x", static_cast<int>(Joycon::PadAxes::LeftStickX));
     left_analog_params.Set("axis_y", static_cast<int>(Joycon::PadAxes::LeftStickY));
-    mapping.insert_or_assign(InputSettings::NativeAnalog::LStick, std::move(left_analog_params));
+    mapping.insert_or_assign(NativeAnalogValues::LStick, std::move(left_analog_params));
     Common::ParamPackage right_analog_params = GetParamPackage(port, pad_right);
     right_analog_params.Set("axis_x", static_cast<int>(Joycon::PadAxes::RightStickX));
     right_analog_params.Set("axis_y", static_cast<int>(Joycon::PadAxes::RightStickY));
-    mapping.insert_or_assign(InputSettings::NativeAnalog::RStick, std::move(right_analog_params));
+    mapping.insert_or_assign(NativeAnalogValues::RStick, std::move(right_analog_params));
     return mapping;
 }
 

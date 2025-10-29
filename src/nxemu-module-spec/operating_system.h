@@ -85,6 +85,13 @@ enum class NativeMotionValues : uint32_t
     NumMotions,
 };
 
+enum class NativeAnalogValues : uint32_t {
+    LStick,
+    RStick,
+
+    NumAnalogs,
+};
+
 enum class ButtonNames : uint32_t
 {
     Undefined,

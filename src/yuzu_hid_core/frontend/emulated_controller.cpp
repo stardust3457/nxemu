@@ -263,17 +263,17 @@ void EmulatedController::LoadTASParams() {
     tas_button_params[(size_t)NativeButtonValues::SLRight].Set("button", 20);
     tas_button_params[(size_t)NativeButtonValues::SRRight].Set("button", 21);
 
-    tas_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_x", 0);
-    tas_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_y", 1);
-    tas_stick_params[InputSettings::NativeAnalog::RStick].Set("axis_x", 2);
-    tas_stick_params[InputSettings::NativeAnalog::RStick].Set("axis_y", 3);
+    tas_stick_params[(size_t)NativeAnalogValues::LStick].Set("axis_x", 0);
+    tas_stick_params[(size_t)NativeAnalogValues::LStick].Set("axis_y", 1);
+    tas_stick_params[(size_t)NativeAnalogValues::RStick].Set("axis_x", 2);
+    tas_stick_params[(size_t)NativeAnalogValues::RStick].Set("axis_y", 3);
 
     // set to optimal stick to avoid sanitizing the stick and tweaking the coordinates
     // making sure they play back in the game as originally written down in the script file
-    tas_stick_params[InputSettings::NativeAnalog::LStick].Set("deadzone", 0.0f);
-    tas_stick_params[InputSettings::NativeAnalog::LStick].Set("range", 1.0f);
-    tas_stick_params[InputSettings::NativeAnalog::RStick].Set("deadzone", 0.0f);
-    tas_stick_params[InputSettings::NativeAnalog::RStick].Set("range", 1.0f);
+    tas_stick_params[(size_t)NativeAnalogValues::LStick].Set("deadzone", 0.0f);
+    tas_stick_params[(size_t)NativeAnalogValues::LStick].Set("range", 1.0f);
+    tas_stick_params[(size_t)NativeAnalogValues::RStick].Set("deadzone", 0.0f);
+    tas_stick_params[(size_t)NativeAnalogValues::RStick].Set("range", 1.0f);
 }
 
 void EmulatedController::LoadVirtualGamepadParams() {
@@ -318,14 +318,14 @@ void EmulatedController::LoadVirtualGamepadParams() {
     virtual_button_params[(size_t)NativeButtonValues::SLRight].Set("button", 20);
     virtual_button_params[(size_t)NativeButtonValues::SRRight].Set("button", 21);
 
-    virtual_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_x", 0);
-    virtual_stick_params[InputSettings::NativeAnalog::LStick].Set("axis_y", 1);
-    virtual_stick_params[InputSettings::NativeAnalog::RStick].Set("axis_x", 2);
-    virtual_stick_params[InputSettings::NativeAnalog::RStick].Set("axis_y", 3);
-    virtual_stick_params[InputSettings::NativeAnalog::LStick].Set("deadzone", 0.0f);
-    virtual_stick_params[InputSettings::NativeAnalog::LStick].Set("range", 1.0f);
-    virtual_stick_params[InputSettings::NativeAnalog::RStick].Set("deadzone", 0.0f);
-    virtual_stick_params[InputSettings::NativeAnalog::RStick].Set("range", 1.0f);
+    virtual_stick_params[(size_t)NativeAnalogValues::LStick].Set("axis_x", 0);
+    virtual_stick_params[(size_t)NativeAnalogValues::LStick].Set("axis_y", 1);
+    virtual_stick_params[(size_t)NativeAnalogValues::RStick].Set("axis_x", 2);
+    virtual_stick_params[(size_t)NativeAnalogValues::RStick].Set("axis_y", 3);
+    virtual_stick_params[(size_t)NativeAnalogValues::LStick].Set("deadzone", 0.0f);
+    virtual_stick_params[(size_t)NativeAnalogValues::LStick].Set("range", 1.0f);
+    virtual_stick_params[(size_t)NativeAnalogValues::RStick].Set("deadzone", 0.0f);
+    virtual_stick_params[(size_t)NativeAnalogValues::RStick].Set("range", 1.0f);
 
     virtual_motion_params[(size_t)NativeMotionValues::MotionLeft].Set("motion", 0);
     virtual_motion_params[(size_t)NativeMotionValues::MotionRight].Set("motion", 0);
@@ -967,15 +967,16 @@ void EmulatedController::SetStick(const Common::Input::CallbackStatus& callback,
         .y = static_cast<s32>(controller.stick_values[index].y.value * HID_JOYSTICK_MAX),
     };
 
-    switch (index) {
-    case InputSettings::NativeAnalog::LStick:
+    switch ((NativeAnalogValues)index)
+    {
+    case NativeAnalogValues::LStick:
         controller.analog_stick_state.left = stick;
         controller.npad_button_state.stick_l_left.Assign(controller.stick_values[index].left);
         controller.npad_button_state.stick_l_up.Assign(controller.stick_values[index].up);
         controller.npad_button_state.stick_l_right.Assign(controller.stick_values[index].right);
         controller.npad_button_state.stick_l_down.Assign(controller.stick_values[index].down);
         break;
-    case InputSettings::NativeAnalog::RStick:
+    case NativeAnalogValues::RStick:
         controller.analog_stick_state.right = stick;
         controller.npad_button_state.stick_r_left.Assign(controller.stick_values[index].left);
         controller.npad_button_state.stick_r_up.Assign(controller.stick_values[index].up);

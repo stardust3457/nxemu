@@ -476,13 +476,13 @@ AnalogMapping GCAdapter::GetAnalogMappingForDevice(const Common::ParamPackage& p
     left_analog_params.Set("port", params.Get("port", 0));
     left_analog_params.Set("axis_x", static_cast<int>(PadAxes::StickX));
     left_analog_params.Set("axis_y", static_cast<int>(PadAxes::StickY));
-    mapping.insert_or_assign(InputSettings::NativeAnalog::LStick, std::move(left_analog_params));
+    mapping.insert_or_assign(NativeAnalogValues::LStick, std::move(left_analog_params));
     Common::ParamPackage right_analog_params;
     right_analog_params.Set("engine", GetEngineName());
     right_analog_params.Set("port", params.Get("port", 0));
     right_analog_params.Set("axis_x", static_cast<int>(PadAxes::SubstickX));
     right_analog_params.Set("axis_y", static_cast<int>(PadAxes::SubstickY));
-    mapping.insert_or_assign(InputSettings::NativeAnalog::RStick, std::move(right_analog_params));
+    mapping.insert_or_assign(NativeAnalogValues::RStick, std::move(right_analog_params));
     return mapping;
 }
 

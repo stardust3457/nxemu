@@ -26,17 +26,10 @@ extern const std::array<const char*, (int)NativeButtonValues::NumButtons> mappin
 } // namespace NativeButton
 
 namespace NativeAnalog {
-enum Values : int {
-    LStick,
-    RStick,
+constexpr int STICK_HID_BEGIN = (int)NativeAnalogValues::LStick;
+constexpr int STICK_HID_END = (int)NativeAnalogValues::NumAnalogs;
 
-    NumAnalogs,
-};
-
-constexpr int STICK_HID_BEGIN = LStick;
-constexpr int STICK_HID_END = NumAnalogs;
-
-extern const std::array<const char*, NumAnalogs> mapping;
+extern const std::array<const char*, (size_t)NativeAnalogValues::NumAnalogs> mapping;
 } // namespace NativeAnalog
 
 namespace NativeTrigger {
@@ -320,7 +313,7 @@ constexpr int NUM_KEYBOARD_MODS_HID = NumKeyboardMods;
 
 } // namespace NativeKeyboard
 
-using AnalogsRaw = std::array<std::string, NativeAnalog::NumAnalogs>;
+using AnalogsRaw = std::array<std::string, (size_t)NativeAnalogValues::NumAnalogs>;
 using ButtonsRaw = std::array<std::string, (size_t)NativeButtonValues::NumButtons>;
 using MotionsRaw = std::array<std::string, (size_t)NativeMotionValues::NumMotions>;
 using RingconRaw = std::string;
