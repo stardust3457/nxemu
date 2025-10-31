@@ -192,6 +192,15 @@ enum class NpadStyleSet : uint32_t {
     All = 0xFFFFFFFFU,
 };
 
+enum class PollingInputType 
+{
+    None, 
+    Button, 
+    Stick, 
+    Motion, 
+    Touch 
+};
+
 __interface IProgramMetadata
 {
     bool Is64BitProgram() const = 0;

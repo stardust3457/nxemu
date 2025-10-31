@@ -6,10 +6,6 @@
 #include "yuzu_common/param_package.h"
 #include "yuzu_common/threadsafe_queue.h"
 
-namespace InputCommon::Polling {
-enum class InputType;
-}
-
 namespace InputCommon {
 class InputEngine;
 struct MappingData;
@@ -22,7 +18,7 @@ public:
      * Resets all variables to begin the mapping process
      * @param type type of input desired to be returned
      */
-    void BeginMapping(Polling::InputType type);
+    void BeginMapping(PollingInputType type);
 
     /// Returns an input event with mapping information from the input_queue
     [[nodiscard]] Common::ParamPackage GetNextInput();
@@ -79,7 +75,7 @@ private:
     bool IsDriverValid(const MappingData& data) const;
 
     Common::SPSCQueue<Common::ParamPackage> input_queue;
-    Polling::InputType input_type{Polling::InputType::None};
+    PollingInputType input_type{PollingInputType::None};
     bool is_enabled{};
     int first_axis = -1;
     int second_axis = -1;

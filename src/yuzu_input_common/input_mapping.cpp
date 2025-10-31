@@ -9,7 +9,7 @@ namespace InputCommon {
 
 MappingFactory::MappingFactory() = default;
 
-void MappingFactory::BeginMapping(Polling::InputType type) {
+void MappingFactory::BeginMapping(PollingInputType type) {
     is_enabled = true;
     input_type = type;
     input_queue.Clear();
@@ -32,13 +32,13 @@ void MappingFactory::RegisterInput(const MappingData& data) {
     }
 
     switch (input_type) {
-    case Polling::InputType::Button:
+    case PollingInputType::Button:
         RegisterButton(data);
         return;
-    case Polling::InputType::Stick:
+    case PollingInputType::Stick:
         RegisterStick(data);
         return;
-    case Polling::InputType::Motion:
+    case PollingInputType::Motion:
         RegisterMotion(data);
         return;
     default:
@@ -48,7 +48,7 @@ void MappingFactory::RegisterInput(const MappingData& data) {
 
 void MappingFactory::StopMapping() {
     is_enabled = false;
-    input_type = Polling::InputType::None;
+    input_type = PollingInputType::None;
     input_queue.Clear();
 }
 

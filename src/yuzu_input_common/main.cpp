@@ -470,7 +470,7 @@ void InputSubsystem::ReloadInputDevices() {
     impl->udp_client.get()->ReloadSockets();
 }
 
-void InputSubsystem::BeginMapping(Polling::InputType type) {
+void InputSubsystem::BeginMapping(PollingInputType type) {
     impl->BeginConfiguration();
     impl->mapping_factory->BeginMapping(type);
 }

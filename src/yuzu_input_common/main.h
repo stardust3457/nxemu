@@ -41,10 +41,6 @@ class Tas;
 } // namespace InputCommon::TasInput
 
 namespace InputCommon {
-namespace Polling {
-/// Type of input desired for mapping purposes
-enum class InputType { None, Button, Stick, Motion, Touch };
-} // namespace Polling
 
 /**
  * Given a ParamPackage for a Device returned from `GetInputDevices`, attempt to get the default
@@ -149,7 +145,7 @@ public:
     void ReloadInputDevices();
 
     /// Start polling from all backends for a desired input type.
-    void BeginMapping(Polling::InputType type);
+    void BeginMapping(PollingInputType type);
 
     /// Returns an input event with mapping information.
     [[nodiscard]] Common::ParamPackage GetNextInput() const;
