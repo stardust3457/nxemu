@@ -261,6 +261,11 @@ __interface ICacheInvalidator
 
 typedef void (*DeviceEnumCallback)(const char * device, void * userData);
 
+__interface IEmulatedController
+{
+    void ReloadFromSettings() = 0;
+};
+
 __interface IOperatingSystem
 {
     bool Initialize() = 0;
@@ -277,6 +282,7 @@ __interface IOperatingSystem
     void AudioGetSyncIDs(uint32_t * ids, uint32_t maxCount, uint32_t * actualCount) = 0;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void * userData) = 0;
     void RegisterHostThread() = 0;
+    IEmulatedController & GetEmulatedController(NpadIdType index) = 0;
     void PumpInputEvents() const = 0;
 };
 

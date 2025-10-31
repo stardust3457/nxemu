@@ -7,6 +7,7 @@
 #include "core/perf_stats.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/settings_input.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
 #include "yuzu_hid_core/hid_core.h"
 #include "yuzu_input_common/main.h"
 #include "yuzu_input_common/drivers/keyboard.h"
@@ -192,6 +193,11 @@ void OSManager::AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceE
 void OSManager::RegisterHostThread()
 {
     m_coreSystem.RegisterHostThread();
+}
+
+IEmulatedController& OSManager::GetEmulatedController(NpadIdType index)
+{
+    return *m_coreSystem.HIDCore().GetEmulatedController(index);
 }
 
 void OSManager::PumpInputEvents() const

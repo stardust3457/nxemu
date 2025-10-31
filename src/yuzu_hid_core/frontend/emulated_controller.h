@@ -154,7 +154,9 @@ struct ControllerUpdateCallback {
     bool is_npad_service;
 };
 
-class EmulatedController {
+class EmulatedController :
+    public IEmulatedController 
+{
 public:
     /**
      * Contains all input data (buttons, joysticks, vibration, and motion) within this controller.
