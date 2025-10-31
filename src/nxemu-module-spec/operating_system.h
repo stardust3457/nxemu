@@ -201,6 +201,23 @@ enum class PollingInputType
     Touch 
 };
 
+enum class ControllerTriggerType : uint32_t {
+    Button,
+    Stick,
+    Trigger,
+    Motion,
+    Color,
+    Battery,
+    Vibration,
+    IrSensor,
+    RingController,
+    Nfc,
+    Connected,
+    Disconnected,
+    Type,
+    All,
+};
+
 __interface IProgramMetadata
 {
     bool Is64BitProgram() const = 0;

@@ -65,7 +65,7 @@ private:
     static_assert(sizeof(ImageTransferProcessorExConfig) == 0x28,
                   "ImageTransferProcessorExConfig is an invalid size");
 
-    void OnControllerUpdate(Core::HID::ControllerTriggerType type);
+    void OnControllerUpdate(ControllerTriggerType type);
 
     ImageTransferProcessorExConfig current_config{};
     Core::IrSensor::ImageTransferProcessorState processor_state{};

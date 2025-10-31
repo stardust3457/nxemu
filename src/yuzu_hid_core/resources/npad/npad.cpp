@@ -33,7 +33,7 @@ NPad::NPad(Core::HID::HIDCore& hid_core_, KernelHelpers::ServiceContext& service
             controller.device = hid_core.GetEmulatedControllerByIndex(i);
             Core::HID::ControllerUpdateCallback engine_callback{
                 .on_change =
-                    [this, i](Core::HID::ControllerTriggerType type) { ControllerUpdate(type, i); },
+                    [this, i](ControllerTriggerType type) { ControllerUpdate(type, i); },
                 .is_npad_service = true,
             };
             controller.callback_key = controller.device->SetCallback(engine_callback);
@@ -120,10 +120,10 @@ void NPad::FreeAppletResourceId(u64 aruid) {
     return npad_resource.FreeAppletResourceId(aruid);
 }
 
-void NPad::ControllerUpdate(Core::HID::ControllerTriggerType type, std::size_t controller_idx) {
-    if (type == Core::HID::ControllerTriggerType::All) {
-        ControllerUpdate(Core::HID::ControllerTriggerType::Connected, controller_idx);
-        ControllerUpdate(Core::HID::ControllerTriggerType::Battery, controller_idx);
+void NPad::ControllerUpdate(ControllerTriggerType type, std::size_t controller_idx) {
+    if (type == ControllerTriggerType::All) {
+        ControllerUpdate(ControllerTriggerType::Connected, controller_idx);
+        ControllerUpdate(ControllerTriggerType::Battery, controller_idx);
         return;
     }
 
@@ -143,14 +143,14 @@ void NPad::ControllerUpdate(Core::HID::ControllerTriggerType type, std::size_t c
         const auto npad_type = controller.device->GetNpadStyleIndex();
         const auto npad_id = controller.device->GetNpadIdType();
         switch (type) {
-        case Core::HID::ControllerTriggerType::Connected:
-        case Core::HID::ControllerTriggerType::Disconnected:
+        case ControllerTriggerType::Connected:
+        case ControllerTriggerType::Disconnected:
             if (is_connected == controller.is_connected) {
                 return;
             }
             UpdateControllerAt(data->aruid, npad_type, npad_id, is_connected);
             break;
-        case Core::HID::ControllerTriggerType::Battery: {
+        case ControllerTriggerType::Battery: {
             if (!controller.device->IsConnected()) {
                 return;
             }

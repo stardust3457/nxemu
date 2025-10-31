@@ -15,7 +15,7 @@ ImageTransferProcessor::ImageTransferProcessor(Core::System& system_,
     npad_device = system.HIDCore().GetEmulatedControllerByIndex(npad_index);
 
     Core::HID::ControllerUpdateCallback engine_callback{
-        .on_change = [this](Core::HID::ControllerTriggerType type) { OnControllerUpdate(type); },
+        .on_change = [this](ControllerTriggerType type) { OnControllerUpdate(type); },
         .is_npad_service = true,
     };
     callback_key = npad_device->SetCallback(engine_callback);
@@ -41,8 +41,8 @@ void ImageTransferProcessor::SuspendProcessor() {}
 
 void ImageTransferProcessor::StopProcessor() {}
 
-void ImageTransferProcessor::OnControllerUpdate(Core::HID::ControllerTriggerType type) {
-    if (type != Core::HID::ControllerTriggerType::IrSensor) {
+void ImageTransferProcessor::OnControllerUpdate(ControllerTriggerType type) {
+    if (type != ControllerTriggerType::IrSensor) {
         return;
     }
     if (transfer_memory == 0) {

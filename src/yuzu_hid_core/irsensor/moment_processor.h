@@ -72,7 +72,7 @@ private:
     };
     static_assert(sizeof(MomentSharedMemory) == 0xE20, "MomentSharedMemory is an invalid size");
 
-    void OnControllerUpdate(Core::HID::ControllerTriggerType type);
+    void OnControllerUpdate(ControllerTriggerType type);
     u8 GetPixel(const std::vector<u8>& data, std::size_t x, std::size_t y) const;
     MomentStatistic GetStatistic(const std::vector<u8>& data, std::size_t start_x,
                                  std::size_t start_y, std::size_t width, std::size_t height) const;

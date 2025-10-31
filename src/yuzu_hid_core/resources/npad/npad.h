@@ -22,7 +22,6 @@
 
 namespace Core::HID {
 class EmulatedController;
-enum class ControllerTriggerType;
 } // namespace Core::HID
 
 namespace Kernel {
@@ -180,7 +179,7 @@ private:
         int callback_key{};
     };
 
-    void ControllerUpdate(Core::HID::ControllerTriggerType type, std::size_t controller_idx);
+    void ControllerUpdate(ControllerTriggerType type, std::size_t controller_idx);
     void InitNewlyAddedController(u64 aruid, NpadIdType npad_id);
     void RequestPadStateUpdate(u64 aruid, NpadIdType npad_id);
     void WriteEmptyEntry(NpadInternalState* npad);

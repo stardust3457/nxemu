@@ -90,7 +90,7 @@ private:
     static_assert(sizeof(ClusteringSharedMemory) == 0xE20,
                   "ClusteringSharedMemory is an invalid size");
 
-    void OnControllerUpdate(Core::HID::ControllerTriggerType type);
+    void OnControllerUpdate(ControllerTriggerType type);
     void RemoveLowIntensityData(std::vector<u8>& data);
     ClusteringData GetClusterProperties(std::vector<u8>& data, std::size_t x, std::size_t y);
     ClusteringData GetPixelProperties(const std::vector<u8>& data, std::size_t x,

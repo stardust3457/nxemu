@@ -149,23 +149,6 @@ struct ControllerStatus {
     Common::Input::PollingMode right_polling_mode{};
 };
 
-enum class ControllerTriggerType {
-    Button,
-    Stick,
-    Trigger,
-    Motion,
-    Color,
-    Battery,
-    Vibration,
-    IrSensor,
-    RingController,
-    Nfc,
-    Connected,
-    Disconnected,
-    Type,
-    All,
-};
-
 struct ControllerUpdateCallback {
     std::function<void(ControllerTriggerType)> on_change;
     bool is_npad_service;

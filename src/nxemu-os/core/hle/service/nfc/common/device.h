@@ -23,7 +23,6 @@ class System;
 
 namespace Core::HID {
 class EmulatedController;
-enum class ControllerTriggerType;
 } // namespace Core::HID
 
 namespace Service::NFC {
@@ -98,7 +97,7 @@ public:
     Kernel::KReadableEvent& GetDeactivateEvent() const;
 
 private:
-    void NpadUpdate(Core::HID::ControllerTriggerType type);
+    void NpadUpdate(ControllerTriggerType type);
     bool LoadNfcTag(u8 protocol, u8 tag_type, u8 uuid_length, UniqueSerialNumber uuid);
     bool LoadAmiiboData();
     void CloseNfcTag();

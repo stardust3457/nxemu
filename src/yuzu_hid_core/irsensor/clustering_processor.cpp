@@ -25,7 +25,7 @@ ClusteringProcessor::ClusteringProcessor(Core::System& system_,
         reinterpret_cast<ClusteringSharedMemory*>(&device_format.state.processor_raw_data));
 
     Core::HID::ControllerUpdateCallback engine_callback{
-        .on_change = [this](Core::HID::ControllerTriggerType type) { OnControllerUpdate(type); },
+        .on_change = [this](ControllerTriggerType type) { OnControllerUpdate(type); },
         .is_npad_service = true,
     };
     callback_key = npad_device->SetCallback(engine_callback);
@@ -44,8 +44,8 @@ void ClusteringProcessor::SuspendProcessor() {}
 
 void ClusteringProcessor::StopProcessor() {}
 
-void ClusteringProcessor::OnControllerUpdate(Core::HID::ControllerTriggerType type) {
-    if (type != Core::HID::ControllerTriggerType::IrSensor) {
+void ClusteringProcessor::OnControllerUpdate(ControllerTriggerType type) {
+    if (type != ControllerTriggerType::IrSensor) {
         return;
     }
 

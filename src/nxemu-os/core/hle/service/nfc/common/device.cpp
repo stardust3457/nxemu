@@ -46,7 +46,7 @@ NfcDevice::NfcDevice(NpadIdType npad_id_, Core::System& system_,
     npad_device = system.HIDCore().GetEmulatedController(npad_id);
 
     Core::HID::ControllerUpdateCallback engine_callback{
-        .on_change = [this](Core::HID::ControllerTriggerType type) { NpadUpdate(type); },
+        .on_change = [this](ControllerTriggerType type) { NpadUpdate(type); },
         .is_npad_service = false,
     };
     is_controller_set = true;
@@ -63,14 +63,14 @@ NfcDevice::~NfcDevice() {
     is_controller_set = false;
 };
 
-void NfcDevice::NpadUpdate(Core::HID::ControllerTriggerType type) {
-    if (type == Core::HID::ControllerTriggerType::Connected) {
+void NfcDevice::NpadUpdate(ControllerTriggerType type) {
+    if (type == ControllerTriggerType::Connected) {
         Initialize();
         availability_change_event->Signal();
         return;
     }
 
-    if (type == Core::HID::ControllerTriggerType::Disconnected) {
+    if (type == ControllerTriggerType::Disconnected) {
         Finalize();
         availability_change_event->Signal();
         return;
@@ -91,7 +91,7 @@ void NfcDevice::NpadUpdate(Core::HID::ControllerTriggerType type) {
                                     Common::Input::PollingMode::NFC);
     }
 
-    if (type != Core::HID::ControllerTriggerType::Nfc) {
+    if (type != ControllerTriggerType::Nfc) {
         return;
     }
 
