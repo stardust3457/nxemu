@@ -19,6 +19,11 @@ html {
   height: max-content;
 }
 
+.hidden
+{
+  display:none;
+}
+
 #MainTabNav
 {
   flow: horizontal;
@@ -52,37 +57,64 @@ html {
 {
   width: 100%%;
 }
-button
-{
-  color: #eff0f1;
-  background: #232728;
-  border: 1px solid #55575a;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  font-size: 0.8rem;
-  padding: 0.2rem;
-  min-width: 5rem;
-}
 
 div.center-buttons-grid
 {
   margin: 0 0.4rem;
 }
 
-div.button-column
+div.button-column,
+#horizontalSpacerShoulderButtonsWidget,
+#horizontalSpacerShoulderButtonsWidget2,
+#horizontalSpacerShoulderButtonsWidget3,
+#horizontalSpacerShoulderButtonsWidget4
 {
   flow: vertical;
   display: inline-block;
 }
 
-div.button-column:nth-child(1)
+.controller-config
 {
-  padding-right: 50%%;
+  background: var(--color-config-page);
+  border: 1px solid var(--color-config-page-border);
+  width: 100%%;
+  height: 100%%;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 0.8rem;
+  color: #eff0f1;
+  padding: 1em;
 }
 
-div.button-column:nth-child(3)
+.controller-config .config-header
 {
-  padding-right: 50%%;
+  flow: horizontal;
 }
+
+.controller-config .config-header .group 
+{
+  position: relative;
+  background-color: var(--color-config-page);
+  border: 1px solid #55575a;
+  padding: 1.2rem 0.5rem 0.5rem 0.5rem;
+  margin: 0 0 1rem 0;
+}
+
+#bottom
+{
+  flow: horizontal;
+}
+
+#bottomLeft,
+#bottomRight
+{
+  width: 13rem;
+}
+
+#bottomMiddle
+{
+  width: 100%%;
+}
+
 
   </style>
 <body>
@@ -100,8 +132,8 @@ div.button-column:nth-child(3)
     <div id="InputContents"/>
   </div>
   <div class="footer">
-    <button>OK</button>
-    <button>Cancel</button>
+    <button role="window-ok">OK</button>
+    <button role="window-close">Cancel</button>
   </div>
 </body>
 </html>

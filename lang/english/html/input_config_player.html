@@ -24,8 +24,8 @@
 	  <button id="profile-delete-btn">Delete</button>
     </div>
   </div>
-  <div class="controller-body">
-    <div class="config-left">
+  <div id="bottom">
+    <div id="bottomLeft">
       <div class="input-group">
         <div class="group-title">Left Stick</div>
 
@@ -51,29 +51,33 @@
         </div>
       </div>
     </div>
-    <div class="config-center">
+    <div class="bottomMiddle">
       <div class="center-buttons-grid">
-        <div class="button-column">
+        <div class="button-column" id="buttonShoulderButtonsSLSRLeft">
           <div class="input-row"><span>SL</span><button id="ButtonSLLeft">Q</button></div>
           <div class="input-row"><span>SR</span><button id="ButtonSRLeft">E</button></div>
         </div>
-        <div class="button-column">
+        <div id="horizontalSpacerShoulderButtonsWidget4" />
+        <div class="button-column" id="buttonShoulderButtonsLeft">
           <div class="input-row"><span>L</span><button id="ButtonL">Q</button></div>
           <div class="input-row"><span>ZL</span><button id="ButtonZL">R</button></div>
         </div>
-        <div class="button-column">
-          <div class="input-row"><span>Minus</span><button id="ButtonMinus">N</button></div>
-          <div class="input-row"><span>Capture</span><button id="ButtonScreenshot"></button></div>
+        <div id="horizontalSpacerShoulderButtonsWidget" />
+        <div class="button-column" id="buttonMiscButtonsMinusScreenshot">
+          <div class="input-row" id="buttonMiscButtonsMinusGroup"><span>Minus</span><button id="ButtonMinus">N</button></div>
+          <div class="input-row" id="buttonMiscButtonsScreenshotGroup"><span>Capture</span><button id="ButtonScreenshot"></button></div>
         </div>
-        <div class="button-column">
+        <div class="button-column" id="buttonMiscButtonsPlusHome">
           <div class="input-row"><span>Plus</span><button id="ButtonPlus">M</button></div>
           <div class="input-row"><span>Home</span><button id="ButtonHome"></button></div>
         </div>
-        <div class="button-column">
+        <div id="horizontalSpacerShoulderButtonsWidget3" />
+        <div class="button-column" id="buttonShoulderButtonsRight">
           <div class="input-row"><span>R</span><button id="ButtonR">E</button></div>
           <div class="input-row"><span>ZR</span><button id="ButtonZR">T</button></div>
         </div>
-        <div class="button-column">
+        <div id="horizontalSpacerShoulderButtonsWidget2" />
+        <div class="button-column" id="buttonShoulderButtonsSLSRRight">
           <div class="input-row"><span>SL</span><button id="ButtonSLRight">Q</button></div>
           <div class="input-row"><span>SR</span><button id="ButtonSRRight">E</button></div>
         </div>
@@ -224,7 +228,7 @@
           <div class="input-row"><span>Motion 2</span><button id="buttonMotionRight">8</button></div>
       </div>
     </div>
-    <div class="config-right">
+    <div id="bottomRight">
       <div class="input-group">
         <div class="group-title">Face Buttons</div>
 

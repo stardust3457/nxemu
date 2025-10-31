@@ -22,14 +22,14 @@
     <Filter Include="Header Files\settings">
       <UniqueIdentifier>{fd346053-7bff-4ae1-8820-38e576a7116c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\settings.cpp">
-      <UniqueIdentifier>{3bf11314-5055-4185-95ae-653ebe2f8e8e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\user_interface\settings">
       <UniqueIdentifier>{daf4daaf-7982-479b-bf50-5a630af46883}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\user_interface\settings">
       <UniqueIdentifier>{5e88d65d-0802-45fd-84d0-1edd8e3305fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\settings">
+      <UniqueIdentifier>{3bf11314-5055-4185-95ae-653ebe2f8e8e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -37,7 +37,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="settings\ui_settings.cpp">
-      <Filter>Source Files\settings.cpp</Filter>
+      <Filter>Source Files\settings</Filter>
     </ClCompile>
     <ClCompile Include="user_interface\notification.cpp">
       <Filter>Source Files\user_interface</Filter>
@@ -67,6 +67,9 @@
       <Filter>Source Files\user_interface\settings</Filter>
     </ClCompile>
     <ClCompile Include="user_interface\settings\system_config_game_browser.cpp">
+      <Filter>Source Files\user_interface\settings</Filter>
+    </ClCompile>
+    <ClCompile Include="user_interface\settings\input_config_player.cpp">
       <Filter>Source Files\user_interface\settings</Filter>
     </ClCompile>
   </ItemGroup>
@@ -108,6 +111,9 @@
       <Filter>Header Files\user_interface\settings</Filter>
     </ClInclude>
     <ClInclude Include="user_interface\settings\system_config_game_browser.h">
+      <Filter>Header Files\user_interface\settings</Filter>
+    </ClInclude>
+    <ClInclude Include="user_interface\settings\input_config_player.h">
       <Filter>Header Files\user_interface\settings</Filter>
     </ClInclude>
   </ItemGroup>
