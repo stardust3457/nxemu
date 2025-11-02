@@ -15,9 +15,15 @@ private:
     InputConfigPlayer(const InputConfigPlayer&) = delete;
     InputConfigPlayer& operator=(const InputConfigPlayer&) = delete;
 
+    void UpdateInputDeviceCombobox();
+    void UpdateInputDevices();
+
     ISciterUI & m_sciterUI;
     InputConfig & m_config;
     HWINDOW m_parent;
     SciterElement m_page;
     NpadIdType m_controllerIndex;
+    IEmulatedController * m_emulatedController;
+    IEmulatedController & m_emulatedControllerPlayer;
+    const IParamPackageList & m_inputDeviceList;
 };

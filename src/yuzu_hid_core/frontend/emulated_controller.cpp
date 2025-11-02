@@ -709,6 +709,11 @@ std::vector<Common::ParamPackage> EmulatedController::GetMappedDevices() const {
     return devices;
 }
 
+IParamPackageList * EmulatedController::GetMappedDevicesPtr() const
+{
+    return new IParamPackageListImpl(GetMappedDevices());
+}
+
 Common::ParamPackage EmulatedController::GetButtonParam(std::size_t index) const {
     if (index >= button_params.size()) {
         return {};

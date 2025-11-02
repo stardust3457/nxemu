@@ -251,6 +251,7 @@ public:
 
     /// Returns a vector of mapped devices from the mapped button and stick parameters
     std::vector<Common::ParamPackage> GetMappedDevices() const;
+    IParamPackageList* GetMappedDevicesPtr() const override;
 
     // Returns the current mapped button device
     Common::ParamPackage GetButtonParam(std::size_t index) const;

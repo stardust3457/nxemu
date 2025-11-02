@@ -50,9 +50,14 @@ ParamPackage::ParamPackage(const std::string& serialized) {
     }
 }
 
+ParamPackage::ParamPackage(const IParamPackage& param) :
+    ParamPackage(std::string(param.Serialize()))
+{
+}
+
 ParamPackage::ParamPackage(std::initializer_list<DataType::value_type> list) : data(list) {}
 
-std::string ParamPackage::Serialize() const {
+const char * ParamPackage::Serialize() const {
     if (data.empty())
         return EMPTY_PLACEHOLDER;
 
@@ -69,7 +74,18 @@ std::string ParamPackage::Serialize() const {
     }
 
     result.pop_back(); // discard the trailing PARAM_SEPARATOR
-    return result;
+    m_serializeData = result;
+    return m_serializeData.c_str();
+}
+
+const  std::string * ParamPackage::GetRaw(const std::string& key) const
+{
+    auto pair = data.find(key);
+    if (pair == data.end()) 
+    {
+        return nullptr;
+    }
+    return &pair->second;
 }
 
 std::string ParamPackage::Get(const std::string& key, const std::string& default_value) const {
@@ -137,3 +153,79 @@ void ParamPackage::Clear() {
 }
 
 } // namespace Common
+
+IParamPackageListImpl::IParamPackageListImpl(const std::vector<Common::ParamPackage> & list)
+{
+    m_list.reserve(list.size());
+    for (const Common::ParamPackage & package : list) 
+    {
+        m_list.emplace_back(new IParamPackageImpl(package));
+    }
+}
+
+IParamPackageListImpl::~IParamPackageListImpl()
+{
+    for (IParamPackageImpl * item : m_list)
+    {
+        item->Release();
+    }
+}
+
+uint32_t IParamPackageListImpl::GetCount() const
+{
+    return (uint32_t)m_list.size();
+}
+
+IParamPackage & IParamPackageListImpl::GetParamPackage(uint32_t index) const
+{
+    return *m_list[index];
+}
+
+void IParamPackageListImpl::Release()
+{
+    delete this;
+}
+
+IParamPackageImpl::IParamPackageImpl(const Common::ParamPackage & package) :
+    m_package(package)
+{
+}
+
+bool IParamPackageImpl::Has(const char * key) const
+{
+    return m_package.Has(key);
+}
+
+bool IParamPackageImpl::GetBool(const char * key, bool default_value) const
+{
+    return m_package.Get(key, default_value);
+}
+
+int32_t IParamPackageImpl::GetInt(const char * key, int32_t default_value) const
+{
+    return m_package.Get(key, default_value);
+}
+
+float IParamPackageImpl::GetFloat(const char* key, float default_value) const
+{
+    return m_package.Get(key, default_value);
+}
+
+const char * IParamPackageImpl::GetString(const char * key, const char * default_value) const
+{
+    const std::string * ptr = m_package.GetRaw(std::string(key));
+    if (ptr != nullptr) {
+        return ptr->c_str();
+    }
+    return default_value;
+}
+
+const char * IParamPackageImpl::Serialize() const
+{
+    return m_package.Serialize();
+}
+
+void IParamPackageImpl::Release()
+{
+    delete this;
+}

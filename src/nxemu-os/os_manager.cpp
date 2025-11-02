@@ -195,7 +195,12 @@ void OSManager::RegisterHostThread()
     m_coreSystem.RegisterHostThread();
 }
 
-IEmulatedController& OSManager::GetEmulatedController(NpadIdType index)
+IParamPackageList * OSManager::GetInputDevices() const
+{
+    return new IParamPackageListImpl(m_coreSystem.InputSubsystem()->GetInputDevices());
+}
+
+IEmulatedController & OSManager::GetEmulatedController(NpadIdType index)
 {
     return *m_coreSystem.HIDCore().GetEmulatedController(index);
 }

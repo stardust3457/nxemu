@@ -5,6 +5,7 @@
 
 __interface ISciterUI;
 __interface ISciterWindow;
+__interface IParamPackageList;
 class InputConfigPlayer;
 
 class InputConfig :
@@ -16,6 +17,8 @@ public:
     ~InputConfig();
 
     void Display(void * parentWindow);
+
+    const IParamPackageList & InputDeviceList() const;
 
     //__interface IPagesSink
     bool PageNavChangeFrom(const std::string & pageName, SCITER_ELEMENT pageNav) override;
@@ -35,4 +38,5 @@ private:
     ISciterWindow * m_window;
     std::shared_ptr<IPageNav> m_pageNav;
     std::unique_ptr<InputConfigPlayer> m_playerConfig[8];
+    IParamPackageList * m_inputDeviceList;
 };

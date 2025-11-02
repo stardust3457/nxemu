@@ -261,9 +261,29 @@ __interface ICacheInvalidator
 
 typedef void (*DeviceEnumCallback)(const char * device, void * userData);
 
+__interface IParamPackage
+{
+    bool Has(const char * key) const = 0;
+    bool GetBool(const char * key, bool default_value) const = 0;
+    int32_t GetInt(const char * key, int32_t default_value) const = 0;
+    float GetFloat(const char * key, float default_value) const = 0;
+    const char * GetString(const char * key, const char * default_value) const = 0;
+    const char * Serialize() const = 0;
+
+    void Release() = 0;
+};
+
+__interface IParamPackageList
+{
+    uint32_t GetCount() const = 0;
+    IParamPackage & GetParamPackage(uint32_t index) const = 0;
+    void Release() = 0;
+};
+
 __interface IEmulatedController
 {
     void ReloadFromSettings() = 0;
+    IParamPackageList * GetMappedDevicesPtr() const = 0;
 };
 
 __interface IOperatingSystem
@@ -282,6 +302,7 @@ __interface IOperatingSystem
     void AudioGetSyncIDs(uint32_t * ids, uint32_t maxCount, uint32_t * actualCount) = 0;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void * userData) = 0;
     void RegisterHostThread() = 0;
+    IParamPackageList * GetInputDevices() const = 0;
     IEmulatedController & GetEmulatedController(NpadIdType index) = 0;
     void PumpInputEvents() const = 0;
 };

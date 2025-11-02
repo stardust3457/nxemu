@@ -1,15 +1,28 @@
 #include "input_config.h"
 #include "input_config_player.h"
 #include <sciter_ui.h>
+#include <nxemu-core/machine/switch_system.h>
 
 InputConfig::InputConfig(ISciterUI & SciterUI) :
     m_sciterUI(SciterUI),
-    m_window(nullptr)
+    m_window(nullptr),
+    m_inputDeviceList(nullptr)
 {
+    SwitchSystem * system = SwitchSystem::GetInstance();
+    if (system != nullptr)
+    {
+        IOperatingSystem & OperatingSystem = system->OperatingSystem();
+        m_inputDeviceList = OperatingSystem.GetInputDevices();
+    }
 }
 
 InputConfig::~InputConfig()
 {
+    if (m_inputDeviceList != nullptr)
+    {
+        m_inputDeviceList->Release();
+        m_inputDeviceList = nullptr;
+    }
 }
 
 void InputConfig::Display(void * parentWindow)
@@ -18,8 +31,6 @@ void InputConfig::Display(void * parentWindow)
     {
         return;
     }
-    m_window->FixMinSize();
-    m_window->CenterWindow();
 
     SciterElement root(m_window->GetRootElement());
     if (root.IsValid())
@@ -35,6 +46,14 @@ void InputConfig::Display(void * parentWindow)
         SciterElement okButton = root.FindFirst("button[role=\"window-ok\"]");
         m_sciterUI.AttachHandler(okButton, IID_ICLICKSINK, (IClickSink*)this);
     }
+
+    m_window->FixMinSize();
+    m_window->CenterWindow();
+}
+
+const IParamPackageList & InputConfig::InputDeviceList() const
+{
+    return *m_inputDeviceList;
 }
 
 bool InputConfig::PageNavChangeFrom(const std::string & /*pageName*/, SCITER_ELEMENT /*pageNav*/)
