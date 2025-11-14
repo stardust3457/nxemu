@@ -15,6 +15,79 @@
 #include "os_manager.h"
 #include "os_settings.h"
 
+namespace
+{
+    class IButtonMappingListImpl : public IButtonMappingList
+    {
+    public:
+        explicit IButtonMappingListImpl(const std::unordered_map<NativeAnalogValues, Common::ParamPackage>& mappings)
+        {
+            m_indices.reserve(mappings.size());
+            m_params.reserve(mappings.size());
+
+            for (const auto& [index, param] : mappings)
+            {
+                m_indices.push_back(static_cast<uint32_t>(index));
+                m_params.emplace_back(new IParamPackageImpl(param));
+            }
+        }
+        explicit IButtonMappingListImpl(const std::unordered_map<NativeButtonValues, Common::ParamPackage>& mappings)
+        {
+            m_indices.reserve(mappings.size());
+            m_params.reserve(mappings.size());
+
+            for (const auto& [index, param] : mappings)
+            {
+                m_indices.push_back(static_cast<uint32_t>(index));
+                m_params.emplace_back(new IParamPackageImpl(param));
+            }
+        }
+        explicit IButtonMappingListImpl(const std::unordered_map<NativeMotionValues, Common::ParamPackage>& mappings)
+        {
+            m_indices.reserve(mappings.size());
+            m_params.reserve(mappings.size());
+
+            for (const auto& [index, param] : mappings)
+            {
+                m_indices.push_back(static_cast<uint32_t>(index));
+                m_params.emplace_back(new IParamPackageImpl(param));
+            }
+        }
+
+        ~IButtonMappingListImpl()
+        {
+            for (IParamPackageImpl* item : m_params)
+            {
+                item->Release();
+            }
+        }
+
+        uint32_t GetCount() const override
+        {
+            return static_cast<uint32_t>(m_indices.size());
+        }
+
+        uint32_t GetIndex(uint32_t position) const override
+        {
+            return m_indices[position];
+        }
+
+        IParamPackage& GetParamPackage(uint32_t position) const override
+        {
+            return *m_params[position];
+        }
+
+        void Release() override
+        {
+            delete this;
+        }
+
+    private:
+        std::vector<uint32_t> m_indices;
+        std::vector<IParamPackageImpl*> m_params;
+    };
+}
+
 extern IModuleSettings * g_settings;
 
 OSManager::OSManager(ISystemModules & modules) :
@@ -203,6 +276,24 @@ IParamPackageList * OSManager::GetInputDevices() const
 IEmulatedController & OSManager::GetEmulatedController(NpadIdType index)
 {
     return *m_coreSystem.HIDCore().GetEmulatedController(index);
+}
+
+IButtonMappingList * OSManager::GetButtonMappingForDevice(const IParamPackage & param) const
+{
+    std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();
+    return new IButtonMappingListImpl(input_subsystem->GetButtonMappingForDevice(param));
+}
+
+IButtonMappingList * OSManager::GetAnalogMappingForDevice(const IParamPackage & param) const
+{
+    std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();
+    return new IButtonMappingListImpl(input_subsystem->GetAnalogMappingForDevice(param));
+}
+
+IButtonMappingList * OSManager::GetMotionMappingForDevice(const IParamPackage & param) const
+{
+    std::shared_ptr<InputCommon::InputSubsystem>& input_subsystem = m_coreSystem.InputSubsystem();
+    return new IButtonMappingListImpl(input_subsystem->GetMotionMappingForDevice(param));
 }
 
 void OSManager::PumpInputEvents() const

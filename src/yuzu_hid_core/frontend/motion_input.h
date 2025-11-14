@@ -6,6 +6,7 @@
 #include "yuzu_common/common_types.h"
 #include "yuzu_common/quaternion.h"
 #include "yuzu_common/vector_math.h"
+#include <nxemu-module-spec/operating_system.h>
 
 namespace Core::HID {
 
@@ -34,11 +35,11 @@ public:
     MotionInput& operator=(MotionInput&&) = default;
 
     void SetPID(f32 new_kp, f32 new_ki, f32 new_kd);
-    void SetAcceleration(const Common::Vec3f& acceleration);
-    void SetGyroscope(const Common::Vec3f& gyroscope);
+    void SetAcceleration(const vec3f_t & acceleration);
+    void SetGyroscope(const vec3f_t & gyroscope);
     void SetQuaternion(const Common::Quaternion<f32>& quaternion);
-    void SetEulerAngles(const Common::Vec3f& euler_angles);
-    void SetGyroBias(const Common::Vec3f& bias);
+    void SetEulerAngles(const vec3f_t & euler_angles);
+    void SetGyroBias(const vec3f_t & bias);
     void SetGyroThreshold(f32 threshold);
 
     /// Applies a modifier on top of the normal gyro threshold
@@ -53,13 +54,13 @@ public:
 
     void Calibrate();
 
-    [[nodiscard]] std::array<Common::Vec3f, 3> GetOrientation() const;
-    [[nodiscard]] Common::Vec3f GetAcceleration() const;
-    [[nodiscard]] Common::Vec3f GetGyroscope() const;
-    [[nodiscard]] Common::Vec3f GetGyroBias() const;
-    [[nodiscard]] Common::Vec3f GetRotations() const;
+    [[nodiscard]] std::array<vec3f_t, 3> GetOrientation() const;
+    [[nodiscard]] vec3f_t GetAcceleration() const;
+    [[nodiscard]] vec3f_t GetGyroscope() const;
+    [[nodiscard]] vec3f_t GetGyroBias() const;
+    [[nodiscard]] vec3f_t GetRotations() const;
     [[nodiscard]] Common::Quaternion<f32> GetQuaternion() const;
-    [[nodiscard]] Common::Vec3f GetEulerAngles() const;
+    [[nodiscard]] vec3f_t GetEulerAngles() const;
 
     [[nodiscard]] bool IsMoving(f32 sensitivity) const;
     [[nodiscard]] bool IsCalibrated(f32 sensitivity) const;
@@ -83,16 +84,16 @@ private:
     Common::Quaternion<f32> quat;
 
     // Number of full rotations in each axis
-    Common::Vec3f rotations;
+    vec3f_t rotations;
 
     // Acceleration vector measurement in G force
-    Common::Vec3f accel;
+    vec3f_t accel;
 
     // Gyroscope vector measurement in radians/s.
-    Common::Vec3f gyro;
+    vec3f_t gyro;
 
     // Vector to be subtracted from gyro measurements
-    Common::Vec3f gyro_bias;
+    vec3f_t gyro_bias;
 
     // Minimum gyro amplitude to detect if the device is moving
     f32 gyro_threshold = 0.0f;

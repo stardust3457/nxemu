@@ -101,23 +101,12 @@ struct RingSensorForce {
 
 using NfcState = Common::Input::NfcStatus;
 
-struct ControllerMotion {
-    Common::Vec3f accel{};
-    Common::Vec3f gyro{};
-    Common::Vec3f rotation{};
-    Common::Vec3f euler{};
-    std::array<Common::Vec3f, 3> orientation{};
-    bool is_at_rest{};
-};
-
 enum EmulatedDeviceIndex : u8 {
     LeftIndex,
     RightIndex,
     DualIndex,
     AllDevices,
 };
-
-using MotionState = std::array<ControllerMotion, 2>;
 
 struct ControllerStatus {
     // Data from input_common
@@ -267,18 +256,21 @@ public:
      * @param param ParamPackage with controller data to be mapped
      */
     void SetButtonParam(std::size_t index, Common::ParamPackage param);
+    void SetButtonParam(uint32_t index, const IParamPackage & param) override;
 
     /**
      * Updates the current mapped stick device
      * @param param ParamPackage with controller data to be mapped
      */
     void SetStickParam(std::size_t index, Common::ParamPackage param);
+    void SetStickParam(uint32_t index, const IParamPackage & param) override;
 
     /**
      * Updates the current mapped motion device
      * @param param ParamPackage with controller data to be mapped
      */
     void SetMotionParam(std::size_t index, Common::ParamPackage param);
+    void SetMotionParam(uint32_t index, const IParamPackage& param) override;
 
     /// Auto calibrates the current motion devices
     void StartMotionCalibration();
@@ -456,6 +448,8 @@ public:
     /// Swaps the state of the turbo buttons and updates motion input
     void StatusUpdate();
 
+    void SetControllerEventCallback(ControllerEventCallback cb, void * user) override;
+
 private:
     /// creates input devices from params
     void LoadDevices();
@@ -620,6 +614,9 @@ private:
     mutable std::mutex connect_mutex;
     std::unordered_map<int, ControllerUpdateCallback> callback_list;
     int last_callback_key = 0;
+    ControllerEventCallback m_controller_event_cb;
+    void * m_controller_event_user;
+    int m_controller_event_key;
 
     // Stores the current status of all controller input
     ControllerStatus controller;

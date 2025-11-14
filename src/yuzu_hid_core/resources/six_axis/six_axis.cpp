@@ -77,16 +77,17 @@ void SixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
             sixaxis_left_lifo_state = {};
             sixaxis_right_lifo_state = {};
 
-            if (controller.sixaxis_sensor_enabled && Settings::values.motion_enabled.GetValue()) {
+            if (controller.sixaxis_sensor_enabled && Settings::values.motion_enabled.GetValue()) 
+            {
                 controller.sixaxis_at_rest = true;
-                for (std::size_t e = 0; e < motion_state.size(); ++e) {
+                for (std::size_t e = 0; e < sizeof(motion_state.motion) / sizeof(motion_state.motion[0]); ++e) {
                     controller.sixaxis_at_rest =
-                        controller.sixaxis_at_rest && motion_state[e].is_at_rest;
+                        controller.sixaxis_at_rest && motion_state.motion[e].atRest;
                 }
             }
 
-            const auto set_motion_state = [&](Core::HID::SixAxisSensorState& state,
-                                              const Core::HID::ControllerMotion& hid_state) {
+            const auto set_motion_state = [&](Core::HID::SixAxisSensorState& state, const ControllerMotion& hid_state) 
+            {
                 using namespace std::literals::chrono_literals;
                 static constexpr Core::HID::SixAxisSensorState default_motion_state = {
                     .delta_time = std::chrono::nanoseconds(5ms).count(),
@@ -109,10 +110,14 @@ void SixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                 }
                 state.attribute.is_connected.Assign(1);
                 state.delta_time = std::chrono::nanoseconds(5ms).count();
-                state.accel = hid_state.accel;
-                state.gyro = hid_state.gyro;
-                state.rotation = hid_state.rotation;
-                state.orientation = hid_state.orientation;
+                state.accel = Common::Vec3f(hid_state.accel.x, hid_state.accel.y, hid_state.accel.z);
+                state.gyro = Common::Vec3f(hid_state.gyro.x, hid_state.gyro.y, hid_state.gyro.z);
+                state.rotation = Common::Vec3f(hid_state.rotation.x, hid_state.rotation.y, hid_state.rotation.z);
+                state.orientation = {
+                    Common::Vec3f(hid_state.orientation[0].x, hid_state.orientation[0].y, hid_state.orientation[0].z),
+                    Common::Vec3f(hid_state.orientation[1].x, hid_state.orientation[1].y, hid_state.orientation[1].z),
+                    Common::Vec3f(hid_state.orientation[2].x, hid_state.orientation[2].y, hid_state.orientation[2].z)
+                };
             };
 
             switch (controller_type) {
@@ -120,24 +125,24 @@ void SixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
                 ASSERT(false);
                 break;
             case NpadStyleIndex::Fullkey:
-                set_motion_state(sixaxis_fullkey_state, motion_state[0]);
+                set_motion_state(sixaxis_fullkey_state, motion_state.motion[0]);
                 break;
             case NpadStyleIndex::Handheld:
-                set_motion_state(sixaxis_handheld_state, motion_state[0]);
+                set_motion_state(sixaxis_handheld_state, motion_state.motion[0]);
                 break;
             case NpadStyleIndex::JoyconDual:
-                set_motion_state(sixaxis_dual_left_state, motion_state[0]);
-                set_motion_state(sixaxis_dual_right_state, motion_state[1]);
+                set_motion_state(sixaxis_dual_left_state, motion_state.motion[0]);
+                set_motion_state(sixaxis_dual_right_state, motion_state.motion[1]);
                 break;
             case NpadStyleIndex::JoyconLeft:
-                set_motion_state(sixaxis_left_lifo_state, motion_state[0]);
+                set_motion_state(sixaxis_left_lifo_state, motion_state.motion[0]);
                 break;
             case NpadStyleIndex::JoyconRight:
-                set_motion_state(sixaxis_right_lifo_state, motion_state[1]);
+                set_motion_state(sixaxis_right_lifo_state, motion_state.motion[1]);
                 break;
             case NpadStyleIndex::Pokeball:
                 using namespace std::literals::chrono_literals;
-                set_motion_state(sixaxis_fullkey_state, motion_state[0]);
+                set_motion_state(sixaxis_fullkey_state, motion_state.motion[0]);
                 sixaxis_fullkey_state.delta_time = std::chrono::nanoseconds(15ms).count();
                 break;
             default:

@@ -198,7 +198,7 @@ struct InputSubsystem::Impl {
     }
 
     [[nodiscard]] AnalogMapping GetAnalogMappingForDevice(
-        const Common::ParamPackage& params) const {
+        const IParamPackage & params) const {
         const auto input_engine = GetInputEngine(params);
 
         if (input_engine == nullptr) {
@@ -439,7 +439,7 @@ std::vector<Common::ParamPackage> InputSubsystem::GetInputDevices() const {
     return impl->GetInputDevices();
 }
 
-AnalogMapping InputSubsystem::GetAnalogMappingForDevice(const Common::ParamPackage& device) const {
+AnalogMapping InputSubsystem::GetAnalogMappingForDevice(const IParamPackage & device) const {
     return impl->GetAnalogMappingForDevice(device);
 }
 
@@ -447,7 +447,7 @@ ButtonMapping InputSubsystem::GetButtonMappingForDevice(const Common::ParamPacka
     return impl->GetButtonMappingForDevice(device);
 }
 
-MotionMapping InputSubsystem::GetMotionMappingForDevice(const Common::ParamPackage& device) const {
+MotionMapping InputSubsystem::GetMotionMappingForDevice(const IParamPackage & device) const {
     return impl->GetMotionMappingForDevice(device);
 }
 
@@ -470,7 +470,8 @@ void InputSubsystem::ReloadInputDevices() {
     impl->udp_client.get()->ReloadSockets();
 }
 
-void InputSubsystem::BeginMapping(PollingInputType type) {
+void InputSubsystem::BeginMapping(PollingInputType type) 
+{
     impl->BeginConfiguration();
     impl->mapping_factory->BeginMapping(type);
 }

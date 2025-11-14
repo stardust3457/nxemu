@@ -165,12 +165,12 @@ void EmulatedConsole::SetMotion(const Common::Input::CallbackStatus& callback) {
     auto& emulated = console.motion_values.emulated;
 
     raw_status = TransformToMotion(callback);
-    emulated.SetAcceleration(Common::Vec3f{
+    emulated.SetAcceleration(vec3f_t{
         raw_status.accel.x.value,
         raw_status.accel.y.value,
         raw_status.accel.z.value,
     });
-    emulated.SetGyroscope(Common::Vec3f{
+    emulated.SetGyroscope(vec3f_t{
         raw_status.gyro.x.value,
         raw_status.gyro.y.value,
         raw_status.gyro.z.value,

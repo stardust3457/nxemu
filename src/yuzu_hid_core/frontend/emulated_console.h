@@ -40,12 +40,12 @@ using TouchValues = std::array<Common::Input::TouchStatus, MaxTouchDevices>;
 
 // Contains all motion related data that is used on the services
 struct ConsoleMotion {
-    Common::Vec3f accel{};
-    Common::Vec3f gyro{};
-    Common::Vec3f rotation{};
-    std::array<Common::Vec3f, 3> orientation{};
+    vec3f_t accel{};
+    vec3f_t gyro{};
+    vec3f_t rotation{};
+    std::array<vec3f_t, 3> orientation{};
     Common::Quaternion<f32> quaternion{};
-    Common::Vec3f gyro_bias{};
+    vec3f_t gyro_bias{};
     f32 verticalization_error{};
     bool is_at_rest{};
 };

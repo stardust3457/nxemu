@@ -28,6 +28,9 @@ public:
     void RegisterHostThread() override;
     IParamPackageList * GetInputDevices() const override;
     IEmulatedController & GetEmulatedController(NpadIdType index) override;
+    IButtonMappingList * GetButtonMappingForDevice(const IParamPackage& param) const override;
+    IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage& param) const override;
+    IButtonMappingList * GetMotionMappingForDevice(const IParamPackage& param) const override;
     void PumpInputEvents() const override;
 
 private:

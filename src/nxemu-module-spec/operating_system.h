@@ -280,10 +280,47 @@ __interface IParamPackageList
     void Release() = 0;
 };
 
+struct vec3f_t
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct ControllerMotion
+{
+    vec3f_t accel;
+    vec3f_t gyro;
+    vec3f_t rotation;
+    vec3f_t euler;
+    vec3f_t orientation[3];
+    bool atRest;
+};
+
+struct MotionState
+{
+    ControllerMotion motion[2];
+};
+
+typedef void (CALL* ControllerEventCallback)(ControllerTriggerType type, void * user);
+
 __interface IEmulatedController
 {
     void ReloadFromSettings() = 0;
     IParamPackageList * GetMappedDevicesPtr() const = 0;
+    void SetButtonParam(uint32_t index, const IParamPackage & param) = 0;
+    void SetStickParam(uint32_t index, const IParamPackage & param) = 0;
+    void SetMotionParam(uint32_t index, const IParamPackage & param) = 0;
+    void SetControllerEventCallback(ControllerEventCallback cb, void * user) = 0;
+    MotionState GetMotions() const = 0;
+};
+
+__interface IButtonMappingList
+{
+    uint32_t GetCount() const = 0;
+    uint32_t GetIndex(uint32_t position) const = 0;
+    IParamPackage& GetParamPackage(uint32_t position) const = 0;
+    void Release() = 0;
 };
 
 __interface IOperatingSystem
@@ -304,6 +341,9 @@ __interface IOperatingSystem
     void RegisterHostThread() = 0;
     IParamPackageList * GetInputDevices() const = 0;
     IEmulatedController & GetEmulatedController(NpadIdType index) = 0;
+    IButtonMappingList * GetButtonMappingForDevice(const IParamPackage & param) const = 0;
+    IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage & param) const = 0;
+    IButtonMappingList * GetMotionMappingForDevice(const IParamPackage & param) const = 0;
     void PumpInputEvents() const = 0;
 };
 

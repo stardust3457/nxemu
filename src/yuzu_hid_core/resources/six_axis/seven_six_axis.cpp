@@ -38,8 +38,8 @@ void SevenSixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
     // This value increments every time the switch goes to sleep
     next_seven_sixaxis_state.unknown = 1;
     next_seven_sixaxis_state.timestamp = last_global_timestamp - last_saved_timestamp;
-    next_seven_sixaxis_state.accel = motion_status.accel;
-    next_seven_sixaxis_state.gyro = motion_status.gyro;
+    next_seven_sixaxis_state.accel = Common::Vec3f(motion_status.accel.x, motion_status.accel.y, motion_status.accel.z);
+    next_seven_sixaxis_state.gyro = Common::Vec3f(motion_status.gyro.x, motion_status.gyro.y, motion_status.gyro.z);
     next_seven_sixaxis_state.quaternion = {
         {
             motion_status.quaternion.xyz.y,

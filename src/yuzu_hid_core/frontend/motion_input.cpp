@@ -22,7 +22,7 @@ void MotionInput::SetPID(f32 new_kp, f32 new_ki, f32 new_kd) {
     kd = new_kd;
 }
 
-void MotionInput::SetAcceleration(const Common::Vec3f& acceleration) {
+void MotionInput::SetAcceleration(const vec3f_t & acceleration) {
     accel = acceleration;
 
     accel.x = std::clamp(accel.x, -AccelMaxValue, AccelMaxValue);
@@ -30,8 +30,10 @@ void MotionInput::SetAcceleration(const Common::Vec3f& acceleration) {
     accel.z = std::clamp(accel.z, -AccelMaxValue, AccelMaxValue);
 }
 
-void MotionInput::SetGyroscope(const Common::Vec3f& gyroscope) {
-    gyro = gyroscope - gyro_bias;
+void MotionInput::SetGyroscope(const vec3f_t & gyroscope) {
+    gyro.x = gyroscope.x - gyro_bias.x;
+    gyro.y = gyroscope.y - gyro_bias.y;
+    gyro.z = gyroscope.z - gyro_bias.z;
 
     gyro.x = std::clamp(gyro.x, -GyroMaxValue, GyroMaxValue);
     gyro.y = std::clamp(gyro.y, -GyroMaxValue, GyroMaxValue);
@@ -39,16 +41,20 @@ void MotionInput::SetGyroscope(const Common::Vec3f& gyroscope) {
 
     // Auto adjust gyro_bias to minimize drift
     if (!IsMoving(IsAtRestRelaxed)) {
-        gyro_bias = (gyro_bias * 0.9999f) + (gyroscope * 0.0001f);
+        gyro_bias.x = (gyro_bias.x * 0.9999f) + (gyroscope.x * 0.0001f);
+        gyro_bias.y = (gyro_bias.y * 0.9999f) + (gyroscope.y * 0.0001f);
+        gyro_bias.z = (gyro_bias.z * 0.9999f) + (gyroscope.z * 0.0001f);
     }
 
     // Adjust drift when calibration mode is enabled
     if (calibration_mode) {
-        gyro_bias = (gyro_bias * 0.99f) + (gyroscope * 0.01f);
+        gyro_bias.x = (gyro_bias.x * 0.99f) + (gyroscope.x * 0.01f);
+        gyro_bias.y = (gyro_bias.y * 0.99f) + (gyroscope.y * 0.01f);
+        gyro_bias.z = (gyro_bias.z * 0.99f) + (gyroscope.z * 0.01f);
         StopCalibration();
     }
 
-    if (gyro.Length() < gyro_threshold * user_gyro_threshold) {
+    if (Common::Vec3f(gyro.x, gyro.y, gyro.z).Length() < gyro_threshold * user_gyro_threshold) {
         gyro = {};
     } else {
         only_accelerometer = false;
@@ -59,7 +65,7 @@ void MotionInput::SetQuaternion(const Common::Quaternion<f32>& quaternion) {
     quat = quaternion;
 }
 
-void MotionInput::SetEulerAngles(const Common::Vec3f& euler_angles) {
+void MotionInput::SetEulerAngles(const vec3f_t & euler_angles) {
     const float cr = std::cos(euler_angles.x * 0.5f);
     const float sr = std::sin(euler_angles.x * 0.5f);
     const float cp = std::cos(euler_angles.y * 0.5f);
@@ -73,7 +79,7 @@ void MotionInput::SetEulerAngles(const Common::Vec3f& euler_angles) {
     quat.xyz.z = cr * cp * sy - sr * sp * cy;
 }
 
-void MotionInput::SetGyroBias(const Common::Vec3f& bias) {
+void MotionInput::SetGyroBias(const vec3f_t & bias) {
     gyro_bias = bias;
 }
 
@@ -98,7 +104,12 @@ void MotionInput::ResetQuaternion() {
 }
 
 bool MotionInput::IsMoving(f32 sensitivity) const {
-    return gyro.Length() >= sensitivity || accel.Length() <= 0.9f || accel.Length() >= 1.1f;
+    if (Common::Vec3f(gyro.x, gyro.y, gyro.z).Length() >= sensitivity)
+    {
+        return true;
+    }
+    float accelLen = Common::Vec3f(accel.x, accel.y, accel.z).Length();
+    return accelLen <= 0.9f || accelLen >= 1.1f;
 }
 
 bool MotionInput::IsCalibrated(f32 sensitivity) const {
@@ -110,7 +121,9 @@ void MotionInput::UpdateRotation(u64 elapsed_time) {
     if (sample_period > 0.1f) {
         return;
     }
-    rotations += gyro * sample_period;
+    rotations.x += gyro.x * sample_period;
+    rotations.y += gyro.y * sample_period;
+    rotations.z += gyro.z * sample_period;
 }
 
 void MotionInput::Calibrate() {
@@ -144,8 +157,11 @@ void MotionInput::UpdateOrientation(u64 elapsed_time) {
         return;
     }
 
-    const auto normal_accel = accel.Normalized();
-    auto rad_gyro = gyro * Common::PI * 2;
+    const auto normal_accel = Common::Vec3f(accel.x, accel.y, accel.z).Normalized();
+    vec3f_t rad_gyro;
+    rad_gyro.x = gyro.x * Common::PI * 2;
+    rad_gyro.y = gyro.y * Common::PI * 2;
+    rad_gyro.z = gyro.z * Common::PI * 2;
     const f32 swap = rad_gyro.x;
     rad_gyro.x = rad_gyro.y;
     rad_gyro.y = -swap;
@@ -159,7 +175,8 @@ void MotionInput::UpdateOrientation(u64 elapsed_time) {
     }
 
     // Ignore drift correction if acceleration is not reliable
-    if (accel.Length() >= 0.75f && accel.Length() <= 1.25f) {
+    const float accel_length = Common::Vec3f(accel.x, accel.y, accel.z).Length();
+    if (accel_length >= 0.75f && accel_length <= 1.25f) {
         const f32 ax = -normal_accel.x;
         const f32 ay = normal_accel.y;
         const f32 az = -normal_accel.z;
@@ -188,14 +205,26 @@ void MotionInput::UpdateOrientation(u64 elapsed_time) {
 
         // Apply feedback terms
         if (!only_accelerometer) {
-            rad_gyro += kp * real_error;
-            rad_gyro += ki * integral_error;
-            rad_gyro += kd * derivative_error;
+            rad_gyro.x += kp * real_error.x;
+            rad_gyro.y += kp * real_error.y;
+            rad_gyro.z += kp * real_error.z;
+            rad_gyro.x += ki * integral_error.x;
+            rad_gyro.y += ki * integral_error.y;
+            rad_gyro.z += ki * integral_error.z;
+            rad_gyro.x += kd * derivative_error.x;
+            rad_gyro.y += kd * derivative_error.y;
+            rad_gyro.z += kd * derivative_error.z;
         } else {
             // Give more weight to accelerometer values to compensate for the lack of gyro
-            rad_gyro += 35.0f * kp * real_error;
-            rad_gyro += 10.0f * ki * integral_error;
-            rad_gyro += 10.0f * kd * derivative_error;
+            rad_gyro.x += 35.0f * kp * real_error.x;
+            rad_gyro.y += 35.0f * kp * real_error.y;
+            rad_gyro.z += 35.0f * kp * real_error.z;
+            rad_gyro.x += 10.0f * ki * integral_error.x;
+            rad_gyro.y += 10.0f * ki * integral_error.y;
+            rad_gyro.z += 10.0f * ki * integral_error.z;
+            rad_gyro.x += 10.0f * kd * derivative_error.x;
+            rad_gyro.y += 10.0f * kd * derivative_error.y;
+            rad_gyro.z += 10.0f * kd * derivative_error.z;
 
             // Emulate gyro values for games that need them
             gyro.x = -rad_gyro.y;
@@ -225,27 +254,27 @@ void MotionInput::UpdateOrientation(u64 elapsed_time) {
     quat = quat.Normalized();
 }
 
-std::array<Common::Vec3f, 3> MotionInput::GetOrientation() const {
+std::array<vec3f_t, 3> MotionInput::GetOrientation() const {
     const Common::Quaternion<float> quad{
         .xyz = {-quat.xyz[1], -quat.xyz[0], -quat.w},
         .w = -quat.xyz[2],
     };
     const std::array<float, 16> matrix4x4 = quad.ToMatrix();
 
-    return {Common::Vec3f(matrix4x4[0], matrix4x4[1], -matrix4x4[2]),
-            Common::Vec3f(matrix4x4[4], matrix4x4[5], -matrix4x4[6]),
-            Common::Vec3f(-matrix4x4[8], -matrix4x4[9], matrix4x4[10])};
+    return { vec3f_t(matrix4x4[0], matrix4x4[1], -matrix4x4[2]),
+            vec3f_t(matrix4x4[4], matrix4x4[5], -matrix4x4[6]),
+            vec3f_t(-matrix4x4[8], -matrix4x4[9], matrix4x4[10])};
 }
 
-Common::Vec3f MotionInput::GetAcceleration() const {
+vec3f_t MotionInput::GetAcceleration() const {
     return accel;
 }
 
-Common::Vec3f MotionInput::GetGyroscope() const {
+vec3f_t MotionInput::GetGyroscope() const {
     return gyro;
 }
 
-Common::Vec3f MotionInput::GetGyroBias() const {
+vec3f_t MotionInput::GetGyroBias() const {
     return gyro_bias;
 }
 
@@ -253,11 +282,11 @@ Common::Quaternion<f32> MotionInput::GetQuaternion() const {
     return quat;
 }
 
-Common::Vec3f MotionInput::GetRotations() const {
+vec3f_t MotionInput::GetRotations() const {
     return rotations;
 }
 
-Common::Vec3f MotionInput::GetEulerAngles() const {
+vec3f_t MotionInput::GetEulerAngles() const {
     // roll (x-axis rotation)
     const float sinr_cosp = 2 * (quat.w * quat.xyz.x + quat.xyz.y * quat.xyz.z);
     const float cosr_cosp = 1 - 2 * (quat.xyz.x * quat.xyz.x + quat.xyz.y * quat.xyz.y);
@@ -301,7 +330,7 @@ void MotionInput::SetOrientationFromAccelerometer() {
     int iterations = 0;
     const f32 sample_period = 0.015f;
 
-    const auto normal_accel = accel.Normalized();
+    const auto normal_accel = Common::Vec3f(accel.x, accel.y, accel.z).Normalized();
 
     while (!IsCalibrated(0.01f) && ++iterations < 100) {
         // Short name local variable for readability

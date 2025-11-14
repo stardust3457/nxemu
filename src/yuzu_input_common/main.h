@@ -124,13 +124,13 @@ public:
     [[nodiscard]] std::vector<Common::ParamPackage> GetInputDevices() const;
 
     /// Retrieves the analog mappings for the given device.
-    [[nodiscard]] AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& device) const;
+    [[nodiscard]] AnalogMapping GetAnalogMappingForDevice(const IParamPackage & device) const;
 
     /// Retrieves the button mappings for the given device.
     [[nodiscard]] ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& device) const;
 
     /// Retrieves the motion mappings for the given device.
-    [[nodiscard]] MotionMapping GetMotionMappingForDevice(const Common::ParamPackage& device) const;
+    [[nodiscard]] MotionMapping GetMotionMappingForDevice(const IParamPackage & device) const;
 
     /// Returns an enum containing the name to be displayed from the input engine.
     [[nodiscard]] ButtonNames GetButtonName(const Common::ParamPackage& params) const;

@@ -21,7 +21,13 @@ constexpr Common::UUID TAS_UUID =
 constexpr Common::UUID VIRTUAL_UUID =
     Common::UUID{{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}};
 
-EmulatedController::EmulatedController(NpadIdType npad_id_type_) : npad_id_type(npad_id_type_) {}
+EmulatedController::EmulatedController(NpadIdType npad_id_type_) : 
+    npad_id_type(npad_id_type_),
+    m_controller_event_cb(nullptr),
+    m_controller_event_user(nullptr),
+    m_controller_event_key(0)
+{
+}
 
 EmulatedController::~EmulatedController() = default;
 
@@ -415,15 +421,15 @@ void EmulatedController::ReloadInput() {
 
         // Restore motion state
         auto& emulated_motion = controller.motion_values[index].emulated;
-        auto& motion = controller.motion_state[index];
+        auto& motion = controller.motion_state.motion[index];
         emulated_motion.ResetRotations();
         emulated_motion.ResetQuaternion();
         motion.accel = emulated_motion.GetAcceleration();
         motion.gyro = emulated_motion.GetGyroscope();
         motion.rotation = emulated_motion.GetRotations();
         motion.euler = emulated_motion.GetEulerAngles();
-        motion.orientation = emulated_motion.GetOrientation();
-        motion.is_at_rest = !emulated_motion.IsMoving(motion_sensitivity);
+        memcpy(&motion.orientation, emulated_motion.GetOrientation().data(), sizeof(motion.orientation));
+        motion.atRest = !emulated_motion.IsMoving(motion_sensitivity);
     }
 
     for (std::size_t index = 0; index < camera_devices.size(); ++index) {
@@ -665,7 +671,7 @@ std::vector<Common::ParamPackage> EmulatedController::GetMappedDevices() const {
             continue;
         }
         const auto devices_it = std::find_if(
-            devices.begin(), devices.end(), [&param](const Common::ParamPackage& param_) {
+            devices.begin(), devices.end(), [&param](const Common::ParamPackage & param_) {
                 return param.Get("engine", "") == param_.Get("engine", "") &&
                        param.Get("guid", "") == param_.Get("guid", "") &&
                        param.Get("port", 0) == param_.Get("port", 0) &&
@@ -690,7 +696,7 @@ std::vector<Common::ParamPackage> EmulatedController::GetMappedDevices() const {
             continue;
         }
         const auto devices_it = std::find_if(
-            devices.begin(), devices.end(), [&param](const Common::ParamPackage& param_) {
+            devices.begin(), devices.end(), [&param](const Common::ParamPackage & param_) {
                 return param.Get("engine", "") == param_.Get("engine", "") &&
                        param.Get("guid", "") == param_.Get("guid", "") &&
                        param.Get("port", 0) == param_.Get("port", 0) &&
@@ -743,6 +749,11 @@ void EmulatedController::SetButtonParam(std::size_t index, Common::ParamPackage 
     ReloadInput();
 }
 
+void EmulatedController::SetButtonParam(uint32_t index, const IParamPackage& param)
+{
+    SetButtonParam(index, Common::ParamPackage(param));
+}
+
 void EmulatedController::SetStickParam(std::size_t index, Common::ParamPackage param) {
     if (index >= stick_params.size()) {
         return;
@@ -751,12 +762,22 @@ void EmulatedController::SetStickParam(std::size_t index, Common::ParamPackage p
     ReloadInput();
 }
 
+void EmulatedController::SetStickParam(uint32_t index, const IParamPackage& param)
+{
+    SetStickParam(index, Common::ParamPackage(param));
+}
+
 void EmulatedController::SetMotionParam(std::size_t index, Common::ParamPackage param) {
     if (index >= motion_params.size()) {
         return;
     }
     motion_params[index] = std::move(param);
     ReloadInput();
+}
+
+void EmulatedController::SetMotionParam(uint32_t index, const IParamPackage & param)
+{
+    SetMotionParam(index, Common::ParamPackage(param));
 }
 
 void EmulatedController::StartMotionCalibration() {
@@ -1052,12 +1073,12 @@ void EmulatedController::SetMotion(const Common::Input::CallbackStatus& callback
     auto& emulated = controller.motion_values[index].emulated;
 
     raw_status = TransformToMotion(callback);
-    emulated.SetAcceleration(Common::Vec3f{
+    emulated.SetAcceleration(vec3f_t{
         raw_status.accel.x.value,
         raw_status.accel.y.value,
         raw_status.accel.z.value,
     });
-    emulated.SetGyroscope(Common::Vec3f{
+    emulated.SetGyroscope(vec3f_t{
         raw_status.gyro.x.value,
         raw_status.gyro.y.value,
         raw_status.gyro.z.value,
@@ -1066,13 +1087,13 @@ void EmulatedController::SetMotion(const Common::Input::CallbackStatus& callback
     emulated.UpdateRotation(raw_status.delta_timestamp);
     emulated.UpdateOrientation(raw_status.delta_timestamp);
 
-    auto& motion = controller.motion_state[index];
+    auto& motion = controller.motion_state.motion[index];
     motion.accel = emulated.GetAcceleration();
     motion.gyro = emulated.GetGyroscope();
     motion.rotation = emulated.GetRotations();
     motion.euler = emulated.GetEulerAngles();
-    motion.orientation = emulated.GetOrientation();
-    motion.is_at_rest = !emulated.IsMoving(motion_sensitivity);
+    memcpy(&motion.orientation, emulated.GetOrientation().data(), sizeof(motion.orientation));
+    motion.atRest = !emulated.IsMoving(motion_sensitivity);
 }
 
 void EmulatedController::SetColors(const Common::Input::CallbackStatus& callback,
@@ -1774,7 +1795,8 @@ NpadStyleIndex EmulatedController::GetNpadStyleIndex(bool get_temporary_value) c
     return npad_type;
 }
 
-void EmulatedController::SetNpadStyleIndex(NpadStyleIndex npad_type_) {
+void EmulatedController::SetNpadStyleIndex(NpadStyleIndex npad_type_)
+{
     auto trigger_guard = SCOPE_GUARD {
         TriggerOnChange(ControllerTriggerType::Type, !is_configuring);
     };
@@ -1994,6 +2016,29 @@ void EmulatedController::StatusUpdate() {
         }
         device->ForceUpdate();
     }
+}
+
+void EmulatedController::SetControllerEventCallback(ControllerEventCallback cb, void* user)
+{
+    if (m_controller_event_cb != cb || m_controller_event_user != user)
+    {
+        DeleteCallback(m_controller_event_key);
+    }
+    m_controller_event_cb = cb;
+    m_controller_event_user = user;
+
+    if (m_controller_event_cb == nullptr) 
+    {
+        return;
+    }
+    Core::HID::ControllerUpdateCallback engine_callback{
+    .on_change = [this](ControllerTriggerType type) 
+    {   
+        m_controller_event_cb(type, m_controller_event_user);
+    },
+    .is_npad_service = false,
+    };
+    m_controller_event_key = SetCallback(engine_callback);
 }
 
 NpadButton EmulatedController::GetTurboButtonMask() const {

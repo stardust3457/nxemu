@@ -39,7 +39,7 @@ void ConsoleSixAxis::OnUpdate(const Core::Timing::CoreTiming& core_timing) {
     shared_memory.sampling_number++;
     shared_memory.is_seven_six_axis_sensor_at_rest = motion_status.is_at_rest;
     shared_memory.verticalization_error = motion_status.verticalization_error;
-    shared_memory.gyro_bias = motion_status.gyro_bias;
+    shared_memory.gyro_bias = Common::Vec3f(motion_status.gyro_bias.x, motion_status.gyro_bias.y, motion_status.gyro_bias.z);
 }
 
 } // namespace Service::HID
