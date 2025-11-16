@@ -21,9 +21,12 @@ private:
     InputConfigPlayer& operator=(const InputConfigPlayer&) = delete;
 
     void BindControls();
+    void LoadConfiguration();
     void UpdateInputDeviceCombobox();
     void UpdateInputDevices();
     void UpdateUI();
+    std::string ButtonToText(const IParamPackage & param);
+    std::string AnalogToText(const IParamPackage & param, const std::string& dir);
     void UpdateMappingWithDefaults();
     void ControllerEventCallback(ControllerTriggerType type);
     void UpdateMotionCube();
@@ -41,6 +44,14 @@ private:
     SciterElement m_buttonMap[22];
     SciterElement m_motionMap[2];
     SciterElement m_analogMapButtons[2][4];
+    SciterElement m_analogMapModifierButton[2];
+    SciterElement m_analogMapDeadzoneLabel[2];
+    SciterElement m_analogMapDeadzoneSlider[2];
+    SciterElement m_analogMapModifierGroupbox[2];
+    SciterElement m_analogMapModifierLabel[2];
+    SciterElement m_analogMapModifierSlider[2];
+    SciterElement m_analogMapRangeGroupbox[2];
+    SciterElement m_analogMapRangeSpinbox[2];
     std::shared_ptr<IComboBox> m_comboDevices;
     const IParamPackageList & m_inputDeviceList;
     MotionState motion_values;

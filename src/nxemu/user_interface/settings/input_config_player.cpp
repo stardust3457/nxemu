@@ -136,9 +136,20 @@ namespace
             }
         }
 
-        ParamPackage& operator=(const ParamPackage&)
+        ParamPackage& operator=(const ParamPackage& other)
         {
-            __debugbreak();
+            if (this != &other)
+            {
+                if (m_package)
+                {
+                    m_package->Release();
+                    m_package = nullptr;
+                }
+
+                m_package = other.m_package;
+                data = std::move(other.data);
+                m_serializeData = m_serializeData;
+            }
             return *this;
         }
 
@@ -308,6 +319,85 @@ namespace
         DataType data;
         mutable std::string m_serializeData;
     };
+
+    std::string KeyCodeToString(int keyCode)
+    {
+        static const std::unordered_map<int, std::string> keyMap = {
+            {VK_BACK, "Backspace"},
+            {VK_TAB, "Tab"},
+            {VK_RETURN, "Enter"},
+            {VK_SHIFT, "Shift"},
+            {VK_CONTROL, "Ctrl"},
+            {VK_MENU, "Alt"},
+            {VK_PAUSE, "Pause"},
+            {VK_CAPITAL, "Caps Lock"},
+            {VK_ESCAPE, "Esc"},
+            {VK_SPACE, "Space"},
+            {VK_PRIOR, "Page Up"},
+            {VK_NEXT, "Page Down"},
+            {VK_END, "End"},
+            {VK_HOME, "Home"},
+            {VK_LEFT, "Left"},
+            {VK_UP, "Up"},
+            {VK_RIGHT, "Right"},
+            {VK_DOWN, "Down"},
+            {VK_INSERT, "Insert"},
+            {VK_DELETE, "Delete"},
+            // 0-9 keys
+            {'0', "0"}, {'1', "1"}, {'2', "2"}, {'3', "3"}, {'4', "4"},
+            {'5', "5"}, {'6', "6"}, {'7', "7"}, {'8', "8"}, {'9', "9"},
+            // A-Z keys
+            {'A', "A"}, {'B', "B"}, {'C', "C"}, {'D', "D"}, {'E', "E"},
+            {'F', "F"}, {'G', "G"}, {'H', "H"}, {'I', "I"}, {'J', "J"},
+            {'K', "K"}, {'L', "L"}, {'M', "M"}, {'N', "N"}, {'O', "O"},
+            {'P', "P"}, {'Q', "Q"}, {'R', "R"}, {'S', "S"}, {'T', "T"},
+            {'U', "U"}, {'V', "V"}, {'W', "W"}, {'X', "X"}, {'Y', "Y"},
+            {'Z', "Z"},
+            // Function keys
+            {VK_F1, "F1"}, {VK_F2, "F2"}, {VK_F3, "F3"}, {VK_F4, "F4"},
+            {VK_F5, "F5"}, {VK_F6, "F6"}, {VK_F7, "F7"}, {VK_F8, "F8"},
+            {VK_F9, "F9"}, {VK_F10, "F10"}, {VK_F11, "F11"}, {VK_F12, "F12"},
+            // Numpad
+            {VK_NUMPAD0, "Num 0"}, {VK_NUMPAD1, "Num 1"}, {VK_NUMPAD2, "Num 2"},
+            {VK_NUMPAD3, "Num 3"}, {VK_NUMPAD4, "Num 4"}, {VK_NUMPAD5, "Num 5"},
+            {VK_NUMPAD6, "Num 6"}, {VK_NUMPAD7, "Num 7"}, {VK_NUMPAD8, "Num 8"},
+            {VK_NUMPAD9, "Num 9"},
+            {VK_MULTIPLY, "Num *"}, {VK_ADD, "Num +"}, {VK_SUBTRACT, "Num -"},
+            {VK_DECIMAL, "Num ."}, {VK_DIVIDE, "Num /"},
+            // Other keys
+            {VK_OEM_1, ";"}, {VK_OEM_PLUS, "="}, {VK_OEM_COMMA, ","},
+            {VK_OEM_MINUS, "-"}, {VK_OEM_PERIOD, "."}, {VK_OEM_2, "/"},
+            {VK_OEM_3, "`"}, {VK_OEM_4, "["}, {VK_OEM_5, "\\"},
+            {VK_OEM_6, "]"}, {VK_OEM_7, "'"},
+        };
+
+        std::unordered_map<int, std::string>::const_iterator it = keyMap.find(keyCode);
+        if (it != keyMap.end())
+        {
+            return it->second;
+        }
+        return std::to_string(keyCode);
+    }
+
+    std::string GetKeyName(int key_code) 
+    {
+        enum Key : int
+        {
+            Shift = 0x01000020,
+            Control = 0x01000021,
+            Alt = 0x01000023,
+            Meta = 0x01000022,
+        };
+        
+        switch (key_code) {
+        case Key::Shift: return "Shift";
+        case Key::Control: return "Ctrl";
+        case Key::Alt: return "Alt";
+        case Key::Meta: return {};
+        }
+        return KeyCodeToString(key_code);
+    }
+
     std::string GenerateKeyboardParam(int key_code) 
     {
         ParamPackage param;
@@ -376,6 +466,7 @@ InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config,
     m_emulatedController = &m_emulatedControllerPlayer;
     m_emulatedController->SetControllerEventCallback(stControllerEventCallback,this);
     BindControls();
+    LoadConfiguration();
 
     UpdateInputDeviceCombobox();
 }
@@ -426,6 +517,25 @@ void InputConfigPlayer::BindControls()
     m_analogMapButtons[1][1] = m_page.GetElementByID("ButtonRStickDown");
     m_analogMapButtons[1][2] = m_page.GetElementByID("ButtonRStickLeft");
     m_analogMapButtons[1][3] = m_page.GetElementByID("ButtonRStickRight");
+    m_analogMapModifierButton[0] = m_page.GetElementByID("ButtonLStickMod");
+    m_analogMapModifierButton[1] = m_page.GetElementByID("ButtonRStickMod");
+
+    m_analogMapDeadzoneLabel[0] = m_page.GetElementByID("labelLStickDeadzone");
+    m_analogMapDeadzoneLabel[1] = m_page.GetElementByID("labelRStickDeadzone");
+    m_analogMapDeadzoneSlider[0] = m_page.GetElementByID("sliderLStickDeadzone");
+    m_analogMapDeadzoneSlider[1] = m_page.GetElementByID("sliderRStickDeadzone");
+    m_analogMapModifierGroupbox[0] = m_page.GetElementByID("buttonLStickModGroup");
+    m_analogMapModifierGroupbox[1] = m_page.GetElementByID("buttonRStickModGroup");
+    m_analogMapModifierButton[0] = m_page.GetElementByID("buttonLStickMod");
+    m_analogMapModifierButton[1] = m_page.GetElementByID("buttonRStickMod");
+    m_analogMapModifierLabel[0] = m_page.GetElementByID("labelLStickModifierRange");
+    m_analogMapModifierLabel[1] = m_page.GetElementByID("labelRStickModifierRange");
+    m_analogMapModifierSlider[0] = m_page.GetElementByID("sliderLStickModifierRange");
+    m_analogMapModifierSlider[1] = m_page.GetElementByID("sliderRStickModifierRange");
+    m_analogMapRangeGroupbox[0] = m_page.GetElementByID("buttonLStickRangeGroup");
+    m_analogMapRangeGroupbox[1] = m_page.GetElementByID("buttonRStickRangeGroup");
+    m_analogMapRangeSpinbox[0] = m_page.GetElementByID("spinboxLStickRange");
+    m_analogMapRangeSpinbox[1] = m_page.GetElementByID("spinboxRStickRange");
     SciterElement comboDevices = m_page.GetElementByID("comboDevices");
     std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(comboDevices, IID_ICOMBOBOX);
     if (interfacePtr)
@@ -433,6 +543,12 @@ void InputConfigPlayer::BindControls()
         m_comboDevices = std::static_pointer_cast<IComboBox>(interfacePtr);
     }
     m_sciterUI.AttachHandler(comboDevices, IID_ISTATECHANGESINK, (IStateChangeSink*)this);
+}
+
+void InputConfigPlayer::LoadConfiguration()
+{
+    m_emulatedController->ReloadFromSettings();
+    UpdateUI();
 }
 
 void InputConfigPlayer::UpdateInputDeviceCombobox(void)
@@ -513,8 +629,229 @@ void InputConfigPlayer::UpdateInputDevices(void)
 
 void InputConfigPlayer::UpdateUI()
 {
+    for (uint32_t i = 0, n = (uint32_t)NativeButtonValues::NumButtons; i < n; i++)
+    {
+        ParamPackage param(m_emulatedController->GetButtonParamPtr(i));
+        ParamPackage b;
+        b = m_emulatedController->GetButtonParamPtr(i);
+        if (m_buttonMap[i].IsValid())
+        {
+            m_buttonMap[i].SetText(ButtonToText(param).c_str());
+        }
+    }
+    const ParamPackage ZL_param(m_emulatedController->GetButtonParamPtr((uint32_t)NativeButtonValues::ZL));
+    if (ZL_param->Has("threshold")) {
+        const int button_threshold = static_cast<int>(ZL_param->GetFloat("threshold", 0.5f) * 100.0f);
+        SciterElement sliderZLThreshold = m_page.GetElementByID("sliderZLThreshold");
+        if (sliderZLThreshold.IsValid())
+        {
+            sliderZLThreshold.SetValue(button_threshold);
+        }
+    }
+
+    const ParamPackage ZR_param(m_emulatedController->GetButtonParamPtr((uint32_t)NativeButtonValues::ZR));
+    if (ZR_param->Has("threshold")) 
+    {
+        const int button_threshold = static_cast<int>(ZR_param.GetFloat("threshold", 0.5f) * 100.0f);
+        SciterElement sliderZRThreshold = m_page.GetElementByID("sliderZRThreshold");
+        if (sliderZRThreshold.IsValid())
+        {
+            sliderZRThreshold.SetValue(button_threshold);
+        }
+    }
+
+    for (int i = 0, n = (uint32_t)NativeMotionValues::NumMotions; i < n; i++)
+    {
+        if (m_motionMap[i].IsValid())
+        {
+            ParamPackage param(m_emulatedController->GetMotionParamPtr(i));
+            m_motionMap[i].SetText(ButtonToText(param).c_str());
+        }
+    }
+
+    for (int analog_id = 0; analog_id < (size_t)NativeAnalogValues::NumAnalogs; ++analog_id)
+    {
+        const ParamPackage param(m_emulatedController->GetStickParamPtr(analog_id));
+        for (int sub_button_id = 0; sub_button_id < ANALOG_SUB_BUTTONS_NUM; ++sub_button_id)
+        {
+            SciterElement & analog_button = m_analogMapButtons[analog_id][sub_button_id];
+            if (!analog_button.IsValid()) 
+            {
+                continue;
+            }
+            analog_button.SetText(AnalogToText(param, analog_sub_buttons[sub_button_id]).c_str());
+        }
+
+        if (m_analogMapModifierButton[analog_id].IsValid())
+        {
+            m_analogMapModifierButton[analog_id].SetText(ButtonToText(ParamPackage(param->GetString("modifier", ""))).c_str());
+        }
+
+        const SciterElement & deadzone_label = m_analogMapDeadzoneLabel[analog_id];
+        const SciterElement & deadzone_slider = m_analogMapDeadzoneSlider[analog_id];
+        const SciterElement & modifier_groupbox = m_analogMapModifierGroupbox[analog_id];
+        const SciterElement & modifier_label = m_analogMapModifierLabel[analog_id];
+        const SciterElement & modifier_slider = m_analogMapModifierSlider[analog_id];
+        const SciterElement & range_groupbox = m_analogMapRangeGroupbox[analog_id];
+        const SciterElement & range_spinbox = m_analogMapRangeSpinbox[analog_id];
+
+        const bool is_controller = m_operatingSystem.IsController(param);
+        if (deadzone_label.IsValid())
+        {
+            deadzone_label.SetStyleAttribute("display", is_controller ? "" : "none");
+        }
+        if (deadzone_slider.IsValid())
+        {
+            deadzone_slider.SetStyleAttribute("display", is_controller ? "" : "none");
+        }
+        if (modifier_groupbox.IsValid())
+        {
+            modifier_groupbox.SetStyleAttribute("display", !is_controller ? "" : "none");
+        }
+        if (modifier_label.IsValid())
+        {
+            modifier_label.SetStyleAttribute("display", !is_controller ? "" : "none");
+        }
+        if (modifier_slider.IsValid())
+        {
+            modifier_slider.SetStyleAttribute("display", !is_controller ? "" : "none");
+        }
+        if (range_groupbox.IsValid())
+        {
+            range_groupbox.SetStyleAttribute("display", is_controller ? "" : "none");
+        }
+
+        int slider_value;
+        if (is_controller) 
+        {
+            slider_value = (int)(param.GetFloat("deadzone", 0.15f) * 100);
+            if (deadzone_label.IsValid())
+            {
+                deadzone_label.SetText(stdstr_f("Deadzone: %d%%", slider_value).c_str());
+            }
+            if (deadzone_slider.IsValid())
+            {
+                deadzone_slider.SetValue(slider_value);
+            }
+            if (range_spinbox.IsValid())
+            {
+                range_spinbox.SetValue((int)(param.GetFloat("range", 0.95f) * 100));
+            }
+        }
+        else
+        {
+            slider_value = (int)(param.GetFloat("modifier_scale", 0.5f) * 100);
+            if (modifier_label.IsValid())
+            {
+                modifier_label.SetText(stdstr_f("Modifier Range: %d%%", slider_value).c_str());
+            }
+            if (modifier_slider.IsValid())
+            {
+                modifier_slider.SetValue(slider_value);
+            }
+        }
+    }
 }
 
+std::string InputConfigPlayer::ButtonToText(const IParamPackage& param)
+{
+    if (!param.Has("engine")) 
+    {
+        return "[not set]";
+    }
+
+    const std::string toggle = param.GetBool("toggle", false) ? "~" : "";
+    const std::string inverted = param.GetBool("inverted", false) ? "!" : "";
+    const std::string invert = std::string(param.GetString("invert", "+")) == "-" ? "-" : "";
+    const std::string turbo = param.GetBool("turbo", false) ? "$" : "";
+
+    const auto common_button_name = m_operatingSystem.GetButtonName(param);
+
+    // Retrieve the names from Qt
+    if (std::string(param.GetString("engine", "")) == "keyboard") 
+    {
+        const std::string button_str = GetKeyName(param.GetInt("code", 0));
+        return stdstr_f("%s%s%s%s", turbo.c_str(), toggle.c_str(), inverted.c_str(), button_str.c_str());
+    }
+
+    if (common_button_name == ButtonNames::Invalid) 
+    {
+        return "[invalid]";
+    }
+
+    if (common_button_name == ButtonNames::Engine) 
+    {
+        return param.GetString("engine", "");
+    }
+
+    if (common_button_name == ButtonNames::Value) 
+    {
+        if (param.Has("hat")) 
+        {
+            return stdstr_f("%s%s%sHat %s", turbo.c_str(), toggle.c_str(), inverted.c_str(), param.GetString("direction", ""));
+        }
+        if (param.Has("axis")) 
+        {
+            return stdstr_f("%s%s%sAxis %s", toggle.c_str(), inverted.c_str(), invert.c_str(), param.GetString("axis", ""));
+        }
+        if (param.Has("axis_x") && param.Has("axis_y") && param.Has("axis_z")) 
+        {
+            return stdstr_f("%s%sAxis %s,%s,%s", toggle.c_str(), inverted.c_str(), param.GetString("axis_x", ""), param.GetString("axis_y", ""), param.GetString("axis_z", ""));
+        }
+        if (param.Has("motion")) 
+        {
+            return stdstr_f("%s%sMotion %s", toggle.c_str(), inverted.c_str(), param.GetString("motion", ""));
+        }
+        if (param.Has("button")) 
+        {
+            return stdstr_f("%s%s%sButton %s", turbo.c_str(), toggle.c_str(), inverted.c_str(), param.GetString("button", ""));
+        }
+    }
+    return "[unknown]";
+}
+
+std::string InputConfigPlayer::AnalogToText(const IParamPackage& param, const std::string& dir)
+{
+    if (!param.Has("engine")) {
+        return "[not set]";
+    }
+
+    if (std::string(param.GetString("engine", "")) == "analog_from_button") 
+    {
+        return ButtonToText(ParamPackage({ param.GetString(dir.c_str(), "") }));
+    }
+
+    if (!param.Has("axis_x") || !param.Has("axis_y"))
+    {
+        return "[unknown]"  ;
+    }
+
+    if (dir == "modifier") 
+    {
+        return "[unused]";
+    }
+
+    const bool invert_x = std::string(param.GetString("invert_x", "+")) == "-";
+    const bool invert_y = std::string(param.GetString("invert_y", "+")) == "-";
+    if (dir == "left")
+    {
+        return stdstr_f("Axis %s%s", param.GetString("axis_x", ""), invert_x ? "+" : "-");
+    }
+    if (dir == "right") 
+    {
+        return stdstr_f("Axis %s%s", param.GetString("axis_x", ""), invert_x ? "-" : "+");
+    }
+    if (dir == "up") 
+    {
+        return stdstr_f("Axis %s%s", param.GetString("axis_y", ""), invert_y ? "-" : "+");
+    }
+    if (dir == "down") 
+    {
+        return stdstr_f("Axis %s%s", param.GetString("axis_y", ""), invert_y ? "+" : "-");
+    }
+
+    return "[unknown]";
+}
 void InputConfigPlayer::UpdateMappingWithDefaults()
 {
     if (m_comboDevices->CurrentIndex() == 0)

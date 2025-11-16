@@ -727,6 +727,11 @@ Common::ParamPackage EmulatedController::GetButtonParam(std::size_t index) const
     return button_params[index];
 }
 
+IParamPackage * EmulatedController::GetButtonParamPtr(uint32_t index) const
+{
+    return new IParamPackageImpl(GetButtonParam(index));
+}
+
 Common::ParamPackage EmulatedController::GetStickParam(std::size_t index) const {
     if (index >= stick_params.size()) {
         return {};
@@ -734,11 +739,21 @@ Common::ParamPackage EmulatedController::GetStickParam(std::size_t index) const 
     return stick_params[index];
 }
 
+IParamPackage * EmulatedController::GetStickParamPtr(uint32_t index) const
+{
+    return new IParamPackageImpl(GetStickParam(index));
+}
+
 Common::ParamPackage EmulatedController::GetMotionParam(std::size_t index) const {
     if (index >= motion_params.size()) {
         return {};
     }
     return motion_params[index];
+}
+
+IParamPackage* EmulatedController::GetMotionParamPtr(uint32_t index) const
+{
+    return new IParamPackageImpl(GetMotionParam(index));
 }
 
 void EmulatedController::SetButtonParam(std::size_t index, Common::ParamPackage param) {

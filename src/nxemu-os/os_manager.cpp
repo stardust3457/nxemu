@@ -278,6 +278,18 @@ IEmulatedController & OSManager::GetEmulatedController(NpadIdType index)
     return *m_coreSystem.HIDCore().GetEmulatedController(index);
 }
 
+ButtonNames OSManager::GetButtonName(const IParamPackage& param) const
+{
+    std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();
+    return input_subsystem->GetButtonName(param);
+}
+
+bool OSManager::IsController(const IParamPackage & params) const
+{
+    std::shared_ptr<InputCommon::InputSubsystem>& input_subsystem = m_coreSystem.InputSubsystem();
+    return input_subsystem->IsController(params);
+}
+
 IButtonMappingList * OSManager::GetButtonMappingForDevice(const IParamPackage & param) const
 {
     std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();

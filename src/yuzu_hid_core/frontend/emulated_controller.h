@@ -244,12 +244,15 @@ public:
 
     // Returns the current mapped button device
     Common::ParamPackage GetButtonParam(std::size_t index) const;
+    IParamPackage * GetButtonParamPtr(uint32_t index) const override;
 
     // Returns the current mapped stick device
     Common::ParamPackage GetStickParam(std::size_t index) const;
+    IParamPackage * GetStickParamPtr(uint32_t index) const override;
 
     // Returns the current mapped motion device
     Common::ParamPackage GetMotionParam(std::size_t index) const;
+    IParamPackage * GetMotionParamPtr(uint32_t index) const override;
 
     /**
      * Updates the current mapped button device
