@@ -662,9 +662,9 @@ void SciterMainWindow::SettingChanged(const char * setting, void * userData)
     }
 }
 
-bool SciterMainWindow::OnTimer(SCITER_ELEMENT /*Element*/, uint32_t* TimerId)
+bool SciterMainWindow::OnTimer(SCITER_ELEMENT /*element*/, uint32_t * timerId)
 {
-    if (TimerId == (uint32_t*)TIMER_UPDATE_INPUT)
+    if (timerId == (uint32_t*)TIMER_UPDATE_INPUT)
     {
         UpdateInputDrivers();
     }

@@ -6,7 +6,17 @@
 InputConfig::InputConfig(ISciterUI & SciterUI) :
     m_sciterUI(SciterUI),
     m_window(nullptr),
-    m_inputDeviceList(nullptr)
+    m_inputDeviceList(nullptr),
+    m_playerMap({ 
+        {"Player1", {0, NpadIdType::Player1}},
+        {"Player2", {1, NpadIdType::Player2}},
+        {"Player3", {2, NpadIdType::Player3}},
+        {"Player4", {3, NpadIdType::Player4}},
+        {"Player5", {4, NpadIdType::Player5}},
+        {"Player6", {5, NpadIdType::Player6}},
+        {"Player7", {6, NpadIdType::Player7}},
+        {"Player8", {7, NpadIdType::Player8}}, 
+    })
 {
     SwitchSystem * system = SwitchSystem::GetInstance();
     if (system != nullptr)
@@ -68,9 +78,10 @@ bool InputConfig::PageNavChangeTo(const std::string & /*pageName*/, SCITER_ELEME
 
 void InputConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEMENT page)
 {
-    if (pageName == "Player1")
+    PlayerInfo::const_iterator itr = m_playerMap.find(pageName);
+    if (itr != m_playerMap.end())
     {
-        m_playerConfig[0].reset(new InputConfigPlayer(m_sciterUI, *this, m_window->GetHandle(), page, NpadIdType::Player1));
+        m_playerConfig[itr->second.first].reset(new InputConfigPlayer(m_sciterUI, *this, m_window->GetHandle(), page, itr->second.second));
     }
 }
 

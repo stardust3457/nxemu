@@ -2,16 +2,21 @@
 #include <sciter_handler.h>
 #include <widgets/page_nav.h>
 #include <memory>
+#include <unordered_map>
 
 __interface ISciterUI;
 __interface ISciterWindow;
 __interface IParamPackageList;
 class InputConfigPlayer;
 
+enum class NpadIdType : uint32_t;
+
 class InputConfig :
     public IPagesSink,
     public IClickSink
 {
+    typedef std::unordered_map<std::string, std::pair<size_t, NpadIdType>> PlayerInfo;
+
 public:
     InputConfig(ISciterUI & SciterUI);
     ~InputConfig();
@@ -39,4 +44,5 @@ private:
     std::shared_ptr<IPageNav> m_pageNav;
     std::unique_ptr<InputConfigPlayer> m_playerConfig[8];
     IParamPackageList * m_inputDeviceList;
+    const PlayerInfo m_playerMap;
 };
