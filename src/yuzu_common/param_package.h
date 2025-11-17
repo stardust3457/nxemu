@@ -79,6 +79,7 @@ public:
     int32_t GetInt(const char * key, int32_t default_value) const override;
     float GetFloat(const char * key, float default_value) const override;
     const char * GetString(const char * key, const char * default_value) const override;
+    void SetFloat(const char* key, float value) override;
     const char * Serialize() const override;
     void Release() override;
 
@@ -89,5 +90,5 @@ private:
     IParamPackageImpl(IParamPackageImpl&&) = delete;
     IParamPackageImpl& operator=(IParamPackageImpl&&) = delete;
 
-    const Common::ParamPackage m_package;
+    Common::ParamPackage m_package;
 };

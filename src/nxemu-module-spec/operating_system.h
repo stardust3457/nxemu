@@ -268,6 +268,7 @@ __interface IParamPackage
     int32_t GetInt(const char * key, int32_t default_value) const = 0;
     float GetFloat(const char * key, float default_value) const = 0;
     const char * GetString(const char * key, const char * default_value) const = 0;
+    void SetFloat(const char * key, float value) = 0;
     const char * Serialize() const = 0;
 
     void Release() = 0;

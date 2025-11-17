@@ -32,6 +32,7 @@ private:
     void UpdatePressedButtons();
     void UpdateMotionCube();
     void UpdateStickDisplay(NativeAnalogValues analog);
+    void DeadzoneSliderChanged(uint32_t analogId);
     SciterElement GetControllerSvg();
 
     static void stControllerEventCallback(ControllerTriggerType type, void * user);

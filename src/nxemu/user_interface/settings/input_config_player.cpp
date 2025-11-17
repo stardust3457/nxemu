@@ -268,6 +268,18 @@ namespace
             return pair->second.c_str();
         }
 
+        void SetFloat(const char * key, float value) override
+        {
+            if (m_package != nullptr)
+            {
+                m_package->SetFloat(key, value);
+            }
+            else
+            {
+                data.insert_or_assign(key, std::to_string(value));
+            }
+        }
+
         const char * Serialize() const override
         {
             if (m_package != nullptr)
@@ -478,6 +490,14 @@ bool InputConfigPlayer::OnStateChange(SCITER_ELEMENT elem, uint32_t /*eventReaso
     {
         UpdateMappingWithDefaults();
     }
+    else if (m_analogMapDeadzoneSlider[0] == elem)
+    {
+        DeadzoneSliderChanged(0);
+    }
+    else if (m_analogMapDeadzoneSlider[1] == elem)
+    {
+        DeadzoneSliderChanged(1);
+    }
     return false;
 }
 
@@ -538,6 +558,14 @@ void InputConfigPlayer::BindControls()
     m_analogMapRangeGroupbox[1] = m_page.GetElementByID("buttonRStickRangeGroup");
     m_analogMapRangeSpinbox[0] = m_page.GetElementByID("spinboxLStickRange");
     m_analogMapRangeSpinbox[1] = m_page.GetElementByID("spinboxRStickRange");
+
+    for (uint32_t i = 0; i < (uint32_t)NativeAnalogValues::NumAnalogs; i++)
+    {
+        if (m_analogMapDeadzoneSlider[i].IsValid())
+        {
+            m_sciterUI.AttachHandler(m_analogMapDeadzoneSlider[i], IID_ISTATECHANGESINK, (IStateChangeSink*)this);
+        }
+    }
     SciterElement comboDevices = m_page.GetElementByID("comboDevices");
     std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(comboDevices, IID_ICOMBOBOX);
     if (interfacePtr)
@@ -1171,6 +1199,28 @@ void InputConfigPlayer::UpdateStickDisplay(NativeAnalogValues analog)
             outerEll.SetAttribute("rx", stdstr_f("%f", 24.0f * amp).c_str());
             innerEll.SetAttribute("rx", stdstr_f("%f", 17.0f * amp).c_str());
             innerShift.SetAttribute("transform", stdstr_f("translate(%f,0)", ((24.0f - 17.0f) * 0.4f) * mag).c_str());
+        }
+    }
+}
+
+void InputConfigPlayer::DeadzoneSliderChanged(uint32_t analogId)
+{
+    ParamPackage param(m_emulatedController->GetStickParamPtr(analogId));
+    const int slider_value = m_analogMapDeadzoneSlider[analogId].GetValue().GetValueInt();
+    if (m_analogMapDeadzoneLabel[analogId].IsValid())
+    {
+        m_analogMapDeadzoneLabel[analogId].SetText(stdstr_f("Deadzone: %d%%",slider_value).c_str());
+    }
+    param.SetFloat("deadzone", slider_value / 100.0f);
+    m_emulatedController->SetStickParam(analogId, param);
+
+    SciterElement controllerSvg = GetControllerSvg();
+    if (controllerSvg.IsValid())
+    {
+        SciterElement deadzoneEl = controllerSvg.FindFirst(analogId == 0 ? ".left-stick-visual .joystick-deadzone" : ".right-stick-visual .joystick-deadzone");
+        if (deadzoneEl.IsValid())
+        {
+            deadzoneEl.SetAttribute("r", stdstr_f("%d", (int)((slider_value / 100.0f) * 45)).c_str());
         }
     }
 }

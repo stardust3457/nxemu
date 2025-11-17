@@ -220,6 +220,11 @@ const char * IParamPackageImpl::GetString(const char * key, const char * default
     return default_value;
 }
 
+void IParamPackageImpl::SetFloat(const char * key, float value)
+{
+    m_package.Set(std::string(key), value);
+}
+
 const char * IParamPackageImpl::Serialize() const
 {
     return m_package.Serialize();
