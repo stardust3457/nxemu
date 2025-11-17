@@ -148,17 +148,19 @@ static constexpr u32 PageAlignSize(u32 size) {
     return static_cast<u32>((size + YUZU_PAGEMASK) & ~YUZU_PAGEMASK);
 }
 
-static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uint64_t & baseAddress, uint64_t & processID)
+static bool LoadNroImpl(Systemloader & loader, ISystemModules & modules, const std::vector<u8> & data, uint64_t & baseAddress, uint64_t & processID)
 {
-    if (data.size() < sizeof(NroHeader)) {
-        return {};
+    if (data.size() < sizeof(NroHeader))
+    {
+        return false;
     }
 
     // Read NSO header
     NroHeader nro_header{};
     std::memcpy(&nro_header, data.data(), sizeof(NroHeader));
-    if (nro_header.magic != Common::MakeMagic('N', 'R', 'O', '0')) {
-        return {};
+    if (nro_header.magic != Common::MakeMagic('N', 'R', 'O', '0'))
+    {
+        return false;
     }
 
     // Build program image
@@ -167,27 +169,27 @@ static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uin
     Kernel::PhysicalMemory & program_image(codeset.memory);
     program_image.resize(PageAlignSize(nro_header.file_size));
     std::memcpy(program_image.data(), data.data(), program_image.size());
-    if (program_image.size() != PageAlignSize(nro_header.file_size)) {
-        return {};
+    if (program_image.size() != PageAlignSize(nro_header.file_size))
+    {
+        return false;
     }
 
-    for (std::size_t i = 0; i < nro_header.segments.size(); ++i) {
+    for (std::size_t i = 0; i < nro_header.segments.size(); ++i)
+    {
         codeset.segments[i].addr = nro_header.segments[i].offset;
         codeset.segments[i].offset = nro_header.segments[i].offset;
         codeset.segments[i].size = PageAlignSize(nro_header.segments[i].size);
     }
 
-    if (!Settings::values.program_args.GetValue().empty()) {
+    if (!Settings::values.program_args.GetValue().empty())
+    {
         const auto arg_data = Settings::values.program_args.GetValue();
         codeset.DataSegment().size += NSO_ARGUMENT_DATA_ALLOCATION_SIZE;
-        NSOArgumentHeader args_header{
-            NSO_ARGUMENT_DATA_ALLOCATION_SIZE, static_cast<u32_le>(arg_data.size()), {}};
+        NSOArgumentHeader args_header{NSO_ARGUMENT_DATA_ALLOCATION_SIZE, static_cast<u32_le>(arg_data.size()), {}};
         const auto end_offset = program_image.size();
-        program_image.resize(static_cast<u32>(program_image.size()) +
-                             NSO_ARGUMENT_DATA_ALLOCATION_SIZE);
+        program_image.resize(static_cast<u32>(program_image.size()) + NSO_ARGUMENT_DATA_ALLOCATION_SIZE);
         std::memcpy(program_image.data() + end_offset, &args_header, sizeof(NSOArgumentHeader));
-        std::memcpy(program_image.data() + end_offset + sizeof(NSOArgumentHeader), arg_data.data(),
-                    arg_data.size());
+        std::memcpy(program_image.data() + end_offset + sizeof(NSOArgumentHeader), arg_data.data(), arg_data.size());
     }
 
     // Default .bss to NRO header bss size if MOD0 section doesn't exist
@@ -195,11 +197,11 @@ static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uin
 
     // Read MOD header
     ModHeader mod_header{};
-    std::memcpy(&mod_header, program_image.data() + nro_header.module_header_offset,
-                sizeof(ModHeader));
+    std::memcpy(&mod_header, program_image.data() + nro_header.module_header_offset, sizeof(ModHeader));
 
     const bool has_mod_header{mod_header.magic == Common::MakeMagic('M', 'O', 'D', '0')};
-    if (has_mod_header) {
+    if (has_mod_header) 
+    {
         // Resize program image to include .bss section and page align each section
         bss_size = PageAlignSize(mod_header.bss_end_offset - mod_header.bss_start_offset);
     }
@@ -244,9 +246,7 @@ static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uin
     }();
 
     // Setup the process code layout
-    __debugbreak();
-#ifdef tofix
-    IOperatingSystem & operatingSystem = loader.GetSystemModules().OperatingSystem();
+    IOperatingSystem & operatingSystem = modules.OperatingSystem();
     baseAddress = fastmem_base;
     if (!operatingSystem.CreateApplicationProcess(image_size, FileSys::ProgramMetadata::GetDefault(), baseAddress, processID, false))
     {
@@ -267,13 +267,12 @@ static bool LoadNroImpl(Systemloader & loader, const std::vector<u8> & data, uin
     {
         return false;
     }
-#endif
     return true;
 }
 
 bool AppLoader_NRO::LoadNro(Systemloader & loader, ISystemModules & modules, const FileSys::VfsFile & nro_file, uint64_t & baseAddress, uint64_t & processID)
 {
-    return LoadNroImpl(loader, nro_file.ReadAllBytes(), baseAddress, processID);
+    return LoadNroImpl(loader, modules, nro_file.ReadAllBytes(), baseAddress, processID);
 }
 
 AppLoader_NRO::LoadResult AppLoader_NRO::Load(Systemloader & loader, ISystemModules & systemModules)

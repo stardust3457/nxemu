@@ -128,7 +128,7 @@ LoaderResultStatus AppLoader_NCA::ReadRomFS(FileSys::VirtualFile& dir) {
         return LoaderResultStatus::ErrorNotInitialized;
     }
 
-    if (nca->GetRomFS() == nullptr || nca->GetRomFS()->GetSize() == 0) {
+    if (nca->RomFS() == nullptr || nca->RomFS()->GetSize() == 0) {
         return LoaderResultStatus::ErrorNoRomFS;
     }
 
