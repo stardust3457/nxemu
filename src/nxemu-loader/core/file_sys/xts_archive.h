@@ -9,8 +9,6 @@
 #include "yuzu_common/swap.h"
 #include "core/file_sys/vfs/vfs.h"
 
-enum class LoaderResultStatus : uint16_t;
-
 namespace FileSys {
 
 class NCA;

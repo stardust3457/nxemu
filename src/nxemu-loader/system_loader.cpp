@@ -79,7 +79,7 @@ struct Systemloader::Impl {
     FileSys::VirtualFilesystem m_virtualFilesystem;
     /// ContentProviderUnion instance
     std::unique_ptr<FileSys::ContentProviderUnion> m_contentProvider;
-    FileSys::FileSystemController m_fsController;
+    ::FileSystemController m_fsController;
     std::unique_ptr<FileSys::ManualContentProvider> m_provider;
     uint64_t m_processID;
     uint64_t m_titleID;
@@ -243,7 +243,7 @@ FileSys::VirtualFilesystem Systemloader::GetFilesystem() {
     return impl->m_virtualFilesystem;
 }
 
-FileSys::FileSystemController & Systemloader::GetFileSystemController() {
+FileSystemController & Systemloader::GetFileSystemController() {
     return impl->m_fsController;
 }
 

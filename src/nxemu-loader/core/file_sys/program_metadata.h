@@ -13,8 +13,6 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include <nxemu-module-spec/operating_system.h>
 
-enum class LoaderResultStatus : uint16_t;
-
 namespace FileSys {
 
 enum class ProgramFilePermission : uint64_t {

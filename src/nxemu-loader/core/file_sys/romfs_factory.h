@@ -13,9 +13,7 @@ namespace Loader {
 class AppLoader;
 } // namespace Loader
 
-namespace FileSys {
 class FileSystemController;
-}
 
 namespace FileSys {
 
@@ -26,7 +24,7 @@ class NCA;
 class RomFSFactory {
 public:
     explicit RomFSFactory(FileSys::VirtualFile file_, bool updatable_, ContentProvider & provider,
-                          FileSys::FileSystemController& controller);
+                          FileSystemController& controller);
     ~RomFSFactory();
 
     void SetPackedUpdate(VirtualFile packed_update_raw);
@@ -47,7 +45,7 @@ private:
     bool updatable;
 
     ContentProvider& content_provider;
-    FileSys::FileSystemController& filesystem_controller;
+    FileSystemController & filesystem_controller;
 };
 
 } // namespace FileSys

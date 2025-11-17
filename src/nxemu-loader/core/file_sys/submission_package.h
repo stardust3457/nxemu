@@ -11,8 +11,6 @@
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/vfs/vfs.h"
 
-enum class LoaderContentRecordType : u8;
-enum class LoaderResultStatus : uint16_t;
 
 namespace FileSys {
 

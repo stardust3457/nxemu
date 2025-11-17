@@ -98,7 +98,6 @@ void SaveDataController::SetAutoCreate(bool state) {
 
 } // namespace Service::FileSystem
 
-
 SaveDataControllerPtr::SaveDataControllerPtr(std::shared_ptr<Service::FileSystem::SaveDataController> saveDataController) :
     m_saveDataController(saveDataController)
 {

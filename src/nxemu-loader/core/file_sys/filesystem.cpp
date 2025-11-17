@@ -14,14 +14,12 @@
 #include <yuzu_common/logging/log.h>
 #include <yuzu_common/fs/path_util.h>
 
-namespace FileSys {
-
 FileSystemController::FileSystemController(Systemloader & loader_) : loader{ loader_ } {}
 
 FileSystemController::~FileSystemController() = default;
 
 bool FileSystemController::RegisterProcess(
-    ProcessId process_id, ProgramId program_id,
+    FileSys::ProcessId process_id, FileSys::ProgramId program_id,
     std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory) {
     std::scoped_lock lk{ registration_lock };
 
@@ -35,7 +33,7 @@ bool FileSystemController::RegisterProcess(
     return true;
 }
 
-void FileSystemController::SetPackedUpdate(ProcessId process_id, FileSys::VirtualFile update_raw) {
+void FileSystemController::SetPackedUpdate(FileSys::ProcessId process_id, FileSys::VirtualFile update_raw) {
     LOG_TRACE(Service_FS, "Setting packed update for romfs");
 
     std::scoped_lock lk{registration_lock};
@@ -54,7 +52,7 @@ IFileSysRegisteredCache * FileSystemController::GetSystemNANDContents() const
 
 ISaveDataController * FileSystemController::OpenSaveDataController() const
 {
-    std::shared_ptr<Service::FileSystem::SaveDataController> dataController(std::make_shared<Service::FileSystem::SaveDataController>(loader, CreateSaveDataFactory(ProgramId{})));
+    std::shared_ptr<Service::FileSystem::SaveDataController> dataController(std::make_shared<Service::FileSystem::SaveDataController>(loader, CreateSaveDataFactory(FileSys::ProgramId{})));
     return std::make_unique<SaveDataControllerPtr>(dataController).release();
 }
 
@@ -96,7 +94,7 @@ bool FileSystemController::OpenSDMC(IVirtualDirectory ** out_sdmc) const
         return false;
     }
 
-    VirtualDir sdmc = sdmc_factory->Open();
+    FileSys::VirtualDir sdmc = sdmc_factory->Open();
     if (sdmc == nullptr) 
     {
         return false;
@@ -184,7 +182,7 @@ void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool ov
 }
 
 std::shared_ptr<FileSys::SaveDataFactory> FileSystemController::CreateSaveDataFactory(
-    ProgramId program_id) const {
+    FileSys::ProgramId program_id) const {
     using YuzuPath = Common::FS::YuzuPath;
     const auto rw_mode = VirtualFileOpenMode::ReadWrite;
 
@@ -193,6 +191,4 @@ std::shared_ptr<FileSys::SaveDataFactory> FileSystemController::CreateSaveDataFa
         vfs->OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::NANDDir), rw_mode);
     return std::make_shared<FileSys::SaveDataFactory>(loader, program_id,
         std::move(nand_directory));
-}
-
 }

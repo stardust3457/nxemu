@@ -4,9 +4,10 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/file_sys/registered_cache.h"
 
+class FileSystemController;
+
 namespace FileSys
 {
-class FileSystemController;
 class ContentProvider;
 }
 
@@ -19,7 +20,7 @@ public:
 
     FileSys::ContentProvider & GetContentProvider();
     FileSys::VirtualFilesystem GetFilesystem();
-    FileSys::FileSystemController & GetFileSystemController();
+    ::FileSystemController & GetFileSystemController();
     void RegisterContentProvider(FileSys::ContentProviderUnionSlot slot, FileSys::ContentProvider* provider);
 
     void SetProcessID(uint64_t processID);

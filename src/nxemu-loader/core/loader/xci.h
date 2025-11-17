@@ -8,11 +8,12 @@
 #include "core/loader/loader.h"
 
 namespace FileSys {
-class FileSystemController;
 class ContentProvider;
 class NACP;
 class XCI;
 } // namespace FileSys
+
+class FileSystemController;
 
 namespace Loader {
 
@@ -22,7 +23,7 @@ class AppLoader_NCA;
 class AppLoader_XCI final : public AppLoader {
 public:
     explicit AppLoader_XCI(FileSys::VirtualFile file_,
-                           const FileSys::FileSystemController& fsc,
+                           const FileSystemController& fsc,
                            const FileSys::ContentProvider& content_provider, uint64_t program_id,
                            std::size_t program_index);
     ~AppLoader_XCI() override;

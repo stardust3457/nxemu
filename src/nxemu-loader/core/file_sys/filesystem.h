@@ -22,6 +22,8 @@ class RegisteredCache;
 using ProcessId = uint64_t;
 using ProgramId = uint64_t;
 
+} // namespace FileSys
+
 class FileSystemController :
     public IFileSystemController
 {
@@ -29,8 +31,8 @@ public:
     explicit FileSystemController(Systemloader & loader_);
     ~FileSystemController();
 
-    bool RegisterProcess(ProcessId process_id, ProgramId program_id, std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory);
-    void SetPackedUpdate(ProcessId process_id, FileSys::VirtualFile update_raw);
+    bool RegisterProcess(FileSys::ProcessId process_id, FileSys::ProgramId program_id, std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory);
+    void SetPackedUpdate(FileSys::ProcessId process_id, FileSys::VirtualFile update_raw);
 
     FileSys::RegisteredCache * SystemNANDContents() const;
 
@@ -40,7 +42,7 @@ public:
 
     void CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite = true);
 
-    //IFileSystemController
+    // IFileSystemController
     IFileSysRegisteredCache * GetSystemNANDContents() const override;
     ISaveDataController * OpenSaveDataController() const override;
     uint64_t GetFreeSpaceSize(StorageId id) const override;
@@ -49,20 +51,19 @@ public:
     bool OpenSDMC(IVirtualDirectory ** out_sdmc) const override;
 
 private:
-    std::shared_ptr<FileSys::SaveDataFactory> CreateSaveDataFactory(ProgramId program_id) const;
+    std::shared_ptr<FileSys::SaveDataFactory> CreateSaveDataFactory(FileSys::ProgramId program_id) const;
 
     Systemloader & loader;
 
     struct Registration {
-        ProgramId program_id;
+        FileSys::ProgramId program_id;
         std::shared_ptr<FileSys::RomFSFactory> romfs_factory;
         std::shared_ptr<FileSys::SaveDataFactory> save_data_factory;
     };
     std::mutex registration_lock;
-    std::map<ProcessId, Registration> registrations;
+    std::map<FileSys::ProcessId, Registration> registrations;
 
     std::unique_ptr<FileSys::SDMCFactory> sdmc_factory;
     std::unique_ptr<FileSys::BISFactory> bis_factory;
 };
 
-} // namespace FileSys

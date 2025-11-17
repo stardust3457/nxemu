@@ -21,7 +21,7 @@
 namespace Loader {
 
 AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
-                             const FileSys::FileSystemController& fsc,
+                             const FileSystemController& fsc,
                              const FileSys::ContentProvider& content_provider, uint64_t program_id,
                              std::size_t program_index)
     : AppLoader(file_), nsp(std::make_unique<FileSys::NSP>(file_, program_id, program_index)) {

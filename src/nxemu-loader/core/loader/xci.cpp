@@ -19,7 +19,7 @@
 namespace Loader {
 
 AppLoader_XCI::AppLoader_XCI(FileSys::VirtualFile file_,
-                             const FileSys::FileSystemController& fsc,
+                             const FileSystemController& fsc,
                              const FileSys::ContentProvider& content_provider, uint64_t program_id,
                              std::size_t program_index)
     : AppLoader(file_), xci(std::make_unique<FileSys::XCI>(file_, program_id, program_index)),

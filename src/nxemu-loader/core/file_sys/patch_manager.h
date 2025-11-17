@@ -15,9 +15,10 @@ namespace Core {
 class System;
 }
 
+class FileSystemController;
+
 namespace FileSys {
 
-class FileSystemController;
 class ContentProvider;
 class NCA;
 class NACP;
@@ -40,7 +41,7 @@ public:
     using Metadata = std::pair<std::unique_ptr<NACP>, VirtualFile>;
 
     explicit PatchManager(uint64_t title_id_,
-                          const FileSys::FileSystemController& fs_controller_,
+                          const FileSystemController& fs_controller_,
                           const ContentProvider& content_provider_);
     ~PatchManager();
 

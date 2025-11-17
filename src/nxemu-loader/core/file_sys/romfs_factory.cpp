@@ -15,9 +15,11 @@
 
 namespace FileSys {
 
-RomFSFactory::RomFSFactory(FileSys::VirtualFile file_, bool updatable_, ContentProvider & provider,
-                           FileSys::FileSystemController& controller)
-    : content_provider{provider}, filesystem_controller{controller}, file(file_), updatable(updatable_) 
+RomFSFactory::RomFSFactory(FileSys::VirtualFile file_, bool updatable_, ContentProvider & provider, FileSystemController& controller) :
+    content_provider{provider}, 
+    filesystem_controller{controller},
+    file(file_),
+    updatable(updatable_) 
 {
 }
 
@@ -34,7 +36,7 @@ VirtualFile RomFSFactory::OpenCurrentProcess(uint64_t current_process_title_id) 
 
     const auto type = LoaderContentRecordType::Program;
     const auto nca = content_provider.GetEntryNCA(current_process_title_id, type);
-    const PatchManager patch_manager{current_process_title_id, filesystem_controller,
+    const FileSys::PatchManager patch_manager{current_process_title_id, filesystem_controller,
                                      content_provider};
     return patch_manager.PatchRomFS(nca.get(), file, LoaderContentRecordType::Program, packed_update_raw);
 }
