@@ -81,7 +81,7 @@ Common::Input::MotionStatus TransformToMotion(const Common::Input::CallbackStatu
     Common::Input::MotionStatus status{};
     switch (callback.type) {
     case Common::Input::InputType::Button: {
-        Common::Input::AnalogProperties properties{
+        AnalogProperties properties{
             .deadzone = 0.0f,
             .range = 1.0f,
             .offset = 0.0f,
@@ -148,8 +148,8 @@ Common::Input::MotionStatus TransformToMotion(const Common::Input::CallbackStatu
     return status;
 }
 
-Common::Input::StickStatus TransformToStick(const Common::Input::CallbackStatus& callback) {
-    Common::Input::StickStatus status{};
+StickStatus TransformToStick(const Common::Input::CallbackStatus& callback) {
+    StickStatus status{};
 
     switch (callback.type) {
     case Common::Input::InputType::Stick:
@@ -257,8 +257,8 @@ Common::Input::TriggerStatus TransformToTrigger(const Common::Input::CallbackSta
     return status;
 }
 
-Common::Input::AnalogStatus TransformToAnalog(const Common::Input::CallbackStatus& callback) {
-    Common::Input::AnalogStatus status{};
+AnalogStatus TransformToAnalog(const Common::Input::CallbackStatus& callback) {
+    AnalogStatus status{};
 
     switch (callback.type) {
     case Common::Input::InputType::Analog:
@@ -320,7 +320,7 @@ Common::Input::BodyColorStatus TransformToColor(const Common::Input::CallbackSta
     }
 }
 
-void SanitizeAnalog(Common::Input::AnalogStatus& analog, bool clamp_value) {
+void SanitizeAnalog(AnalogStatus& analog, bool clamp_value) {
     const auto& properties = analog.properties;
     float& raw_value = analog.raw_value;
     float& value = analog.value;
@@ -360,7 +360,7 @@ void SanitizeAnalog(Common::Input::AnalogStatus& analog, bool clamp_value) {
     }
 }
 
-void SanitizeStick(Common::Input::AnalogStatus& analog_x, Common::Input::AnalogStatus& analog_y,
+void SanitizeStick(AnalogStatus& analog_x, AnalogStatus& analog_y,
                    bool clamp_value) {
     const auto& properties_x = analog_x.properties;
     const auto& properties_y = analog_y.properties;

@@ -37,7 +37,7 @@ using KeyboardModifierValues =
 using MouseButtonValues =
     std::array<Common::Input::ButtonStatus, InputSettings::NativeMouseButton::NumMouseButtons>;
 using MouseWheelValues =
-    std::array<Common::Input::AnalogStatus, InputSettings::NativeMouseWheel::NumMouseWheels>;
+    std::array<AnalogStatus, InputSettings::NativeMouseWheel::NumMouseWheels>;
 using MouseStickValue = Common::Input::TouchStatus;
 
 struct MousePosition {

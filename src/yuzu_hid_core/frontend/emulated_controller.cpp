@@ -969,9 +969,10 @@ void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback
     TriggerOnChange(ControllerTriggerType::Button, true);
 }
 
-void EmulatedController::SetStick(const Common::Input::CallbackStatus& callback, std::size_t index,
-                                  Common::UUID uuid) {
-    if (index >= controller.stick_values.size()) {
+void EmulatedController::SetStick(const Common::Input::CallbackStatus& callback, std::size_t index, Common::UUID uuid)
+{
+    if (index >= (sizeof(controller.stick_values.status) / sizeof(controller.stick_values.status[0])))
+    {
         return;
     }
     auto trigger_guard = SCOPE_GUARD {
@@ -981,7 +982,8 @@ void EmulatedController::SetStick(const Common::Input::CallbackStatus& callback,
     const auto stick_value = TransformToStick(callback);
 
     // Only read stick values that have the same uuid or are over the threshold to avoid flapping
-    if (controller.stick_values[index].uuid != uuid) {
+    if (memcmp(&controller.stick_values.status[index].uuid, uuid.uuid.data(), uuid.uuid.size()) != 0)
+    {
         const bool is_tas = uuid == TAS_UUID;
         if (is_tas && stick_value.x.value == 0 && stick_value.y.value == 0) {
             trigger_guard.Cancel();
@@ -994,8 +996,8 @@ void EmulatedController::SetStick(const Common::Input::CallbackStatus& callback,
         }
     }
 
-    controller.stick_values[index] = stick_value;
-    controller.stick_values[index].uuid = uuid;
+    controller.stick_values.status[index] = stick_value;
+    memcpy(controller.stick_values.status[index].uuid, uuid.uuid.data(), uuid.uuid.size());
 
     if (is_configuring) {
         controller.analog_stick_state.left = {};
@@ -1004,25 +1006,25 @@ void EmulatedController::SetStick(const Common::Input::CallbackStatus& callback,
     }
 
     const AnalogStickState stick{
-        .x = static_cast<s32>(controller.stick_values[index].x.value * HID_JOYSTICK_MAX),
-        .y = static_cast<s32>(controller.stick_values[index].y.value * HID_JOYSTICK_MAX),
+        .x = static_cast<s32>(controller.stick_values.status[index].x.value * HID_JOYSTICK_MAX),
+        .y = static_cast<s32>(controller.stick_values.status[index].y.value * HID_JOYSTICK_MAX),
     };
 
     switch ((NativeAnalogValues)index)
     {
     case NativeAnalogValues::LStick:
         controller.analog_stick_state.left = stick;
-        controller.npad_button_state.stick_l_left.Assign(controller.stick_values[index].left);
-        controller.npad_button_state.stick_l_up.Assign(controller.stick_values[index].up);
-        controller.npad_button_state.stick_l_right.Assign(controller.stick_values[index].right);
-        controller.npad_button_state.stick_l_down.Assign(controller.stick_values[index].down);
+        controller.npad_button_state.stick_l_left.Assign(controller.stick_values.status[index].left);
+        controller.npad_button_state.stick_l_up.Assign(controller.stick_values.status[index].up);
+        controller.npad_button_state.stick_l_right.Assign(controller.stick_values.status[index].right);
+        controller.npad_button_state.stick_l_down.Assign(controller.stick_values.status[index].down);
         break;
     case NativeAnalogValues::RStick:
         controller.analog_stick_state.right = stick;
-        controller.npad_button_state.stick_r_left.Assign(controller.stick_values[index].left);
-        controller.npad_button_state.stick_r_up.Assign(controller.stick_values[index].up);
-        controller.npad_button_state.stick_r_right.Assign(controller.stick_values[index].right);
-        controller.npad_button_state.stick_r_down.Assign(controller.stick_values[index].down);
+        controller.npad_button_state.stick_r_left.Assign(controller.stick_values.status[index].left);
+        controller.npad_button_state.stick_r_up.Assign(controller.stick_values.status[index].up);
+        controller.npad_button_state.stick_r_right.Assign(controller.stick_values.status[index].right);
+        controller.npad_button_state.stick_r_down.Assign(controller.stick_values.status[index].down);
         break;
     }
 }
@@ -1865,6 +1867,29 @@ ButtonValues EmulatedController::GetButtonsValues() const {
     return controller.button_values;
 }
 
+void EmulatedController::GetButtonsStatus(button_status_t * buttons, size_t num_buttons) const
+{
+    if (buttons == nullptr || num_buttons == 0)
+    {
+        return;
+    }
+
+    std::scoped_lock lock{ mutex };
+    size_t toCopy = std::min(num_buttons, controller.button_values.size());
+    for (size_t i = 0; i < toCopy; ++i)
+    {
+        const Common::Input::ButtonStatus & src = controller.button_values[i];
+        button_status_t & dst = buttons[i];
+
+        std::memcpy(dst.uuid, &src.uuid, sizeof(dst.uuid));
+        dst.value = src.value;
+        dst.inverted = src.inverted;
+        dst.toggle = src.toggle;
+        dst.turbo = src.turbo;
+        dst.locked = src.locked;
+    }
+}
+
 SticksValues EmulatedController::GetSticksValues() const {
     std::scoped_lock lock{mutex};
     return controller.stick_values;
@@ -1895,7 +1920,7 @@ CameraValues EmulatedController::GetCameraValues() const {
     return controller.camera_values;
 }
 
-RingAnalogValue EmulatedController::GetRingSensorValues() const {
+AnalogStatus EmulatedController::GetRingSensorValues() const {
     return controller.ring_analog_value;
 }
 

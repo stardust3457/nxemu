@@ -10,7 +10,6 @@ using BatteryStatus = BatteryLevel;
 struct AnalogStatus;
 struct ButtonStatus;
 struct MotionStatus;
-struct StickStatus;
 struct TouchStatus;
 struct TriggerStatus;
 }; // namespace Common::Input
@@ -48,7 +47,7 @@ Common::Input::MotionStatus TransformToMotion(const Common::Input::CallbackStatu
  * @param callback Supported callbacks: Stick.
  * @return A valid StickStatus object.
  */
-Common::Input::StickStatus TransformToStick(const Common::Input::CallbackStatus& callback);
+StickStatus TransformToStick(const Common::Input::CallbackStatus& callback);
 
 /**
  * Converts raw input data into a valid touch status.
@@ -74,7 +73,7 @@ Common::Input::TriggerStatus TransformToTrigger(const Common::Input::CallbackSta
  * @param callback Supported callbacks: Analog.
  * @return A valid AnalogStatus object.
  */
-Common::Input::AnalogStatus TransformToAnalog(const Common::Input::CallbackStatus& callback);
+AnalogStatus TransformToAnalog(const Common::Input::CallbackStatus& callback);
 
 /**
  * Converts raw input data into a valid camera status.
@@ -105,7 +104,7 @@ Common::Input::BodyColorStatus TransformToColor(const Common::Input::CallbackSta
  * @param analog An analog object containing raw data and properties
  * @param clamp_value determines if the value needs to be clamped between -1.0f and 1.0f.
  */
-void SanitizeAnalog(Common::Input::AnalogStatus& analog, bool clamp_value);
+void SanitizeAnalog(AnalogStatus& analog, bool clamp_value);
 
 /**
  * Converts raw stick data into a valid stick value
@@ -113,7 +112,7 @@ void SanitizeAnalog(Common::Input::AnalogStatus& analog, bool clamp_value);
  * @param analog_y raw analog data and properties for the y-axis
  * @param clamp_value bool that determines if the value needs to be clamped into the unit circle.
  */
-void SanitizeStick(Common::Input::AnalogStatus& analog_x, Common::Input::AnalogStatus& analog_y,
+void SanitizeStick(AnalogStatus& analog_x, AnalogStatus& analog_y,
                    bool clamp_value);
 
 } // namespace Core::HID

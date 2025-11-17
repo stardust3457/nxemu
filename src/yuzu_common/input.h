@@ -101,31 +101,6 @@ enum class VibrationAmplificationType {
     Exponential,
 };
 
-// Analog properties for calibration
-struct AnalogProperties {
-    // Anything below this value will be detected as zero
-    float deadzone{};
-    // Anything above this values will be detected as one
-    float range{1.0f};
-    // Minimum value to be detected as active
-    float threshold{0.5f};
-    // Drift correction applied to the raw data
-    float offset{};
-    // Invert direction of the sensor data
-    bool inverted{};
-    // Invert the state if it's converted to a button
-    bool inverted_button{};
-    // Press once to activate, press again to release
-    bool toggle{};
-};
-
-// Single analog sensor data
-struct AnalogStatus {
-    float value{};
-    float raw_value{};
-    AnalogProperties properties{};
-};
-
 // Button data
 struct ButtonStatus {
     Common::UUID uuid{};
@@ -142,17 +117,6 @@ struct ButtonStatus {
 
 // Internal battery data
 using BatteryStatus = BatteryLevel;
-
-// Analog and digital joystick data
-struct StickStatus {
-    Common::UUID uuid{};
-    AnalogStatus x{};
-    AnalogStatus y{};
-    bool left{};
-    bool right{};
-    bool up{};
-    bool down{};
-};
 
 // Analog and digital trigger data
 struct TriggerStatus {

@@ -59,7 +59,7 @@ public:
     }
 
 private:
-    static constexpr Common::Input::AnalogProperties properties{
+    static constexpr AnalogProperties properties{
         .deadzone = 0.0f,
         .range = 1.0f,
         .threshold = 0.5f,

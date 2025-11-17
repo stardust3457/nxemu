@@ -4,6 +4,7 @@
 #include <nxemu-core/machine/switch_system.h>
 #include <widgets/combo_box.h>
 #include <unordered_map>
+#include <numbers>
 #include <stdexcept>
 #include <Windows.h>
 #include <yuzu_common/string_util.h>
@@ -517,6 +518,7 @@ void InputConfigPlayer::BindControls()
     m_analogMapButtons[1][1] = m_page.GetElementByID("ButtonRStickDown");
     m_analogMapButtons[1][2] = m_page.GetElementByID("ButtonRStickLeft");
     m_analogMapButtons[1][3] = m_page.GetElementByID("ButtonRStickRight");
+
     m_analogMapModifierButton[0] = m_page.GetElementByID("ButtonLStickMod");
     m_analogMapModifierButton[1] = m_page.GetElementByID("ButtonRStickMod");
 
@@ -957,17 +959,85 @@ void InputConfigPlayer::UpdateMappingWithDefaults()
 void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
 {
     switch (type) {
+    case ControllerTriggerType::Button:
+    case ControllerTriggerType::Trigger:
+        m_emulatedController->GetButtonsStatus(m_buttonValues, sizeof(m_buttonValues)/sizeof(m_buttonValues[0]));
+        UpdatePressedButtons();
+        break;
+    case ControllerTriggerType::Stick:
+        m_stickValues = m_emulatedController->GetSticksValues();
+        // Y axis is inverted
+        m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.value = -m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.value;
+        m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.raw_value = -m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.raw_value;
+        m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.value = -m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.value;
+        m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.raw_value = -m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.raw_value;
+        UpdateStickDisplay(NativeAnalogValues::LStick);
+        UpdateStickDisplay(NativeAnalogValues::RStick);
+        break;
     case ControllerTriggerType::Motion:
-        motion_values = m_emulatedController->GetMotions();
+        m_motionValues = m_emulatedController->GetMotions();
         UpdateMotionCube();
         break;
+    }
+}
+
+void InputConfigPlayer::UpdatePressedButtons()
+{
+    struct BtnMap 
+    {
+        uint32_t idx; 
+        const char* sel; 
+    };
+
+    static const BtnMap kBtnMap[] = {
+        { (uint32_t)NativeButtonValues::A,          ".buttons-face .button.A" },
+        { (uint32_t)NativeButtonValues::B,          ".buttons-face .button.B" },
+        { (uint32_t)NativeButtonValues::X,          ".buttons-face .button.X" },
+        { (uint32_t)NativeButtonValues::Y,          ".buttons-face .button.Y" },
+        { (uint32_t)NativeButtonValues::DUp,        ".dpad .up"    },
+        { (uint32_t)NativeButtonValues::DDown,      ".dpad .down"  },
+        { (uint32_t)NativeButtonValues::DLeft,      ".dpad .left"  },
+        { (uint32_t)NativeButtonValues::DRight,     ".dpad .right" },
+        { (uint32_t)NativeButtonValues::ZL,         ".trigger.ZL"  },
+        { (uint32_t)NativeButtonValues::ZR,         ".trigger.ZR"  },
+        { (uint32_t)NativeButtonValues::L,          ".trigger.L"  },
+        { (uint32_t)NativeButtonValues::R,          ".trigger.R"  },
+        { (uint32_t)NativeButtonValues::Minus,      ".button.minus" },
+        { (uint32_t)NativeButtonValues::Plus,       ".button.plus" },
+        { (uint32_t)NativeButtonValues::Screenshot, ".button.screenshot" },
+        { (uint32_t)NativeButtonValues::Home,       ".button.home" },
+    };
+
+    SciterElement controllerSvg = GetControllerSvg();
+    if (!controllerSvg.IsValid())
+    {
+        return;
+    }
+
+    for (const BtnMap & m : kBtnMap) 
+    {
+        const button_status_t & bs = m_buttonValues[m.idx];
+        SciterElement el = controllerSvg.FindFirst(m.sel);
+        if (!el.IsValid())
+        {
+            continue;
+        }
+
+        if (bs.value)
+        {
+            el.SetAttribute("data-pressed", "1");
+        }
+        else
+        {
+            el.RemoveAttribute("data-pressed");
+        }
     }
 }
 
 void InputConfigPlayer::UpdateMotionCube()
 {
     float size = 15.0f;
-    const vec3f_t & eulerValue = motion_values.motion[(uint32_t)NativeMotionValues::MotionLeft].euler;
+    const vec3f_t & eulerValue = m_motionValues.motion[(uint32_t)NativeMotionValues::MotionLeft].euler;
     const Common::Vec3f euler(eulerValue.x, eulerValue.y, eulerValue.z);
 
     std::array<Common::Vec3f, 8> cube {{
@@ -1023,6 +1093,91 @@ void InputConfigPlayer::UpdateMotionCube()
         e.SetAttribute("x2", stdstr_f("%f", cube[B[i]].x).c_str());
         e.SetAttribute("y2", stdstr_f("%f", cube[B[i]].y).c_str());
     }
+}
+
+void InputConfigPlayer::UpdateStickDisplay(NativeAnalogValues analog)
+{
+    if (analog != NativeAnalogValues::LStick && analog != NativeAnalogValues::RStick)
+    {
+        return;
+    }
+    StickStatus & status = m_stickValues.status[(size_t)analog];
+    SciterElement svg = GetControllerSvg();
+    if (!svg.IsValid())
+    {
+        return;
+    }
+
+    SciterElement el = svg.FindFirst(analog == NativeAnalogValues::LStick ? ".left-stick-visual" : ".right-stick-visual");
+    if (!el.IsValid())
+    {
+        return;
+    }
+    SciterElement range = el.FindFirst(".joystick-range");
+    float radius = 45.0f;
+    if (range.IsValid())
+    {
+        radius = strtof(range.GetAttribute("r").c_str(), nullptr);
+    }
+    SciterElement rawDot = el.FindFirst(".joystick-dot-raw");
+    if (rawDot.IsValid())
+    {
+        rawDot.SetAttribute("cx", stdstr_f("%f", status.x.raw_value * radius).c_str());
+        rawDot.SetAttribute("cy", stdstr_f("%f", status.y.raw_value * radius).c_str());
+    }
+    SciterElement rawCalibrated = el.FindFirst(".joystick-dot-calibrated");
+    if (rawCalibrated.IsValid())
+    {
+        rawCalibrated.SetAttribute("cx", stdstr_f("%f", status.x.value * radius).c_str());
+        rawCalibrated.SetAttribute("cy", stdstr_f("%f", status.y.value * radius).c_str());
+    }
+    SciterElement leftStick = analog == NativeAnalogValues::LStick ? svg.FindFirst(".left-stick-movable") : SciterElement();
+    if (leftStick.IsValid())
+    {
+        leftStick.SetAttribute("transform", stdstr_f("translate(%f,%f)", status.x.value * 10.0f, status.y.value * 10.0f).c_str());
+    }
+    SciterElement rightStick = analog == NativeAnalogValues::RStick ? svg.FindFirst(".right-stick-movable") : SciterElement();
+    if (rightStick.IsValid())
+    {
+        rightStick.SetAttribute("transform", stdstr_f("translate(%f,%f)", status.x.value * 9.5f, status.y.value * 9.5f).c_str());
+    }
+
+    SciterElement proStick;
+    if (analog == NativeAnalogValues::LStick)
+    {
+        proStick = svg.FindFirst(".pro-left-stick");
+    }
+    else if (analog == NativeAnalogValues::RStick)
+    {
+        proStick = svg.FindFirst(".pro-right-stick");
+    }
+
+    if (proStick.IsValid())
+    {
+        SciterElement movable = proStick.FindFirst(".movable");
+        SciterElement outerEll = proStick.FindFirst(".outer");
+        SciterElement innerEll = proStick.FindFirst(".inner");
+        SciterElement innerShift = proStick.FindFirst(".inner-shift");
+        if (movable.IsValid() && outerEll.IsValid() && innerEll.IsValid() && innerShift.IsValid())
+        {
+            const float x = status.x.value;
+            const float y = status.y.value;
+            const float mag = std::min(1.0f, std::hypot(x, y));
+            const float amp = std::max(0.0f, 1.0f - mag * 0.1f);
+            const float angleDeg = std::atan2(y, x) * 180.0f / (float)(std::numbers::pi);
+            const float scalar = 11.0f;
+                
+            movable.SetAttribute("transform", stdstr_f("translate(%f,%f) rotate(%f)", x * scalar, y * scalar, angleDeg).c_str());
+            outerEll.SetAttribute("rx", stdstr_f("%f", 24.0f * amp).c_str());
+            innerEll.SetAttribute("rx", stdstr_f("%f", 17.0f * amp).c_str());
+            innerShift.SetAttribute("transform", stdstr_f("translate(%f,0)", ((24.0f - 17.0f) * 0.4f) * mag).c_str());
+        }
+    }
+}
+
+SciterElement InputConfigPlayer::GetControllerSvg()
+{
+    return m_page.GetElementByID("ProController");
 }
 
 void InputConfigPlayer::stControllerEventCallback(ControllerTriggerType type, void* user)

@@ -29,7 +29,10 @@ private:
     std::string AnalogToText(const IParamPackage & param, const std::string& dir);
     void UpdateMappingWithDefaults();
     void ControllerEventCallback(ControllerTriggerType type);
+    void UpdatePressedButtons();
     void UpdateMotionCube();
+    void UpdateStickDisplay(NativeAnalogValues analog);
+    SciterElement GetControllerSvg();
 
     static void stControllerEventCallback(ControllerTriggerType type, void * user);
 
@@ -54,5 +57,7 @@ private:
     SciterElement m_analogMapRangeSpinbox[2];
     std::shared_ptr<IComboBox> m_comboDevices;
     const IParamPackageList & m_inputDeviceList;
-    MotionState motion_values;
+    MotionState m_motionValues;
+    SticksValues m_stickValues;
+    button_status_t m_buttonValues[(int32_t)NativeButtonValues::NumButtons];
 };

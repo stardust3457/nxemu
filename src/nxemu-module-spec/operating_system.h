@@ -302,6 +302,57 @@ struct MotionState
     ControllerMotion motion[2];
 };
 
+// Analog properties for calibration
+struct AnalogProperties 
+{
+    // Anything below this value will be detected as zero
+    float deadzone;
+    // Anything above this values will be detected as one
+    float range;
+    // Minimum value to be detected as active
+    float threshold;
+    // Drift correction applied to the raw data
+    float offset;
+    // Invert direction of the sensor data
+    bool inverted;
+    // Invert the state if it's converted to a button
+    bool inverted_button;
+    // Press once to activate, press again to release
+    bool toggle;
+};
+
+// Single analog sensor data
+struct AnalogStatus {
+    float value;
+    float raw_value;
+    AnalogProperties properties;
+};
+
+// Analog and digital joystick data
+struct StickStatus {
+    unsigned char uuid[16];
+    AnalogStatus x{};
+    AnalogStatus y{};
+    bool left;
+    bool right;
+    bool up;
+    bool down;
+};
+
+struct SticksValues
+{
+    StickStatus status[(size_t)NativeAnalogValues::NumAnalogs];
+};
+
+typedef struct {
+    unsigned char uuid[16];
+    bool value;
+    bool inverted;            // Invert value of the button
+    bool toggle;              // Press once to activate, press again to release
+    bool turbo;               // Spams the button when active
+    bool locked;              // Internal lock for the toggle status
+} button_status_t;
+
 typedef void (CALL* ControllerEventCallback)(ControllerTriggerType type, void * user);
 
 __interface IEmulatedController
@@ -315,7 +366,9 @@ __interface IEmulatedController
     void SetStickParam(uint32_t index, const IParamPackage & param) = 0;
     void SetMotionParam(uint32_t index, const IParamPackage & param) = 0;
     void SetControllerEventCallback(ControllerEventCallback cb, void * user) = 0;
+    void GetButtonsStatus(button_status_t * buttons, size_t num_buttons) const = 0;
     MotionState GetMotions() const = 0;
+    SticksValues GetSticksValues() const = 0;
 };
 
 __interface IButtonMappingList

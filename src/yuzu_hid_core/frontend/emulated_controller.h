@@ -61,14 +61,11 @@ using NfcParams = std::array<Common::ParamPackage, max_emulated_controllers>;
 using OutputParams = std::array<Common::ParamPackage, output_devices_size>;
 
 using ButtonValues = std::array<Common::Input::ButtonStatus, (size_t)NativeButtonValues::NumButtons>;
-using SticksValues = std::array<Common::Input::StickStatus, (size_t)NativeAnalogValues::NumAnalogs>;
-using TriggerValues =
-    std::array<Common::Input::TriggerStatus, InputSettings::NativeTrigger::NumTriggers>;
+using TriggerValues = std::array<Common::Input::TriggerStatus, InputSettings::NativeTrigger::NumTriggers>;
 using ControllerMotionValues = std::array<ControllerMotionInfo, (size_t)NativeMotionValues::NumMotions>;
 using ColorValues = std::array<Common::Input::BodyColorStatus, max_emulated_controllers>;
 using BatteryValues = std::array<Common::Input::BatteryStatus, max_emulated_controllers>;
 using CameraValues = Common::Input::CameraStatus;
-using RingAnalogValue = Common::Input::AnalogStatus;
 using NfcValues = Common::Input::NfcStatus;
 using VibrationValues = std::array<Common::Input::VibrationStatus, max_emulated_controllers>;
 
@@ -118,7 +115,7 @@ struct ControllerStatus {
     BatteryValues battery_values{};
     VibrationValues vibration_values{};
     CameraValues camera_values{};
-    RingAnalogValue ring_analog_value{};
+    AnalogStatus ring_analog_value{};
     NfcValues nfc_values{};
 
     // Data for HID services
@@ -280,9 +277,10 @@ public:
 
     /// Returns the latest button status from the controller with parameters
     ButtonValues GetButtonsValues() const;
+    void GetButtonsStatus(button_status_t* buttons, size_t num_buttons) const override;
 
     /// Returns the latest analog stick status from the controller with parameters
-    SticksValues GetSticksValues() const;
+    SticksValues GetSticksValues() const override;
 
     /// Returns the latest trigger status from the controller with parameters
     TriggerValues GetTriggersValues() const;
@@ -300,7 +298,7 @@ public:
     CameraValues GetCameraValues() const;
 
     /// Returns the latest status of analog input from the ring sensor with parameters
-    RingAnalogValue GetRingSensorValues() const;
+    AnalogStatus GetRingSensorValues() const;
 
     /// Returns the latest status of button input for the hid::HomeButton service
     HomeButtonState GetHomeButtons() const;

@@ -143,13 +143,11 @@ private:
 
 class InputFromStick final : public Common::Input::InputDevice {
 public:
-    explicit InputFromStick(PadIdentifier identifier_, int axis_x_, int axis_y_,
-                            Common::Input::AnalogProperties properties_x_,
-                            Common::Input::AnalogProperties properties_y_,
-                            InputEngine* input_engine_)
-        : identifier(identifier_), axis_x(axis_x_), axis_y(axis_y_), properties_x(properties_x_),
+    explicit InputFromStick(PadIdentifier identifier_, int axis_x_, int axis_y_, AnalogProperties properties_x_, AnalogProperties properties_y_, InputEngine* input_engine_) :
+          identifier(identifier_), axis_x(axis_x_), axis_y(axis_y_), properties_x(properties_x_),
           properties_y(properties_y_),
-          input_engine(input_engine_), invert_axis_y{input_engine_->GetEngineName() == "sdl"} {
+          input_engine(input_engine_), invert_axis_y{input_engine_->GetEngineName() == "sdl"} 
+    {
         UpdateCallback engine_callback{[this]() { OnChange(); }};
         const InputIdentifier x_input_identifier{
             .identifier = identifier,
@@ -174,8 +172,8 @@ public:
         input_engine->DeleteCallback(callback_key_y);
     }
 
-    Common::Input::StickStatus GetStatus() const {
-        Common::Input::StickStatus status;
+    StickStatus GetStatus() const {
+        StickStatus status;
         status.x = {
             .raw_value = input_engine->GetAxis(identifier, axis_x),
             .properties = properties_x,
@@ -221,8 +219,8 @@ private:
     const PadIdentifier identifier;
     const int axis_x;
     const int axis_y;
-    const Common::Input::AnalogProperties properties_x;
-    const Common::Input::AnalogProperties properties_y;
+    const AnalogProperties properties_x;
+    const AnalogProperties properties_y;
     int callback_key_x;
     int callback_key_y;
     float last_axis_x_value;
@@ -234,8 +232,8 @@ private:
 class InputFromTouch final : public Common::Input::InputDevice {
 public:
     explicit InputFromTouch(PadIdentifier identifier_, int button_, bool toggle_, bool inverted_,
-                            int axis_x_, int axis_y_, Common::Input::AnalogProperties properties_x_,
-                            Common::Input::AnalogProperties properties_y_,
+                            int axis_x_, int axis_y_, AnalogProperties properties_x_,
+                            AnalogProperties properties_y_,
                             InputEngine* input_engine_)
         : identifier(identifier_), button(button_), toggle(toggle_), inverted(inverted_),
           axis_x(axis_x_), axis_y(axis_y_), properties_x(properties_x_),
@@ -314,8 +312,8 @@ private:
     const bool inverted;
     const int axis_x;
     const int axis_y;
-    const Common::Input::AnalogProperties properties_x;
-    const Common::Input::AnalogProperties properties_y;
+    const AnalogProperties properties_x;
+    const AnalogProperties properties_y;
     int callback_key_button;
     int callback_key_x;
     int callback_key_y;
@@ -328,7 +326,7 @@ private:
 class InputFromTrigger final : public Common::Input::InputDevice {
 public:
     explicit InputFromTrigger(PadIdentifier identifier_, int button_, bool toggle_, bool inverted_,
-                              int axis_, Common::Input::AnalogProperties properties_,
+                              int axis_, AnalogProperties properties_,
                               InputEngine* input_engine_)
         : identifier(identifier_), button(button_), toggle(toggle_), inverted(inverted_),
           axis(axis_), properties(properties_), input_engine(input_engine_) {
@@ -357,7 +355,7 @@ public:
     }
 
     Common::Input::TriggerStatus GetStatus() const {
-        const Common::Input::AnalogStatus analog_status{
+        const AnalogStatus analog_status{
             .raw_value = input_engine->GetAxis(identifier, axis),
             .properties = properties,
         };
@@ -392,7 +390,7 @@ private:
     const bool toggle;
     const bool inverted;
     const int axis;
-    const Common::Input::AnalogProperties properties;
+    const AnalogProperties properties;
     int callback_key_button;
     int axis_callback_key;
     bool last_button_value;
@@ -403,7 +401,7 @@ private:
 class InputFromAnalog final : public Common::Input::InputDevice {
 public:
     explicit InputFromAnalog(PadIdentifier identifier_, int axis_,
-                             Common::Input::AnalogProperties properties_,
+                             AnalogProperties properties_,
                              InputEngine* input_engine_)
         : identifier(identifier_), axis(axis_), properties(properties_),
           input_engine(input_engine_) {
@@ -422,7 +420,7 @@ public:
         input_engine->DeleteCallback(callback_key);
     }
 
-    Common::Input::AnalogStatus GetStatus() const {
+    AnalogStatus GetStatus() const {
         return {
             .raw_value = input_engine->GetAxis(identifier, axis),
             .properties = properties,
@@ -444,7 +442,7 @@ public:
 private:
     const PadIdentifier identifier;
     const int axis;
-    const Common::Input::AnalogProperties properties;
+    const AnalogProperties properties;
     int callback_key;
     float last_axis_value;
     InputEngine* input_engine;
@@ -577,7 +575,7 @@ public:
     Common::Input::MotionStatus GetStatus() const {
         const auto basic_motion = input_engine->GetMotion(identifier, motion_sensor);
         Common::Input::MotionStatus status{};
-        const Common::Input::AnalogProperties properties = {
+        const AnalogProperties properties = {
             .deadzone = 0.0f,
             .range = 1.0f,
             .threshold = gyro_threshold,
@@ -613,9 +611,9 @@ private:
 class InputFromAxisMotion final : public Common::Input::InputDevice {
 public:
     explicit InputFromAxisMotion(PadIdentifier identifier_, int axis_x_, int axis_y_, int axis_z_,
-                                 Common::Input::AnalogProperties properties_x_,
-                                 Common::Input::AnalogProperties properties_y_,
-                                 Common::Input::AnalogProperties properties_z_,
+                                 AnalogProperties properties_x_,
+                                 AnalogProperties properties_y_,
+                                 AnalogProperties properties_z_,
                                  InputEngine* input_engine_)
         : identifier(identifier_), axis_x(axis_x_), axis_y(axis_y_), axis_z(axis_z_),
           properties_x(properties_x_), properties_y(properties_y_), properties_z(properties_z_),
@@ -705,9 +703,9 @@ private:
     const int axis_x;
     const int axis_y;
     const int axis_z;
-    const Common::Input::AnalogProperties properties_x;
-    const Common::Input::AnalogProperties properties_y;
-    const Common::Input::AnalogProperties properties_z;
+    const AnalogProperties properties_x;
+    const AnalogProperties properties_y;
+    const AnalogProperties properties_z;
     int callback_key_x;
     int callback_key_y;
     int callback_key_z;
@@ -921,7 +919,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateStickDevice(
     };
 
     const auto axis_x = params.Get("axis_x", 0);
-    const Common::Input::AnalogProperties properties_x = {
+    const AnalogProperties properties_x = {
         .deadzone = deadzone,
         .range = range,
         .threshold = threshold,
@@ -930,7 +928,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateStickDevice(
     };
 
     const auto axis_y = params.Get("axis_y", 1);
-    const Common::Input::AnalogProperties properties_y = {
+    const AnalogProperties properties_y = {
         .deadzone = deadzone,
         .range = range,
         .threshold = threshold,
@@ -953,7 +951,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateAnalogDevice(
     };
 
     const auto axis = params.Get("axis", 0);
-    const Common::Input::AnalogProperties properties = {
+    const AnalogProperties properties = {
         .deadzone = std::clamp(params.Get("deadzone", 0.0f), 0.0f, 1.0f),
         .range = std::clamp(params.Get("range", 1.0f), 0.25f, 1.50f),
         .threshold = std::clamp(params.Get("threshold", 0.5f), 0.0f, 1.0f),
@@ -980,7 +978,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateTriggerDevice(
     const auto inverted = params.Get("inverted", false) != 0;
 
     const auto axis = params.Get("axis", 0);
-    const Common::Input::AnalogProperties properties = {
+    const AnalogProperties properties = {
         .deadzone = std::clamp(params.Get("deadzone", 0.0f), 0.0f, 1.0f),
         .range = std::clamp(params.Get("range", 1.0f), 0.25f, 2.50f),
         .threshold = std::clamp(params.Get("threshold", 0.5f), 0.0f, 1.0f),
@@ -1010,7 +1008,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateTouchDevice(
     const auto inverted = params.Get("inverted", false) != 0;
 
     const auto axis_x = params.Get("axis_x", 0);
-    const Common::Input::AnalogProperties properties_x = {
+    const AnalogProperties properties_x = {
         .deadzone = deadzone,
         .range = range,
         .threshold = threshold,
@@ -1019,7 +1017,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateTouchDevice(
     };
 
     const auto axis_y = params.Get("axis_y", 1);
-    const Common::Input::AnalogProperties properties_y = {
+    const AnalogProperties properties_y = {
         .deadzone = deadzone,
         .range = range,
         .threshold = threshold,
@@ -1080,7 +1078,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateMotionDevice(
     const auto threshold = std::clamp(params.Get("threshold", 0.5f), 0.0f, 1.0f);
 
     const auto axis_x = params.Get("axis_x", 0);
-    const Common::Input::AnalogProperties properties_x = {
+    const AnalogProperties properties_x = {
         .deadzone = deadzone,
         .range = range,
         .threshold = threshold,
@@ -1089,7 +1087,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateMotionDevice(
     };
 
     const auto axis_y = params.Get("axis_y", 1);
-    const Common::Input::AnalogProperties properties_y = {
+    const AnalogProperties properties_y = {
         .deadzone = deadzone,
         .range = range,
         .threshold = threshold,
@@ -1098,7 +1096,7 @@ std::unique_ptr<Common::Input::InputDevice> InputFactory::CreateMotionDevice(
     };
 
     const auto axis_z = params.Get("axis_z", 1);
-    const Common::Input::AnalogProperties properties_z = {
+    const AnalogProperties properties_z = {
         .deadzone = deadzone,
         .range = range,
         .threshold = threshold,
