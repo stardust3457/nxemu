@@ -17,8 +17,7 @@ namespace Service::Nvidia::NvCore {
 
 class HeapMapper {
 public:
-    HeapMapper(VAddr start_vaddress, DAddr start_daddress, size_t size, Core::Asid asid,
-        IVideo & video);
+    HeapMapper(VAddr start_vaddress, DAddr start_daddress, size_t size, Core::Asid asid, IVideo & video);
     ~HeapMapper();
 
     bool IsInBounds(VAddr start, size_t size) const {

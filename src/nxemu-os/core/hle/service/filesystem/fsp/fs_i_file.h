@@ -8,6 +8,8 @@
 #include "core/hle/service/filesystem/filesystem.h"
 #include "core/hle/service/service.h"
 
+class IVirtualFilePtr;
+
 namespace Service::FileSystem {
 
 class IFile final : public ServiceFramework<IFile> {

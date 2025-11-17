@@ -5,7 +5,6 @@
 
 #include "yuzu_common/range_sets.h"
 #include "yuzu_common/range_sets.inc"
-#include "yuzu_common/yuzu_assert.h"
 #include "core/hle/service/nvdrv/core/heap_mapper.h"
 #include <nxemu-module-spec/video.h>
 
@@ -21,9 +20,12 @@ struct HeapMapper::HeapMapperInternal {
     std::mutex m_guard;
 };
 
-HeapMapper::HeapMapper(VAddr start_vaddress, DAddr start_daddress, size_t size, Core::Asid asid,
-                       IVideo & video)
-    : m_vaddress{start_vaddress}, m_daddress{start_daddress}, m_size{size}, m_asid{asid} {
+HeapMapper::HeapMapper(VAddr start_vaddress, DAddr start_daddress, size_t size, Core::Asid asid, IVideo & video) : 
+    m_vaddress{start_vaddress}, 
+    m_daddress{start_daddress}, 
+    m_size{size}, 
+    m_asid{asid}
+{
     m_internal = std::make_unique<HeapMapperInternal>(video);
 }
 

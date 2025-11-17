@@ -6,6 +6,7 @@
 #include <map>
 
 #include "yuzu_common/math_util.h"
+#include "yuzu_common/nvdata.h"
 
 namespace Kernel {
 class KPageGroup;

@@ -45,7 +45,8 @@ public:
                                                 std::memory_order_relaxed));
     }
 
-    void Gather(ICacheInvalidator * invalidator) {
+    void Gather(ICacheInvalidator * invalidator)
+    {
         {
             std::scoped_lock lk(guard);
             TransformAddress t = current.exchange(default_transform, std::memory_order_relaxed);

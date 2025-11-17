@@ -16,11 +16,6 @@ using SystemSaveDataId = u64;
 using SystemBcatSaveDataId = SystemSaveDataId;
 using ProgramId = u64;
 
-enum class SaveDataRank : u8 {
-    Primary = 0,
-    Secondary = 1,
-};
-
 struct SaveDataSize {
     u64 normal;
     u64 journal;

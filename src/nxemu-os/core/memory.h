@@ -145,7 +145,7 @@ public:
      *          If the address is not valid, nullptr will be returned.
      */
     u8* GetPointer(Common::ProcessAddress vaddr);
-    u8* GetPointerSilent(uint64_t vaddr);
+    u8* GetPointerSilent(uint64_t vaddr) override;
 
     template <typename T>
     T* GetPointer(Common::ProcessAddress vaddr) {

@@ -155,7 +155,7 @@ Result ILibraryAppletSelfAccessor::GetMainAppletApplicationControlProperty(
     R_SUCCEED();
 }
 
-Result ILibraryAppletSelfAccessor::GetMainAppletStorageId(Out<FileSys::StorageId> out_storage_id) {
+Result ILibraryAppletSelfAccessor::GetMainAppletStorageId(Out<StorageId> out_storage_id) {
     LOG_INFO(Service_AM, "(STUBBED) called");
     UNIMPLEMENTED();
     R_SUCCEED();

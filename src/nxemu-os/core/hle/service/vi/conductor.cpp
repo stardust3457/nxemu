@@ -102,10 +102,10 @@ s64 Conductor::GetNextTicks() const {
     // Adjust by speed limit determined during composition.
     speed_scale /= m_compose_speed_scale;
 
-    /*if (m_system.GetNVDECActive() && settings.use_video_framerate.GetValue()) {
+    if (m_system.GetNVDECActive() && settings.use_video_framerate.GetValue()) {
         // Run at intended presentation rate during video playback.
         speed_scale = 1.f;
-    }*/
+    }
 
     const f32 effective_fps = 60.f / static_cast<f32>(m_swap_interval);
     return static_cast<s64>(speed_scale * (1000000000.f / effective_fps));

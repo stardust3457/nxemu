@@ -68,7 +68,7 @@ public:
     Result OpenFile(IVirtualFile ** out_file, const Path& path, VirtualFileOpenMode mode) {
         R_UNLESS(out_file != nullptr, ResultNullptrArgument);
         R_UNLESS(((uint32_t)mode & (uint32_t)VirtualFileOpenMode::ReadWrite) != 0, ResultInvalidOpenMode);
-        R_UNLESS(((uint32_t)mode & ~((uint32_t)VirtualFileOpenMode::All)) == 0, ResultInvalidOpenMode);
+        R_UNLESS(((uint32_t)mode & ~(uint32_t)VirtualFileOpenMode::All) == 0, ResultInvalidOpenMode);
         R_RETURN(this->DoOpenFile(out_file, path, mode));
     }
 

@@ -24,7 +24,9 @@ Session::~Session() = default;
 
 struct ContainerImpl {
     explicit ContainerImpl(Container& core, IVideo & video_)
-        : video{video_}, file{core,video_}, manager{video_}, device_file_data{} {}
+        : video{video_}, file{core, video_}, manager{video_}, device_file_data{}
+    {
+    }
     IVideo & video;
     NvMap file;
     SyncpointManager manager;

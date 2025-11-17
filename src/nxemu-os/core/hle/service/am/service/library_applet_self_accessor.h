@@ -7,10 +7,7 @@
 #include "core/hle/service/am/am_types.h"
 #include "core/hle/service/cmif_types.h"
 #include "core/hle/service/service.h"
-
-namespace FileSys {
-enum class StorageId : u8;
-}
+#include <nxemu-module-spec/operating_system.h>
 
 namespace Kernel {
 class KReadableEvent;
@@ -59,7 +56,7 @@ private:
     Result CanUseApplicationCore(Out<bool> out_can_use_application_core);
     Result GetMainAppletApplicationControlProperty(
         OutLargeData<std::array<u8, 0x4000>, BufferAttr_HipcMapAlias> out_nacp);
-    Result GetMainAppletStorageId(Out<FileSys::StorageId> out_storage_id);
+    Result GetMainAppletStorageId(Out<StorageId> out_storage_id);
     Result ExitProcessAndReturn();
     Result GetCallerAppletIdentityInfo(Out<AppletIdentityInfo> out_identity_info);
     Result GetCallerAppletIdentityInfoStack(
