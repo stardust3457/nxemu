@@ -29,7 +29,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\boost;$(SolutionDir)external\fmt\include;$(SolutionDir)src\3rd_party\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\boost;$(SolutionDir)external\fmt\include;$(SolutionDir)src\3rd_party\glad\include;$(SolutionDir)src\yuzu_video_core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <PreBuildEvent>

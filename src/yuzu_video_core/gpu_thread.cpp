@@ -28,6 +28,7 @@ static void RunThread(std::stop_token stop_token, Tegra::GPU & gpu,
 
     Common::SetCurrentThreadName(name.c_str());
     Common::SetCurrentThreadPriority(Common::ThreadPriority::Critical);
+    gpu.RegisterHostThread();
 
     auto current_context = context.Acquire();
     VideoCore::RasterizerInterface* const rasterizer = renderer.ReadRasterizer();

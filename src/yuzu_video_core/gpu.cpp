@@ -96,7 +96,8 @@ struct GPU::Impl :
     }
 
     /// Synchronizes CPU writes with Host GPU memory.
-    void InvalidateGPUCache() {
+    void InvalidateGPUCache() 
+    {
         IOperatingSystem & operatingSystem = m_modules.OperatingSystem();
         operatingSystem.GatherGPUDirtyMemory(this);
     }
@@ -358,7 +359,7 @@ struct GPU::Impl :
         return out;
     }
 
-    void OnCacheInvalidation(uint64_t address, uint32_t size)
+    void OnCacheInvalidation(uint64_t address, uint32_t size) override
     {
         rasterizer->OnCacheInvalidation(address, size);
     }

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "yuzu_video_core/device_memory_manager.h"
+#include "device_memory_manager.h"
 
 namespace VideoCore {
 class RasterizerInterface;
