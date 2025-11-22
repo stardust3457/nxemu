@@ -34,7 +34,7 @@ HeapMapper::~HeapMapper() {
     m_internal->m_mapped_ranges.ForEach([this](VAddr start_addr, VAddr end_addr, s32 count) {
         const size_t sub_size = end_addr - start_addr;
         const size_t offset = start_addr - m_vaddress;
-        m_internal->video.MemoryUnmap(m_daddress + offset, sub_size);
+        m_internal->video.Host1xMemoryUnmap(m_daddress + offset, sub_size);
     });
 }
 
@@ -54,7 +54,7 @@ DAddr HeapMapper::Map(VAddr start, size_t size) {
     m_internal->m_temporary_set.ForEach([this](VAddr start_addr, VAddr end_addr) {
         const size_t sub_size = end_addr - start_addr;
         const size_t offset = start_addr - m_vaddress;
-        m_internal->video.MemoryMap(m_daddress + offset, m_vaddress + offset, sub_size, m_asid.id, false);
+        m_internal->video.Host1xMemoryMap(m_daddress + offset, m_vaddress + offset, sub_size, m_asid.id, false);
     });
 
     // Add the mapping range to the split map, to register the map and overlaps.
@@ -70,7 +70,7 @@ void HeapMapper::Unmap(VAddr start, size_t size) {
     m_internal->m_mapped_ranges.Subtract(start, size, [this](VAddr start_addr, VAddr end_addr) {
         const size_t sub_size = end_addr - start_addr;
         const size_t offset = start_addr - m_vaddress;
-        m_internal->video.MemoryUnmap(m_daddress + offset, sub_size);
+        m_internal->video.Host1xMemoryUnmap(m_daddress + offset, sub_size);
     });
 }
 

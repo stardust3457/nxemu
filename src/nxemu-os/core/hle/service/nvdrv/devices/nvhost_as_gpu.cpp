@@ -285,7 +285,7 @@ NvResult nvhost_as_gpu::MapBufferEx(IoctlMapBufferEx & params)
             u64 gpu_address{static_cast<u64>(params.offset + params.buffer_offset)};
             VAddr device_address{mapping->ptr + params.buffer_offset};
 
-            system.GetVideo().MapBufferEx(gpu_address, device_address, params.mapping_size, params.kind, mapping->big_page);
+            system.GetVideo().MapBufferEx(gmmu, gpu_address, device_address, params.mapping_size, params.kind, mapping->big_page);
             return NvResult::Success;
         } 
         catch (const std::out_of_range&) 
@@ -331,7 +331,7 @@ NvResult nvhost_as_gpu::MapBufferEx(IoctlMapBufferEx & params)
         }
 
         const bool use_big_pages = alloc->second.big_pages && big_page;
-        system.GetVideo().MapBufferEx(params.offset, device_address, size, params.kind, use_big_pages);
+        system.GetVideo().MapBufferEx(gmmu, params.offset, device_address, size, params.kind, use_big_pages);
         auto mapping{std::make_shared<Mapping>(params.handle, device_address, params.offset, size, true, use_big_pages, alloc->second.sparse)};
         alloc->second.mappings.push_back(mapping);
         mapping_map[params.offset] = mapping;
@@ -349,7 +349,7 @@ NvResult nvhost_as_gpu::MapBufferEx(IoctlMapBufferEx & params)
             return NvResult::InsufficientMemory;
         }
 
-        system.GetVideo().MapBufferEx(params.offset, device_address, Common::AlignUp(size, page_size), params.kind, big_page);
+        system.GetVideo().MapBufferEx(gmmu, params.offset, device_address, Common::AlignUp(size, page_size), params.kind, big_page);
         auto mapping{std::make_shared<Mapping>(params.handle, device_address, params.offset, size, false, big_page, false)};
         mapping_map[params.offset] = mapping;
     }

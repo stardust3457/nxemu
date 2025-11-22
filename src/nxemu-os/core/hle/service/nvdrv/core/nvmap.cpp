@@ -212,7 +212,7 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin) {
             }
 
             handle_description->d_address = address;
-            video.MemoryMap(address, vaddress, map_size, session->asid.id, true);
+            video.Host1xMemoryMap(address, vaddress, map_size, session->asid.id, true);
             handle_description->in_heap = false;
         }
     }

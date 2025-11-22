@@ -58,7 +58,7 @@ SessionId Container::OpenSession(Kernel::KProcess* process) {
     }
     size_t new_id{};
     Core::Asid asid;
-    asid.id = impl->video.RegisterProcess(&process->GetMemory());
+    asid.id = impl->video.Host1xRegisterProcess(&process->GetMemory());
     if (!impl->id_pool.empty()) {
         new_id = impl->id_pool.front();
         impl->id_pool.pop_front();

@@ -19,16 +19,16 @@ public:
     //IVideo
     bool Initialize(void) override;
     uint32_t AllocAsEx(uint64_t addressSpaceBits, uint64_t splitAddress, uint64_t bigPageBits, uint64_t pageBits) override;
-    uint64_t MapBufferEx(uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages) override;
+    uint64_t MapBufferEx(uint32_t gmmu, uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages) override;
     uint64_t Map(uint32_t gmmu, uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages) override;
     uint64_t MapSparse(uint32_t gmmu, uint64_t gpuAddr, uint64_t size, bool isBigPages) override;
     uint64_t MemoryAllocate(uint64_t size) override;
     void Unmap(uint32_t gmmu, uint64_t gpuAddr, uint64_t size) override;
     void MemoryTrackContinuity(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid) override;
-    void MemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track) override;
-    void MemoryUnmap(uint64_t address, uint64_t size) override;
+    void Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track) override;
+    void Host1xMemoryUnmap(uint64_t address, uint64_t size) override;
     void RequestComposite(VideoFramebufferConfig * layers, uint32_t layerCount, VideoNvFence * fences, uint32_t fenceCount) override;
-    uint64_t RegisterProcess(IMemory* memory) override;
+    uint64_t Host1xRegisterProcess(IMemory* memory) override;
     void UpdateFramebufferLayout(uint32_t width, uint32_t height) override;
     IChannelState * AllocateChannel() override;
     void PushGPUEntries(int32_t bindId, const uint64_t * commandList, uint32_t commandListSize, const uint32_t * prefetchCommandlist, uint32_t prefetchCommandlistSize);

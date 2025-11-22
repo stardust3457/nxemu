@@ -38,7 +38,6 @@ struct VideoManager::Impl
 
         m_gpuCore->Start();
     }
-    std::shared_ptr<Tegra::MemoryManager> m_gmmu;
     std::unique_ptr<Tegra::Host1x::Host1x> m_host1x;
     std::unique_ptr<RenderWindow> m_emuWindow;
     std::unique_ptr<Tegra::GPU> m_gpuCore;
@@ -98,7 +97,7 @@ void VideoManager::RequestComposite(VideoFramebufferConfig * layers, uint32_t la
     impl->m_gpuCore->RequestComposite(std::move(output_layers), std::move(output_fences));
 }
 
-uint64_t VideoManager::RegisterProcess(IMemory * memory)
+uint64_t VideoManager::Host1xRegisterProcess(IMemory * memory)
 {
     Core::Asid asid = impl->m_host1x->MemoryManager().RegisterProcess(memory);
     return asid.id;
@@ -128,15 +127,21 @@ void VideoManager::PushGPUEntries(int32_t bindId, const uint64_t * commandList, 
 
 uint32_t VideoManager::AllocAsEx(uint64_t addressSpaceBits, uint64_t splitAddress, uint64_t bigPageBits, uint64_t pageBits)
 {
-    impl->m_gmmu = std::make_shared<Tegra::MemoryManager>(impl->m_host1x->MemoryManager(), addressSpaceBits, splitAddress, bigPageBits, pageBits);
-    impl->m_gpuCore->InitAddressSpace(*impl->m_gmmu);
+    std::shared_ptr<Tegra::MemoryManager> memory = std::make_shared<Tegra::MemoryManager>(impl->m_host1x->MemoryManager(), addressSpaceBits, splitAddress, bigPageBits, pageBits);
+    impl->m_gpuCore->InitAddressSpace(*memory);
 
-    return impl->m_memoryManagerRegistry.AddMemoryManager(impl->m_gmmu);
+    return impl->m_memoryManagerRegistry.AddMemoryManager(memory);
 }
 
-uint64_t VideoManager::MapBufferEx(uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages)
+uint64_t VideoManager::MapBufferEx(uint32_t gmmu, uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages)
 {
-    return impl->m_gmmu->Map(gpuAddr, deviceAddr, size, (Tegra::PTEKind)kind, isBigPages);
+    std::shared_ptr<Tegra::MemoryManager> memory = impl->m_memoryManagerRegistry.GetMemoryManager(gmmu);
+    if (memory == nullptr)
+    {
+        UNIMPLEMENTED();
+        return 0;
+    }
+    return memory->Map(gpuAddr, deviceAddr, size, (Tegra::PTEKind)kind, isBigPages);
 }
 
 uint64_t VideoManager::Map(uint32_t gmmu, uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages)
@@ -182,12 +187,12 @@ void VideoManager::MemoryTrackContinuity(uint64_t address, uint64_t virtualAddre
     impl->m_host1x->MemoryManager().TrackContinuity(address, virtualAddress, size, Core::Asid{ asid });
 }
 
-void VideoManager::MemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track)
+void VideoManager::Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track)
 {
     impl->m_host1x->MemoryManager().Map(address, virtualAddress, size, Core::Asid{asid}, track);
 }
 
-void VideoManager::MemoryUnmap(uint64_t address, uint64_t size)
+void VideoManager::Host1xMemoryUnmap(uint64_t address, uint64_t size)
 {
     impl->m_host1x->MemoryManager().Unmap(address, size);
 }
