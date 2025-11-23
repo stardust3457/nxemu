@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright 2019 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "common/logging/log.h"
-#include "core/frontend/applets/general.h"
+#include "yuzu_common/logging/log.h"
+#include "frontend/applets/general.h"
 
 namespace Core::Frontend {
 

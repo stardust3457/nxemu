@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "common/assert.h"
-#include "common/logging/log.h"
-#include "common/settings.h"
-#include "common/settings_enums.h"
-#include "core/frontend/applets/controller.h"
-#include "hid_core/frontend/emulated_controller.h"
-#include "hid_core/hid_core.h"
-#include "hid_core/hid_types.h"
+#include "yuzu_common/yuzu_assert.h"
+#include "yuzu_common/logging/log.h"
+#include "yuzu_common/settings.h"
+#include "yuzu_common/settings_enums.h"
+#include "frontend/applets/controller.h"
+#include "yuzu_hid_core/frontend/emulated_controller.h"
+#include "yuzu_hid_core/hid_core.h"
+#include "yuzu_hid_core/hid_types.h"
 
 namespace Core::Frontend {
 

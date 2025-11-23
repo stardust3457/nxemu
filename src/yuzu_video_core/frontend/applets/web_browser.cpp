@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "common/logging/log.h"
-#include "core/frontend/applets/web_browser.h"
+#include "yuzu_common/logging/log.h"
+#include "frontend/applets/web_browser.h"
 
 namespace Core::Frontend {
 

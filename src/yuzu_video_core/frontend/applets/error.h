@@ -6,7 +6,7 @@
 #include <chrono>
 #include <functional>
 
-#include "core/frontend/applets/applet.h"
+#include "frontend/applets/applet.h"
 #include "core/hle/result.h"
 
 namespace Core::Frontend {

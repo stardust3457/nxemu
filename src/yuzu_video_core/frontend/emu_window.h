@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "yuzu_common/common_types.h"
-#include "yuzu_video_core/frontend/framebuffer_layout.h"
+#include "frontend/framebuffer_layout.h"
 
 namespace Core::Frontend {
 

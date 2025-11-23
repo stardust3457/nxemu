@@ -4,7 +4,7 @@
 #pragma once
 
 #include <functional>
-#include "core/frontend/applets/applet.h"
+#include "frontend/applets/applet.h"
 #include "core/hle/service/nfp/nfp_types.h"
 
 namespace Service::NFC {

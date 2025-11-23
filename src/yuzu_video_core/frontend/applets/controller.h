@@ -6,8 +6,8 @@
 #include <functional>
 #include <vector>
 
-#include "common/common_types.h"
-#include "core/frontend/applets/applet.h"
+#include "yuzu_common/common_types.h"
+#include "frontend/applets/applet.h"
 
 namespace Core::HID {
 class HIDCore;
