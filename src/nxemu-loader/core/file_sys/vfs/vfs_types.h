@@ -48,6 +48,7 @@ public:
     IVirtualDirectory * CreateSubdirectory(const char * path) const override;
     IVirtualDirectory * GetDirectoryRelative(const char * path) const override;
     IVirtualDirectory * GetSubdirectory(const char * name) const override;
+    IVirtualDirectory * Duplicate() override;
     IVirtualFile * CreateFile(const char * name) const override;
     IVirtualFile * GetFile(const char * name) const override;
     IVirtualFile * GetFileRelative(const char * relative_path) const override;

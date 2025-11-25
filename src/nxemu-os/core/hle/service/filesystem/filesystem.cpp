@@ -14,20 +14,18 @@
 #include "core/hle/service/filesystem/fsp/fsp_pr.h"
 #include "core/hle/service/filesystem/fsp/fsp_srv.h"
 #include "core/hle/service/filesystem/romfs_controller.h"
-#include "core/hle/service/filesystem/save_data_controller.h"
 #include "core/hle/service/server_manager.h"
 
 namespace Service::FileSystem {
 
-static const IVirtualDirectoryPtr & GetDirectoryRelativeWrapped(const IVirtualDirectoryPtr & base, std::string_view dir_name_, IVirtualDirectoryPtr & relative_dir)
+static IVirtualDirectoryPtr GetDirectoryRelativeWrapped(const IVirtualDirectoryPtr & base, std::string_view dir_name_)
 {
     std::string dir_name(Common::FS::SanitizePath(dir_name_));
     if (dir_name.empty() || dir_name == "." || dir_name == "/" || dir_name == "\\")
     {
-        return base;
+        return IVirtualDirectoryPtr(base->Duplicate());
     }
-    *relative_dir.GetAddressForSet() = base->GetDirectoryRelative(dir_name.c_str());
-    return relative_dir;
+    return IVirtualDirectoryPtr(base->GetDirectoryRelative(dir_name.c_str()));
 }
 
 VfsDirectoryServiceWrapper::VfsDirectoryServiceWrapper(IVirtualDirectoryPtr && backing_) : 
@@ -41,8 +39,7 @@ Result VfsDirectoryServiceWrapper::CreateFile(const std::string& path_, u64 size
 {
     std::string path(Common::FS::SanitizePath(path_));
     
-    IVirtualDirectoryPtr relativeDir;
-    const IVirtualDirectoryPtr & dir = GetDirectoryRelativeWrapped(backing, Common::FS::GetParentPath(path), relativeDir);
+    IVirtualDirectoryPtr dir = GetDirectoryRelativeWrapped(backing, Common::FS::GetParentPath(path));
     if (!dir)
     {
         return FileSys::ResultPathNotFound;
@@ -80,8 +77,8 @@ Result VfsDirectoryServiceWrapper::CreateDirectory(const std::string& path_) con
     for (const auto& component : components)
     {
         relative_path = Common::FS::SanitizePath(fmt::format("{}/{}", relative_path, component));
-        auto new_dir = backing->CreateSubdirectory(relative_path.c_str());
-        if (new_dir == nullptr)
+        IVirtualDirectoryPtr new_dir = backing->CreateSubdirectory(std::string(relative_path).c_str());
+        if (!new_dir)
         {
             // TODO(DarkLordZach): Find a better error code for this
             return ResultUnknown;
@@ -120,8 +117,7 @@ Result VfsDirectoryServiceWrapper::GetEntryType(FileSys::DirectoryEntryType * ou
 {
     std::string path(Common::FS::SanitizePath(path_));
 
-    IVirtualDirectoryPtr relativeDir;
-    const IVirtualDirectoryPtr & dir = GetDirectoryRelativeWrapped(backing, Common::FS::GetParentPath(path), relativeDir);
+    IVirtualDirectoryPtr dir = GetDirectoryRelativeWrapped(backing, Common::FS::GetParentPath(path));
     if (!dir)
     {
         return FileSys::ResultPathNotFound;

@@ -39,7 +39,7 @@ IVirtualDirectory * VirtualDirectoryPtr::GetDirectoryRelative(const char * path)
     return std::make_unique<VirtualDirectoryPtr>(dir).release();
 }
 
-IVirtualDirectory * VirtualDirectoryPtr::GetSubdirectory(const char* path) const
+IVirtualDirectory * VirtualDirectoryPtr::GetSubdirectory(const char * path) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -51,6 +51,11 @@ IVirtualDirectory * VirtualDirectoryPtr::GetSubdirectory(const char* path) const
         return nullptr;
     }
     return std::make_unique<VirtualDirectoryPtr>(dir).release();
+}
+
+IVirtualDirectory* VirtualDirectoryPtr::Duplicate()
+{
+    return std::make_unique<VirtualDirectoryPtr>(m_directory).release();
 }
 
 IVirtualFile * VirtualDirectoryPtr::CreateFile(const char * name) const
