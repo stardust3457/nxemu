@@ -39,7 +39,7 @@ IVirtualDirectory * VirtualDirectoryPtr::GetDirectoryRelative(const char * path)
     return std::make_unique<VirtualDirectoryPtr>(dir).release();
 }
 
-IVirtualDirectory* VirtualDirectoryPtr::GetSubdirectory(const char* path) const
+IVirtualDirectory * VirtualDirectoryPtr::GetSubdirectory(const char* path) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -53,7 +53,7 @@ IVirtualDirectory* VirtualDirectoryPtr::GetSubdirectory(const char* path) const
     return std::make_unique<VirtualDirectoryPtr>(dir).release();
 }
 
-IVirtualFile* VirtualDirectoryPtr::CreateFile(const char * name) const
+IVirtualFile * VirtualDirectoryPtr::CreateFile(const char * name) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -81,7 +81,7 @@ IVirtualFile * VirtualDirectoryPtr::GetFile(const char * name) const
     return std::make_unique<VirtualFilePtr>(file).release();
 }
 
-IVirtualFile* VirtualDirectoryPtr::GetFileRelative(const char* name) const
+IVirtualFile * VirtualDirectoryPtr::GetFileRelative(const char * name) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -95,7 +95,7 @@ IVirtualFile* VirtualDirectoryPtr::GetFileRelative(const char* name) const
     return std::make_unique<VirtualFilePtr>(file).release();
 }
 
-IVirtualFile* VirtualDirectoryPtr::OpenFile(const char* path, VirtualFileOpenMode perms)
+IVirtualFile * VirtualDirectoryPtr::OpenFile(const char * path, VirtualFileOpenMode perms)
 {
     if (m_directory.get() == nullptr)
     {

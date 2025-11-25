@@ -12,18 +12,10 @@
 #include <core/file_sys/fs_filesystem.h>
 #include <nxemu-module-spec/system_loader.h>
 
-enum class LoaderContentRecordType : u8;
-
 namespace Core {
 class System;
 }
 
-namespace FileSys {
-
-enum class BisPartitionId : u32;
-enum class StorageId : u8;
-
-} // namespace FileSys
 
 namespace Service {
 
@@ -34,21 +26,6 @@ class ServiceManager;
 namespace FileSystem {
 
 class RomFsController;
-class SaveDataController;
-
-enum class ContentStorageId : u32 {
-    System,
-    User,
-    SdCard,
-};
-
-enum class ImageDirectoryId : u32 {
-    NAND,
-    SdCard,
-};
-
-using ProcessId = u64;
-using ProgramId = u64;
 
 void LoopProcess(Core::System& system);
 
@@ -141,7 +118,7 @@ public:
      * Get the type of the specified path
      * @return The type of the specified path or error code
      */
-    Result GetEntryType(FileSys::DirectoryEntryType* out_entry_type, const std::string& path) const;
+    Result GetEntryType(FileSys::DirectoryEntryType * out_entry_type, const std::string & path) const;
 
 private:
     IVirtualDirectoryPtr backing;

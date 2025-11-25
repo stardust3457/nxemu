@@ -68,8 +68,8 @@ private:
     Result ReadSaveDataFileSystemExtraDataWithMaskBySaveDataAttribute(SaveDataSpaceId space_id, SaveDataAttribute attribute, InBuffer<BufferAttr_HipcMapAlias> mask_buffer, OutBuffer<BufferAttr_HipcMapAlias> out_buffer);
     Result OpenSaveDataTransferProhibiter(OutInterface<ISaveDataTransferProhibiter> out_prohibiter, u64 id);
     Result OpenDataStorageByCurrentProcess(OutInterface<IStorage> out_interface);
-    Result OpenDataStorageByDataId(OutInterface<IStorage> out_interface, FileSys::StorageId storage_id, u32 unknown, u64 title_id);
-    Result OpenPatchDataStorageByCurrentProcess(OutInterface<IStorage> out_interface, FileSys::StorageId storage_id, u64 title_id);
+    Result OpenDataStorageByDataId(OutInterface<IStorage> out_interface, StorageId storage_id, u32 unknown, u64 title_id);
+    Result OpenPatchDataStorageByCurrentProcess(OutInterface<IStorage> out_interface, StorageId storage_id, u64 title_id);
     Result OpenDataStorageWithProgramIndex(OutInterface<IStorage> out_interface, u8 program_index);
     Result DisableAutoSaveDataCreation();
     Result SetGlobalAccessLogMode(AccessLogMode access_log_mode_);

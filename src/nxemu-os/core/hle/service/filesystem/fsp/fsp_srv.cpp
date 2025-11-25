@@ -186,7 +186,6 @@ FSP_SRV::~FSP_SRV() = default;
 Result FSP_SRV::SetCurrentProcess(ClientProcessId pid)
 {
     current_process_id = *pid;
-
     LOG_DEBUG(Service_FS, "called. current_process_id=0x{:016X}", current_process_id);
 
     SaveDataFactoryPtr saveDataFactory;
@@ -371,14 +370,14 @@ Result FSP_SRV::OpenDataStorageByCurrentProcess(OutInterface<IStorage> out_inter
     R_SUCCEED();
 }
 
-Result FSP_SRV::OpenDataStorageByDataId(OutInterface<IStorage> out_interface, FileSys::StorageId storage_id, u32 unknown, u64 title_id)
+Result FSP_SRV::OpenDataStorageByDataId(OutInterface<IStorage> out_interface, StorageId storage_id, u32 unknown, u64 title_id)
 {
     LOG_DEBUG(Service_FS, "called with storage_id={:02X}, unknown={:08X}, title_id={:016X}", storage_id, unknown, title_id);
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result FSP_SRV::OpenPatchDataStorageByCurrentProcess(OutInterface<IStorage> out_interface, FileSys::StorageId storage_id, u64 title_id)
+Result FSP_SRV::OpenPatchDataStorageByCurrentProcess(OutInterface<IStorage> out_interface, StorageId storage_id, u64 title_id)
 {
     LOG_WARNING(Service_FS, "(STUBBED) called with storage_id={:02X}, title_id={:016X}", storage_id, title_id);
     UNIMPLEMENTED();

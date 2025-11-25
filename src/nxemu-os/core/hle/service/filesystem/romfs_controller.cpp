@@ -6,15 +6,13 @@
 
 namespace Service::FileSystem {
 
-RomFsController::RomFsController(RomFsControllerPtr&& factory_, uint64_t program_id_) :
+RomFsController::RomFsController(RomFsControllerPtr && factory_, uint64_t program_id_) :
     factory(std::move(factory_)),
     program_id(program_id_)
 {
 }
 
-RomFsController::~RomFsController()
-{
-}
+RomFsController::~RomFsController() = default;
 
 IVirtualFilePtr RomFsController::OpenRomFSCurrentProcess() {
     return IVirtualFilePtr(factory->OpenCurrentProcess(program_id));

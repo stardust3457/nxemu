@@ -30,38 +30,45 @@ static const IVirtualDirectoryPtr & GetDirectoryRelativeWrapped(const IVirtualDi
     return relative_dir;
 }
 
-VfsDirectoryServiceWrapper::VfsDirectoryServiceWrapper(IVirtualDirectoryPtr && backing_)
-    : backing(std::move(backing_)) {}
+VfsDirectoryServiceWrapper::VfsDirectoryServiceWrapper(IVirtualDirectoryPtr && backing_) : 
+    backing(std::move(backing_)) 
+{
+}
 
 VfsDirectoryServiceWrapper::~VfsDirectoryServiceWrapper() = default;
 
-Result VfsDirectoryServiceWrapper::CreateFile(const std::string& path_, u64 size) const 
+Result VfsDirectoryServiceWrapper::CreateFile(const std::string& path_, u64 size) const
 {
     std::string path(Common::FS::SanitizePath(path_));
     
     IVirtualDirectoryPtr relativeDir;
     const IVirtualDirectoryPtr & dir = GetDirectoryRelativeWrapped(backing, Common::FS::GetParentPath(path), relativeDir);
-    if (!dir) {
+    if (!dir)
+    {
         return FileSys::ResultPathNotFound;
     }
 
     FileSys::DirectoryEntryType entry_type{};
-    if (GetEntryType(&entry_type, path) == ResultSuccess) {
+    if (GetEntryType(&entry_type, path) == ResultSuccess)
+    {
         return FileSys::ResultPathAlreadyExists;
     }
     IVirtualFilePtr file(dir->CreateFile(Common::FS::GetFilename(path).data()));
-    if (!file) {
+    if (!file)
+    {
         // TODO(DarkLordZach): Find a better error code for this
         return ResultUnknown;
     }
-    if (!file->Resize(size)) {
+    if (!file->Resize(size))
+    {
         // TODO(DarkLordZach): Find a better error code for this
         return ResultUnknown;
     }
     return ResultSuccess;
 }
 
-Result VfsDirectoryServiceWrapper::CreateDirectory(const std::string& path_) const {
+Result VfsDirectoryServiceWrapper::CreateDirectory(const std::string& path_) const
+{
     std::string path(Common::FS::SanitizePath(path_));
 
     // NOTE: This is inaccurate behavior. CreateDirectory is not recursive.
@@ -70,10 +77,12 @@ Result VfsDirectoryServiceWrapper::CreateDirectory(const std::string& path_) con
     // TODO (Morph): Remove this when a hardware test verifies the correct behavior.
     const auto components = Common::FS::SplitPathComponents(path);
     std::string relative_path;
-    for (const auto& component : components) {
+    for (const auto& component : components)
+    {
         relative_path = Common::FS::SanitizePath(fmt::format("{}/{}", relative_path, component));
         auto new_dir = backing->CreateSubdirectory(relative_path.c_str());
-        if (new_dir == nullptr) {
+        if (new_dir == nullptr)
+        {
             // TODO(DarkLordZach): Find a better error code for this
             return ResultUnknown;
         }
@@ -81,30 +90,33 @@ Result VfsDirectoryServiceWrapper::CreateDirectory(const std::string& path_) con
     return ResultSuccess;
 }
 
-Result VfsDirectoryServiceWrapper::OpenFile(IVirtualFile** out_file,
-                                            const std::string& path_,
-                                            VirtualFileOpenMode mode) const {
+Result VfsDirectoryServiceWrapper::OpenFile(IVirtualFile** out_file, const std::string& path_, VirtualFileOpenMode mode) const
+{
     const std::string path(Common::FS::SanitizePath(path_));
     std::string_view npath = path;
-    while (!npath.empty() && (npath[0] == '/' || npath[0] == '\\')) {
+    while (!npath.empty() && (npath[0] == '/' || npath[0] == '\\'))
+    {
         npath.remove_prefix(1);
     }
 
     IVirtualFilePtr file(backing->GetFileRelative(npath.data()));
-    if (!file) {
+    if (!file)
+    {
         return FileSys::ResultPathNotFound;
     }
 
     if (mode == VirtualFileOpenMode::AllowAppend) {
         UNIMPLEMENTED();
         //*out_file = std::make_shared<FileSys::OffsetVfsFile>(file, 0, file->GetSize());
-    } else {
+    }
+    else
+    {
         *out_file = file.Detach();
     }
     return ResultSuccess;
 }
 
-Result VfsDirectoryServiceWrapper::GetEntryType(FileSys::DirectoryEntryType* out_entry_type, const std::string & path_) const 
+Result VfsDirectoryServiceWrapper::GetEntryType(FileSys::DirectoryEntryType * out_entry_type, const std::string & path_) const
 {
     std::string path(Common::FS::SanitizePath(path_));
 
@@ -135,7 +147,6 @@ Result VfsDirectoryServiceWrapper::GetEntryType(FileSys::DirectoryEntryType* out
         *out_entry_type = FileSys::DirectoryEntryType::Directory;
         return ResultSuccess;
     }
-
     return FileSys::ResultPathNotFound;
 }
 

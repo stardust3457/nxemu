@@ -23,7 +23,7 @@ class IFileSystem final : public ServiceFramework<IFileSystem> {
 public:
     explicit IFileSystem(Core::System& system_, IVirtualDirectoryPtr && dir_, SizeGetter size_getter_);
 
-    Result CreateFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path, s32 option,  s64 size);
+    Result CreateFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path, s32 option, s64 size);
     Result DeleteFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path);
     Result CreateDirectory(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path);
     Result DeleteDirectory(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path);
