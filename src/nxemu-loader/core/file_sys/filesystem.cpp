@@ -18,30 +18,26 @@ FileSystemController::FileSystemController(Systemloader & loader_) : loader{ loa
 
 FileSystemController::~FileSystemController() = default;
 
-bool FileSystemController::RegisterProcess(
-    FileSys::ProcessId process_id, FileSys::ProgramId program_id,
-    std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory) {
+bool FileSystemController::RegisterProcess(FileSys::ProcessId process_id, FileSys::ProgramId program_id, std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory)
+{
     std::scoped_lock lk{ registration_lock };
 
-    registrations.emplace(process_id, Registration{
-                                          .program_id = program_id,
-                                          .romfs_factory = std::move(romfs_factory),
-                                          .save_data_factory = CreateSaveDataFactory(program_id),
-        });
+    registrations.emplace(process_id, Registration{.program_id = program_id, .romfs_factory = std::move(romfs_factory), .save_data_factory = CreateSaveDataFactory(program_id), });
 
     LOG_DEBUG(Service_FS, "Registered for process {}", process_id);
     return true;
 }
 
-void FileSystemController::SetPackedUpdate(FileSys::ProcessId process_id, FileSys::VirtualFile update_raw) {
+void FileSystemController::SetPackedUpdate(FileSys::ProcessId process_id, FileSys::VirtualFile update_raw)
+{
     LOG_TRACE(Service_FS, "Setting packed update for romfs");
 
     std::scoped_lock lk{registration_lock};
     const auto it = registrations.find(process_id);
-    if (it == registrations.end()) {
+    if (it == registrations.end())
+    {
         return;
     }
-
     it->second.romfs_factory->SetPackedUpdate(std::move(update_raw));
 }
 
@@ -52,7 +48,7 @@ IFileSysRegisteredCache * FileSystemController::GetSystemNANDContents() const
 
 ISaveDataController * FileSystemController::OpenSaveDataController() const
 {
-    std::shared_ptr<Service::FileSystem::SaveDataController> dataController(std::make_shared<Service::FileSystem::SaveDataController>(loader, CreateSaveDataFactory(FileSys::ProgramId{})));
+    std::shared_ptr<SaveDataController> dataController(std::make_shared<SaveDataController>(loader, CreateSaveDataFactory(FileSys::ProgramId{})));
     return std::make_unique<SaveDataControllerPtr>(dataController).release();
 }
 
@@ -70,7 +66,7 @@ uint64_t FileSystemController::GetTotalSpaceSize(StorageId id) const
 
 bool FileSystemController::OpenProcess(uint64_t* programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId)
 {
-    std::scoped_lock lk{ registration_lock };
+    std::scoped_lock lk{registration_lock};
 
     const auto it = registrations.find(processId);
     if (it == registrations.end())
@@ -115,36 +111,44 @@ FileSys::RegisteredCache * FileSystemController::SystemNANDContents() const
     return bis_factory->GetSystemNANDContents();
 }
 
-FileSys::VirtualDir FileSystemController::GetModificationLoadRoot(uint64_t title_id) const {
+FileSys::VirtualDir FileSystemController::GetModificationLoadRoot(uint64_t title_id) const
+{
     LOG_TRACE(Service_FS, "Opening mod load root for tid={:016X}", title_id);
 
     if (bis_factory == nullptr)
+    {
         return nullptr;
-
+    }
     return bis_factory->GetModificationLoadRoot(title_id);
 }
 
-FileSys::VirtualDir FileSystemController::GetSDMCModificationLoadRoot(uint64_t title_id) const {
+FileSys::VirtualDir FileSystemController::GetSDMCModificationLoadRoot(uint64_t title_id) const
+{
     LOG_TRACE(Service_FS, "Opening SDMC mod load root for tid={:016X}", title_id);
 
-    if (sdmc_factory == nullptr) {
+    if (sdmc_factory == nullptr)
+    {
         return nullptr;
     }
 
     return sdmc_factory->GetSDMCModificationLoadRoot(title_id);
 }
 
-FileSys::VirtualDir FileSystemController::GetModificationDumpRoot(uint64_t title_id) const {
+FileSys::VirtualDir FileSystemController::GetModificationDumpRoot(uint64_t title_id) const
+{
     LOG_TRACE(Service_FS, "Opening mod dump root for tid={:016X}", title_id);
 
     if (bis_factory == nullptr)
+    {
         return nullptr;
-
+    }
     return bis_factory->GetModificationDumpRoot(title_id);
 }
 
-void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite) {
-    if (overwrite) {
+void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite)
+{
+    if (overwrite)
+    {
         bis_factory = nullptr;
         sdmc_factory = nullptr;
     }
@@ -154,41 +158,32 @@ void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool ov
     const auto sdmc_load_dir_path = sdmc_dir_path / "atmosphere/contents";
     const auto rw_mode = VirtualFileOpenMode::ReadWrite;
 
-    auto nand_directory =
-        vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::NANDDir), rw_mode);
+    auto nand_directory = vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::NANDDir), rw_mode);
     auto sd_directory = vfs.OpenDirectory(Common::FS::PathToUTF8String(sdmc_dir_path), rw_mode);
-    auto load_directory = vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::LoadDir),
-                                            VirtualFileOpenMode::Read);
-    auto sd_load_directory = vfs.OpenDirectory(Common::FS::PathToUTF8String(sdmc_load_dir_path),
-                                               VirtualFileOpenMode::Read);
-    auto dump_directory =
-        vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::DumpDir), rw_mode);
+    auto load_directory = vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::LoadDir), VirtualFileOpenMode::Read);
+    auto sd_load_directory = vfs.OpenDirectory(Common::FS::PathToUTF8String(sdmc_load_dir_path), VirtualFileOpenMode::Read);
+    auto dump_directory = vfs.OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::DumpDir), rw_mode);
 
-    if (bis_factory == nullptr) {
-        bis_factory = std::make_unique<FileSys::BISFactory>(
-            nand_directory, std::move(load_directory), std::move(dump_directory));
-        loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::SysNAND,
-                                       bis_factory->GetSystemNANDContents());
-        loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::UserNAND,
-                                       bis_factory->GetUserNANDContents());
+    if (bis_factory == nullptr)
+    {
+        bis_factory = std::make_unique<FileSys::BISFactory>(nand_directory, std::move(load_directory), std::move(dump_directory));
+        loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::SysNAND, bis_factory->GetSystemNANDContents());
+        loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::UserNAND, bis_factory->GetUserNANDContents());
     }
 
-    if (sdmc_factory == nullptr) {
-        sdmc_factory = std::make_unique<FileSys::SDMCFactory>(std::move(sd_directory),
-                                                              std::move(sd_load_directory));
-        loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::SDMC,
-                                       sdmc_factory->GetSDMCContents());
+    if (sdmc_factory == nullptr)
+    {
+        sdmc_factory = std::make_unique<FileSys::SDMCFactory>(std::move(sd_directory), std::move(sd_load_directory));
+        loader.RegisterContentProvider(FileSys::ContentProviderUnionSlot::SDMC, sdmc_factory->GetSDMCContents());
     }
 }
 
-std::shared_ptr<FileSys::SaveDataFactory> FileSystemController::CreateSaveDataFactory(
-    FileSys::ProgramId program_id) const {
+std::shared_ptr<FileSys::SaveDataFactory> FileSystemController::CreateSaveDataFactory(FileSys::ProgramId program_id) const
+{
     using YuzuPath = Common::FS::YuzuPath;
     const auto rw_mode = VirtualFileOpenMode::ReadWrite;
 
     auto vfs = loader.GetFilesystem();
-    const auto nand_directory =
-        vfs->OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::NANDDir), rw_mode);
-    return std::make_shared<FileSys::SaveDataFactory>(loader, program_id,
-        std::move(nand_directory));
+    const auto nand_directory = vfs->OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::NANDDir), rw_mode);
+    return std::make_shared<FileSys::SaveDataFactory>(loader, program_id, std::move(nand_directory));
 }

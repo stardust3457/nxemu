@@ -8,9 +8,8 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/hle/result.h"
 
-namespace Service::FileSystem {
-
-class SaveDataController {
+class SaveDataController
+{
 public:
     explicit SaveDataController(Systemloader & loader_, std::shared_ptr<FileSys::SaveDataFactory> factory_);
     ~SaveDataController();
@@ -28,21 +27,19 @@ private:
     const std::shared_ptr<FileSys::SaveDataFactory> factory;
 };
 
-} // namespace Service::FileSystem
-
 class SaveDataControllerPtr :
     public ISaveDataController
 {
 public:
     SaveDataControllerPtr();
-    SaveDataControllerPtr(std::shared_ptr<Service::FileSystem::SaveDataController> saveDataController);
+    SaveDataControllerPtr(std::shared_ptr<SaveDataController> saveDataController);
     SaveDataControllerPtr(SaveDataControllerPtr&& other) noexcept;
     ~SaveDataControllerPtr();
 
     SaveDataControllerPtr & operator=(SaveDataControllerPtr && other) noexcept;
 
-    Service::FileSystem::SaveDataController * operator->() const;
-    Service::FileSystem::SaveDataController & operator*() const;
+    SaveDataController * operator->() const;
+    SaveDataController & operator*() const;
     operator bool() const;
 
     // ISaveDataController
@@ -53,5 +50,5 @@ private:
     SaveDataControllerPtr(const SaveDataControllerPtr &) = delete;
     SaveDataControllerPtr & operator=(const SaveDataControllerPtr &) = delete;
 
-    std::shared_ptr<Service::FileSystem::SaveDataController> m_saveDataController;
+    std::shared_ptr<SaveDataController> m_saveDataController;
 };
