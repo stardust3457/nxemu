@@ -151,14 +151,20 @@ struct SaveDataAttribute
 };
 static_assert(sizeof(SaveDataAttribute) == 0x40);
 
+struct SaveDataSize {
+    uint64_t normal;
+    uint64_t journal;
+};
+static_assert(sizeof(SaveDataSize) == 0x10, "SaveDataSize has invalid size.");
+
 __interface IVirtualFile;
 
 __interface IVirtualDirectory
 {
-    IVirtualDirectory * CreateSubdirectory(const char* path) const = 0;
+    IVirtualDirectory * CreateSubdirectory(const char * path) const = 0;
     IVirtualDirectory * GetDirectoryRelative(const char * path) const = 0;
-    IVirtualDirectory * GetSubdirectory(const char* name) const = 0;
-    IVirtualFile * CreateFile(const char* name) const = 0;
+    IVirtualDirectory * GetSubdirectory(const char * name) const = 0;
+    IVirtualFile * CreateFile(const char * name) const = 0;
     IVirtualFile * GetFile(const char * name) const = 0;
     IVirtualFile * GetFileRelative(const char * relative_path) const = 0;
     IVirtualFile * OpenFile(const char * path, VirtualFileOpenMode perms) = 0;

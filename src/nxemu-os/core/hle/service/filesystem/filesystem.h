@@ -23,7 +23,6 @@ namespace FileSys {
 enum class BisPartitionId : u32;
 enum class StorageId : u8;
 
-struct SaveDataSize;
 } // namespace FileSys
 
 namespace Service {

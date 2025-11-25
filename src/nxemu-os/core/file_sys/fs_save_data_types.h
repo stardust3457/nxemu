@@ -16,12 +16,6 @@ using SystemSaveDataId = u64;
 using SystemBcatSaveDataId = SystemSaveDataId;
 using ProgramId = u64;
 
-struct SaveDataSize {
-    u64 normal;
-    u64 journal;
-};
-static_assert(sizeof(SaveDataSize) == 0x10, "SaveDataSize has invalid size.");
-
 using UserId = u128;
 static_assert(std::is_trivially_copyable_v<UserId>, "Data type must be trivially copyable.");
 static_assert(sizeof(UserId) == 0x10, "UserId has invalid size.");

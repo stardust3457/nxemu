@@ -7,6 +7,7 @@
 #include "core/file_sys/savedata_factory.h"
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/hle/result.h"
+#include <nxemu-module-spec/system_loader.h>
 
 class Systemloader;
 
@@ -20,8 +21,8 @@ public:
     Result OpenSaveData(FileSys::VirtualDir* out_save_data, SaveDataSpaceId space, const SaveDataAttribute& attribute);
     Result OpenSaveDataSpace(FileSys::VirtualDir* out_save_data_space, SaveDataSpaceId space);
 
-    FileSys::SaveDataSize ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id);
-    void WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id,FileSys::SaveDataSize new_value);
+    SaveDataSize ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id);
+    void WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id, SaveDataSize new_value);
     void SetAutoCreate(bool state);
 
 private:
