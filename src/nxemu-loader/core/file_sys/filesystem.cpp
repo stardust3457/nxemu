@@ -185,5 +185,5 @@ std::shared_ptr<FileSys::SaveDataFactory> FileSystemController::CreateSaveDataFa
 
     auto vfs = loader.GetFilesystem();
     const auto nand_directory = vfs->OpenDirectory(Common::FS::GetYuzuPathString(YuzuPath::NANDDir), rw_mode);
-    return std::make_shared<FileSys::SaveDataFactory>(loader, program_id, std::move(nand_directory));
+    return std::make_shared<FileSys::SaveDataFactory>(program_id, std::move(nand_directory));
 }

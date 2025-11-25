@@ -52,9 +52,11 @@ std::string GetFutureSaveDataPath(SaveDataSpaceId space_id, SaveDataType type, u
 
 } // Anonymous namespace
 
-SaveDataFactory::SaveDataFactory(Systemloader& loader_, ProgramId program_id_,
-                                 VirtualDir save_directory_)
-    : loader{loader_}, program_id{program_id_}, dir{std::move(save_directory_)} {
+SaveDataFactory::SaveDataFactory(ProgramId program_id_, VirtualDir save_directory_) : 
+    program_id{program_id_}, 
+    dir{std::move(save_directory_)},
+    auto_create(true)
+{
     // Delete all temporary storages
     // On hardware, it is expected that temporary storage be empty at first use.
     dir->DeleteSubdirectoryRecursive("temp");
@@ -62,33 +64,33 @@ SaveDataFactory::SaveDataFactory(Systemloader& loader_, ProgramId program_id_,
 
 SaveDataFactory::~SaveDataFactory() = default;
 
-VirtualDir SaveDataFactory::Create(SaveDataSpaceId space, const SaveDataAttribute& meta) const {
-    const auto save_directory = GetFullPath(program_id, dir, space, meta.type, meta.program_id,
-        u128{ meta.user_id[0], meta.user_id[1] }, meta.system_save_data_id);
-
+VirtualDir SaveDataFactory::Create(SaveDataSpaceId space, const SaveDataAttribute& meta) const
+{
+    const auto save_directory = GetFullPath(program_id, dir, space, meta.type, meta.program_id, u128{meta.user_id[0], meta.user_id[1]}, meta.system_save_data_id);
     return dir->CreateDirectoryRelative(save_directory);
 }
 
-VirtualDir SaveDataFactory::Open(SaveDataSpaceId space, const SaveDataAttribute& meta) const {
-
-    const auto save_directory = GetFullPath(program_id, dir, space, meta.type, meta.program_id,
-        u128{ meta.user_id[0], meta.user_id[1] }, meta.system_save_data_id);
-
+VirtualDir SaveDataFactory::Open(SaveDataSpaceId space, const SaveDataAttribute& meta) const
+{
+    const auto save_directory = GetFullPath(program_id, dir, space, meta.type, meta.program_id, u128{meta.user_id[0], meta.user_id[1]}, meta.system_save_data_id);
     auto out = dir->GetDirectoryRelative(save_directory);
 
-    if (out == nullptr && (ShouldSaveDataBeAutomaticallyCreated(space, meta) && auto_create)) {
+    if (out == nullptr && (ShouldSaveDataBeAutomaticallyCreated(space, meta) && auto_create))
+    {
         return Create(space, meta);
     }
-
     return out;
 }
 
-VirtualDir SaveDataFactory::GetSaveDataSpaceDirectory(SaveDataSpaceId space) const {
+VirtualDir SaveDataFactory::GetSaveDataSpaceDirectory(SaveDataSpaceId space) const
+{
     return dir->GetDirectoryRelative(GetSaveDataSpaceIdPath(space));
 }
 
-std::string SaveDataFactory::GetSaveDataSpaceIdPath(SaveDataSpaceId space) {
-    switch (space) {
+std::string SaveDataFactory::GetSaveDataSpaceIdPath(SaveDataSpaceId space)
+{
+    switch (space)
+    {
     case SaveDataSpaceId::System:
         return "/system/";
     case SaveDataSpaceId::User:
@@ -101,23 +103,24 @@ std::string SaveDataFactory::GetSaveDataSpaceIdPath(SaveDataSpaceId space) {
     }
 }
 
-std::string SaveDataFactory::GetFullPath(ProgramId program_id, VirtualDir dir,
-                                         SaveDataSpaceId space, SaveDataType type, uint64_t title_id,
-                                         u128 user_id, uint64_t save_id) {
+std::string SaveDataFactory::GetFullPath(ProgramId program_id, VirtualDir dir, SaveDataSpaceId space, SaveDataType type, uint64_t title_id, u128 user_id, uint64_t save_id)
+{
     // According to switchbrew, if a save is of type SaveData and the title id field is 0, it should
     // be interpreted as the title id of the current process.
-    if (type == SaveDataType::Account || type == SaveDataType::Device) {
-        if (title_id == 0) {
+    if (type == SaveDataType::Account || type == SaveDataType::Device)
+    {
+        if (title_id == 0)
+        {
             title_id = program_id;
         }
     }
 
     // For compat with a future impl.
-    if (std::string future_path =
-            GetFutureSaveDataPath(space, type, title_id & ~(0xFFULL), user_id);
-        !future_path.empty()) {
+    if (std::string future_path = GetFutureSaveDataPath(space, type, title_id & ~(0xFFULL), user_id); !future_path.empty())
+    {
         // Check if this location exists, and prefer it over the old.
-        if (const auto future_dir = dir->GetDirectoryRelative(future_path); future_dir != nullptr) {
+        if (const auto future_dir = dir->GetDirectoryRelative(future_path); future_dir != nullptr)
+        {
             LOG_INFO(Service_FS, "Using save at new location: {}", future_path);
             return future_path;
         }
@@ -125,16 +128,15 @@ std::string SaveDataFactory::GetFullPath(ProgramId program_id, VirtualDir dir,
 
     std::string out = GetSaveDataSpaceIdPath(space);
 
-    switch (type) {
+    switch (type) 
+    {
     case SaveDataType::System:
         return fmt::format("{}save/{:016X}/{:016X}{:016X}", out, save_id, user_id[1], user_id[0]);
     case SaveDataType::Account:
     case SaveDataType::Device:
-        return fmt::format("{}save/{:016X}/{:016X}{:016X}/{:016X}", out, 0, user_id[1], user_id[0],
-                           title_id);
+        return fmt::format("{}save/{:016X}/{:016X}{:016X}/{:016X}", out, 0, user_id[1], user_id[0], title_id);
     case SaveDataType::Temporary:
-        return fmt::format("{}{:016X}/{:016X}{:016X}/{:016X}", out, 0, user_id[1], user_id[0],
-                           title_id);
+        return fmt::format("{}{:016X}/{:016X}{:016X}/{:016X}", out, 0, user_id[1], user_id[0], title_id);
     case SaveDataType::Cache:
         return fmt::format("{}save/cache/{:016X}", out, title_id);
     default:
@@ -143,8 +145,10 @@ std::string SaveDataFactory::GetFullPath(ProgramId program_id, VirtualDir dir,
     }
 }
 
-std::string SaveDataFactory::GetUserGameSaveDataRoot(u128 user_id, bool future) {
-    if (future) {
+std::string SaveDataFactory::GetUserGameSaveDataRoot(u128 user_id, bool future)
+{
+    if (future)
+    {
         Common::UUID uuid;
         std::memcpy(uuid.uuid.data(), user_id.data(), sizeof(Common::UUID));
         return fmt::format("/user/save/account/{}", uuid.RawString());
@@ -152,33 +156,33 @@ std::string SaveDataFactory::GetUserGameSaveDataRoot(u128 user_id, bool future) 
     return fmt::format("/user/save/{:016X}/{:016X}{:016X}", 0, user_id[1], user_id[0]);
 }
 
-SaveDataSize SaveDataFactory::ReadSaveDataSize(SaveDataType type, uint64_t title_id,
-                                               u128 user_id) const {
-    const auto path =
-        GetFullPath(program_id, dir, SaveDataSpaceId::User, type, title_id, user_id, 0);
+SaveDataSize SaveDataFactory::ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id) const
+{
+    const auto path = GetFullPath(program_id, dir, SaveDataSpaceId::User, type, title_id, user_id, 0);
     const auto relative_dir = GetOrCreateDirectoryRelative(dir, path);
 
     const auto size_file = relative_dir->GetFile(GetSaveDataSizeFileName());
-    if (size_file == nullptr || size_file->GetSize() < sizeof(SaveDataSize)) {
+    if (size_file == nullptr || size_file->GetSize() < sizeof(SaveDataSize))
+    {
         return {0, 0};
     }
 
     SaveDataSize out;
-    if (size_file->ReadObject(&out) != sizeof(SaveDataSize)) {
+    if (size_file->ReadObject(&out) != sizeof(SaveDataSize))
+    {
         return {0, 0};
     }
-
     return out;
 }
 
-void SaveDataFactory::WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id,
-                                        SaveDataSize new_value) const {
-    const auto path =
-        GetFullPath(program_id, dir, SaveDataSpaceId::User, type, title_id, user_id, 0);
+void SaveDataFactory::WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id, SaveDataSize new_value) const
+{
+    const auto path = GetFullPath(program_id, dir, SaveDataSpaceId::User, type, title_id, user_id, 0);
     const auto relative_dir = GetOrCreateDirectoryRelative(dir, path);
 
     const auto size_file = relative_dir->CreateFile(GetSaveDataSizeFileName());
-    if (size_file == nullptr) {
+    if (size_file == nullptr)
+    {
         return;
     }
 
@@ -186,7 +190,8 @@ void SaveDataFactory::WriteSaveDataSize(SaveDataType type, uint64_t title_id, u1
     size_file->WriteObject(new_value);
 }
 
-void SaveDataFactory::SetAutoCreate(bool state) {
+void SaveDataFactory::SetAutoCreate(bool state)
+{
     auto_create = state;
 }
 
@@ -211,4 +216,3 @@ void SaveDataFactoryPtr::Release()
 {
     delete this;
 }
-

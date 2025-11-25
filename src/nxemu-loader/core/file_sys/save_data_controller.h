@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-
+#include <memory>
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/savedata_factory.h"
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/hle/result.h"
+
+class Systemloader;
 
 class SaveDataController
 {

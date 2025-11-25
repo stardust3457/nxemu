@@ -10,21 +10,20 @@
 #include "core/file_sys/fs_save_data_types.h"
 #include "core/file_sys/vfs/vfs.h"
 
-class Systemloader;
-
 namespace FileSys {
 
-constexpr const char* GetSaveDataSizeFileName() {
+constexpr const char* GetSaveDataSizeFileName() 
+{
     return ".yuzu_save_size";
 }
 
 using ProgramId = uint64_t;
 
 /// File system interface to the SaveData archive
-class SaveDataFactory {
+class SaveDataFactory 
+{
 public:
-    explicit SaveDataFactory(Systemloader & loader_, ProgramId program_id_,
-                             VirtualDir save_directory_);
+    explicit SaveDataFactory(ProgramId program_id_, VirtualDir save_directory_);
     ~SaveDataFactory();
 
     VirtualDir Create(SaveDataSpaceId space, const SaveDataAttribute& meta) const;
@@ -33,21 +32,18 @@ public:
     VirtualDir GetSaveDataSpaceDirectory(SaveDataSpaceId space) const;
 
     static std::string GetSaveDataSpaceIdPath(SaveDataSpaceId space);
-    static std::string GetFullPath(ProgramId program_id, VirtualDir dir, SaveDataSpaceId space,
-                                   SaveDataType type, uint64_t title_id, u128 user_id, uint64_t save_id);
+    static std::string GetFullPath(ProgramId program_id, VirtualDir dir, SaveDataSpaceId space, SaveDataType type, uint64_t title_id, u128 user_id, uint64_t save_id);
     static std::string GetUserGameSaveDataRoot(u128 user_id, bool future);
 
     SaveDataSize ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id) const;
-    void WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id,
-                           SaveDataSize new_value) const;
+    void WriteSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id, SaveDataSize new_value) const;
 
     void SetAutoCreate(bool state);
 
 private:
-    Systemloader & loader;
     ProgramId program_id;
     VirtualDir dir;
-    bool auto_create{true};
+    bool auto_create;
 };
 
 } // namespace FileSys
