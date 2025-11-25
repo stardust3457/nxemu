@@ -87,7 +87,7 @@ private:
     u32 access_log_program_index = 0;
     AccessLogMode access_log_mode = AccessLogMode::None;
     u64 program_id = 0;
-    std::shared_ptr<SaveDataController> save_data_controller;
+    SaveDataFactoryPtr save_data_controller;
     std::shared_ptr<RomFsController> romfs_controller;
 };
 

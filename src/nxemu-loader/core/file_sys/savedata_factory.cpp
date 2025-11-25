@@ -206,10 +206,15 @@ SaveDataFactoryPtr::~SaveDataFactoryPtr()
 {
 }
 
-IVirtualDirectory * SaveDataFactoryPtr::Open(SaveDataSpaceId space, const SaveDataAttribute & meta) const
+bool SaveDataFactoryPtr::OpenSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute)
 {
-    FileSys::VirtualDir out_dir = m_saveDataFactory->Open(space, meta);
-    return std::make_unique<VirtualDirectoryPtr>(out_dir).release();
+    FileSys::VirtualDir out_dir = m_saveDataFactory->Open(space, attribute);
+    if (out_dir == nullptr) 
+    {
+        return false;
+    }
+    *out_save_data = std::make_unique<VirtualDirectoryPtr>(out_dir).release();
+    return true;
 }
 
 void SaveDataFactoryPtr::Release()

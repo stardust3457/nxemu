@@ -1617,9 +1617,6 @@
     <ClInclude Include="core\hle\service\filesystem\romfs_controller.h">
       <Filter>Header Files\core\hle\service\filesystem</Filter>
     </ClInclude>
-    <ClInclude Include="core\hle\service\filesystem\save_data_controller.h">
-      <Filter>Header Files\core\hle\service\filesystem</Filter>
-    </ClInclude>
     <ClInclude Include="core\hle\service\filesystem\fsp\fs_i_filesystem.h">
       <Filter>Header Files\core\hle\service\filesystem\fsp</Filter>
     </ClInclude>
@@ -3156,9 +3153,6 @@
     </ClCompile>
     <ClCompile Include="core\hle\service\nvnflinger\ui\graphic_buffer.cpp">
       <Filter>Source Files\core\hle\service\nvnflinger\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="core\hle\service\filesystem\save_data_controller.cpp">
-      <Filter>Source Files\core\hle\service\filesystem</Filter>
     </ClCompile>
     <ClCompile Include="core\hle\service\filesystem\romfs_controller.cpp">
       <Filter>Source Files\core\hle\service\filesystem</Filter>

@@ -116,7 +116,6 @@
     <ClCompile Include="core\hle\service\filesystem\fsp\fs_i_storage.cpp" />
     <ClCompile Include="core\hle\service\filesystem\fsp\save_data_transfer_prohibiter.cpp" />
     <ClCompile Include="core\hle\service\filesystem\romfs_controller.cpp" />
-    <ClCompile Include="core\hle\service\filesystem\save_data_controller.cpp" />
     <ClCompile Include="core\hle\service\glue\time\alarm_worker.cpp" />
     <ClCompile Include="core\hle\service\glue\time\file_timestamp_worker.cpp" />
     <ClCompile Include="core\hle\service\glue\time\manager.cpp" />
@@ -615,7 +614,6 @@
     <ClInclude Include="core\hle\service\filesystem\fsp\fs_i_storage.h" />
     <ClInclude Include="core\hle\service\filesystem\fsp\save_data_transfer_prohibiter.h" />
     <ClInclude Include="core\hle\service\filesystem\romfs_controller.h" />
-    <ClInclude Include="core\hle\service\filesystem\save_data_controller.h" />
     <ClInclude Include="core\hle\service\glue\time\alarm_worker.h" />
     <ClInclude Include="core\hle\service\glue\time\file_timestamp_worker.h" />
     <ClInclude Include="core\hle\service\glue\time\manager.h" />

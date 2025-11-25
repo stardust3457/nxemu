@@ -4,7 +4,6 @@
 #include "yuzu_common/hex_util.h"
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/filesystem/fsp/fs_i_save_data_info_reader.h"
-#include "core/hle/service/filesystem/save_data_controller.h"
 
 namespace Service::FileSystem {
 

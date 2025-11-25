@@ -9,7 +9,6 @@
 #include "yuzu_common/common_types.h"
 #include "yuzu_common/swap.h"
 #include "core/file_sys/vfs/vfs_types.h"
-#include "nxemu-module-spec/system_loader.h"
 
 namespace FileSys {
 class CNMT;

@@ -79,7 +79,7 @@ Result SaveDataController::OpenSaveDataSpace(FileSys::VirtualDir * out_save_data
     return ResultSuccess;
 }
 
-SaveDataSize SaveDataController::ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id) 
+SaveDataSize SaveDataController::ReadSaveDataSize(SaveDataType type, uint64_t title_id, u128 user_id)
 {
     const auto value = factory->ReadSaveDataSize(type, title_id, user_id);
 

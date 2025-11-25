@@ -26,7 +26,6 @@
 #include "core/hle/service/filesystem/fsp/fsp_srv.h"
 #include "core/hle/service/filesystem/fsp/save_data_transfer_prohibiter.h"
 #include "core/hle/service/filesystem/romfs_controller.h"
-#include "core/hle/service/filesystem/save_data_controller.h"
 #include "core/hle/service/hle_ipc.h"
 #include "core/hle/service/ipc_helpers.h"
 #include "core/file_sys/errors.h"
@@ -188,14 +187,12 @@ Result FSP_SRV::SetCurrentProcess(ClientProcessId pid)
     current_process_id = *pid;
     LOG_DEBUG(Service_FS, "called. current_process_id=0x{:016X}", current_process_id);
 
-    SaveDataFactoryPtr saveDataFactory;
     RomFsControllerPtr romFsController;
 
-    if (!fsc.OpenProcess(&program_id, saveDataFactory.GetAddressForSet(), romFsController.GetAddressForSet(), current_process_id))
+    if (!fsc.OpenProcess(&program_id, save_data_controller.GetAddressForSet(), romFsController.GetAddressForSet(), current_process_id))
     {
         return FileSys::ResultTargetNotFound;
     }
-    save_data_controller = std::make_shared<SaveDataController>(system, std::move(saveDataFactory));
     romfs_controller = std::make_shared<RomFsController>(std::move(romFsController), program_id);
     R_SUCCEED();
 }
@@ -239,8 +236,8 @@ Result FSP_SRV::OpenSaveDataFileSystem(OutInterface<IFileSystem> out_interface, 
 {
     LOG_INFO(Service_FS, "called.");
 
-    IVirtualDirectoryPtr dir{};
-    R_TRY(save_data_controller->OpenSaveData(dir, space_id, attribute));
+    IVirtualDirectoryPtr dir;
+    R_TRY(save_data_controller->OpenSaveData(dir.GetAddressForSet(), space_id, attribute) ? ResultSuccess : FileSys::ResultTargetNotFound);
 
     StorageId id{};
     switch (space_id)

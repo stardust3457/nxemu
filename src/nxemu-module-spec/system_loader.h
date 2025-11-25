@@ -185,7 +185,7 @@ __interface IVirtualFile
 
 __interface ISaveDataFactory
 {
-    IVirtualDirectory * Open(SaveDataSpaceId space, const SaveDataAttribute & meta) const = 0;
+    bool OpenSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) = 0;
     void Release() = 0;
 };
 

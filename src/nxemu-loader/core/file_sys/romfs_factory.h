@@ -23,18 +23,15 @@ class NCA;
 /// File system interface to the RomFS archive
 class RomFSFactory {
 public:
-    explicit RomFSFactory(FileSys::VirtualFile file_, bool updatable_, ContentProvider & provider,
-                          FileSystemController& controller);
+    explicit RomFSFactory(FileSys::VirtualFile file_, bool updatable_, ContentProvider& provider, FileSystemController& controller);
     ~RomFSFactory();
 
     void SetPackedUpdate(VirtualFile packed_update_raw);
     [[nodiscard]] VirtualFile OpenCurrentProcess(uint64_t current_process_title_id) const;
     [[nodiscard]] VirtualFile OpenPatchedRomFS(uint64_t title_id, LoaderContentRecordType type) const;
-    [[nodiscard]] VirtualFile OpenPatchedRomFSWithProgramIndex(uint64_t title_id, u8 program_index,
-                                                               LoaderContentRecordType type) const;
+    [[nodiscard]] VirtualFile OpenPatchedRomFSWithProgramIndex(uint64_t title_id, u8 program_index, LoaderContentRecordType type) const;
     [[nodiscard]] VirtualFile Open(uint64_t title_id, StorageId storage, LoaderContentRecordType type) const;
-    [[nodiscard]] std::shared_ptr<NCA> GetEntry(uint64_t title_id, StorageId storage,
-                                                LoaderContentRecordType type) const;
+    [[nodiscard]] std::shared_ptr<NCA> GetEntry(uint64_t title_id, StorageId storage, LoaderContentRecordType type) const;
 
 private:
     VirtualFile file;
