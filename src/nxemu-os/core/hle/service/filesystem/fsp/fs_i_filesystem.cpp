@@ -11,7 +11,8 @@
 namespace Service::FileSystem {
 
 IFileSystem::IFileSystem(Core::System & system_, IVirtualDirectoryPtr && dir_, SizeGetter size_getter_) : 
-    ServiceFramework{system_, "IFileSystem"}, backend{std::make_unique<FileSys::Fsa::IFileSystem>(std::move(dir_))},
+    ServiceFramework{system_, "IFileSystem"},
+    backend{std::make_unique<FileSys::Fsa::IFileSystem>(std::move(dir_))},
     size_getter{std::move(size_getter_)} 
 {
     static const FunctionInfo functions[] = {
@@ -36,63 +37,62 @@ IFileSystem::IFileSystem(Core::System & system_, IVirtualDirectoryPtr && dir_, S
     RegisterHandlers(functions);
 }
 
-Result IFileSystem::CreateFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path,
-                               s32 option, s64 size) {
+Result IFileSystem::CreateFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path, s32 option, s64 size)
+{
     LOG_DEBUG(Service_FS, "called. file={}, option=0x{:X}, size=0x{:08X}", path->str, option, size);
 
     R_RETURN(backend->CreateFile(FileSys::Path(path->str), size));
 }
 
-Result IFileSystem::DeleteFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::DeleteFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called. file={}", path->str);
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IFileSystem::CreateDirectory(
-    const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::CreateDirectory(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called. directory={}", path->str);
 
     R_RETURN(backend->CreateDirectory(FileSys::Path(path->str)));
 }
 
-Result IFileSystem::DeleteDirectory(
-    const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::DeleteDirectory(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called. directory={}", path->str);
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IFileSystem::DeleteDirectoryRecursively(
-    const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::DeleteDirectoryRecursively(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called. directory={}", path->str);
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IFileSystem::CleanDirectoryRecursively(
-    const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::CleanDirectoryRecursively(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called. Directory: {}", path->str);
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IFileSystem::RenameFile(
-    const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> old_path,
-    const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> new_path) {
+Result IFileSystem::RenameFile(const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> old_path, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> new_path)
+{
     LOG_DEBUG(Service_FS, "called. file '{}' to file '{}'", old_path->str, new_path->str);
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IFileSystem::OpenFile(OutInterface<IFile> out_interface,
-                             const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path,
-                             u32 mode) {
+Result IFileSystem::OpenFile(OutInterface<IFile> out_interface, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path, u32 mode)
+{
     LOG_DEBUG(Service_FS, "called. file={}, mode={}", path->str, mode);
 
     IVirtualFilePtr vfs_file;
@@ -102,17 +102,16 @@ Result IFileSystem::OpenFile(OutInterface<IFile> out_interface,
     R_SUCCEED();
 }
 
-Result IFileSystem::OpenDirectory(OutInterface<IDirectory> out_interface,
-                                  const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path,
-                                  u32 mode) {
+Result IFileSystem::OpenDirectory(OutInterface<IDirectory> out_interface, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path, u32 mode)
+{
     LOG_DEBUG(Service_FS, "called. directory={}, mode={}", path->str, mode);
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IFileSystem::GetEntryType(
-    Out<u32> out_type, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::GetEntryType(Out<u32> out_type, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called. file={}", path->str);
 
     FileSys::DirectoryEntryType vfs_entry_type{};
@@ -122,22 +121,23 @@ Result IFileSystem::GetEntryType(
     R_SUCCEED();
 }
 
-Result IFileSystem::Commit() {
+Result IFileSystem::Commit()
+{
     LOG_WARNING(Service_FS, "(STUBBED) called");
 
     R_SUCCEED();
 }
 
-Result IFileSystem::GetFreeSpaceSize(
-    Out<s64> out_size, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::GetFreeSpaceSize(Out<s64> out_size, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called");
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IFileSystem::GetTotalSpaceSize(
-    Out<s64> out_size, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path) {
+Result IFileSystem::GetTotalSpaceSize(Out<s64> out_size, const InLargeData<FileSys::Sf::Path, BufferAttr_HipcPointer> path)
+{
     LOG_DEBUG(Service_FS, "called");
 
     UNIMPLEMENTED();

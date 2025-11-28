@@ -127,16 +127,15 @@ Result IApplicationFunctions::EnsureSaveData(Out<u64> out_size, Common::UUID use
     LOG_INFO(Service_AM, "called, uid={}", user_id.FormattedString());
 
     ISystemloader & loader = system.GetSystemloader();
-    IVirtualDirectoryPtr save_data;
     SaveDataAttribute attribute{};
     attribute.program_id = m_applet->program_id;
     static_assert(sizeof(attribute.user_id) == sizeof(user_id.uuid));
     memcpy(&attribute.user_id, user_id.uuid.data(), sizeof(attribute.user_id));
     attribute.type = SaveDataType::Account;
 
-    Result result;
-    result.raw = ISaveDataControllerPtr(loader.FileSystemController().OpenSaveDataController())->CreateSaveData(save_data.GetAddressForSet(), SaveDataSpaceId::User, attribute);
-    R_TRY(result);
+    IVirtualDirectoryPtr save_data;
+    bool opened = ISaveDataControllerPtr(loader.FileSystemController().OpenSaveDataController())->CreateSaveData(save_data.GetAddressForSet(), SaveDataSpaceId::User, attribute);
+    R_TRY(opened ? ResultSuccess : FileSys::ResultTargetNotFound);
     *out_size = 0;
     R_SUCCEED();
 }

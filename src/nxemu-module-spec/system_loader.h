@@ -218,7 +218,7 @@ __interface IFileSysRegisteredCache
 
 __interface ISaveDataController
 {
-    uint32_t CreateSaveData(IVirtualDirectory** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) = 0;
+    bool CreateSaveData(IVirtualDirectory** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) = 0;
     void Release() = 0;
 };
 
@@ -226,11 +226,10 @@ __interface IFileSystemController
 {
     IFileSysRegisteredCache * GetSystemNANDContents() const = 0;
     ISaveDataController * OpenSaveDataController() const = 0;
-    
+    bool OpenProcess(uint64_t * programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId) = 0;
     uint64_t GetFreeSpaceSize(StorageId id) const = 0;
     uint64_t GetTotalSpaceSize(StorageId id) const = 0;
 
-    bool OpenProcess(uint64_t * programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId) = 0;
     bool OpenSDMC(IVirtualDirectory** out_sdmc) const = 0;
 };
 

@@ -7,7 +7,6 @@
 #include "core/file_sys/savedata_factory.h"
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/hle/result.h"
-#include <nxemu-module-spec/system_loader.h>
 
 class Systemloader;
 
@@ -17,7 +16,7 @@ public:
     explicit SaveDataController(Systemloader & loader_, std::shared_ptr<FileSys::SaveDataFactory> factory_);
     ~SaveDataController();
 
-    Result CreateSaveData(FileSys::VirtualDir* out_save_data, SaveDataSpaceId space, const SaveDataAttribute& attribute);
+    bool CreateSaveData(FileSys::VirtualDir* out_save_data, SaveDataSpaceId space, const SaveDataAttribute& attribute);
     Result OpenSaveData(FileSys::VirtualDir* out_save_data, SaveDataSpaceId space, const SaveDataAttribute& attribute);
     Result OpenSaveDataSpace(FileSys::VirtualDir* out_save_data_space, SaveDataSpaceId space);
 
@@ -46,7 +45,7 @@ public:
     operator bool() const;
 
     // ISaveDataController
-    uint32_t CreateSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) override;
+    bool CreateSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) override;
     void Release() override;
 
 private:

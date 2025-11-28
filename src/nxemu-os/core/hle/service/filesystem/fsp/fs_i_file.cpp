@@ -23,41 +23,36 @@ IFile::IFile(Core::System& system_, IVirtualFilePtr && file_)
     RegisterHandlers(functions);
 }
 
-Result IFile::Read(
-    FileSys::ReadOption option, Out<s64> out_size, s64 offset,
-    const OutBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure> out_buffer,
-    s64 size) {
-    LOG_DEBUG(Service_FS, "called, option={}, offset=0x{:X}, length={}", option.value, offset,
-              size);
+Result IFile::Read(FileSys::ReadOption option, Out<s64> out_size, s64 offset, const OutBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure> out_buffer, s64 size)
+{
+    LOG_DEBUG(Service_FS, "called, option={}, offset=0x{:X}, length={}", option.value, offset, size);
 
     // Read the data from the Storage backend
-    R_RETURN(
-        backend->Read(reinterpret_cast<size_t*>(out_size.Get()), offset, out_buffer.data(), size));
+    R_RETURN(backend->Read(reinterpret_cast<size_t*>(out_size.Get()), offset, out_buffer.data(), size));
 }
 
-Result IFile::Write(
-    const InBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure> buffer,
-    FileSys::WriteOption option, s64 offset, s64 size) {
-    LOG_DEBUG(Service_FS, "called, option={}, offset=0x{:X}, length={}", option.value, offset,
-              size);
-
+Result IFile::Write(const InBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure> buffer, FileSys::WriteOption option, s64 offset, s64 size)
+{
+    LOG_DEBUG(Service_FS, "called, option={}, offset=0x{:X}, length={}", option.value, offset, size);
     R_RETURN(backend->Write(offset, buffer.data(), size, option));
 }
 
-Result IFile::Flush() {
+Result IFile::Flush()
+{
     LOG_DEBUG(Service_FS, "called");
-
     R_RETURN(backend->Flush());
 }
 
-Result IFile::SetSize(s64 size) {
+Result IFile::SetSize(s64 size)
+{
     LOG_DEBUG(Service_FS, "called, size={}", size);
 
     UNIMPLEMENTED();
     R_SUCCEED()
 }
 
-Result IFile::GetSize(Out<s64> out_size) {
+Result IFile::GetSize(Out<s64> out_size)
+{
     LOG_DEBUG(Service_FS, "called");
 
     UNIMPLEMENTED();

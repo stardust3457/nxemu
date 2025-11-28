@@ -43,17 +43,17 @@ SaveDataController::SaveDataController(Systemloader & loader_, std::shared_ptr<F
 
 SaveDataController::~SaveDataController() = default;
 
-Result SaveDataController::CreateSaveData(FileSys::VirtualDir* out_save_data, SaveDataSpaceId space, const SaveDataAttribute& attribute)
+bool SaveDataController::CreateSaveData(FileSys::VirtualDir* out_save_data, SaveDataSpaceId space, const SaveDataAttribute& attribute)
 {
     LOG_TRACE(Service_FS, "Creating Save Data for space_id={:01X}, save_struct={}", space, DebugInfo(attribute));
 
     auto save_data = factory->Create(space, attribute);
     if (save_data == nullptr)
     {
-        return FileSys::ResultTargetNotFound;
+        return false;
     }
     *out_save_data = save_data;
-    return ResultSuccess;
+    return true;
 }
 
 Result SaveDataController::OpenSaveData(FileSys::VirtualDir * out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute)
@@ -109,12 +109,12 @@ SaveDataControllerPtr::SaveDataControllerPtr(std::shared_ptr<SaveDataController>
 
 SaveDataControllerPtr::~SaveDataControllerPtr() = default;
 
-uint32_t SaveDataControllerPtr::CreateSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute)
+bool SaveDataControllerPtr::CreateSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute)
 {
     FileSys::VirtualDir out_dir;
-    Result result = m_saveDataController->CreateSaveData(&out_dir, space, attribute);
+    bool created = m_saveDataController->CreateSaveData(&out_dir, space, attribute);
     *out_save_data = std::make_unique<VirtualDirectoryPtr>(out_dir).release();
-    return result.raw;
+    return created;
 }
 
 void SaveDataControllerPtr::Release()

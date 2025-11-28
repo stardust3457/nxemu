@@ -227,13 +227,6 @@ IRomInfo * Systemloader::RomInfo(const char * fileName)
     return nullptr;
 }
 
-#ifdef tofix
-ISystemModules & Systemloader::GetSystemModules()
-{
-    return impl->m_modules;
-}
-#endif
-
 FileSys::ContentProvider & Systemloader::GetContentProvider()
 {
     return *impl->m_contentProvider;
