@@ -50,13 +50,14 @@ __interface IVideo
     bool Initialize(void) = 0;
     uint32_t AllocAsEx(uint64_t addressSpaceBits, uint64_t splitAddress, uint64_t bigPageBits, uint64_t pageBits) = 0;
     uint64_t MapBufferEx(uint32_t gmmu, uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages) = 0;
-    uint64_t Map(uint32_t gmmu, uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages) = 0;
     uint64_t MapSparse(uint32_t gmmu, uint64_t gpuAddr, uint64_t size, bool isBigPages) = 0;
-    uint64_t MemoryAllocate(uint64_t size) = 0;
     void Unmap(uint32_t gmmu, uint64_t gpuAddr, uint64_t size) = 0;
-    void MemoryTrackContinuity(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid) = 0;
+    uint64_t Host1xMemoryAllocate(uint64_t size) = 0;
+    uint32_t Host1xAllocate(uint32_t size) = 0;
+    void Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size) = 0;
     void Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track) = 0;
     void Host1xMemoryUnmap(uint64_t address, uint64_t size) = 0;
+    void Host1xMemoryTrackContinuity(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid) = 0;
     void RequestComposite(VideoFramebufferConfig * layers, uint32_t layerCount, VideoNvFence * fences, uint32_t fenceCount) = 0;
     uint64_t Host1xRegisterProcess(IMemory * memory) = 0;
     void UpdateFramebufferLayout(uint32_t width, uint32_t height) = 0;
@@ -69,8 +70,6 @@ __interface IVideo
     uint32_t HostSyncpointValue(uint32_t id) = 0;
     uint32_t HostSyncpointRegisterAction(uint32_t fence_id, uint32_t target_value, HostActionCallback operation, uint32_t slot, void * userData) = 0;
     void WaitHost(uint32_t syncpoint_id, uint32_t expected_value) = 0;
-    uint32_t Host1xAllocate(uint32_t size) = 0;
-    void Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size) = 0;
 };
 
 EXPORT IVideo * CALL CreateVideo(IRenderWindow & renderWindow, ISystemModules & modules);

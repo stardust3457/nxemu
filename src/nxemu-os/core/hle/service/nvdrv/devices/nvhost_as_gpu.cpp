@@ -252,7 +252,7 @@ NvResult nvhost_as_gpu::Remap(std::span<IoctlRemapEntry> entries)
             DAddr base = nvmap.PinHandle(entry.handle, false);
             DAddr device_address{static_cast<DAddr>(base + (static_cast<u64>(entry.handle_offset_big_pages) << vm.big_page_size_bits))};
 
-            video.Map(gmmu, virtual_address, device_address, size, entry.kind, use_big_pages);
+            video.MapBufferEx(gmmu, virtual_address, device_address, size, entry.kind, use_big_pages);
         }
     }
     return NvResult::Success;

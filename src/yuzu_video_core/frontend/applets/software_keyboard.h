@@ -5,9 +5,9 @@
 
 #include <functional>
 
-#include "common/common_types.h"
+#include "yuzu_common/common_types.h"
 
-#include "core/frontend/applets/applet.h"
+#include "frontend/applets/applet.h"
 #include "core/hle/service/am/frontend/applet_software_keyboard_types.h"
 
 namespace Core::Frontend {

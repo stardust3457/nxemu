@@ -3,9 +3,9 @@
 
 #include <thread>
 
-#include "common/logging/log.h"
-#include "common/string_util.h"
-#include "core/frontend/applets/software_keyboard.h"
+#include "yuzu_common/logging/log.h"
+#include "yuzu_common/string_util.h"
+#include "frontend/applets/software_keyboard.h"
 
 namespace Core::Frontend {
 

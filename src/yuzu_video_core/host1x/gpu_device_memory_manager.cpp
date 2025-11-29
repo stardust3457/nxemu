@@ -461,10 +461,10 @@ void DeviceMemoryManager<Traits>::WalkBlock(DAddr addr, std::size_t size, auto o
 }
 
 template <typename Traits>
-void DeviceMemoryManager<Traits>::ReadBlock(DAddr address, void* dest_pointer, size_t size)
+void DeviceMemoryManager<Traits>::ReadBlock(DAddr address, void * dest_pointer, size_t size)
 {
     device_inter->FlushRegion(address, size);
-    WalkBlock(address, size, [&](size_t copy_amount, DAddr current_vaddr) 
+    WalkBlock(address, size, [&](size_t copy_amount, DAddr current_vaddr)
         {
             LOG_ERROR(HW_Memory, "Unmapped Device ReadBlock @ 0x{:016X} (start address = 0x{:016X}, size = {})", current_vaddr, address, size);
             std::memset(dest_pointer, 0, copy_amount);

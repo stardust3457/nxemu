@@ -10,7 +10,6 @@
 #include <optional>
 #include <vector>
 #include <boost/container/small_vector.hpp>
-#include <nxemu-module-spec/video.h>
 
 #include "yuzu_common/common_types.h"
 #include "yuzu_common/multi_level_page_table.h"

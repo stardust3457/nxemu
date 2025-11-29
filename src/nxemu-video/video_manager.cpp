@@ -144,17 +144,6 @@ uint64_t VideoManager::MapBufferEx(uint32_t gmmu, uint64_t gpuAddr, uint64_t dev
     return memory->Map(gpuAddr, deviceAddr, size, (Tegra::PTEKind)kind, isBigPages);
 }
 
-uint64_t VideoManager::Map(uint32_t gmmu, uint64_t gpuAddr, uint64_t deviceAddr, uint64_t size, uint16_t kind, bool isBigPages)
-{
-    std::shared_ptr<Tegra::MemoryManager> memory = impl->m_memoryManagerRegistry.GetMemoryManager(gmmu);
-    if (memory == nullptr)
-    {
-        UNIMPLEMENTED();
-        return 0;
-    }
-    return memory->Map(gpuAddr, deviceAddr, size, (Tegra::PTEKind)kind, isBigPages);
-}
-
 uint64_t VideoManager::MapSparse(uint32_t gmmu, uint64_t gpuAddr, uint64_t size, bool isBigPages)
 {
     std::shared_ptr<Tegra::MemoryManager> memory = impl->m_memoryManagerRegistry.GetMemoryManager(gmmu);
@@ -164,11 +153,6 @@ uint64_t VideoManager::MapSparse(uint32_t gmmu, uint64_t gpuAddr, uint64_t size,
         return 0;
     }
     return memory->MapSparse(gpuAddr, size, isBigPages);
-}
-
-uint64_t VideoManager::MemoryAllocate(uint64_t size)
-{
-    return impl->m_host1x->MemoryManager().Allocate(size);
 }
 
 void VideoManager::Unmap(uint32_t gmmu, uint64_t gpuAddr, uint64_t size)
@@ -182,9 +166,9 @@ void VideoManager::Unmap(uint32_t gmmu, uint64_t gpuAddr, uint64_t size)
     memory->Unmap(gpuAddr, size);
 }
 
-void VideoManager::MemoryTrackContinuity(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid)
+uint64_t VideoManager::Host1xMemoryAllocate(uint64_t size)
 {
-    impl->m_host1x->MemoryManager().TrackContinuity(address, virtualAddress, size, Core::Asid{ asid });
+    return impl->m_host1x->MemoryManager().Allocate(size);
 }
 
 void VideoManager::Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track)
@@ -197,6 +181,10 @@ void VideoManager::Host1xMemoryUnmap(uint64_t address, uint64_t size)
     impl->m_host1x->MemoryManager().Unmap(address, size);
 }
 
+void VideoManager::Host1xMemoryTrackContinuity(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid)
+{
+    impl->m_host1x->MemoryManager().TrackContinuity(address, virtualAddress, size, Core::Asid{asid});
+}
 
 void VideoManager::ApplyOpOnDeviceMemoryPointer(const uint8_t * pointer, uint32_t * scratchBuffer, size_t scratchBufferSize, DeviceMemoryOperation operation, void * userData)
 {

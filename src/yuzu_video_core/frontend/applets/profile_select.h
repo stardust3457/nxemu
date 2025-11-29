@@ -6,8 +6,8 @@
 #include <functional>
 #include <optional>
 
-#include "common/uuid.h"
-#include "core/frontend/applets/applet.h"
+#include "yuzu_common/uuid.h"
+#include "frontend/applets/applet.h"
 #include "core/hle/service/am/frontend/applet_profile_select.h"
 
 namespace Core::Frontend {

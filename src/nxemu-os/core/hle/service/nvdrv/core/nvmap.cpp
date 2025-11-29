@@ -150,37 +150,42 @@ DAddr NvMap::GetHandleAddress(Handle::Id handle) {
     }
 }
 
-DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin) {
+DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin)
+{
     auto handle_description{GetHandle(handle)};
-    if (!handle_description) [[unlikely]] {
+    if (!handle_description) [[unlikely]]
+    {
         return 0;
     }
 
     std::scoped_lock lock(handle_description->mutex);
-    const auto map_low_area = [&] {
+    const auto map_low_area = [&]
+    {
         if (handle_description->pin_virt_address == 0) {
             u32 address = video.Host1xAllocate(static_cast<u32>(handle_description->aligned_size));
             video.Host1xMap(static_cast<GPUVAddr>(address), handle_description->d_address, handle_description->aligned_size);
             handle_description->pin_virt_address = address;
         }
     };
-    if (!handle_description->pins) {
+    if (!handle_description->pins)
+    {
         // If we're in the unmap queue we can just remove ourselves and return since we're already
         // mapped
         {
             // Lock now to prevent our queue entry from being removed for allocation in-between the
             // following check and erase
             std::scoped_lock queueLock(unmap_queue_lock);
-            if (handle_description->unmap_queue_entry) {
+            if (handle_description->unmap_queue_entry)
+            {
                 unmap_queue.erase(*handle_description->unmap_queue_entry);
                 handle_description->unmap_queue_entry.reset();
 
-                if (low_area_pin) {
+                if (low_area_pin)                
+                {
                     map_low_area();
                     handle_description->pins++;
                     return static_cast<DAddr>(handle_description->pin_virt_address);
                 }
-
                 handle_description->pins++;
                 return handle_description->d_address;
             }
@@ -192,21 +197,28 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin) {
         auto* session = core.GetSession(handle_description->session_id);
         const VAddr vaddress = handle_description->address;
         const size_t map_size = handle_description->aligned_size;
-        if (session->has_preallocated_area && session->mapper->IsInBounds(vaddress, map_size)) {
+        if (session->has_preallocated_area && session->mapper->IsInBounds(vaddress, map_size))
+        {
             handle_description->d_address = session->mapper->Map(vaddress, map_size);
             handle_description->in_heap = true;
-        } else {
+        }
+        else
+        {
             size_t aligned_up = Common::AlignUp(map_size, BIG_PAGE_SIZE);
-            while ((address = video.MemoryAllocate(aligned_up)) == 0) {
+            while ((address = video.Host1xMemoryAllocate(aligned_up)) == 0)
+            {
                 // Free handles until the allocation succeeds
                 std::scoped_lock queueLock(unmap_queue_lock);
-                if (auto freeHandleDesc{unmap_queue.front()}) {
+                if (auto freeHandleDesc{unmap_queue.front()})
+                {
                     // Handles in the unmap queue are guaranteed not to be pinned so don't bother
                     // checking if they are before unmapping
                     std::scoped_lock freeLock(freeHandleDesc->mutex);
                     if (handle_description->d_address)
                         UnmapHandle(*freeHandleDesc);
-                } else {
+                }
+                else
+                {
                     LOG_CRITICAL(Service_NVDRV, "Ran out of SMMU address space!");
                 }
             }
@@ -217,7 +229,8 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin) {
         }
     }
 
-    if (low_area_pin) {
+    if (low_area_pin)
+    {
         map_low_area();
     }
 
@@ -228,16 +241,21 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin) {
     return handle_description->d_address;
 }
 
-void NvMap::UnpinHandle(Handle::Id handle) {
+void NvMap::UnpinHandle(Handle::Id handle)
+{
     auto handle_description{GetHandle(handle)};
-    if (!handle_description) {
+    if (!handle_description)
+    {
         return;
     }
 
     std::scoped_lock lock(handle_description->mutex);
-    if (--handle_description->pins < 0) {
+    if (--handle_description->pins < 0)
+    {
         LOG_WARNING(Service_NVDRV, "Pin count imbalance detected!");
-    } else if (!handle_description->pins) {
+    }
+    else if (!handle_description->pins)
+    {
         std::scoped_lock queueLock(unmap_queue_lock);
 
         // Add to the unmap queue allowing this handle's memory to be freed if needed
@@ -246,32 +264,42 @@ void NvMap::UnpinHandle(Handle::Id handle) {
     }
 }
 
-void NvMap::DuplicateHandle(Handle::Id handle, bool internal_session) {
+void NvMap::DuplicateHandle(Handle::Id handle, bool internal_session)
+{
     auto handle_description{GetHandle(handle)};
-    if (!handle_description) {
+    if (!handle_description)
+    {
         LOG_CRITICAL(Service_NVDRV, "Unregistered handle!");
         return;
     }
 
     auto result = handle_description->Duplicate(internal_session);
-    if (result != NvResult::Success) {
+    if (result != NvResult::Success)
+    {
         LOG_CRITICAL(Service_NVDRV, "Could not duplicate handle!");
     }
 }
 
-std::optional<NvMap::FreeInfo> NvMap::FreeHandle(Handle::Id handle, bool internal_session) {
+std::optional<NvMap::FreeInfo> NvMap::FreeHandle(Handle::Id handle, bool internal_session)
+{
     std::weak_ptr<Handle> hWeak{GetHandle(handle)};
     FreeInfo freeInfo;
 
     // We use a weak ptr here so we can tell when the handle has been freed and report that back to
     // guest
-    if (auto handle_description = hWeak.lock()) {
+    if (auto handle_description = hWeak.lock())
+    {
         std::scoped_lock lock(handle_description->mutex);
 
-        if (internal_session) {
+        if (internal_session)
+        {
             if (--handle_description->internal_dupes < 0)
-                LOG_WARNING(Service_NVDRV, "Internal duplicate count imbalance detected!");
-        } else {
+            {
+                LOG_WARNING(Service_NVDRV, "Internal duplicate count imbalance detected!");            
+            }
+        }
+        else 
+        {
             if (--handle_description->dupes < 0) {
                 LOG_WARNING(Service_NVDRV, "User duplicate count imbalance detected!");
             } else if (handle_description->dupes == 0) {

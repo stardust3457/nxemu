@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "common/settings.h"
-#include "core/frontend/applets/profile_select.h"
+#include "yuzu_common/settings.h"
+#include "frontend/applets/profile_select.h"
 #include "core/hle/service/acc/profile_manager.h"
 
 namespace Core::Frontend {

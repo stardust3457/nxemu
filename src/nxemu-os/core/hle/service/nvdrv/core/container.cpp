@@ -104,11 +104,11 @@ SessionId Container::OpenSession(Kernel::KProcess* process) {
             cur_addr = next_address;
         }
         session.has_preallocated_area = false;
-        auto start_region = region_size >= 32_MiB ? impl->video.MemoryAllocate(region_size) : 0;
-        if (start_region != 0) {
-            session.mapper = std::make_unique<HeapMapper>(region_start, start_region, region_size,
-                                                          asid, impl->video);
-            impl->video.MemoryTrackContinuity(start_region, region_start, region_size, asid.id);
+        auto start_region = region_size >= 32_MiB ? impl->video.Host1xMemoryAllocate(region_size) : 0;
+        if (start_region != 0)
+        {
+            session.mapper = std::make_unique<HeapMapper>(region_start, start_region, region_size, asid, impl->video);
+            impl->video.Host1xMemoryTrackContinuity(start_region, region_start, region_size, asid.id);
             session.has_preallocated_area = true;
             LOG_DEBUG(Debug, "Preallocation created!");
         }

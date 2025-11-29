@@ -5,7 +5,7 @@
 
 #include <functional>
 
-#include "core/frontend/applets/applet.h"
+#include "frontend/applets/applet.h"
 
 namespace Core::Frontend {
 
