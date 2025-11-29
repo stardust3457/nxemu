@@ -15,9 +15,7 @@ class SaveDataController;
 
 class ISaveDataInfoReader final : public ServiceFramework<ISaveDataInfoReader> {
 public:
-    explicit ISaveDataInfoReader(Core::System& system_,
-                                 std::shared_ptr<SaveDataController> save_data_controller_,
-                                 SaveDataSpaceId space);
+    explicit ISaveDataInfoReader(Core::System& system_, std::shared_ptr<SaveDataController> save_data_controller_, SaveDataSpaceId space);
     ~ISaveDataInfoReader() override;
 
     struct SaveDataInfo {

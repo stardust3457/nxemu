@@ -3,6 +3,7 @@
 
 #include "yuzu_common/settings.h"
 #include "yuzu_common/uuid.h"
+#include "core/file_sys/errors.h"
 #include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/kernel/k_transfer_memory.h"
 #include "core/hle/service/am/am_results.h"
