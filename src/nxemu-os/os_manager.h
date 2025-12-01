@@ -33,6 +33,9 @@ public:
     IButtonMappingList * GetButtonMappingForDevice(const IParamPackage& param) const override;
     IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage& param) const override;
     IButtonMappingList * GetMotionMappingForDevice(const IParamPackage& param) const override;
+    void BeginMapping(PollingInputType type) override;
+    void StopMapping() override;
+    IParamPackage * GetNextInput() const override;
     void PumpInputEvents() const override;
 
 private:

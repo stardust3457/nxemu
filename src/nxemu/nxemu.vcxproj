@@ -40,6 +40,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="settings\ui_settings.cpp" />
     <ClCompile Include="startup_checks.cpp" />
+    <ClCompile Include="user_interface\key_mappings.cpp" />
     <ClCompile Include="user_interface\notification.cpp" />
     <ClCompile Include="user_interface\sciter_main_window.cpp" />
     <ClCompile Include="user_interface\settings\config_setting .cpp" />
@@ -55,6 +56,7 @@
     <ClInclude Include="settings\ui_settings.h" />
     <ClInclude Include="settings\ui_settings_identifiers.h" />
     <ClInclude Include="startup_checks.h" />
+    <ClInclude Include="user_interface\key_mappings.h" />
     <ClInclude Include="user_interface\notification.h" />
     <ClInclude Include="user_interface\resource.h" />
     <ClInclude Include="user_interface\sciter_main_window.h" />

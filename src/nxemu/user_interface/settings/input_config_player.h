@@ -6,14 +6,34 @@
 class InputConfig;
 
 class InputConfigPlayer :
-    public IStateChangeSink
+    public IClickSink,
+    public IStateChangeSink,
+    public ITimerSink,
+    public IKeySink
 {
+    enum
+    {
+        TIMER_TIMEOUT = 200,
+        TIMER_POLL = 300,
+    };
+
 public:
     InputConfigPlayer(ISciterUI& sciterUI, InputConfig & config, HWINDOW parent, SciterElement page, NpadIdType controllerIndex);
     ~InputConfigPlayer() = default;
 
+    // IClickSink
+    bool OnClick(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t reason) override;
+
     // IStateChangeSink
     bool OnStateChange(SCITER_ELEMENT elem, uint32_t eventReason, void * data) override;
+
+    // ITimerSink
+    bool OnTimer(SCITER_ELEMENT Element, uint32_t * TimerId) override;
+
+    // IKeySink
+    bool OnKeyDown(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
+    bool OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
+    bool OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
 
 private:
     InputConfigPlayer() = delete;
@@ -28,12 +48,15 @@ private:
     std::string ButtonToText(const IParamPackage & param);
     std::string AnalogToText(const IParamPackage & param, const std::string& dir);
     void UpdateMappingWithDefaults();
+    void HandleClick(SciterElement& button, uint32_t button_id, PollingInputType type);
     void ControllerEventCallback(ControllerTriggerType type);
-    void UpdatePressedButtons();
+    void UpdateButtonState();
     void UpdateMotionCube();
     void UpdateStickDisplay(NativeAnalogValues analog);
     void DeadzoneSliderChanged(uint32_t analogId);
     SciterElement GetControllerSvg();
+    bool IsInputAcceptable(const IParamPackage & params) const;
+    void PollingDone();
 
     static void stControllerEventCallback(ControllerTriggerType type, void * user);
 
@@ -58,7 +81,10 @@ private:
     SciterElement m_analogMapRangeSpinbox[2];
     std::shared_ptr<IComboBox> m_comboDevices;
     const IParamPackageList & m_inputDeviceList;
+    bool m_timeoutTimerActive;
     MotionState m_motionValues;
     SticksValues m_stickValues;
     button_status_t m_buttonValues[(int32_t)NativeButtonValues::NumButtons];
+    PollingInputType m_pollingType;
+    uint32_t m_pollingButtonId;
 };

@@ -13,7 +13,8 @@ enum class NpadIdType : uint32_t;
 
 class InputConfig :
     public IPagesSink,
-    public IClickSink
+    public IClickSink,
+    public IKeySink
 {
     typedef std::unordered_map<std::string, std::pair<size_t, NpadIdType>> PlayerInfo;
 
@@ -34,6 +35,11 @@ public:
     // IClickSink
     bool OnClick(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t reason) override;
 
+    // IKeySink
+    bool OnKeyDown(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
+    bool OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
+    bool OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
+
 private:
     InputConfig() = delete;
     InputConfig(const InputConfig &) = delete;
@@ -43,6 +49,7 @@ private:
     ISciterWindow * m_window;
     std::shared_ptr<IPageNav> m_pageNav;
     std::unique_ptr<InputConfigPlayer> m_playerConfig[8];
+    InputConfigPlayer * m_playerCurrent;
     IParamPackageList * m_inputDeviceList;
     const PlayerInfo m_playerMap;
 };

@@ -308,6 +308,24 @@ IButtonMappingList * OSManager::GetMotionMappingForDevice(const IParamPackage & 
     return new IButtonMappingListImpl(input_subsystem->GetMotionMappingForDevice(param));
 }
 
+void OSManager::BeginMapping(PollingInputType type)
+{
+    std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();
+    input_subsystem->BeginMapping(type);
+}
+
+void OSManager::StopMapping()
+{
+    std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();
+    input_subsystem->StopMapping();
+}
+
+IParamPackage * OSManager::GetNextInput() const
+{
+    std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();
+    return new IParamPackageImpl(input_subsystem->GetNextInput());
+}
+
 void OSManager::PumpInputEvents() const
 {
     std::shared_ptr<InputCommon::InputSubsystem>& input_subsystem = m_coreSystem.InputSubsystem();

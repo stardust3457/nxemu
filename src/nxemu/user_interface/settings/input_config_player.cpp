@@ -6,12 +6,21 @@
 #include <unordered_map>
 #include <numbers>
 #include <stdexcept>
-#include <Windows.h>
+#include "user_interface/key_mappings.h"
 #include <yuzu_common/string_util.h>
 #include <yuzu_common/vector_math.h>
 
 namespace
 {
+    enum VirtualKeyCodes
+    {
+        VK_SHIFT = 0x10,
+        VK_LEFT = 0x25,
+        VK_UP = 0x26,
+        VK_RIGHT = 0x27,
+        VK_DOWN = 0x28,
+    };
+
     static constexpr int ANALOG_SUB_BUTTONS_NUM = 4;
 
     constexpr char KEY_VALUE_SEPARATOR = ':';
@@ -333,65 +342,6 @@ namespace
         mutable std::string m_serializeData;
     };
 
-    std::string KeyCodeToString(int keyCode)
-    {
-        static const std::unordered_map<int, std::string> keyMap = {
-            {VK_BACK, "Backspace"},
-            {VK_TAB, "Tab"},
-            {VK_RETURN, "Enter"},
-            {VK_SHIFT, "Shift"},
-            {VK_CONTROL, "Ctrl"},
-            {VK_MENU, "Alt"},
-            {VK_PAUSE, "Pause"},
-            {VK_CAPITAL, "Caps Lock"},
-            {VK_ESCAPE, "Esc"},
-            {VK_SPACE, "Space"},
-            {VK_PRIOR, "Page Up"},
-            {VK_NEXT, "Page Down"},
-            {VK_END, "End"},
-            {VK_HOME, "Home"},
-            {VK_LEFT, "Left"},
-            {VK_UP, "Up"},
-            {VK_RIGHT, "Right"},
-            {VK_DOWN, "Down"},
-            {VK_INSERT, "Insert"},
-            {VK_DELETE, "Delete"},
-            // 0-9 keys
-            {'0', "0"}, {'1', "1"}, {'2', "2"}, {'3', "3"}, {'4', "4"},
-            {'5', "5"}, {'6', "6"}, {'7', "7"}, {'8', "8"}, {'9', "9"},
-            // A-Z keys
-            {'A', "A"}, {'B', "B"}, {'C', "C"}, {'D', "D"}, {'E', "E"},
-            {'F', "F"}, {'G', "G"}, {'H', "H"}, {'I', "I"}, {'J', "J"},
-            {'K', "K"}, {'L', "L"}, {'M', "M"}, {'N', "N"}, {'O', "O"},
-            {'P', "P"}, {'Q', "Q"}, {'R', "R"}, {'S', "S"}, {'T', "T"},
-            {'U', "U"}, {'V', "V"}, {'W', "W"}, {'X', "X"}, {'Y', "Y"},
-            {'Z', "Z"},
-            // Function keys
-            {VK_F1, "F1"}, {VK_F2, "F2"}, {VK_F3, "F3"}, {VK_F4, "F4"},
-            {VK_F5, "F5"}, {VK_F6, "F6"}, {VK_F7, "F7"}, {VK_F8, "F8"},
-            {VK_F9, "F9"}, {VK_F10, "F10"}, {VK_F11, "F11"}, {VK_F12, "F12"},
-            // Numpad
-            {VK_NUMPAD0, "Num 0"}, {VK_NUMPAD1, "Num 1"}, {VK_NUMPAD2, "Num 2"},
-            {VK_NUMPAD3, "Num 3"}, {VK_NUMPAD4, "Num 4"}, {VK_NUMPAD5, "Num 5"},
-            {VK_NUMPAD6, "Num 6"}, {VK_NUMPAD7, "Num 7"}, {VK_NUMPAD8, "Num 8"},
-            {VK_NUMPAD9, "Num 9"},
-            {VK_MULTIPLY, "Num *"}, {VK_ADD, "Num +"}, {VK_SUBTRACT, "Num -"},
-            {VK_DECIMAL, "Num ."}, {VK_DIVIDE, "Num /"},
-            // Other keys
-            {VK_OEM_1, ";"}, {VK_OEM_PLUS, "="}, {VK_OEM_COMMA, ","},
-            {VK_OEM_MINUS, "-"}, {VK_OEM_PERIOD, "."}, {VK_OEM_2, "/"},
-            {VK_OEM_3, "`"}, {VK_OEM_4, "["}, {VK_OEM_5, "\\"},
-            {VK_OEM_6, "]"}, {VK_OEM_7, "'"},
-        };
-
-        std::unordered_map<int, std::string>::const_iterator it = keyMap.find(keyCode);
-        if (it != keyMap.end())
-        {
-            return it->second;
-        }
-        return std::to_string(keyCode);
-    }
-
     std::string GetKeyName(int key_code) 
     {
         enum Key : int
@@ -423,13 +373,15 @@ namespace
     void SetAnalogParam(const ParamPackage & input_param, ParamPackage & analog_param, const std::string& button_name) 
     {
         // The poller returned a complete axis, so set all the buttons
-        if (input_param.Has("axis_x") && input_param.Has("axis_y")) {
+        if (input_param.Has("axis_x") && input_param.Has("axis_y"))
+        {
             analog_param = input_param;
             return;
         }
         // Check if the current configuration has either no engine or an axis binding.
         // Clears out the old binding and adds one with analog_from_button.
-        if (!analog_param.Has("engine") || analog_param.Has("axis_x") || analog_param.Has("axis_y")) {
+        if (!analog_param.Has("engine") || analog_param.Has("axis_x") || analog_param.Has("axis_y"))
+        {
             analog_param = {
                 {"engine", "analog_from_button"},
             };
@@ -474,14 +426,31 @@ InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config,
     m_controllerIndex(controllerIndex),
     m_emulatedController(nullptr),
     m_emulatedControllerPlayer(SwitchSystem::GetInstance()->OperatingSystem().GetEmulatedController(controllerIndex)),
-    m_inputDeviceList(config.InputDeviceList())
+    m_inputDeviceList(config.InputDeviceList()),
+    m_timeoutTimerActive(false),
+    m_pollingType(PollingInputType::None),
+    m_pollingButtonId(0)
 {
+    memset(&m_buttonValues, 0, sizeof(m_buttonValues));
     m_emulatedController = &m_emulatedControllerPlayer;
     m_emulatedController->SetControllerEventCallback(stControllerEventCallback,this);
     BindControls();
     LoadConfiguration();
 
     UpdateInputDeviceCombobox();
+}
+
+bool InputConfigPlayer::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uint32_t /*reason*/)
+{
+    for (uint32_t i = 0, n = (uint32_t)NativeButtonValues::NumButtons; i < n; i++)
+    {
+        if (!m_buttonMap[i].IsValid() || element != m_buttonMap[i])
+        {
+            continue;
+        }
+        HandleClick(m_buttonMap[i], i, PollingInputType::Button);
+    }
+    return false;
 }
 
 bool InputConfigPlayer::OnStateChange(SCITER_ELEMENT elem, uint32_t /*eventReason*/, void * /*data*/)
@@ -501,8 +470,72 @@ bool InputConfigPlayer::OnStateChange(SCITER_ELEMENT elem, uint32_t /*eventReaso
     return false;
 }
 
+bool InputConfigPlayer::OnTimer(SCITER_ELEMENT /*element*/, uint32_t * timerId)
+{
+    if (timerId == (uint32_t*)TIMER_POLL)
+    {
+        ParamPackage param(m_operatingSystem.GetNextInput());
+        if (param.Has("engine") && IsInputAcceptable(param))
+        {
+            if (m_pollingType == PollingInputType::Button)
+            {
+                m_emulatedController->SetButtonParam(m_pollingButtonId, param);
+            }
+            PollingDone();
+            return false;
+        }
+    }
+    else if (timerId == (uint32_t*)TIMER_TIMEOUT)
+    {
+        PollingDone();
+        return false;
+    }
+    return true;
+}
+
+bool InputConfigPlayer::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t /*keyboardState*/)
+{
+    if (m_pollingType == PollingInputType::None)
+    {
+        return false;
+    }
+    if (keyCode != SCITER_KEY_ESCAPE)
+    {
+        int keyIndex = SciterKeyToSwitchKey(keyCode);
+        if (keyIndex != 0)
+        {
+            m_operatingSystem.KeyboardKeyPress(0, keyIndex, SciterKeyToVKCode(keyCode));
+        }
+    }
+    return false;
+}
+
+bool InputConfigPlayer::OnKeyUp(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t /*keyboardState*/)
+{
+    if (m_pollingType == PollingInputType::None)
+    {
+        return false;
+    }
+    if (keyCode != SCITER_KEY_ESCAPE)
+    {
+        int keyIndex = SciterKeyToSwitchKey(keyCode);
+        if (keyIndex != 0)
+        {
+            m_operatingSystem.KeyboardKeyRelease(0, keyIndex, SciterKeyToVKCode(keyCode));
+        }
+    }
+    return false;
+}
+
+bool InputConfigPlayer::OnKeyChar(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys /*keyCode*/, uint32_t /*keyboardState*/)
+{
+    return false;
+}
+
 void InputConfigPlayer::BindControls()
 {
+    m_sciterUI.AttachHandler(m_page, IID_ITIMERSINK, (ITimerSink*)this);
+
     m_buttonMap[0] = m_page.GetElementByID("ButtonA");
     m_buttonMap[1] = m_page.GetElementByID("ButtonB");
     m_buttonMap[2] = m_page.GetElementByID("ButtonX");
@@ -566,6 +599,16 @@ void InputConfigPlayer::BindControls()
             m_sciterUI.AttachHandler(m_analogMapDeadzoneSlider[i], IID_ISTATECHANGESINK, (IStateChangeSink*)this);
         }
     }
+
+    for (uint32_t i = 0, n = (uint32_t)NativeButtonValues::NumButtons; i < n; i++)
+    {
+        if (!m_buttonMap[i].IsValid())
+        {
+            continue;
+        }
+        m_sciterUI.AttachHandler(m_buttonMap[i], IID_ICLICKSINK, (IClickSink*)this);
+    }
+
     SciterElement comboDevices = m_page.GetElementByID("comboDevices");
     std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(comboDevices, IID_ICOMBOBOX);
     if (interfacePtr)
@@ -984,13 +1027,43 @@ void InputConfigPlayer::UpdateMappingWithDefaults()
     }
     UpdateUI();
 }
+
+void InputConfigPlayer::HandleClick(SciterElement & button, uint32_t buttonId, PollingInputType type)
+{
+    if (m_timeoutTimerActive) 
+    {
+        return;
+    }
+    if (button == m_motionMap[0] || button == m_motionMap[1])
+    {
+        button.SetText("Shake!");
+    }
+    else
+    {
+        button.SetText("[waiting]");
+    }
+    button.SetState(SciterElement::STATE_FOCUS, 0, true);
+
+    m_pollingButtonId = buttonId;
+    m_pollingType = type;
+    m_operatingSystem.BeginMapping(type);
+    if (m_pollingType == PollingInputType::Button)
+    {
+        UpdateButtonState();
+    }
+
+    m_timeoutTimerActive = true;
+    m_page.SetTimer(4000, (uint32_t*)TIMER_TIMEOUT);
+    m_page.SetTimer(25, (uint32_t*)TIMER_POLL);
+}
+
 void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
 {
     switch (type) {
     case ControllerTriggerType::Button:
     case ControllerTriggerType::Trigger:
         m_emulatedController->GetButtonsStatus(m_buttonValues, sizeof(m_buttonValues)/sizeof(m_buttonValues[0]));
-        UpdatePressedButtons();
+        UpdateButtonState();
         break;
     case ControllerTriggerType::Stick:
         m_stickValues = m_emulatedController->GetSticksValues();
@@ -1009,7 +1082,7 @@ void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
     }
 }
 
-void InputConfigPlayer::UpdatePressedButtons()
+void InputConfigPlayer::UpdateButtonState()
 {
     struct BtnMap 
     {
@@ -1018,22 +1091,26 @@ void InputConfigPlayer::UpdatePressedButtons()
     };
 
     static const BtnMap kBtnMap[] = {
-        { (uint32_t)NativeButtonValues::A,          ".buttons-face .button.A" },
-        { (uint32_t)NativeButtonValues::B,          ".buttons-face .button.B" },
-        { (uint32_t)NativeButtonValues::X,          ".buttons-face .button.X" },
-        { (uint32_t)NativeButtonValues::Y,          ".buttons-face .button.Y" },
-        { (uint32_t)NativeButtonValues::DUp,        ".dpad .up"    },
-        { (uint32_t)NativeButtonValues::DDown,      ".dpad .down"  },
-        { (uint32_t)NativeButtonValues::DLeft,      ".dpad .left"  },
-        { (uint32_t)NativeButtonValues::DRight,     ".dpad .right" },
-        { (uint32_t)NativeButtonValues::ZL,         ".trigger.ZL"  },
-        { (uint32_t)NativeButtonValues::ZR,         ".trigger.ZR"  },
-        { (uint32_t)NativeButtonValues::L,          ".trigger.L"  },
-        { (uint32_t)NativeButtonValues::R,          ".trigger.R"  },
-        { (uint32_t)NativeButtonValues::Minus,      ".button.minus" },
-        { (uint32_t)NativeButtonValues::Plus,       ".button.plus" },
-        { (uint32_t)NativeButtonValues::Screenshot, ".button.screenshot" },
-        { (uint32_t)NativeButtonValues::Home,       ".button.home" },
+        {(uint32_t)NativeButtonValues::A,          ".buttons-face .button.A" },
+        {(uint32_t)NativeButtonValues::B,          ".buttons-face .button.B" },
+        {(uint32_t)NativeButtonValues::X,          ".buttons-face .button.X" },
+        {(uint32_t)NativeButtonValues::Y,          ".buttons-face .button.Y" },
+        {(uint32_t)NativeButtonValues::DUp,        ".dpad .up"    },
+        {(uint32_t)NativeButtonValues::DDown,      ".dpad .down"  },
+        {(uint32_t)NativeButtonValues::DLeft,      ".dpad .left"  },
+        {(uint32_t)NativeButtonValues::DRight,     ".dpad .right" },
+        {(uint32_t)NativeButtonValues::ZL,         ".trigger.ZL"  },
+        {(uint32_t)NativeButtonValues::ZR,         ".trigger.ZR"  },
+        {(uint32_t)NativeButtonValues::L,          ".trigger.L"  },
+        {(uint32_t)NativeButtonValues::R,          ".trigger.R"  },
+        {(uint32_t)NativeButtonValues::Minus,      ".button.minus" },
+        {(uint32_t)NativeButtonValues::Plus,       ".button.plus" },
+        {(uint32_t)NativeButtonValues::Screenshot, ".button.screenshot" },
+        {(uint32_t)NativeButtonValues::Home,       ".button.home" },
+        {(uint32_t)NativeButtonValues::SLLeft,     ".button.SL-left"},
+        {(uint32_t)NativeButtonValues::SRLeft,     ".button.SR-left"},
+        {(uint32_t)NativeButtonValues::SLRight,    ".button.SL-right"},
+        {(uint32_t)NativeButtonValues::SRRight,    ".button.SR-right"},
     };
 
     SciterElement controllerSvg = GetControllerSvg();
@@ -1042,22 +1119,34 @@ void InputConfigPlayer::UpdatePressedButtons()
         return;
     }
 
-    for (const BtnMap & m : kBtnMap) 
+    for (const BtnMap & m : kBtnMap)
     {
         const button_status_t & bs = m_buttonValues[m.idx];
-        SciterElement el = controllerSvg.FindFirst(m.sel);
-        if (!el.IsValid())
+        SciterElements els = controllerSvg.FindAll(m.sel);
+        if (els.empty())
         {
             continue;
         }
 
-        if (bs.value)
+        for (SciterElement & el : els)
         {
-            el.SetAttribute("data-pressed", "1");
-        }
-        else
-        {
-            el.RemoveAttribute("data-pressed");
+            if (m_pollingType == PollingInputType::Button && m.idx == m_pollingButtonId)
+            {
+                el.SetAttribute("data-setting", "1");
+            }
+            else
+            {
+                el.RemoveAttribute("data-setting");
+            }
+
+            if (bs.value)
+            {
+                el.SetAttribute("data-pressed", "1");
+            }
+            else
+            {
+                el.RemoveAttribute("data-pressed");
+            }
         }
     }
 }
@@ -1230,7 +1319,28 @@ SciterElement InputConfigPlayer::GetControllerSvg()
     return m_page.GetElementByID("ProController");
 }
 
-void InputConfigPlayer::stControllerEventCallback(ControllerTriggerType type, void* user)
+bool InputConfigPlayer::IsInputAcceptable(const IParamPackage & params) const
+{
+    return true;
+}
+
+void InputConfigPlayer::PollingDone()
+{
+    if (m_pollingType == PollingInputType::Button && m_buttonMap[m_pollingButtonId].IsValid())
+    {
+        ParamPackage param(m_emulatedController->GetButtonParamPtr(m_pollingButtonId));
+        m_buttonMap[m_pollingButtonId].SetText(ButtonToText(param).c_str());
+    }
+    m_operatingSystem.StopMapping();
+    m_page.SetTimer(0, (uint32_t *)TIMER_TIMEOUT);
+    m_page.SetTimer(0, (uint32_t*)TIMER_POLL);
+    m_timeoutTimerActive = false;
+    m_pollingType = PollingInputType::None;
+    m_pollingButtonId = 0;
+    UpdateButtonState();
+}
+
+void InputConfigPlayer::stControllerEventCallback(ControllerTriggerType type, void * user)
 {
     ((InputConfigPlayer*)user)->ControllerEventCallback(type);
 }

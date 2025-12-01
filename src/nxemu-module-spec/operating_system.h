@@ -403,6 +403,9 @@ __interface IOperatingSystem
     IButtonMappingList * GetButtonMappingForDevice(const IParamPackage & param) const = 0;
     IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage & param) const = 0;
     IButtonMappingList * GetMotionMappingForDevice(const IParamPackage & param) const = 0;
+    void BeginMapping(PollingInputType type) = 0;
+    void StopMapping() = 0;
+    IParamPackage * GetNextInput() const = 0;
     void PumpInputEvents() const = 0;
 };
 

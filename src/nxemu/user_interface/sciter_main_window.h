@@ -64,8 +64,6 @@ private:
     static void RomLoadingChanged(const char * setting, void * userData);
     static void DisplayedFramesChanged(const char * setting, void * userData);
     void ShowLoadingScreen(void);
-    int32_t SciterKeyToSwitchKey(SciterKeys key);
-    int32_t SciterKeyToVKCode(SciterKeys vkcode);
     void UpdateStatusbar();
     void DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int32_t y);
     void UpdateInputDrivers();

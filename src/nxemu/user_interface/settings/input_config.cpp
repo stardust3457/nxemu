@@ -7,6 +7,7 @@ InputConfig::InputConfig(ISciterUI & SciterUI) :
     m_sciterUI(SciterUI),
     m_window(nullptr),
     m_inputDeviceList(nullptr),
+    m_playerCurrent(nullptr),
     m_playerMap({ 
         {"Player1", {0, NpadIdType::Player1}},
         {"Player2", {1, NpadIdType::Player2}},
@@ -55,6 +56,8 @@ void InputConfig::Display(void * parentWindow)
 
         SciterElement okButton = root.FindFirst("button[role=\"window-ok\"]");
         m_sciterUI.AttachHandler(okButton, IID_ICLICKSINK, (IClickSink*)this);
+
+        m_sciterUI.AttachHandler(root, IID_IKEYSINK, (IKeySink*)this);
     }
 
     m_window->FixMinSize();
@@ -85,8 +88,13 @@ void InputConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEMEN
     }
 }
 
-void InputConfig::PageNavPageChanged(const std::string & /*pageName*/, SCITER_ELEMENT /*pageNav*/)
+void InputConfig::PageNavPageChanged(const std::string & pageName, SCITER_ELEMENT /*pageNav*/)
 {
+    PlayerInfo::const_iterator itr = m_playerMap.find(pageName);
+    if (itr != m_playerMap.end())
+    {
+        m_playerCurrent = m_playerConfig[itr->second.first].get();
+    }
 }
 
 bool InputConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uint32_t /*reason*/)
@@ -97,4 +105,19 @@ bool InputConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uin
         m_window->Destroy();
     }
     return false;
+}
+
+bool InputConfig::OnKeyDown(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState)
+{
+    return m_playerCurrent != nullptr ? m_playerCurrent->OnKeyDown(element, item, keyCode, keyboardState) : false;
+}
+
+bool InputConfig::OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState)
+{
+    return m_playerCurrent != nullptr ? m_playerCurrent->OnKeyUp(element, item, keyCode, keyboardState) : false;
+}
+
+bool InputConfig::OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState)
+{
+    return m_playerCurrent != nullptr ? m_playerCurrent->OnKeyChar(element, item, keyCode, keyboardState) : false;
 }
