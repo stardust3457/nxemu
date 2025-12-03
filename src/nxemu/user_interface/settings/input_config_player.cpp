@@ -838,7 +838,7 @@ std::string InputConfigPlayer::ButtonToText(const IParamPackage& param)
     const std::string invert = std::string(param.GetString("invert", "+")) == "-" ? "-" : "";
     const std::string turbo = param.GetBool("turbo", false) ? "$" : "";
 
-    const auto common_button_name = m_operatingSystem.GetButtonName(param);
+    const ButtonNames common_button_name = m_operatingSystem.GetButtonName(param);
 
     // Retrieve the names from Qt
     if (std::string(param.GetString("engine", "")) == "keyboard") 
@@ -880,12 +880,31 @@ std::string InputConfigPlayer::ButtonToText(const IParamPackage& param)
             return stdstr_f("%s%s%sButton %s", turbo.c_str(), toggle.c_str(), inverted.c_str(), param.GetString("button", ""));
         }
     }
+
+    std::string button_name = GetButtonName(common_button_name);
+    if (param.Has("hat"))
+    {
+        return stdstr_f("%s%s%sHat %s", turbo.c_str(), toggle.c_str(), inverted.c_str(), button_name.c_str());
+    }
+    if (param.Has("axis"))
+    {
+        return stdstr_f("%s%s%sAxis %s", turbo.c_str(), toggle.c_str(), inverted.c_str(), button_name.c_str());
+    }
+    if (param.Has("motion"))
+    {
+        return stdstr_f("%s%sAxis %s", toggle.c_str(), inverted.c_str(), button_name.c_str());
+    }
+    if (param.Has("button")) 
+    {
+        return stdstr_f("%s%s3Button %s", turbo.c_str(), toggle.c_str(), inverted.c_str(), button_name.c_str());
+    }
     return "[unknown]";
 }
 
 std::string InputConfigPlayer::AnalogToText(const IParamPackage& param, const std::string& dir)
 {
-    if (!param.Has("engine")) {
+    if (!param.Has("engine"))
+    {
         return "[not set]";
     }
 
@@ -922,7 +941,6 @@ std::string InputConfigPlayer::AnalogToText(const IParamPackage& param, const st
     {
         return stdstr_f("Axis %s%s", param.GetString("axis_y", ""), invert_y ? "+" : "-");
     }
-
     return "[unknown]";
 }
 void InputConfigPlayer::UpdateMappingWithDefaults()
@@ -1321,7 +1339,24 @@ SciterElement InputConfigPlayer::GetControllerSvg()
 
 bool InputConfigPlayer::IsInputAcceptable(const IParamPackage & params) const
 {
-    return true;
+    if (m_comboDevices->CurrentIndex() == 0)
+    {
+        return true;
+    }
+
+    if (params.Has("motion"))
+    {
+        return true;
+    }
+
+    // Keyboard/Mouse
+    if (m_comboDevices->CurrentIndex() == 1 || m_comboDevices->CurrentIndex() == 2)
+    {
+        return strcmp(params.GetString("engine", ""), "keyboard") == 0 || strcmp(params.GetString("engine", ""), "mouse") == 0;
+    }
+
+    const IParamPackage & device = m_inputDeviceList.GetParamPackage(m_comboDevices->CurrentIndex());
+    return strcmp(params.GetString("engine", ""), device.GetString("engine", "")) == 0 && (strcmp(params.GetString("guid", ""), device.GetString("guid", "")) == 0 || strcmp(params.GetString("guid", ""), device.GetString("guid2", "")) == 0) && params.GetInt("port", 0) == device.GetInt("port", 0);
 }
 
 void InputConfigPlayer::PollingDone()
