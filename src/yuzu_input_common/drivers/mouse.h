@@ -91,8 +91,8 @@ public:
     void ReleaseAllButtons();
 
     std::vector<Common::ParamPackage> GetInputDevices() const override;
-    AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
-    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    AnalogMapping GetAnalogMappingForDevice(const IParamPackage& params) override;
+    ButtonNames GetUIName(const IParamPackage& params) const override;
 
 private:
     void UpdateThread(std::stop_token stop_token);
@@ -101,7 +101,7 @@ private:
 
     bool IsMousePanningEnabled();
 
-    ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
+    ButtonNames GetUIButtonName(const IParamPackage& params) const;
 
     Common::Vec2<int> mouse_origin;
     Common::Vec2<int> last_mouse_position;

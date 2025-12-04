@@ -789,11 +789,11 @@ Common::ParamPackage SDLDriver::BuildParamPackageForAnalog(PadIdentifier identif
     return params;
 }
 
-ButtonMapping SDLDriver::GetButtonMappingForDevice(const Common::ParamPackage& params) {
+ButtonMapping SDLDriver::GetButtonMappingForDevice(const IParamPackage & params) {
     if (!params.Has("guid") || !params.Has("port")) {
         return {};
     }
-    const auto joystick = GetSDLJoystickByGUID(params.Get("guid", ""), params.Get("port", 0));
+    const auto joystick = GetSDLJoystickByGUID(params.GetString("guid", ""), params.GetInt("port", 0));
 
     auto* controller = joystick->GetSDLGameController();
     if (controller == nullptr) {
@@ -814,7 +814,7 @@ ButtonMapping SDLDriver::GetButtonMappingForDevice(const Common::ParamPackage& p
 
     // Parameters contain two joysticks return dual
     if (params.Has("guid2")) {
-        const auto joystick2 = GetSDLJoystickByGUID(params.Get("guid2", ""), params.Get("port", 0));
+        const auto joystick2 = GetSDLJoystickByGUID(params.GetString("guid2", ""), params.GetInt("port", 0));
 
         if (joystick2->GetSDLGameController() != nullptr) {
             return GetDualControllerMapping(joystick, joystick2, switch_to_sdl_button,
@@ -945,12 +945,12 @@ bool SDLDriver::IsButtonOnLeftSide(NativeButtonValues button) const {
     }
 }
 
-AnalogMapping SDLDriver::GetAnalogMappingForDevice(const Common::ParamPackage& params) {
+AnalogMapping SDLDriver::GetAnalogMappingForDevice(const IParamPackage & params) {
     if (!params.Has("guid") || !params.Has("port")) {
         return {};
     }
-    const auto joystick = GetSDLJoystickByGUID(params.Get("guid", ""), params.Get("port", 0));
-    const auto joystick2 = GetSDLJoystickByGUID(params.Get("guid2", ""), params.Get("port", 0));
+    const auto joystick = GetSDLJoystickByGUID(params.GetString("guid", ""), params.GetInt("port", 0));
+    const auto joystick2 = GetSDLJoystickByGUID(params.GetString("guid2", ""), params.GetInt("port", 0));
     auto* controller = joystick->GetSDLGameController();
     if (controller == nullptr) {
         return {};
@@ -968,10 +968,7 @@ AnalogMapping SDLDriver::GetAnalogMappingForDevice(const Common::ParamPackage& p
         PreSetAxis(identifier, binding_left_y.value.axis);
         const auto left_offset_x = -GetAxis(identifier, binding_left_x.value.axis);
         const auto left_offset_y = GetAxis(identifier, binding_left_y.value.axis);
-        mapping.insert_or_assign(NativeAnalogValues::LStick,
-                                 BuildParamPackageForAnalog(identifier, binding_left_x.value.axis,
-                                                            binding_left_y.value.axis,
-                                                            left_offset_x, left_offset_y));
+        mapping.insert_or_assign(NativeAnalogValues::LStick, BuildParamPackageForAnalog(identifier, binding_left_x.value.axis, binding_left_y.value.axis, left_offset_x, left_offset_y));
     } else {
         const auto identifier = joystick->GetPadIdentifier();
         PreSetController(identifier);
@@ -979,10 +976,7 @@ AnalogMapping SDLDriver::GetAnalogMappingForDevice(const Common::ParamPackage& p
         PreSetAxis(identifier, binding_left_y.value.axis);
         const auto left_offset_x = -GetAxis(identifier, binding_left_x.value.axis);
         const auto left_offset_y = GetAxis(identifier, binding_left_y.value.axis);
-        mapping.insert_or_assign(NativeAnalogValues::LStick,
-                                 BuildParamPackageForAnalog(identifier, binding_left_x.value.axis,
-                                                            binding_left_y.value.axis,
-                                                            left_offset_x, left_offset_y));
+        mapping.insert_or_assign(NativeAnalogValues::LStick, BuildParamPackageForAnalog(identifier, binding_left_x.value.axis, binding_left_y.value.axis, left_offset_x, left_offset_y));
     }
     const auto& binding_right_x =
         SDL_GameControllerGetBindForAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX);
@@ -1001,12 +995,12 @@ AnalogMapping SDLDriver::GetAnalogMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-MotionMapping SDLDriver::GetMotionMappingForDevice(const Common::ParamPackage& params) {
+MotionMapping SDLDriver::GetMotionMappingForDevice(const IParamPackage & params) {
     if (!params.Has("guid") || !params.Has("port")) {
         return {};
     }
-    const auto joystick = GetSDLJoystickByGUID(params.Get("guid", ""), params.Get("port", 0));
-    const auto joystick2 = GetSDLJoystickByGUID(params.Get("guid2", ""), params.Get("port", 0));
+    const auto joystick = GetSDLJoystickByGUID(params.GetString("guid", ""), params.GetInt("port", 0));
+    const auto joystick2 = GetSDLJoystickByGUID(params.GetString("guid2", ""), params.GetInt("port", 0));
     auto* controller = joystick->GetSDLGameController();
     if (controller == nullptr) {
         return {};
@@ -1035,7 +1029,7 @@ MotionMapping SDLDriver::GetMotionMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-ButtonNames SDLDriver::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames SDLDriver::GetUIName(const IParamPackage & params) const {
     if (params.Has("button")) {
         // TODO(German77): Find how to substitute the values for real button names
         return ButtonNames::Value;
@@ -1087,11 +1081,11 @@ u8 SDLDriver::GetHatButtonId(const std::string& direction_name) const {
     return direction;
 }
 
-bool SDLDriver::IsStickInverted(const Common::ParamPackage& params) {
+bool SDLDriver::IsStickInverted(const IParamPackage & params) {
     if (!params.Has("guid") || !params.Has("port")) {
         return false;
     }
-    const auto joystick = GetSDLJoystickByGUID(params.Get("guid", ""), params.Get("port", 0));
+    const auto joystick = GetSDLJoystickByGUID(params.GetString("guid", ""), params.GetInt("port", 0));
     if (joystick == nullptr) {
         return false;
     }
@@ -1100,8 +1094,8 @@ bool SDLDriver::IsStickInverted(const Common::ParamPackage& params) {
         return false;
     }
 
-    const auto& axis_x = params.Get("axis_x", 0);
-    const auto& axis_y = params.Get("axis_y", 0);
+    const auto& axis_x = params.GetInt("axis_x", 0);
+    const auto& axis_y = params.GetInt("axis_y", 0);
     const auto& binding_left_x =
         SDL_GameControllerGetBindForAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
     const auto& binding_right_x =

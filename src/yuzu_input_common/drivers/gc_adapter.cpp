@@ -411,7 +411,7 @@ std::vector<Common::ParamPackage> GCAdapter::GetInputDevices() const {
     return devices;
 }
 
-ButtonMapping GCAdapter::GetButtonMappingForDevice(const Common::ParamPackage& params) {
+ButtonMapping GCAdapter::GetButtonMappingForDevice(const IParamPackage& params) {
     // This list is missing ZL/ZR since those are not considered buttons.
     // We will add those afterwards
     // This list also excludes any button that can't be really mapped
@@ -440,7 +440,7 @@ ButtonMapping GCAdapter::GetButtonMappingForDevice(const Common::ParamPackage& p
     for (const auto& [switch_button, gcadapter_button] : switch_to_gcadapter_button) {
         Common::ParamPackage button_params{};
         button_params.Set("engine", GetEngineName());
-        button_params.Set("port", params.Get("port", 0));
+        button_params.Set("port", params.GetInt("port", 0));
         button_params.Set("button", static_cast<int>(gcadapter_button));
         mapping.insert_or_assign(switch_button, std::move(button_params));
     }
@@ -454,7 +454,7 @@ ButtonMapping GCAdapter::GetButtonMappingForDevice(const Common::ParamPackage& p
     for (const auto& [switch_button, gcadapter_button, gcadapter_axis] : switch_to_gcadapter_axis) {
         Common::ParamPackage button_params{};
         button_params.Set("engine", GetEngineName());
-        button_params.Set("port", params.Get("port", 0));
+        button_params.Set("port", params.GetInt("port", 0));
         button_params.Set("button", static_cast<s32>(gcadapter_button));
         button_params.Set("axis", static_cast<s32>(gcadapter_axis));
         button_params.Set("threshold", 0.5f);
@@ -465,7 +465,7 @@ ButtonMapping GCAdapter::GetButtonMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-AnalogMapping GCAdapter::GetAnalogMappingForDevice(const Common::ParamPackage& params) {
+AnalogMapping GCAdapter::GetAnalogMappingForDevice(const IParamPackage & params) {
     if (!params.Has("port")) {
         return {};
     }
@@ -473,21 +473,21 @@ AnalogMapping GCAdapter::GetAnalogMappingForDevice(const Common::ParamPackage& p
     AnalogMapping mapping = {};
     Common::ParamPackage left_analog_params;
     left_analog_params.Set("engine", GetEngineName());
-    left_analog_params.Set("port", params.Get("port", 0));
+    left_analog_params.Set("port", params.GetInt("port", 0));
     left_analog_params.Set("axis_x", static_cast<int>(PadAxes::StickX));
     left_analog_params.Set("axis_y", static_cast<int>(PadAxes::StickY));
     mapping.insert_or_assign(NativeAnalogValues::LStick, std::move(left_analog_params));
     Common::ParamPackage right_analog_params;
     right_analog_params.Set("engine", GetEngineName());
-    right_analog_params.Set("port", params.Get("port", 0));
+    right_analog_params.Set("port", params.GetInt("port", 0));
     right_analog_params.Set("axis_x", static_cast<int>(PadAxes::SubstickX));
     right_analog_params.Set("axis_y", static_cast<int>(PadAxes::SubstickY));
     mapping.insert_or_assign(NativeAnalogValues::RStick, std::move(right_analog_params));
     return mapping;
 }
 
-ButtonNames GCAdapter::GetUIButtonName(const Common::ParamPackage& params) const {
-    PadButton button = static_cast<PadButton>(params.Get("button", 0));
+ButtonNames GCAdapter::GetUIButtonName(const IParamPackage & params) const {
+    PadButton button = static_cast<PadButton>(params.GetInt("button", 0));
     switch (button) {
     case PadButton::ButtonLeft:
         return ButtonNames::ButtonLeft;
@@ -518,7 +518,7 @@ ButtonNames GCAdapter::GetUIButtonName(const Common::ParamPackage& params) const
     }
 }
 
-ButtonNames GCAdapter::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames GCAdapter::GetUIName(const IParamPackage & params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }
@@ -529,13 +529,13 @@ ButtonNames GCAdapter::GetUIName(const Common::ParamPackage& params) const {
     return ButtonNames::Invalid;
 }
 
-bool GCAdapter::IsStickInverted(const Common::ParamPackage& params) {
+bool GCAdapter::IsStickInverted(const IParamPackage & params) {
     if (!params.Has("port")) {
         return false;
     }
 
-    const auto x_axis = static_cast<PadAxes>(params.Get("axis_x", 0));
-    const auto y_axis = static_cast<PadAxes>(params.Get("axis_y", 0));
+    const auto x_axis = static_cast<PadAxes>(params.GetInt("axis_x", 0));
+    const auto y_axis = static_cast<PadAxes>(params.GetInt("axis_y", 0));
     if (x_axis != PadAxes::StickY && x_axis != PadAxes::SubstickY) {
         return false;
     }

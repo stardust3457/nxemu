@@ -120,21 +120,26 @@ void NPad::FreeAppletResourceId(u64 aruid) {
     return npad_resource.FreeAppletResourceId(aruid);
 }
 
-void NPad::ControllerUpdate(ControllerTriggerType type, std::size_t controller_idx) {
-    if (type == ControllerTriggerType::All) {
+void NPad::ControllerUpdate(ControllerTriggerType type, std::size_t controller_idx)
+{
+    if (type == ControllerTriggerType::All)
+    {
         ControllerUpdate(ControllerTriggerType::Connected, controller_idx);
         ControllerUpdate(ControllerTriggerType::Battery, controller_idx);
         return;
     }
 
-    for (std::size_t aruid_index = 0; aruid_index < AruidIndexMax; aruid_index++) {
-        if (controller_idx >= controller_data[aruid_index].size()) {
+    for (std::size_t aruid_index = 0; aruid_index < AruidIndexMax; aruid_index++)
+    {
+        if (controller_idx >= controller_data[aruid_index].size())
+        {
             return;
         }
 
-        auto* data = applet_resource_holder.applet_resource->GetAruidDataByIndex(aruid_index);
+        AruidData * data = applet_resource_holder.applet_resource->GetAruidDataByIndex(aruid_index);
 
-        if (data == nullptr || !data->flag.is_assigned) {
+        if (data == nullptr || !data->flag.is_assigned)
+        {
             continue;
         }
 
@@ -142,7 +147,8 @@ void NPad::ControllerUpdate(ControllerTriggerType type, std::size_t controller_i
         const auto is_connected = controller.device->IsConnected();
         const auto npad_type = controller.device->GetNpadStyleIndex();
         const auto npad_id = controller.device->GetNpadIdType();
-        switch (type) {
+        switch (type)
+        {
         case ControllerTriggerType::Connected:
         case ControllerTriggerType::Disconnected:
             if (is_connected == controller.is_connected) {

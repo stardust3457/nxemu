@@ -162,11 +162,11 @@ struct InputSubsystem::Impl {
     }
 
     [[nodiscard]] std::shared_ptr<InputEngine> GetInputEngine(
-        const Common::ParamPackage& params) const {
-        if (!params.Has("engine") || params.Get("engine", "") == "any") {
+        const IParamPackage & params) const {
+        if (!params.Has("engine") || params.GetString("engine", "") == "any") {
             return nullptr;
         }
-        const std::string engine = params.Get("engine", "");
+        const std::string engine = params.GetString("engine", "");
         if (engine == keyboard->GetEngineName()) {
             return keyboard;
         }
@@ -197,11 +197,12 @@ struct InputSubsystem::Impl {
         return nullptr;
     }
 
-    [[nodiscard]] AnalogMapping GetAnalogMappingForDevice(
-        const IParamPackage & params) const {
+    [[nodiscard]] AnalogMapping GetAnalogMappingForDevice(const IParamPackage & params) const 
+    {
         const auto input_engine = GetInputEngine(params);
 
-        if (input_engine == nullptr) {
+        if (input_engine == nullptr) 
+        {
             return {};
         }
 
@@ -209,7 +210,7 @@ struct InputSubsystem::Impl {
     }
 
     [[nodiscard]] ButtonMapping GetButtonMappingForDevice(
-        const Common::ParamPackage& params) const {
+        const IParamPackage& params) const {
         const auto input_engine = GetInputEngine(params);
 
         if (input_engine == nullptr) {
@@ -220,7 +221,7 @@ struct InputSubsystem::Impl {
     }
 
     [[nodiscard]] MotionMapping GetMotionMappingForDevice(
-        const Common::ParamPackage& params) const {
+        const IParamPackage & params) const {
         const auto input_engine = GetInputEngine(params);
 
         if (input_engine == nullptr) {
@@ -230,8 +231,8 @@ struct InputSubsystem::Impl {
         return input_engine->GetMotionMappingForDevice(params);
     }
 
-    ButtonNames GetButtonName(const Common::ParamPackage& params) const {
-        if (!params.Has("engine") || params.Get("engine", "") == "any") {
+    ButtonNames GetButtonName(const IParamPackage & params) const {
+        if (!params.Has("engine") || params.GetString("engine", "") == "any") {
             return ButtonNames::Undefined;
         }
         const auto input_engine = GetInputEngine(params);
@@ -243,7 +244,7 @@ struct InputSubsystem::Impl {
         return input_engine->GetUIName(params);
     }
 
-    bool IsStickInverted(const Common::ParamPackage& params) {
+    bool IsStickInverted(const IParamPackage& params) {
         const auto input_engine = GetInputEngine(params);
 
         if (input_engine == nullptr) {
@@ -253,8 +254,8 @@ struct InputSubsystem::Impl {
         return input_engine->IsStickInverted(params);
     }
 
-    bool IsController(const Common::ParamPackage& params) {
-        const std::string engine = params.Get("engine", "");
+    bool IsController(const IParamPackage & params) {
+        const std::string engine = params.GetString("engine", "");
         if (engine == mouse->GetEngineName()) {
             return true;
         }
@@ -443,7 +444,7 @@ AnalogMapping InputSubsystem::GetAnalogMappingForDevice(const IParamPackage & de
     return impl->GetAnalogMappingForDevice(device);
 }
 
-ButtonMapping InputSubsystem::GetButtonMappingForDevice(const Common::ParamPackage& device) const {
+ButtonMapping InputSubsystem::GetButtonMappingForDevice(const IParamPackage & device) const {
     return impl->GetButtonMappingForDevice(device);
 }
 
@@ -451,15 +452,15 @@ MotionMapping InputSubsystem::GetMotionMappingForDevice(const IParamPackage & de
     return impl->GetMotionMappingForDevice(device);
 }
 
-ButtonNames InputSubsystem::GetButtonName(const Common::ParamPackage& params) const {
+ButtonNames InputSubsystem::GetButtonName(const IParamPackage & params) const {
     return impl->GetButtonName(params);
 }
 
-bool InputSubsystem::IsController(const Common::ParamPackage& params) const {
+bool InputSubsystem::IsController(const IParamPackage & params) const {
     return impl->IsController(params);
 }
 
-bool InputSubsystem::IsStickInverted(const Common::ParamPackage& params) const {
+bool InputSubsystem::IsStickInverted(const IParamPackage & params) const {
     if (params.Has("axis_x") && params.Has("axis_y")) {
         return impl->IsStickInverted(params);
     }

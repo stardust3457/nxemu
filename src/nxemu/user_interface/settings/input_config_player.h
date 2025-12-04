@@ -47,9 +47,16 @@ private:
     void UpdateUI();
     std::string ButtonToText(const IParamPackage & param);
     std::string AnalogToText(const IParamPackage & param, const std::string& dir);
+    int GetIndexFromControllerType(NpadStyleIndex type) const;
+    NpadStyleIndex GetControllerTypeFromIndex(int index) const;
+    void SetConnectableControllers();
+    void ControllerTypeChanged();
     void UpdateMappingWithDefaults();
     void HandleClick(SciterElement& button, uint32_t button_id, PollingInputType type);
     void ControllerEventCallback(ControllerTriggerType type);
+    void UpdateControllerAvailableButtons();
+    void UpdateControllerEnabledButtons();
+    void UpdateControllerButtonNames();
     void UpdateButtonState();
     void UpdateMotionCube();
     void UpdateStickDisplay(NativeAnalogValues analog);
@@ -68,6 +75,8 @@ private:
     NpadIdType m_controllerIndex;
     IEmulatedController * m_emulatedController;
     IEmulatedController & m_emulatedControllerPlayer;
+    IEmulatedController & m_emulatedControllerHandheld;
+    SciterElement m_connectedController;
     SciterElement m_buttonMap[22];
     SciterElement m_motionMap[2];
     SciterElement m_analogMapButtons[2][4];
@@ -79,6 +88,7 @@ private:
     SciterElement m_analogMapModifierSlider[2];
     SciterElement m_analogMapRangeGroupbox[2];
     SciterElement m_analogMapRangeSpinbox[2];
+    std::shared_ptr<IComboBox> m_comboControllerType;
     std::shared_ptr<IComboBox> m_comboDevices;
     const IParamPackageList & m_inputDeviceList;
     bool m_timeoutTimerActive;
@@ -87,4 +97,5 @@ private:
     button_status_t m_buttonValues[(int32_t)NativeButtonValues::NumButtons];
     PollingInputType m_pollingType;
     uint32_t m_pollingButtonId;
+    std::vector<std::pair<int, NpadStyleIndex>> index_controller_type_pairs;
 };

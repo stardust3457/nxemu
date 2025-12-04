@@ -53,15 +53,15 @@ public:
 
     std::vector<Common::ParamPackage> GetInputDevices() const override;
 
-    ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
-    AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
-    MotionMapping GetMotionMappingForDevice(const Common::ParamPackage& params) override;
-    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonMapping GetButtonMappingForDevice(const IParamPackage & params) override;
+    AnalogMapping GetAnalogMappingForDevice(const IParamPackage & params) override;
+    MotionMapping GetMotionMappingForDevice(const IParamPackage & params) override;
+    ButtonNames GetUIName(const IParamPackage & params) const override;
 
     std::string GetHatButtonName(u8 direction_value) const override;
     u8 GetHatButtonId(const std::string& direction_name) const override;
 
-    bool IsStickInverted(const Common::ParamPackage& params) override;
+    bool IsStickInverted(const IParamPackage & params) override;
 
     Common::Input::DriverResult SetVibration(
         const PadIdentifier& identifier, const Common::Input::VibrationStatus& vibration) override;

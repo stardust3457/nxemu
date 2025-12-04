@@ -259,7 +259,7 @@ std::vector<Common::ParamPackage> Mouse::GetInputDevices() const {
 }
 
 AnalogMapping Mouse::GetAnalogMappingForDevice(
-    [[maybe_unused]] const Common::ParamPackage& params) {
+    [[maybe_unused]] const IParamPackage & params) {
     // Only overwrite different buttons from default
     AnalogMapping mapping = {};
     Common::ParamPackage right_analog_params;
@@ -273,8 +273,8 @@ AnalogMapping Mouse::GetAnalogMappingForDevice(
     return mapping;
 }
 
-ButtonNames Mouse::GetUIButtonName(const Common::ParamPackage& params) const {
-    const auto button = static_cast<MouseButton>(params.Get("button", 0));
+ButtonNames Mouse::GetUIButtonName(const IParamPackage & params) const {
+    const auto button = static_cast<MouseButton>(params.GetInt("button", 0));
     switch (button) {
     case MouseButton::Left:
         return ButtonNames::ButtonLeft;
@@ -296,7 +296,7 @@ ButtonNames Mouse::GetUIButtonName(const Common::ParamPackage& params) const {
     }
 }
 
-ButtonNames Mouse::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames Mouse::GetUIName(const IParamPackage & params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }

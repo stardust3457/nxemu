@@ -630,7 +630,7 @@ std::vector<Common::ParamPackage> Joycons::GetInputDevices() const {
     return devices;
 }
 
-ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& params) {
+ButtonMapping Joycons::GetButtonMappingForDevice(const IParamPackage & params) {
     static constexpr std::array<std::tuple<NativeButtonValues, Joycon::PadButton, bool>,
                                 18>
         switch_to_joycon_button = {
@@ -660,8 +660,8 @@ ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& par
 
     ButtonMapping mapping{};
     for (const auto& [switch_button, joycon_button, side] : switch_to_joycon_button) {
-        const std::size_t port = static_cast<std::size_t>(params.Get("port", 0));
-        auto pad = static_cast<Joycon::ControllerType>(params.Get("pad", 0));
+        const std::size_t port = static_cast<std::size_t>(params.GetInt("port", 0));
+        auto pad = static_cast<Joycon::ControllerType>(params.GetInt("pad", 0));
         if (pad == Joycon::ControllerType::Dual) {
             pad = side ? Joycon::ControllerType::Right : Joycon::ControllerType::Left;
         }
@@ -672,8 +672,8 @@ ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& par
     }
 
     // Map SL and SR buttons for left joycons
-    if (params.Get("pad", 0) == static_cast<int>(Joycon::ControllerType::Left)) {
-        const std::size_t port = static_cast<std::size_t>(params.Get("port", 0));
+    if (params.GetInt("pad", 0) == static_cast<int>(Joycon::ControllerType::Left)) {
+        const std::size_t port = static_cast<std::size_t>(params.GetInt("port", 0));
         Common::ParamPackage button_params = GetParamPackage(port, Joycon::ControllerType::Left);
 
         Common::ParamPackage sl_button_params = button_params;
@@ -685,8 +685,8 @@ ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& par
     }
 
     // Map SL and SR buttons for right joycons
-    if (params.Get("pad", 0) == static_cast<int>(Joycon::ControllerType::Right)) {
-        const std::size_t port = static_cast<std::size_t>(params.Get("port", 0));
+    if (params.GetInt("pad", 0) == static_cast<int>(Joycon::ControllerType::Right)) {
+        const std::size_t port = static_cast<std::size_t>(params.GetInt("port", 0));
         Common::ParamPackage button_params = GetParamPackage(port, Joycon::ControllerType::Right);
 
         Common::ParamPackage sl_button_params = button_params;
@@ -700,13 +700,13 @@ ButtonMapping Joycons::GetButtonMappingForDevice(const Common::ParamPackage& par
     return mapping;
 }
 
-AnalogMapping Joycons::GetAnalogMappingForDevice(const Common::ParamPackage& params) {
+AnalogMapping Joycons::GetAnalogMappingForDevice(const IParamPackage & params) {
     if (!params.Has("port")) {
         return {};
     }
 
-    const std::size_t port = static_cast<std::size_t>(params.Get("port", 0));
-    auto pad_left = static_cast<Joycon::ControllerType>(params.Get("pad", 0));
+    const std::size_t port = static_cast<std::size_t>(params.GetInt("port", 0));
+    auto pad_left = static_cast<Joycon::ControllerType>(params.GetInt("pad", 0));
     auto pad_right = pad_left;
     if (pad_left == Joycon::ControllerType::Dual) {
         pad_left = Joycon::ControllerType::Left;
@@ -725,13 +725,13 @@ AnalogMapping Joycons::GetAnalogMappingForDevice(const Common::ParamPackage& par
     return mapping;
 }
 
-MotionMapping Joycons::GetMotionMappingForDevice(const Common::ParamPackage& params) {
+MotionMapping Joycons::GetMotionMappingForDevice(const IParamPackage & params) {
     if (!params.Has("port")) {
         return {};
     }
 
-    const std::size_t port = static_cast<std::size_t>(params.Get("port", 0));
-    auto pad_left = static_cast<Joycon::ControllerType>(params.Get("pad", 0));
+    const std::size_t port = static_cast<std::size_t>(params.GetInt("port", 0));
+    auto pad_left = static_cast<Joycon::ControllerType>(params.GetInt("pad", 0));
     auto pad_right = pad_left;
     if (pad_left == Joycon::ControllerType::Dual) {
         pad_left = Joycon::ControllerType::Left;
@@ -748,8 +748,8 @@ MotionMapping Joycons::GetMotionMappingForDevice(const Common::ParamPackage& par
     return mapping;
 }
 
-ButtonNames Joycons::GetUIButtonName(const Common::ParamPackage& params) const {
-    const auto button = static_cast<Joycon::PadButton>(params.Get("button", 0));
+ButtonNames Joycons::GetUIButtonName(const IParamPackage & params) const {
+    const auto button = static_cast<Joycon::PadButton>(params.GetInt("button", 0));
     switch (button) {
     case Joycon::PadButton::Left:
         return ButtonNames::ButtonLeft;
@@ -798,7 +798,7 @@ ButtonNames Joycons::GetUIButtonName(const Common::ParamPackage& params) const {
     }
 }
 
-ButtonNames Joycons::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames Joycons::GetUIName(const IParamPackage & params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }

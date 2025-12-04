@@ -32,11 +32,11 @@ public:
 
     /// Used for automapping features
     std::vector<Common::ParamPackage> GetInputDevices() const override;
-    ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
-    AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
-    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonMapping GetButtonMappingForDevice(const IParamPackage& params) override;
+    AnalogMapping GetAnalogMappingForDevice(const IParamPackage& params) override;
+    ButtonNames GetUIName(const IParamPackage& params) const override;
 
-    bool IsStickInverted(const Common::ParamPackage& params) override;
+    bool IsStickInverted(const IParamPackage& params) override;
 
 private:
     enum class PadButton {
@@ -114,7 +114,7 @@ private:
     /// Updates vibration state of all controllers
     void SendVibrations();
 
-    ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
+    ButtonNames GetUIButtonName(const IParamPackage& params) const;
 
     std::unique_ptr<LibUSBDeviceHandle> usb_adapter_handle;
     std::array<GCController, 4> pads;

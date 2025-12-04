@@ -57,10 +57,10 @@ public:
 
     /// Used for automapping features
     std::vector<Common::ParamPackage> GetInputDevices() const override;
-    ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
-    AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
-    MotionMapping GetMotionMappingForDevice(const Common::ParamPackage& params) override;
-    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonMapping GetButtonMappingForDevice(const IParamPackage & params) override;
+    AnalogMapping GetAnalogMappingForDevice(const IParamPackage & params) override;
+    MotionMapping GetMotionMappingForDevice(const IParamPackage & params) override;
+    ButtonNames GetUIName(const IParamPackage & params) const override;
 
 private:
     static constexpr std::size_t MaxSupportedControllers = 8;
@@ -106,7 +106,7 @@ private:
 
     std::string JoyconName(std::size_t port) const;
 
-    ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
+    ButtonNames GetUIButtonName(const IParamPackage & params) const;
 
     /// Returns the name of the device in text format
     std::string JoyconName(Joycon::ControllerType type) const;

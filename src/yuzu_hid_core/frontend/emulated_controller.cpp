@@ -756,8 +756,10 @@ IParamPackage* EmulatedController::GetMotionParamPtr(uint32_t index) const
     return new IParamPackageImpl(GetMotionParam(index));
 }
 
-void EmulatedController::SetButtonParam(std::size_t index, Common::ParamPackage param) {
-    if (index >= button_params.size()) {
+void EmulatedController::SetButtonParam(std::size_t index, Common::ParamPackage param)
+{
+    if (index >= button_params.size())
+    {
         return;
     }
     button_params[index] = std::move(param);
@@ -769,8 +771,10 @@ void EmulatedController::SetButtonParam(uint32_t index, const IParamPackage& par
     SetButtonParam(index, Common::ParamPackage(param));
 }
 
-void EmulatedController::SetStickParam(std::size_t index, Common::ParamPackage param) {
-    if (index >= stick_params.size()) {
+void EmulatedController::SetStickParam(std::size_t index, Common::ParamPackage param)
+{
+    if (index >= stick_params.size())
+    {
         return;
     }
     stick_params[index] = std::move(param);
@@ -782,8 +786,10 @@ void EmulatedController::SetStickParam(uint32_t index, const IParamPackage& para
     SetStickParam(index, Common::ParamPackage(param));
 }
 
-void EmulatedController::SetMotionParam(std::size_t index, Common::ParamPackage param) {
-    if (index >= motion_params.size()) {
+void EmulatedController::SetMotionParam(std::size_t index, Common::ParamPackage param)
+{
+    if (index >= motion_params.size())
+    {
         return;
     }
     motion_params[index] = std::move(param);
@@ -795,15 +801,18 @@ void EmulatedController::SetMotionParam(uint32_t index, const IParamPackage & pa
     SetMotionParam(index, Common::ParamPackage(param));
 }
 
-void EmulatedController::StartMotionCalibration() {
-    for (ControllerMotionInfo& motion : controller.motion_values) {
+void EmulatedController::StartMotionCalibration()
+{
+    for (ControllerMotionInfo& motion : controller.motion_values)
+    {
         motion.emulated.Calibrate();
     }
 }
 
-void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback, std::size_t index,
-                                   Common::UUID uuid) {
-    if (index >= controller.button_values.size()) {
+void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback, std::size_t index, Common::UUID uuid)
+{
+    if (index >= controller.button_values.size())
+    {
         return;
     }
     std::unique_lock lock{mutex};
@@ -812,8 +821,10 @@ void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback
     auto& current_status = controller.button_values[index];
 
     // Only read button values that have the same uuid or are pressed once
-    if (current_status.uuid != uuid) {
-        if (!new_status.value) {
+    if (current_status.uuid != uuid)
+    {
+        if (!new_status.value)
+        {
             return;
         }
     }
@@ -823,31 +834,39 @@ void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback
     current_status.uuid = uuid;
 
     // Update button status with current
-    if (!current_status.toggle) {
+    if (!current_status.toggle)
+    {
         current_status.locked = false;
-        if (current_status.value != new_status.value) {
+        if (current_status.value != new_status.value)
+        {
             current_status.value = new_status.value;
             value_changed = true;
         }
-    } else {
+    }
+    else
+    {
         // Toggle button and lock status
-        if (new_status.value && !current_status.locked) {
+        if (new_status.value && !current_status.locked)
+        {
             current_status.locked = true;
             current_status.value = !current_status.value;
             value_changed = true;
         }
 
         // Unlock button ready for next press
-        if (!new_status.value && current_status.locked) {
+        if (!new_status.value && current_status.locked)
+        {
             current_status.locked = false;
         }
     }
 
-    if (!value_changed) {
+    if (!value_changed)
+    {
         return;
     }
 
-    if (is_configuring) {
+    if (is_configuring)
+    {
         controller.npad_button_state.raw = NpadButton::None;
         controller.debug_pad_button_state.raw = 0;
         controller.home_button_state.raw = 0;
@@ -858,16 +877,20 @@ void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback
     }
 
     // GC controllers have triggers not buttons
-    if (npad_type == NpadStyleIndex::GameCube) {
-        if (index == (size_t)NativeButtonValues::ZR) {
+    if (npad_type == NpadStyleIndex::GameCube)
+    {
+        if (index == (size_t)NativeButtonValues::ZR)
+        {
             return;
         }
-        if (index == (size_t)NativeButtonValues::ZL) {
+        if (index == (size_t)NativeButtonValues::ZL)
+        {
             return;
         }
     }
 
-    switch ((NativeButtonValues)index) {
+    switch ((NativeButtonValues)index)
+    {
     case NativeButtonValues::A:
         controller.npad_button_state.a.Assign(current_status.value);
         controller.debug_pad_button_state.a.Assign(current_status.value);
@@ -958,11 +981,14 @@ void EmulatedController::SetButton(const Common::Input::CallbackStatus& callback
 
     lock.unlock();
 
-    if (!is_connected) {
-        if (npad_id_type == NpadIdType::Player1 && npad_type != NpadStyleIndex::Handheld) {
+    if (!is_connected)
+    {
+        if (npad_id_type == NpadIdType::Player1 && npad_type != NpadStyleIndex::Handheld)
+        {
             Connect();
         }
-        if (npad_id_type == NpadIdType::Handheld && npad_type == NpadStyleIndex::Handheld) {
+        if (npad_id_type == NpadIdType::Handheld && npad_type == NpadStyleIndex::Handheld)
+        {
             Connect();
         }
     }

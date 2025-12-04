@@ -30,6 +30,7 @@ public:
     IEmulatedController & GetEmulatedController(NpadIdType index) override;
     ButtonNames GetButtonName(const IParamPackage & param) const override;
     bool IsController(const IParamPackage& params) const override;
+    NpadStyleSet GetSupportedStyleTag() const override;
     IButtonMappingList * GetButtonMappingForDevice(const IParamPackage& param) const override;
     IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage& param) const override;
     IButtonMappingList * GetMotionMappingForDevice(const IParamPackage& param) const override;

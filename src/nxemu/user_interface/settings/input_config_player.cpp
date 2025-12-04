@@ -9,6 +9,7 @@
 #include "user_interface/key_mappings.h"
 #include <yuzu_common/string_util.h>
 #include <yuzu_common/vector_math.h>
+#include "settings/ui_settings.h"
 
 namespace
 {
@@ -415,7 +416,56 @@ namespace
     {
         return stdstr_f("%f,%f %f,%f %f,%f %f,%f", v[0].first, v[0].second, v[1].first, v[1].second, v[2].first, v[2].second, v[3].first, v[3].second);
     }
-}
+
+    std::string GetButtonName(ButtonNames button_name)
+    {
+        switch (button_name)
+        {
+        case ButtonNames::ButtonLeft: return "Left";
+        case ButtonNames::ButtonRight: return "Right";
+        case ButtonNames::ButtonDown: return "Down";
+        case ButtonNames::ButtonUp: return "Up";
+        case ButtonNames::TriggerZ: return "Z";
+        case ButtonNames::TriggerR: return "R";
+        case ButtonNames::TriggerL: return "L";
+        case ButtonNames::TriggerZR: return "ZR";
+        case ButtonNames::TriggerZL: return "ZL";
+        case ButtonNames::TriggerSR: return "SR";
+        case ButtonNames::TriggerSL: return "SL";
+        case ButtonNames::ButtonStickL: return "Stick L";
+        case ButtonNames::ButtonStickR: return "Stick R";
+        case ButtonNames::ButtonA: return "A";
+        case ButtonNames::ButtonB: return "B";
+        case ButtonNames::ButtonX: return "X";
+        case ButtonNames::ButtonY: return "Y";
+        case ButtonNames::ButtonStart: return "Start";
+        case ButtonNames::ButtonPlus: return "Plus";
+        case ButtonNames::ButtonMinus: return "Minus";
+        case ButtonNames::ButtonHome: return "Home";
+        case ButtonNames::ButtonCapture: return "Capture";
+        case ButtonNames::L1: return "L1";
+        case ButtonNames::L2: return "L2";
+        case ButtonNames::L3: return "L3";
+        case ButtonNames::R1: return "R1";
+        case ButtonNames::R2: return "R2";
+        case ButtonNames::R3: return "R3";
+        case ButtonNames::Circle: return "Circle";
+        case ButtonNames::Cross: return "Cross";
+        case ButtonNames::Square: return "Square";
+        case ButtonNames::Triangle: return "Triangle";
+        case ButtonNames::Share: return "Share";
+        case ButtonNames::Options: return "Options";
+        case ButtonNames::Home: return "Home";
+        case ButtonNames::Touch: return "Touch";
+        case ButtonNames::ButtonMouseWheel: return "Wheel";
+        case ButtonNames::ButtonBackward: return "Backward";
+        case ButtonNames::ButtonForward: return "Forward";
+        case ButtonNames::ButtonTask: return "Task";
+        case ButtonNames::ButtonExtra: return "Extra";
+        }
+        return "[undefined]";
+    }
+} // namespace
 
 InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config, HWINDOW parent, SciterElement page, NpadIdType controllerIndex) :
     m_operatingSystem(SwitchSystem::GetInstance()->OperatingSystem()),
@@ -426,6 +476,7 @@ InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config,
     m_controllerIndex(controllerIndex),
     m_emulatedController(nullptr),
     m_emulatedControllerPlayer(SwitchSystem::GetInstance()->OperatingSystem().GetEmulatedController(controllerIndex)),
+    m_emulatedControllerHandheld(SwitchSystem::GetInstance()->OperatingSystem().GetEmulatedController(NpadIdType::Handheld)),
     m_inputDeviceList(config.InputDeviceList()),
     m_timeoutTimerActive(false),
     m_pollingType(PollingInputType::None),
@@ -436,26 +487,46 @@ InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config,
     m_emulatedController->SetControllerEventCallback(stControllerEventCallback,this);
     BindControls();
     LoadConfiguration();
-
-    UpdateInputDeviceCombobox();
+    UpdateControllerAvailableButtons();
+    UpdateControllerEnabledButtons();
+    UpdateControllerButtonNames();
 }
 
 bool InputConfigPlayer::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uint32_t /*reason*/)
 {
-    for (uint32_t i = 0, n = (uint32_t)NativeButtonValues::NumButtons; i < n; i++)
+    if (element == m_connectedController)
     {
-        if (!m_buttonMap[i].IsValid() || element != m_buttonMap[i])
+        bool connected = (m_connectedController.GetState() & SciterElement::STATE_CHECKED) != 0;
+        if (connected)
         {
-            continue;
+            m_emulatedController->Connect(true);
         }
-        HandleClick(m_buttonMap[i], i, PollingInputType::Button);
+        else 
+        {
+            m_emulatedController->Disconnect();
+        }
+    }
+    else
+    {
+        for (uint32_t i = 0, n = (uint32_t)NativeButtonValues::NumButtons; i < n; i++)
+        {
+            if (!m_buttonMap[i].IsValid() || element != m_buttonMap[i])
+            {
+                continue;
+            }
+            HandleClick(m_buttonMap[i], i, PollingInputType::Button);
+        }
     }
     return false;
 }
 
 bool InputConfigPlayer::OnStateChange(SCITER_ELEMENT elem, uint32_t /*eventReason*/, void * /*data*/)
 {
-    if (m_page.GetElementByID("comboDevices") == elem)
+    if (m_page.GetElementByID("comboControllerType") == elem)
+    {
+        ControllerTypeChanged();
+    }
+    else if (m_page.GetElementByID("comboDevices") == elem)
     {
         UpdateMappingWithDefaults();
     }
@@ -609,32 +680,51 @@ void InputConfigPlayer::BindControls()
         m_sciterUI.AttachHandler(m_buttonMap[i], IID_ICLICKSINK, (IClickSink*)this);
     }
 
+    SciterElement comboControllerType = m_page.GetElementByID("comboControllerType");
+    std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(comboControllerType, IID_ICOMBOBOX);
+    if (interfacePtr)
+    {
+        m_comboControllerType = std::static_pointer_cast<IComboBox>(interfacePtr);
+    }
+    m_sciterUI.AttachHandler(comboControllerType, IID_ISTATECHANGESINK, (IStateChangeSink*)this);
+
     SciterElement comboDevices = m_page.GetElementByID("comboDevices");
-    std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(comboDevices, IID_ICOMBOBOX);
+    interfacePtr = m_sciterUI.GetElementInterface(comboDevices, IID_ICOMBOBOX);
     if (interfacePtr)
     {
         m_comboDevices = std::static_pointer_cast<IComboBox>(interfacePtr);
     }
     m_sciterUI.AttachHandler(comboDevices, IID_ISTATECHANGESINK, (IStateChangeSink*)this);
+
+    SciterElement ConnectedController = m_page.GetElementByID("ConnectedController");
+    if (ConnectedController)
+    {
+        m_sciterUI.AttachHandler(ConnectedController, IID_ICLICKSINK, (IClickSink*)this);
+    }
+    SetConnectableControllers();
 }
 
 void InputConfigPlayer::LoadConfiguration()
 {
     m_emulatedController->ReloadFromSettings();
     UpdateUI();
+    UpdateInputDeviceCombobox();
+
+    const int comboBoxIndex = GetIndexFromControllerType(m_emulatedController->GetNpadStyleIndex(true));
+    m_comboControllerType->SelectItem(comboBoxIndex);
+
+    m_connectedController = m_page.GetElementByID("ConnectedController");
+    if (m_connectedController)
+    {
+        bool checked = m_emulatedController->IsConnected(true);
+        m_connectedController.SetState(checked ? SciterElement::STATE_CHECKED : 0, checked ? 0 : SciterElement::STATE_CHECKED, true);
+    }
 }
 
 void InputConfigPlayer::UpdateInputDeviceCombobox(void)
 {
-    std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(m_page.GetElementByID("comboDevices"), IID_ICOMBOBOX);
-    if (!interfacePtr)
-    {
-        return;
-    }
-    std::shared_ptr<IComboBox> comboBox = std::static_pointer_cast<IComboBox>(interfacePtr);
-
     // Skip input device persistence if "Input Devices" is set to "Any".
-    if (comboBox->CurrentIndex() == 0)
+    if (m_comboDevices->CurrentIndex() == 0)
     {
         UpdateInputDevices();
         return;
@@ -650,7 +740,7 @@ void InputConfigPlayer::UpdateInputDeviceCombobox(void)
 
     if (devices->GetCount() > 2) 
     {
-        comboBox->SelectItem(0);
+        m_comboDevices->SelectItem(0);
         return;
     }
 
@@ -678,8 +768,44 @@ void InputConfigPlayer::UpdateInputDeviceCombobox(void)
             }
         }
 
-        comboBox->SelectItem(device_index);
+        m_comboDevices->SelectItem(device_index);
         return;
+    }
+
+    const IParamPackage & secondDevice = devices->GetParamPackage(1);
+    const std::string second_engine = secondDevice.GetString("engine", "");
+    const std::string second_guid = secondDevice.GetString("guid", "");
+    const int32_t second_port = secondDevice.GetInt("port", 0);
+
+    const bool is_keyboard_mouse = (first_engine == "keyboard" || first_engine == "mouse") && (second_engine == "keyboard" || second_engine == "mouse");
+
+    if (is_keyboard_mouse) 
+    {
+        m_comboDevices->SelectItem(2);
+        return;
+    }
+
+    const bool is_engine_equal = first_engine == second_engine;
+    const bool is_port_equal = first_port == second_port;
+
+    if (is_engine_equal && is_port_equal)
+    {
+        uint32_t device_index = 0;
+        for (uint32_t i = 0, n = m_inputDeviceList.GetCount(); i < n; i++)
+        {
+            IParamPackage & device = m_inputDeviceList.GetParamPackage(i);
+            const bool is_guid_valid = (strcmp(device.GetString("guid", ""), first_guid.c_str()) == 0 && strcmp(device.GetString("guid2", ""), second_guid.c_str()) == 0) || (strcmp(device.GetString("guid", ""), second_guid.c_str()) == 0 && strcmp(device.GetString("guid2", ""), first_guid.c_str()) == 0);
+            if (strcmp(device.GetString("engine", ""), first_engine.c_str()) == 0 && is_guid_valid && device.GetInt("port", 0) == first_port)
+            {
+                device_index = i;
+                break;
+            }
+        }
+        m_comboDevices->SelectItem(device_index);
+    }
+    else
+    {
+        m_comboDevices->SelectItem(0);
     }
 }
 
@@ -705,8 +831,6 @@ void InputConfigPlayer::UpdateUI()
     for (uint32_t i = 0, n = (uint32_t)NativeButtonValues::NumButtons; i < n; i++)
     {
         ParamPackage param(m_emulatedController->GetButtonParamPtr(i));
-        ParamPackage b;
-        b = m_emulatedController->GetButtonParamPtr(i);
         if (m_buttonMap[i].IsValid())
         {
             m_buttonMap[i].SetText(ButtonToText(param).c_str());
@@ -943,6 +1067,134 @@ std::string InputConfigPlayer::AnalogToText(const IParamPackage& param, const st
     }
     return "[unknown]";
 }
+
+int InputConfigPlayer::GetIndexFromControllerType(NpadStyleIndex type) const 
+{
+    const auto it = std::find_if(index_controller_type_pairs.begin(), index_controller_type_pairs.end(), [type](const auto& pair) { return pair.second == type; });
+    if (it == index_controller_type_pairs.end())
+    {
+        return -1;
+    }
+
+    return it->first;
+}
+
+NpadStyleIndex InputConfigPlayer::GetControllerTypeFromIndex(int index) const
+{
+    const auto it = std::find_if(index_controller_type_pairs.begin(), index_controller_type_pairs.end(), [index](const auto& pair) { return pair.first == index; });
+    if (it == index_controller_type_pairs.end())
+    {
+        return NpadStyleIndex::Fullkey;
+    }
+    return it->second;
+}
+
+void InputConfigPlayer::SetConnectableControllers() 
+{
+    const NpadStyleSet npad_style_set = m_operatingSystem.GetSupportedStyleTag();
+    index_controller_type_pairs.clear();
+    m_comboControllerType->ClearContents();
+
+    typedef std::vector<std::pair<NpadStyleIndex, std::string>> Controllers;
+    Controllers availableControllers;
+
+    if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Fullkey) != 0)
+    {
+        availableControllers.emplace_back(NpadStyleIndex::Fullkey, "Pro Controller");
+    }
+
+    if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::JoyDual) != 0)
+    {
+        availableControllers.emplace_back(NpadStyleIndex::JoyconDual, "Dual Joycons");
+    }
+
+    if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::JoyLeft) != 0)
+    {
+        availableControllers.emplace_back(NpadStyleIndex::JoyconLeft, "Left Joycon");
+    }
+
+    if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::JoyRight) != 0)
+    {
+        availableControllers.emplace_back(NpadStyleIndex::JoyconRight, "Right Joycon");
+    }
+
+    if (m_controllerIndex == NpadIdType::Player1 && ((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Handheld) != 0)
+    {
+        availableControllers.emplace_back(NpadStyleIndex::Handheld, "Handheld");
+    }
+
+    if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Gc) != 0)
+    {
+        availableControllers.emplace_back(NpadStyleIndex::GameCube, "GameCube Controller");
+    }
+
+    // Disable all unsupported controllers
+    if (uiSettings.enableAllControllers) 
+    {
+        if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Palma) != 0)
+        {
+            availableControllers.emplace_back(NpadStyleIndex::Pokeball, "Poke Ball Plus");
+        }
+
+        if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Palma) != 0)
+        {
+            availableControllers.emplace_back(NpadStyleIndex::NES, "NES Controller");
+        }
+
+        if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Lucia) != 0)
+        {
+            availableControllers.emplace_back(NpadStyleIndex::SNES, "SNES Controller");
+        }
+
+        if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Lagoon) != 0)
+        {
+            availableControllers.emplace_back(NpadStyleIndex::N64, "N64 Controller");
+        }
+
+        if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Lager) != 0)
+        {
+            availableControllers.emplace_back(NpadStyleIndex::SegaGenesis, "Sega Genesis");
+        }
+    }
+
+    for (Controllers::const_iterator itr = availableControllers.begin(); itr != availableControllers.end(); itr ++)
+    {
+        index_controller_type_pairs.emplace_back(m_comboControllerType->GetCount(), itr->first);
+        m_comboControllerType->AddItem(itr->second.c_str(), itr->second.c_str());
+    }
+}
+
+void InputConfigPlayer::ControllerTypeChanged()
+{
+    UpdateControllerAvailableButtons();
+    UpdateControllerEnabledButtons();
+    UpdateControllerButtonNames();
+    const NpadStyleIndex type = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
+    if (m_controllerIndex == NpadIdType::Player1) 
+    {
+        bool is_connected = m_emulatedController->IsConnected(true);
+
+        m_emulatedControllerPlayer.SetNpadStyleIndex(type);
+        m_emulatedControllerHandheld.SetNpadStyleIndex(type);
+        if (is_connected)
+        {
+            if (type == NpadStyleIndex::Handheld) 
+            {
+                m_emulatedControllerPlayer.Disconnect();
+                m_emulatedControllerHandheld.Connect(true);
+                m_emulatedController = &m_emulatedControllerHandheld;
+            }
+            else 
+            {
+                m_emulatedControllerHandheld.Disconnect();
+                m_emulatedControllerPlayer.Connect(true);
+                m_emulatedController = &m_emulatedControllerPlayer;
+            }
+        }
+    }
+    m_emulatedController->SetNpadStyleIndex(type);
+}
+
 void InputConfigPlayer::UpdateMappingWithDefaults()
 {
     if (m_comboDevices->CurrentIndex() == 0)
@@ -1096,6 +1348,252 @@ void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
     case ControllerTriggerType::Motion:
         m_motionValues = m_emulatedController->GetMotions();
         UpdateMotionCube();
+        break;
+    }
+}
+
+void InputConfigPlayer::UpdateControllerAvailableButtons()
+{
+    NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
+    SciterElement proController = m_page.GetElementByID("ProController");
+    const std::array<SciterElement, 20> layout_show = {
+        m_page.GetElementByID("ProController"),
+        m_page.GetElementByID("DualJoycons"),
+        m_page.GetElementByID("LeftJoycon"),
+        m_page.GetElementByID("GCController"),
+        m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
+        m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
+        m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget"),
+        m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget2"),
+        m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget3"),
+        m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget4"),
+        m_page.GetElementByID("buttonShoulderButtonsLeft"),
+        m_page.GetElementByID("buttonMiscButtonsMinusScreenshot"),
+        m_page.GetElementByID("bottomLeft"),
+        m_page.GetElementByID("bottomLeftSpacer"),
+        m_page.GetElementByID("buttonShoulderButtonsRight"),
+        m_page.GetElementByID("buttonMiscButtonsPlusHome"),
+        m_page.GetElementByID("bottomRight"),
+        m_page.GetElementByID("bottomRightSpacer"),
+        m_page.GetElementByID("buttonMiscButtonsMinusGroup"),
+        m_page.GetElementByID("buttonMiscButtonsScreenshotGroup"),
+    };
+
+    for (const SciterElement & el : layout_show) 
+    {
+        if (!el.IsValid())
+        {
+            continue;
+        }
+        el.SetStyleAttribute("display", "");
+    }
+
+    std::vector<SciterElement> layout_hidden;
+    switch (layout) {
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Handheld:
+        layout_hidden = {
+            m_page.GetElementByID("GCController"),
+            m_page.GetElementByID("DualJoycons"),
+            m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("bottomLeftSpacer"),
+            m_page.GetElementByID("bottomRightSpacer"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget2"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget4"),
+        };
+        break;
+    case NpadStyleIndex::JoyconDual:
+        layout_hidden = {
+            m_page.GetElementByID("ProController"),
+            m_page.GetElementByID("GCController"),
+            m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("bottomLeftSpacer"),
+            m_page.GetElementByID("bottomRightSpacer"),
+        };
+        break;
+    case NpadStyleIndex::JoyconLeft:
+        layout_hidden = {
+            m_page.GetElementByID("ProController"),
+            m_page.GetElementByID("GCController"),
+            m_page.GetElementByID("DualJoycons"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget2"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget3"),
+            m_page.GetElementByID("buttonShoulderButtonsRight"),
+            m_page.GetElementByID("buttonMiscButtonsPlusHome"),
+            m_page.GetElementByID("bottomLeftSpacer"),
+            m_page.GetElementByID("bottomRight"),
+        };
+        break;
+    case NpadStyleIndex::JoyconRight:
+        layout_hidden = {
+            m_page.GetElementByID("GCController"),
+            m_page.GetElementByID("DualJoycons"),
+            m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget4"),
+            m_page.GetElementByID("buttonShoulderButtonsLeft"),
+            m_page.GetElementByID("buttonMiscButtonsMinusScreenshot"),
+            m_page.GetElementByID("bottomLeft"),
+            m_page.GetElementByID("bottomRightSpacer"),
+        };
+        break;
+    case NpadStyleIndex::GameCube:
+        layout_hidden = {
+            m_page.GetElementByID("ProController"),
+            m_page.GetElementByID("DualJoycons"),
+            m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget2"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget4"),
+            m_page.GetElementByID("buttonMiscButtonsMinusGroup"),
+            m_page.GetElementByID("buttonMiscButtonsScreenshotGroup"),
+            m_page.GetElementByID("bottomLeftSpacer"),
+            m_page.GetElementByID("bottomRightSpacer"),
+        };
+        break;
+    default:
+        break;
+    }
+
+    for (const SciterElement & el : layout_hidden)
+    {
+        if (!el.IsValid())
+        {
+            continue;
+        }
+        el.SetStyleAttribute("display", "none");
+    }
+}
+
+void InputConfigPlayer::UpdateControllerEnabledButtons() 
+{
+    NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
+
+    // List of all the widgets that will be disabled by any of the following layouts that need
+    // "enabled" after the controller type changes
+    const std::array<SciterElement, 3> layout_enable = {
+        m_page.GetElementByID("buttonLStickPressedGroup"),
+        m_page.GetElementByID("groupRStickPressed"),
+        m_page.GetElementByID("buttonShoulderButtonsButtonLGroup"),
+    };
+
+    for (const SciterElement & el : layout_enable)
+    {
+        if (!el.IsValid())
+        {
+            continue;
+        }
+        el.SetState(0, SciterElement::STATE_DISABLED, true);
+    }
+
+    std::vector<SciterElement> layout_disable;
+    switch (layout) {
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::Handheld:
+    case NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconRight:
+        break;
+    case NpadStyleIndex::GameCube:
+        layout_disable = {
+            m_page.GetElementByID("buttonHome"),
+            m_page.GetElementByID("buttonLStickPressedGroup"),
+            m_page.GetElementByID("groupRStickPressed"),
+            m_page.GetElementByID("buttonShoulderButtonsButtonLGroup"),
+        };
+        break;
+    default:
+        break;
+    }
+
+    for (const SciterElement & el : layout_disable)
+    {
+        if (!el.IsValid())
+        {
+            continue;
+        }
+        el.SetState(SciterElement::STATE_DISABLED, 0, true);
+    }
+}
+
+void InputConfigPlayer::UpdateControllerButtonNames() 
+{
+    NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
+    SciterElement el;
+
+    switch (layout) {
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::JoyconDual:
+    case NpadStyleIndex::Handheld:
+    case NpadStyleIndex::JoyconLeft:
+    case NpadStyleIndex::JoyconRight:
+        el = m_page.GetElementByID("buttonMiscButtonsPlusGroup");
+        if (el.IsValid())
+        {
+            el.SetText("Plus");
+        }
+        el = m_page.GetElementByID("buttonShoulderButtonsButtonZLGroup");
+        if (el.IsValid())
+        {
+            el.SetText("ZL");
+        }
+        el = m_page.GetElementByID("buttonShoulderButtonsZRGroup");
+        if (el.IsValid())
+        {
+            el.SetText("ZR");
+        }
+        el = m_page.GetElementByID("buttonShoulderButtonsRGroup");
+        if (el.IsValid())
+        {
+            el.SetText("R");
+        }
+        el = m_page.GetElementByID("LStick");
+        if (el.IsValid())
+        {
+            el.SetText("Left Stick");
+        }
+        el = m_page.GetElementByID("RStick");
+        if (el.IsValid())
+        {
+            el.SetText("Right Stick");
+        }
+        break;
+    case NpadStyleIndex::GameCube:
+        el = m_page.GetElementByID("buttonMiscButtonsPlusGroup");
+        if (el.IsValid())
+        {
+            el.SetText("Start / Pause");
+        }
+        el = m_page.GetElementByID("buttonShoulderButtonsButtonZLGroup");
+        if (el.IsValid())
+        {
+            el.SetText("L");
+        }
+        el = m_page.GetElementByID("buttonShoulderButtonsZRGroup");
+        if (el.IsValid())
+        {
+            el.SetText("R");
+        }
+        el = m_page.GetElementByID("buttonShoulderButtonsRGroup");
+        if (el.IsValid())
+        {
+            el.SetText("Z");
+        }
+        el = m_page.GetElementByID("LStick");
+        if (el.IsValid())
+        {
+            el.SetText("Control Stick");
+        }
+        el = m_page.GetElementByID("RStick->setTitle");
+        if (el.IsValid())
+        {
+            el.SetText("C-Stick");
+        }
         break;
     }
 }
@@ -1334,7 +1832,20 @@ void InputConfigPlayer::DeadzoneSliderChanged(uint32_t analogId)
 
 SciterElement InputConfigPlayer::GetControllerSvg()
 {
-    return m_page.GetElementByID("ProController");
+    NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
+    switch (layout)
+    {
+    case NpadStyleIndex::Fullkey:
+    case NpadStyleIndex::Handheld:
+        return m_page.GetElementByID("ProController");
+    case NpadStyleIndex::JoyconDual:
+        return m_page.GetElementByID("DualJoycons");
+    case NpadStyleIndex::JoyconLeft:
+        return m_page.GetElementByID("LeftJoycon");
+    case NpadStyleIndex::GameCube:
+        return m_page.GetElementByID("GCController");
+    }
+    return SciterElement();
 }
 
 bool InputConfigPlayer::IsInputAcceptable(const IParamPackage & params) const

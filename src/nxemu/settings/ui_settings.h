@@ -16,6 +16,7 @@ struct UISettings
     bool sciterConsole;
     bool performVulkanCheck;
     bool hasBrokenVulkan;
+    bool enableAllControllers;
 };
 
 extern UISettings uiSettings;

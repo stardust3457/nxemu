@@ -290,6 +290,11 @@ bool OSManager::IsController(const IParamPackage & params) const
     return input_subsystem->IsController(params);
 }
 
+NpadStyleSet OSManager::GetSupportedStyleTag() const
+{
+    return m_coreSystem.HIDCore().GetSupportedStyleTag().raw;
+}
+
 IButtonMappingList * OSManager::GetButtonMappingForDevice(const IParamPackage & param) const
 {
     std::shared_ptr<InputCommon::InputSubsystem> & input_subsystem = m_coreSystem.InputSubsystem();

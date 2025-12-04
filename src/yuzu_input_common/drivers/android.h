@@ -80,11 +80,11 @@ public:
 
     bool MatchVID(Common::UUID device, const std::vector<std::string>& vids) const;
 
-    AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
+    AnalogMapping GetAnalogMappingForDevice(const IParamPackage& params) override;
 
-    ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
+    ButtonMapping GetButtonMappingForDevice(const IParamPackage & params) override;
 
-    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonNames GetUIName(const IParamPackage & params) const override;
 
 private:
     std::unordered_map<PadIdentifier, jobject> input_devices;

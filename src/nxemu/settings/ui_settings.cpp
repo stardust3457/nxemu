@@ -48,6 +48,7 @@ namespace
         { "SciterConsole", &uiSettings.sciterConsole, false},
         { "PerformVulkanCheck", &uiSettings.performVulkanCheck, true},
         { nullptr, &uiSettings.hasBrokenVulkan, false},
+        { nullptr, &uiSettings.enableAllControllers, false},
     };
 
 } // namespace

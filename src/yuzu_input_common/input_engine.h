@@ -198,25 +198,25 @@ public:
 
     /// Retrieves the button mappings for the given device
     virtual ButtonMapping GetButtonMappingForDevice(
-        [[maybe_unused]] const Common::ParamPackage& params) {
+        [[maybe_unused]] const IParamPackage& params) {
         return {};
     }
 
     /// Retrieves the analog mappings for the given device
     virtual AnalogMapping GetAnalogMappingForDevice(
-        [[maybe_unused]] const Common::ParamPackage& params) {
+        [[maybe_unused]] const IParamPackage& params) {
         return {};
     }
 
     /// Retrieves the motion mappings for the given device
     virtual MotionMapping GetMotionMappingForDevice(
-        [[maybe_unused]] const Common::ParamPackage& params) {
+        [[maybe_unused]] const IParamPackage& params) {
         return {};
     }
 
     /// Retrieves the name of the given input.
     virtual ButtonNames GetUIName(
-        [[maybe_unused]] const Common::ParamPackage& params) const {
+        [[maybe_unused]] const IParamPackage& params) const {
         return ButtonNames::Engine;
     }
 
@@ -226,7 +226,7 @@ public:
     }
 
     /// Returns true if axis of a stick aren't mapped in the correct direction
-    virtual bool IsStickInverted([[maybe_unused]] const Common::ParamPackage& params) {
+    virtual bool IsStickInverted([[maybe_unused]] const IParamPackage& params) {
         return false;
     }
 

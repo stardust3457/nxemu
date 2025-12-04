@@ -358,16 +358,21 @@ typedef void (CALL* ControllerEventCallback)(ControllerTriggerType type, void * 
 
 __interface IEmulatedController
 {
+    void Connect(bool use_temporary_value = false) = 0;
+    void Disconnect() = 0;
+    bool IsConnected(bool get_temporary_value = false) const = 0;
     void ReloadFromSettings() = 0;
     IParamPackageList * GetMappedDevicesPtr() const = 0;
     IParamPackage * GetButtonParamPtr(uint32_t index) const = 0;
     IParamPackage * GetMotionParamPtr(uint32_t index) const = 0;
     IParamPackage * GetStickParamPtr(uint32_t index) const = 0;
+    NpadStyleIndex GetNpadStyleIndex(bool getTemporaryValue = false) const = 0;
     void SetButtonParam(uint32_t index, const IParamPackage & param) = 0;
     void SetStickParam(uint32_t index, const IParamPackage & param) = 0;
     void SetMotionParam(uint32_t index, const IParamPackage & param) = 0;
     void SetControllerEventCallback(ControllerEventCallback cb, void * user) = 0;
     void GetButtonsStatus(button_status_t * buttons, size_t num_buttons) const = 0;
+    void SetNpadStyleIndex(NpadStyleIndex npad_type) = 0;
     MotionState GetMotions() const = 0;
     SticksValues GetSticksValues() const = 0;
 };
@@ -400,6 +405,7 @@ __interface IOperatingSystem
     IEmulatedController & GetEmulatedController(NpadIdType index) = 0;
     ButtonNames GetButtonName(const IParamPackage & param)  const = 0;
     bool IsController(const IParamPackage & params)  const = 0;
+    NpadStyleSet GetSupportedStyleTag() const = 0;
     IButtonMappingList * GetButtonMappingForDevice(const IParamPackage & param) const = 0;
     IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage & param) const = 0;
     IButtonMappingList * GetMotionMappingForDevice(const IParamPackage & param) const = 0;

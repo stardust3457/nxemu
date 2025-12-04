@@ -164,14 +164,14 @@ public:
     NpadIdType GetNpadIdType() const;
 
     /// Sets the NpadStyleIndex for this controller
-    void SetNpadStyleIndex(NpadStyleIndex npad_type_);
+    void SetNpadStyleIndex(NpadStyleIndex npad_type) override;
 
     /**
      * Gets the NpadStyleIndex for this controller
      * @param get_temporary_value If true tmp_npad_type will be returned
      * @return NpadStyleIndex set on the controller
      */
-    NpadStyleIndex GetNpadStyleIndex(bool get_temporary_value = false) const;
+    NpadStyleIndex GetNpadStyleIndex(bool get_temporary_value = false) const override;
 
     /**
      * Sets the supported controller types. Disconnects the controller if current type is not
@@ -184,17 +184,17 @@ public:
      * Sets the connected status to true
      * @param use_temporary_value If true tmp_npad_type will be used
      */
-    void Connect(bool use_temporary_value = false);
+    void Connect(bool use_temporary_value = false) override;
 
     /// Sets the connected status to false
-    void Disconnect();
+    void Disconnect() override;
 
     /**
      * Is the emulated connected
      * @param get_temporary_value If true tmp_is_connected will be returned
      * @return true if the controller has the connected status
      */
-    bool IsConnected(bool get_temporary_value = false) const;
+    bool IsConnected(bool get_temporary_value = false) const override;
 
     /// Removes all callbacks created from input devices
     void UnloadInput();
@@ -224,7 +224,7 @@ public:
     void ReloadInput();
 
     /// Overrides current mapped devices with the stored configuration and reloads all input devices
-    void ReloadFromSettings();
+    void ReloadFromSettings() override;
 
     /// Updates current colors with the ones stored in the configuration
     void ReloadColorsFromSettings();

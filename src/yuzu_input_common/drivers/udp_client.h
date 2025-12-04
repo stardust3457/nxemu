@@ -58,12 +58,12 @@ public:
 
     /// Used for automapping features
     std::vector<Common::ParamPackage> GetInputDevices() const override;
-    ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& params) override;
-    AnalogMapping GetAnalogMappingForDevice(const Common::ParamPackage& params) override;
-    MotionMapping GetMotionMappingForDevice(const Common::ParamPackage& params) override;
-    ButtonNames GetUIName(const Common::ParamPackage& params) const override;
+    ButtonMapping GetButtonMappingForDevice(const IParamPackage& params) override;
+    AnalogMapping GetAnalogMappingForDevice(const IParamPackage& params) override;
+    MotionMapping GetMotionMappingForDevice(const IParamPackage& params) override;
+    ButtonNames GetUIName(const IParamPackage& params) const override;
 
-    bool IsStickInverted(const Common::ParamPackage& params) override;
+    bool IsStickInverted(const IParamPackage& params) override;
 
 private:
     enum class PadButton {
@@ -151,7 +151,7 @@ private:
     PadIdentifier GetPadIdentifier(std::size_t pad_index) const;
     Common::UUID GetHostUUID(const std::string& host) const;
 
-    ButtonNames GetUIButtonName(const Common::ParamPackage& params) const;
+    ButtonNames GetUIButtonName(const IParamPackage& params) const;
 
     // Allocate clients for 8 udp servers
     static constexpr std::size_t MAX_UDP_CLIENTS = 8;

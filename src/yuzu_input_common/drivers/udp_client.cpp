@@ -394,7 +394,7 @@ std::vector<Common::ParamPackage> UDPClient::GetInputDevices() const {
     return devices;
 }
 
-ButtonMapping UDPClient::GetButtonMappingForDevice(const Common::ParamPackage& params) {
+ButtonMapping UDPClient::GetButtonMappingForDevice(const IParamPackage & params) {
     // This list excludes any button that can't be really mapped
     static constexpr std::array<std::pair<NativeButtonValues, PadButton>, 22>
         switch_to_dsu_button = {
@@ -429,9 +429,9 @@ ButtonMapping UDPClient::GetButtonMappingForDevice(const Common::ParamPackage& p
     for (const auto& [switch_button, dsu_button] : switch_to_dsu_button) {
         Common::ParamPackage button_params{};
         button_params.Set("engine", GetEngineName());
-        button_params.Set("guid", params.Get("guid", ""));
-        button_params.Set("port", params.Get("port", 0));
-        button_params.Set("pad", params.Get("pad", 0));
+        button_params.Set("guid", params.GetString("guid", ""));
+        button_params.Set("port", params.GetInt("port", 0));
+        button_params.Set("pad", params.GetInt("pad", 0));
         button_params.Set("button", static_cast<int>(dsu_button));
         mapping.insert_or_assign(switch_button, std::move(button_params));
     }
@@ -439,7 +439,7 @@ ButtonMapping UDPClient::GetButtonMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-AnalogMapping UDPClient::GetAnalogMappingForDevice(const Common::ParamPackage& params) {
+AnalogMapping UDPClient::GetAnalogMappingForDevice(const IParamPackage & params) {
     if (!params.Has("guid") || !params.Has("port") || !params.Has("pad")) {
         return {};
     }
@@ -447,24 +447,24 @@ AnalogMapping UDPClient::GetAnalogMappingForDevice(const Common::ParamPackage& p
     AnalogMapping mapping = {};
     Common::ParamPackage left_analog_params;
     left_analog_params.Set("engine", GetEngineName());
-    left_analog_params.Set("guid", params.Get("guid", ""));
-    left_analog_params.Set("port", params.Get("port", 0));
-    left_analog_params.Set("pad", params.Get("pad", 0));
+    left_analog_params.Set("guid", params.GetString("guid", ""));
+    left_analog_params.Set("port", params.GetInt("port", 0));
+    left_analog_params.Set("pad", params.GetInt("pad", 0));
     left_analog_params.Set("axis_x", static_cast<int>(PadAxes::LeftStickX));
     left_analog_params.Set("axis_y", static_cast<int>(PadAxes::LeftStickY));
     mapping.insert_or_assign(NativeAnalogValues::LStick, std::move(left_analog_params));
     Common::ParamPackage right_analog_params;
     right_analog_params.Set("engine", GetEngineName());
-    right_analog_params.Set("guid", params.Get("guid", ""));
-    right_analog_params.Set("port", params.Get("port", 0));
-    right_analog_params.Set("pad", params.Get("pad", 0));
+    right_analog_params.Set("guid", params.GetString("guid", ""));
+    right_analog_params.Set("port", params.GetInt("port", 0));
+    right_analog_params.Set("pad", params.GetInt("pad", 0));
     right_analog_params.Set("axis_x", static_cast<int>(PadAxes::RightStickX));
     right_analog_params.Set("axis_y", static_cast<int>(PadAxes::RightStickY));
     mapping.insert_or_assign(NativeAnalogValues::RStick, std::move(right_analog_params));
     return mapping;
 }
 
-MotionMapping UDPClient::GetMotionMappingForDevice(const Common::ParamPackage& params) {
+MotionMapping UDPClient::GetMotionMappingForDevice(const IParamPackage & params) {
     if (!params.Has("guid") || !params.Has("port") || !params.Has("pad")) {
         return {};
     }
@@ -472,16 +472,16 @@ MotionMapping UDPClient::GetMotionMappingForDevice(const Common::ParamPackage& p
     MotionMapping mapping = {};
     Common::ParamPackage left_motion_params;
     left_motion_params.Set("engine", GetEngineName());
-    left_motion_params.Set("guid", params.Get("guid", ""));
-    left_motion_params.Set("port", params.Get("port", 0));
-    left_motion_params.Set("pad", params.Get("pad", 0));
+    left_motion_params.Set("guid", params.GetString("guid", ""));
+    left_motion_params.Set("port", params.GetBool("port", 0));
+    left_motion_params.Set("pad", params.GetBool("pad", 0));
     left_motion_params.Set("motion", 0);
 
     Common::ParamPackage right_motion_params;
     right_motion_params.Set("engine", GetEngineName());
-    right_motion_params.Set("guid", params.Get("guid", ""));
-    right_motion_params.Set("port", params.Get("port", 0));
-    right_motion_params.Set("pad", params.Get("pad", 0));
+    right_motion_params.Set("guid", params.GetString("guid", ""));
+    right_motion_params.Set("port", params.GetBool("port", 0));
+    right_motion_params.Set("pad", params.GetBool("pad", 0));
     right_motion_params.Set("motion", 0);
 
     mapping.insert_or_assign(NativeMotionValues::MotionLeft, std::move(left_motion_params));
@@ -489,8 +489,8 @@ MotionMapping UDPClient::GetMotionMappingForDevice(const Common::ParamPackage& p
     return mapping;
 }
 
-ButtonNames UDPClient::GetUIButtonName(const Common::ParamPackage& params) const {
-    PadButton button = static_cast<PadButton>(params.Get("button", 0));
+ButtonNames UDPClient::GetUIButtonName(const IParamPackage & params) const {
+    PadButton button = static_cast<PadButton>(params.GetInt("button", 0));
     switch (button) {
     case PadButton::Left:
         return ButtonNames::ButtonLeft;
@@ -535,7 +535,7 @@ ButtonNames UDPClient::GetUIButtonName(const Common::ParamPackage& params) const
     }
 }
 
-ButtonNames UDPClient::GetUIName(const Common::ParamPackage& params) const {
+ButtonNames UDPClient::GetUIName(const IParamPackage & params) const {
     if (params.Has("button")) {
         return GetUIButtonName(params);
     }
@@ -549,13 +549,13 @@ ButtonNames UDPClient::GetUIName(const Common::ParamPackage& params) const {
     return ButtonNames::Invalid;
 }
 
-bool UDPClient::IsStickInverted(const Common::ParamPackage& params) {
+bool UDPClient::IsStickInverted(const IParamPackage & params) {
     if (!params.Has("guid") || !params.Has("port") || !params.Has("pad")) {
         return false;
     }
 
-    const auto x_axis = static_cast<PadAxes>(params.Get("axis_x", 0));
-    const auto y_axis = static_cast<PadAxes>(params.Get("axis_y", 0));
+    const auto x_axis = static_cast<PadAxes>(params.GetInt("axis_x", 0));
+    const auto y_axis = static_cast<PadAxes>(params.GetInt("axis_y", 0));
     if (x_axis != PadAxes::LeftStickY && x_axis != PadAxes::RightStickY) {
         return false;
     }

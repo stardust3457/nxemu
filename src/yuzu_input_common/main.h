@@ -13,15 +13,7 @@ namespace Common {
 class ParamPackage;
 }
 
-namespace InputSettings::NativeAnalog {
-enum Values : int;
-}
-
 namespace InputSettings::NativeButton {
-enum Values : int;
-}
-
-namespace InputSettings::NativeMotion {
 enum Values : int;
 }
 
@@ -127,19 +119,19 @@ public:
     [[nodiscard]] AnalogMapping GetAnalogMappingForDevice(const IParamPackage & device) const;
 
     /// Retrieves the button mappings for the given device.
-    [[nodiscard]] ButtonMapping GetButtonMappingForDevice(const Common::ParamPackage& device) const;
+    [[nodiscard]] ButtonMapping GetButtonMappingForDevice(const IParamPackage & device) const;
 
     /// Retrieves the motion mappings for the given device.
     [[nodiscard]] MotionMapping GetMotionMappingForDevice(const IParamPackage & device) const;
 
     /// Returns an enum containing the name to be displayed from the input engine.
-    [[nodiscard]] ButtonNames GetButtonName(const Common::ParamPackage& params) const;
+    [[nodiscard]] ButtonNames GetButtonName(const IParamPackage& params) const;
 
     /// Returns true if device is a controller.
-    [[nodiscard]] bool IsController(const Common::ParamPackage& params) const;
+    [[nodiscard]] bool IsController(const IParamPackage & params) const;
 
     /// Returns true if axis of a stick aren't mapped in the correct direction
-    [[nodiscard]] bool IsStickInverted(const Common::ParamPackage& device) const;
+    [[nodiscard]] bool IsStickInverted(const IParamPackage & device) const;
 
     /// Reloads the input devices.
     void ReloadInputDevices();
