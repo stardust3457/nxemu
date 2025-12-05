@@ -102,6 +102,19 @@ bool InputConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uin
     SciterElement clickElem(element);
     if (clickElem.GetAttribute("role") == "window-ok")
     {
+        for (size_t i = 0, n = sizeof(m_playerConfig) / sizeof(m_playerConfig[0]); i < n; i++)
+        {
+            if (m_playerConfig[i] == nullptr)
+            {
+                continue;
+            }
+            m_playerConfig[i]->SaveSetting();
+        }
+        SwitchSystem * system = SwitchSystem::GetInstance();
+        if (system != nullptr)
+        {
+            system->FlushSettings();
+        }
         m_window->Destroy();
     }
     return false;

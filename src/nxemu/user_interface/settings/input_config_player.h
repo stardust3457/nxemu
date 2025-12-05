@@ -21,6 +21,8 @@ public:
     InputConfigPlayer(ISciterUI& sciterUI, InputConfig & config, HWINDOW parent, SciterElement page, NpadIdType controllerIndex);
     ~InputConfigPlayer() = default;
 
+    void SaveSetting();
+
     // IClickSink
     bool OnClick(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t reason) override;
 

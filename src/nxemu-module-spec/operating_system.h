@@ -361,6 +361,7 @@ __interface IEmulatedController
     void Connect(bool use_temporary_value = false) = 0;
     void Disconnect() = 0;
     bool IsConnected(bool get_temporary_value = false) const = 0;
+    void SaveCurrentConfig() = 0;
     void ReloadFromSettings() = 0;
     IParamPackageList * GetMappedDevicesPtr() const = 0;
     IParamPackage * GetButtonParamPtr(uint32_t index) const = 0;

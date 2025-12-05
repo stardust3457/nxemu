@@ -114,33 +114,6 @@ void OSManager::EmulationStarting()
 bool OSManager::Initialize(void)
 {
     SetupOsSetting();
-
-    auto & player = Settings::values.players.GetValue()[0];
-    player.connected = true;
-    InputSettings::ButtonsRaw & buttons = player.buttons;
-    buttons[(size_t)NativeButtonValues::A] = "engine:keyboard,code:67,toggle:0";
-    buttons[(size_t)NativeButtonValues::B] = "engine:keyboard,code:88,toggle:0";
-    buttons[(size_t)NativeButtonValues::X] = "engine:keyboard,code:86,toggle:0";
-    buttons[(size_t)NativeButtonValues::Y] = "engine:keyboard,code:90,toggle:0";
-    buttons[(size_t)NativeButtonValues::LStick] = "engine:keyboard,code:70,toggle:0";
-    buttons[(size_t)NativeButtonValues::RStick] = "engine:keyboard,code:71,toggle:0";
-    buttons[(size_t)NativeButtonValues::L] = "engine:keyboard,code:81,toggle:0";
-    buttons[(size_t)NativeButtonValues::R] = "engine:keyboard,code:69,toggle:0";
-    buttons[(size_t)NativeButtonValues::ZL] = "engine:keyboard,code:82,toggle:0";
-    buttons[(size_t)NativeButtonValues::ZR] = "engine:keyboard,code:84,toggle:0";
-    buttons[(size_t)NativeButtonValues::Plus] = "engine:keyboard,code:77,toggle:0";
-    buttons[(size_t)NativeButtonValues::Minus] = "engine:keyboard,code:78,toggle:0";
-    buttons[(size_t)NativeButtonValues::DLeft] = "engine:keyboard,code:37,toggle:0";
-    buttons[(size_t)NativeButtonValues::DUp] = "engine:keyboard,code:38,toggle:0";
-    buttons[(size_t)NativeButtonValues::DRight] = "engine:keyboard,code:39,toggle:0";
-    buttons[(size_t)NativeButtonValues::DDown] = "engine:keyboard,code:40,toggle:0";
-    buttons[(size_t)NativeButtonValues::SLLeft] = "engine:keyboard,code:81,toggle:0";
-    buttons[(size_t)NativeButtonValues::SRLeft] = "engine:keyboard,code:69,toggle:0";
-    buttons[(size_t)NativeButtonValues::Home] = "engine:keyboard,code:0,toggle:0";
-    buttons[(size_t)NativeButtonValues::Screenshot] = "engine:keyboard,code:0,toggle:0";
-    buttons[(size_t)NativeButtonValues::SLRight] = "engine:keyboard,code:81,toggle:0";
-    buttons[(size_t)NativeButtonValues::SRRight] = "engine:keyboard,code:69,toggle:0";
-
     m_coreSystem.Initialize();
     m_coreSystem.HIDCore().ReloadInputDevices();
     return true;

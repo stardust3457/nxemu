@@ -492,6 +492,11 @@ InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config,
     UpdateControllerButtonNames();
 }
 
+void InputConfigPlayer::SaveSetting()
+{
+    m_emulatedController->SaveCurrentConfig();
+}
+
 bool InputConfigPlayer::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uint32_t /*reason*/)
 {
     if (element == m_connectedController)
@@ -1118,11 +1123,6 @@ void InputConfigPlayer::SetConnectableControllers()
         availableControllers.emplace_back(NpadStyleIndex::JoyconRight, "Right Joycon");
     }
 
-    if (m_controllerIndex == NpadIdType::Player1 && ((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Handheld) != 0)
-    {
-        availableControllers.emplace_back(NpadStyleIndex::Handheld, "Handheld");
-    }
-
     if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Gc) != 0)
     {
         availableControllers.emplace_back(NpadStyleIndex::GameCube, "GameCube Controller");
@@ -1131,6 +1131,11 @@ void InputConfigPlayer::SetConnectableControllers()
     // Disable all unsupported controllers
     if (uiSettings.enableAllControllers) 
     {
+        if (m_controllerIndex == NpadIdType::Player1 && ((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Handheld) != 0)
+        {
+            availableControllers.emplace_back(NpadStyleIndex::Handheld, "Handheld");
+        }
+
         if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Palma) != 0)
         {
             availableControllers.emplace_back(NpadStyleIndex::Pokeball, "Poke Ball Plus");
