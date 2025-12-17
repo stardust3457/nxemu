@@ -47,28 +47,25 @@ private:
 
 } // namespace FileSys
 
-class RomFSFactoryPtr :
+class RomFsControllerPtr :
     public IRomFsController
 {
 public:
-    RomFSFactoryPtr();
-    RomFSFactoryPtr(std::shared_ptr<FileSys::RomFSFactory> romFSFactory);
-    RomFSFactoryPtr(RomFSFactoryPtr && other) noexcept;
-    ~RomFSFactoryPtr();
+    RomFsControllerPtr();
+    RomFsControllerPtr(std::shared_ptr<FileSys::RomFSFactory> factory_, uint64_t programId_);
+    RomFsControllerPtr(RomFsControllerPtr && other) noexcept;
+    ~RomFsControllerPtr();
 
-    RomFSFactoryPtr & operator=(RomFSFactoryPtr && other) noexcept;
-
-    FileSys::RomFSFactory * operator->() const;
-    FileSys::RomFSFactory & operator*() const;
-    operator bool() const;
+    RomFsControllerPtr & operator=(RomFsControllerPtr && other) noexcept;
 
     // IRomFsController
-    IVirtualFile * OpenCurrentProcess(uint64_t currentProcessTitleId) const;
+    IVirtualFile * OpenRomFSCurrentProcess() override;
     void Release() override;
 
 private:
-    RomFSFactoryPtr(const RomFSFactoryPtr &) = delete;
-    RomFSFactoryPtr & operator=(const RomFSFactoryPtr &) = delete;
+    RomFsControllerPtr(const RomFsControllerPtr &) = delete;
+    RomFsControllerPtr & operator=(const RomFsControllerPtr &) = delete;
 
-    std::shared_ptr<FileSys::RomFSFactory> m_romFSFactory;
+    const std::shared_ptr<FileSys::RomFSFactory> m_factory;
+    const uint64_t m_programId;
 };

@@ -64,7 +64,7 @@ uint64_t FileSystemController::GetTotalSpaceSize(StorageId id) const
     return 0;
 }
 
-bool FileSystemController::OpenProcess(uint64_t* programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId)
+bool FileSystemController::OpenProcess(uint64_t * programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId)
 {
     std::scoped_lock lk{registration_lock};
 
@@ -77,7 +77,7 @@ bool FileSystemController::OpenProcess(uint64_t* programId, ISaveDataFactory ** 
 
     *programId = it->second.program_id;
     *saveDataFactory = std::make_unique<SaveDataFactoryPtr>(it->second.save_data_factory).release();
-    *romFsController = std::make_unique<RomFSFactoryPtr>(it->second.romfs_factory).release();
+    *romFsController = std::make_unique<RomFsControllerPtr>(it->second.romfs_factory, it->second.program_id).release();
     return true;
 }
 

@@ -25,7 +25,6 @@
 #include "core/hle/service/filesystem/fsp/fsp_types.h"
 #include "core/hle/service/filesystem/fsp/fsp_srv.h"
 #include "core/hle/service/filesystem/fsp/save_data_transfer_prohibiter.h"
-#include "core/hle/service/filesystem/romfs_controller.h"
 #include "core/hle/service/hle_ipc.h"
 #include "core/hle/service/ipc_helpers.h"
 #include "core/file_sys/errors.h"
@@ -187,13 +186,10 @@ Result FSP_SRV::SetCurrentProcess(ClientProcessId pid)
     current_process_id = *pid;
     LOG_DEBUG(Service_FS, "called. current_process_id=0x{:016X}", current_process_id);
 
-    RomFsControllerPtr romFsController;
-
-    if (!fsc.OpenProcess(&program_id, save_data_controller.GetAddressForSet(), romFsController.GetAddressForSet(), current_process_id))
+    if (!fsc.OpenProcess(&program_id, save_data_controller.GetAddressForSet(), romfs_controller.GetAddressForSet(), current_process_id))
     {
         return FileSys::ResultTargetNotFound;
     }
-    romfs_controller = std::make_shared<RomFsController>(std::move(romFsController), program_id);
     R_SUCCEED();
 }
 
@@ -354,7 +350,7 @@ Result FSP_SRV::OpenDataStorageByCurrentProcess(OutInterface<IStorage> out_inter
 
     if (!romfs)
     {
-        IVirtualFilePtr current_romfs = std::move(romfs_controller->OpenRomFSCurrentProcess());
+        IVirtualFilePtr current_romfs(romfs_controller->OpenRomFSCurrentProcess());
         if (!current_romfs) 
         {
             // TODO (bunnei): Find the right error code to use here

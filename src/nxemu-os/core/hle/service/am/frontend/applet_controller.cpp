@@ -150,6 +150,7 @@ void Controller::ExecuteInteractive() {
 }
 
 Result Controller::RequestExit() {
+    UNIMPLEMENTED();
     R_SUCCEED();
 }
 

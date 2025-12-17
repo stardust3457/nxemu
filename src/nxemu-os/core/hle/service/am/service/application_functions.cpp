@@ -124,7 +124,8 @@ Result IApplicationFunctions::PopLaunchParameter(Out<SharedPointer<IStorage>> ou
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::EnsureSaveData(Out<u64> out_size, Common::UUID user_id) {
+Result IApplicationFunctions::EnsureSaveData(Out<u64> out_size, Common::UUID user_id)
+{
     LOG_INFO(Service_AM, "called, uid={}", user_id.FormattedString());
 
     ISystemloader & loader = system.GetSystemloader();
@@ -141,7 +142,8 @@ Result IApplicationFunctions::EnsureSaveData(Out<u64> out_size, Common::UUID use
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetDesiredLanguage(Out<u64> out_language_code) {
+Result IApplicationFunctions::GetDesiredLanguage(Out<u64> out_language_code)
+{
     // FIXME: all of this stuff belongs to ns
     // TODO(bunnei): This should be configurable
     LOG_DEBUG(Service_AM, "called");

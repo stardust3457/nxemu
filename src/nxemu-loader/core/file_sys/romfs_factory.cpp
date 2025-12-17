@@ -70,22 +70,23 @@ std::shared_ptr<NCA> RomFSFactory::GetEntry(uint64_t title_id, StorageId storage
 
 } // namespace FileSys
 
-RomFSFactoryPtr::RomFSFactoryPtr(std::shared_ptr<FileSys::RomFSFactory> romFSFactory) :
-    m_romFSFactory(romFSFactory)
+RomFsControllerPtr::RomFsControllerPtr(std::shared_ptr<FileSys::RomFSFactory> factory_, uint64_t programId_) :
+    m_factory(factory_),
+    m_programId(programId_)
 {
 }
 
-RomFSFactoryPtr::~RomFSFactoryPtr()
+RomFsControllerPtr::~RomFsControllerPtr()
 {
 }
 
-IVirtualFile * RomFSFactoryPtr::OpenCurrentProcess(uint64_t currentProcessTitleId) const
+IVirtualFile * RomFsControllerPtr::OpenRomFSCurrentProcess()
 {
-    FileSys::VirtualFile romfs = m_romFSFactory->OpenCurrentProcess(currentProcessTitleId);
+    FileSys::VirtualFile romfs = m_factory->OpenCurrentProcess(m_programId);
     return std::make_unique<VirtualFilePtr>(romfs).release();
 }
 
-void RomFSFactoryPtr::Release()
+void RomFsControllerPtr::Release()
 {
     delete this;
 }

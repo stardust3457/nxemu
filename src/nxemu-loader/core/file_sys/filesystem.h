@@ -53,8 +53,6 @@ public:
 private:
     std::shared_ptr<FileSys::SaveDataFactory> CreateSaveDataFactory(FileSys::ProgramId program_id) const;
 
-    Systemloader & loader;
-
     struct Registration {
         FileSys::ProgramId program_id;
         std::shared_ptr<FileSys::RomFSFactory> romfs_factory;
@@ -65,5 +63,6 @@ private:
 
     std::unique_ptr<FileSys::SDMCFactory> sdmc_factory;
     std::unique_ptr<FileSys::BISFactory> bis_factory;
-};
 
+    Systemloader & loader;
+};

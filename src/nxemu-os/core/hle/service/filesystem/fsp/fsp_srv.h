@@ -88,7 +88,7 @@ private:
     AccessLogMode access_log_mode = AccessLogMode::None;
     u64 program_id = 0;
     SaveDataFactoryPtr save_data_controller;
-    std::shared_ptr<RomFsController> romfs_controller;
+    RomFsControllerPtr romfs_controller;
 };
 
 } // namespace Service::FileSystem

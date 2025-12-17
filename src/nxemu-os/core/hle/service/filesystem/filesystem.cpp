@@ -13,7 +13,6 @@
 #include "core/hle/service/filesystem/fsp/fsp_ldr.h"
 #include "core/hle/service/filesystem/fsp/fsp_pr.h"
 #include "core/hle/service/filesystem/fsp/fsp_srv.h"
-#include "core/hle/service/filesystem/romfs_controller.h"
 #include "core/hle/service/server_manager.h"
 
 namespace Service::FileSystem {
