@@ -6,13 +6,14 @@
 #include <widgets/page_nav.h>
 
 class SystemConfig;
+class SystemModules;
 
 class SystemConfigAudio :
     public IPagesSink,
     public IStateChangeSink
 {
 public:
-    SystemConfigAudio(ISciterUI & sciterUI, SystemConfig & config, HWINDOW parent, SciterElement page);
+    SystemConfigAudio(ISciterUI & sciterUI, SystemConfig & config, SystemModules & modules, HWINDOW parent, SciterElement page);
     ~SystemConfigAudio() = default;
 
     void SaveSetting(void);
@@ -37,6 +38,7 @@ private:
 
     ISciterUI & m_sciterUI;
     SystemConfig & m_config;
+    SystemModules & m_modules;
     HWINDOW m_parent;
     SciterElement m_page;
     std::shared_ptr<IPageNav> m_pageNav;

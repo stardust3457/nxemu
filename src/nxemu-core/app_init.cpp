@@ -1,6 +1,5 @@
 #include "app_init.h"
 #include "logging.h"
-#include "machine/switch_system.h"
 #include "notification.h"
 #include "settings/core_settings.h"
 #include "settings/settings.h"
@@ -24,6 +23,5 @@ bool AppInit(INotification * notification)
 
 void AppCleanup(void)
 {
-    SwitchSystem::ShutDown();
     SettingsStore::CleanUp();
 }

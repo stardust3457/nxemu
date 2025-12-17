@@ -8,6 +8,7 @@ __interface ISciterUI;
 __interface ISciterWindow;
 __interface IParamPackageList;
 class InputConfigPlayer;
+class SystemModules;
 
 enum class NpadIdType : uint32_t;
 
@@ -19,7 +20,7 @@ class InputConfig :
     typedef std::unordered_map<std::string, std::pair<size_t, NpadIdType>> PlayerInfo;
 
 public:
-    InputConfig(ISciterUI & SciterUI);
+    InputConfig(ISciterUI & SciterUI, SystemModules & modules);
     ~InputConfig();
 
     void Display(void * parentWindow);
@@ -46,6 +47,7 @@ private:
     InputConfig & operator=(const InputConfig &) = delete;
 
     ISciterUI & m_sciterUI;
+    SystemModules & m_modules;
     ISciterWindow * m_window;
     std::shared_ptr<IPageNav> m_pageNav;
     std::unique_ptr<InputConfigPlayer> m_playerConfig[8];

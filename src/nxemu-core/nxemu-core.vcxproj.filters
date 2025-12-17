@@ -28,12 +28,6 @@
     <Filter Include="Module Spec">
       <UniqueIdentifier>{6d196b5d-acca-4a87-8558-e71395ac5fb1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\machine">
-      <UniqueIdentifier>{6f0c1519-a960-4d4c-aae7-9c743a1e9633}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\machine">
-      <UniqueIdentifier>{4a31f0b1-504b-45a3-950d-7ebeb673e6be}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings\settings.h">
@@ -59,12 +53,6 @@
     </ClInclude>
     <ClInclude Include="..\nxemu-module-spec\operating_system.h">
       <Filter>Module Spec</Filter>
-    </ClInclude>
-    <ClInclude Include="machine\switch_system.h">
-      <Filter>Header Files\machine</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\modules.h">
-      <Filter>Header Files\modules</Filter>
     </ClInclude>
     <ClInclude Include="modules\cpu_module.h">
       <Filter>Header Files\modules</Filter>
@@ -99,6 +87,9 @@
     <ClInclude Include="logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="modules\system_modules.h">
+      <Filter>Header Files\modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings\settings.cpp">
@@ -114,12 +105,6 @@
       <Filter>Source Files\settings</Filter>
     </ClCompile>
     <ClCompile Include="modules\module_base.cpp">
-      <Filter>Source Files\modules</Filter>
-    </ClCompile>
-    <ClCompile Include="machine\switch_system.cpp">
-      <Filter>Source Files\machine</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\modules.cpp">
       <Filter>Source Files\modules</Filter>
     </ClCompile>
     <ClCompile Include="modules\cpu_module.cpp">
@@ -145,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="logging.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\system_modules.cpp">
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

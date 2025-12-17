@@ -5,7 +5,6 @@
 #include "system_config_graphics.h"
 #include "system_config_game_browser.h"
 #include <common/std_string.h>
-#include <nxemu-core/machine/switch_system.h>
 #include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/notification.h>
@@ -14,9 +13,11 @@
 #include <sciter_handler.h>
 #include <widgets/page_nav.h>
 #include <yuzu_common/settings_enums.h>
+#include <nxemu-core/modules/system_modules.h>
 
-SystemConfig::SystemConfig(ISciterUI & SciterUI, std::vector<VkDeviceRecord> & vkDeviceRecords) :
+SystemConfig::SystemConfig(ISciterUI & SciterUI, SystemModules & modules, std::vector<VkDeviceRecord> & vkDeviceRecords) :
     m_sciterUI(SciterUI),
+    m_modules(modules),
     m_vkDeviceRecords(vkDeviceRecords),
     m_window(nullptr)
 {
@@ -240,7 +241,7 @@ void SystemConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEME
 {
     if (pageName == "Audio")
     {
-        m_systemConfigAudio.reset(new SystemConfigAudio(m_sciterUI, *this, m_window->GetHandle(), page));
+        m_systemConfigAudio.reset(new SystemConfigAudio(m_sciterUI, *this, m_modules, m_window->GetHandle(), page));
     }
     else if (pageName == "Debug")
     {
@@ -281,10 +282,9 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
         {
             m_systemConfigGameBrowser->SaveSetting();
         }
-        SwitchSystem * system = SwitchSystem::GetInstance();
-        if (system != nullptr)
+        if (m_modules.IsValid())
         {
-            system->FlushSettings();
+            m_modules.FlushSettings();
         }
         m_window->Destroy();
     }

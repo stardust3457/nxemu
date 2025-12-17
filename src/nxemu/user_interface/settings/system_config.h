@@ -13,6 +13,7 @@ class SystemConfigGraphics;
 class SystemConfigDebug;
 class SystemConfigGameBrowser;
 class ConfigSetting;
+class SystemModules;
 
 typedef std::pair<int32_t, std::string> SettingTranslation;
 typedef std::vector<SettingTranslation> SettingTranslationList;
@@ -28,7 +29,7 @@ public:
         VulkanDevice = 10000
     };
 
-    SystemConfig(ISciterUI & SciterUI, std::vector<VkDeviceRecord> & vkDeviceRecords);
+    SystemConfig(ISciterUI & SciterUI, SystemModules & modules, std::vector<VkDeviceRecord> & vkDeviceRecords);
     ~SystemConfig();
 
     void Display(void * parentWindow);
@@ -54,6 +55,7 @@ private:
     void SetupComboBox(const SciterElement & page, const ConfigSetting & setting);
 
     ISciterUI & m_sciterUI;
+    SystemModules & m_modules;
     std::vector<VkDeviceRecord> & m_vkDeviceRecords;
     ISciterWindow * m_window;
     SettingTranslationMap m_settingTranslations;

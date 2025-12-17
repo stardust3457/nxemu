@@ -3,8 +3,9 @@
 #include "system_config.h"
 #include <common/std_string.h>
 #include <nxemu-core/settings/settings.h>
-#include <nxemu-core/machine/switch_system.h>
+#include <nxemu-core/modules/system_modules.h>
 #include <nxemu-os/os_settings_identifiers.h>
+#include <nxemu-module-spec/operating_system.h>
 #include <yuzu_common/settings_enums.h>
 #include <widgets/combo_box.h>
 
@@ -26,8 +27,9 @@ void AddDeviceToVector(const char * device, void * userData)
 }
 }
 
-SystemConfigAudio::SystemConfigAudio(ISciterUI & sciterUI, SystemConfig & config, HWINDOW parent, SciterElement page) :
+SystemConfigAudio::SystemConfigAudio(ISciterUI & sciterUI, SystemConfig & config, SystemModules & modules, HWINDOW parent, SciterElement page) :
     m_sciterUI(sciterUI),
+    m_modules(modules),
     m_config(config),
     m_parent(parent),
     m_page(page)
@@ -75,17 +77,16 @@ void SystemConfigAudio::SetupAudioPage(SciterElement page)
 {
     m_audioPage = page;
     m_config.SetupPage(page, audioSettings, sizeof(audioSettings) / sizeof(audioSettings[0]));
-    SwitchSystem* system = SwitchSystem::GetInstance();
-    if (system == nullptr)
+    if (!m_modules.IsValid())
     {
         return;
     }
-    IOperatingSystem& OperatingSystem = system->OperatingSystem();
+    IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
 
     uint32_t count = 0;
-    OperatingSystem.AudioGetSyncIDs(nullptr, 0, &count);
+    operatingSystem.AudioGetSyncIDs(nullptr, 0, &count);
     std::vector<uint32_t> ids(count);
-    OperatingSystem.AudioGetSyncIDs(ids.data(), count, &count);
+    operatingSystem.AudioGetSyncIDs(ids.data(), count, &count);
 
     SettingsStore& settings = SettingsStore::GetInstance();
     int32_t audioSinkId = settings.GetInt(NXOsSetting::AudioSinkId);
@@ -160,19 +161,18 @@ void SystemConfigAudio::updateVolumeDisplay()
 
 void SystemConfigAudio::updateAudioDevices(int32_t audioSinkId, const char * audioOutputDeviceId, const char * audioInputDeviceId)
 {
-    SwitchSystem * system = SwitchSystem::GetInstance();
-    if (system == nullptr)
+    if (!m_modules.IsValid())
     {
         return;
     }
-    IOperatingSystem & OperatingSystem = system->OperatingSystem();
+    IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
     std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(m_page.GetElementByID("audioOutputDevice"), IID_ICOMBOBOX);
     if (interfacePtr)
     {
         m_audioOutputDevice = std::static_pointer_cast<IComboBox>(interfacePtr);
         m_audioOutputDevice->ClearContents();
         std::vector<std::string> devices;
-        OperatingSystem.AudioGetDeviceListForSink(audioSinkId, false, AddDeviceToVector, &devices);
+        operatingSystem.AudioGetDeviceListForSink(audioSinkId, false, AddDeviceToVector, &devices);
         int32_t index = m_audioOutputDevice->AddItem("auto", "auto");
         int32_t selectedIndex = index;
         for (size_t i = 0, n = devices.size(); i < n; i++)
@@ -195,7 +195,7 @@ void SystemConfigAudio::updateAudioDevices(int32_t audioSinkId, const char * aud
         m_audioInputDevice = std::static_pointer_cast<IComboBox>(interfacePtr);
         m_audioInputDevice->ClearContents();
         std::vector<std::string> devices;
-        OperatingSystem.AudioGetDeviceListForSink(audioSinkId, true, AddDeviceToVector, &devices);
+        operatingSystem.AudioGetDeviceListForSink(audioSinkId, true, AddDeviceToVector, &devices);
         int32_t index = m_audioInputDevice->AddItem("auto", "auto");
         int32_t selectedIndex = index;
         for (size_t i = 0, n = devices.size(); i < n; i++)

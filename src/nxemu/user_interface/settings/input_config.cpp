@@ -1,10 +1,11 @@
 #include "input_config.h"
 #include "input_config_player.h"
+#include <nxemu-core/modules/system_modules.h>
 #include <sciter_ui.h>
-#include <nxemu-core/machine/switch_system.h>
 
-InputConfig::InputConfig(ISciterUI & SciterUI) :
+InputConfig::InputConfig(ISciterUI & SciterUI, SystemModules & modules) :
     m_sciterUI(SciterUI),
+    m_modules(modules),
     m_window(nullptr),
     m_inputDeviceList(nullptr),
     m_playerCurrent(nullptr),
@@ -19,11 +20,10 @@ InputConfig::InputConfig(ISciterUI & SciterUI) :
         {"Player8", {7, NpadIdType::Player8}}, 
     })
 {
-    SwitchSystem * system = SwitchSystem::GetInstance();
-    if (system != nullptr)
+    if (modules.IsValid())
     {
-        IOperatingSystem & OperatingSystem = system->OperatingSystem();
-        m_inputDeviceList = OperatingSystem.GetInputDevices();
+        IOperatingSystem & operatingSystem = modules.Modules().OperatingSystem();
+        m_inputDeviceList = operatingSystem.GetInputDevices();
     }
 }
 
@@ -38,7 +38,7 @@ InputConfig::~InputConfig()
 
 void InputConfig::Display(void * parentWindow)
 {
-    if (!m_sciterUI.WindowCreate(parentWindow, "input_config.html", 0, 0, 300, 300, SUIW_CHILD, m_window))
+    if (!m_modules.IsValid() || !m_sciterUI.WindowCreate(parentWindow, "input_config.html", 0, 0, 300, 300, SUIW_CHILD, m_window))
     {
         return;
     }
@@ -84,7 +84,7 @@ void InputConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEMEN
     PlayerInfo::const_iterator itr = m_playerMap.find(pageName);
     if (itr != m_playerMap.end())
     {
-        m_playerConfig[itr->second.first].reset(new InputConfigPlayer(m_sciterUI, *this, m_window->GetHandle(), page, itr->second.second));
+        m_playerConfig[itr->second.first].reset(new InputConfigPlayer(m_sciterUI, *this, m_modules, m_window->GetHandle(), page, itr->second.second));
     }
 }
 
@@ -110,11 +110,7 @@ bool InputConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uin
             }
             m_playerConfig[i]->SaveSetting();
         }
-        SwitchSystem * system = SwitchSystem::GetInstance();
-        if (system != nullptr)
-        {
-            system->FlushSettings();
-        }
+        m_modules.FlushSettings();
         m_window->Destroy();
     }
     return false;

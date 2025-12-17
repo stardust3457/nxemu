@@ -18,7 +18,7 @@ class InputConfigPlayer :
     };
 
 public:
-    InputConfigPlayer(ISciterUI& sciterUI, InputConfig & config, HWINDOW parent, SciterElement page, NpadIdType controllerIndex);
+    InputConfigPlayer(ISciterUI& sciterUI, InputConfig & config, SystemModules & modules, HWINDOW parent, SciterElement page, NpadIdType controllerIndex);
     ~InputConfigPlayer() = default;
 
     void SaveSetting();
@@ -72,6 +72,7 @@ private:
     IOperatingSystem & m_operatingSystem;
     ISciterUI & m_sciterUI;
     InputConfig & m_config;
+    SystemModules & m_modules;
     HWINDOW m_parent;
     SciterElement m_page;
     NpadIdType m_controllerIndex;

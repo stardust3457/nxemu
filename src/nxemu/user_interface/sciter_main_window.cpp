@@ -6,7 +6,6 @@
 #include "user_interface/settings/system_config.h"
 #include "user_interface/settings/input_config.h"
 #include <common/std_string.h>
-#include <nxemu-core/machine/switch_system.h>
 #include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/version.h>
@@ -16,6 +15,8 @@
 #include <widgets/menubar.h>
 #include <yuzu_common/settings_input.h>
 #include <yuzu_common/settings.h>
+#include <nxemu-module-spec/video.h>
+#include <nxemu-module-spec/system_loader.h>
 
 #include <Windows.h>
 
@@ -24,7 +25,8 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_window(nullptr),
     m_renderWindow(nullptr),
     m_windowTitle(windowTitle),
-    m_volumePopup(false)
+    m_volumePopup(false),
+    m_emulationRunning(false)
 {
     SettingsStore & settings = SettingsStore::GetInstance();
     settings.RegisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
@@ -112,7 +114,7 @@ bool SciterMainWindow::Show(void)
     }
 
     CreateRenderWindow();
-    SwitchSystem::Create(*this);
+    m_modules.Setup(*this);
 
     UpdateStatusbar();
     m_sciterUI.AttachHandler(rootElement, IID_IMOUSEUPDOWNSINK, (IMouseUpDownSink*)this);
@@ -176,10 +178,9 @@ void SciterMainWindow::DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int3
 
 void SciterMainWindow::UpdateInputDrivers()
 {
-    SwitchSystem * system = SwitchSystem::GetInstance();
-    if (system != nullptr)
+    if (m_modules.IsValid())
     {
-        IOperatingSystem & operatingSystem = system->OperatingSystem();
+        IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
         operatingSystem.PumpInputEvents();
     }
 }
@@ -195,10 +196,9 @@ void SciterMainWindow::CreateRenderWindow(void)
         rect.left, rect.top, width, height, (HWND)m_window->GetHandle(), nullptr, GetModuleHandle(nullptr), nullptr);
     ShowWindow((HWND)m_renderWindow, SW_HIDE);
 
-    SwitchSystem * system = SwitchSystem::GetInstance();
-    if (system != nullptr)
+    if (m_modules.IsValid())
     {
-        IVideo & video = system->Video();
+        IVideo & video = m_modules.Modules().Video();
         video.UpdateFramebufferLayout(rect.right - rect.left, rect.bottom - rect.top);
     }
 }
@@ -216,9 +216,9 @@ void SciterMainWindow::SetCaption(const std::string & caption)
 
 void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userData)
 {
-    bool emulationRunning = SettingsStore::GetInstance().GetBool(NXCoreSetting::EmulationRunning);
-    SciterMainWindow * impl = (SciterMainWindow*)userData;
-    if (emulationRunning)
+    SciterMainWindow * impl = (SciterMainWindow *)userData;
+    impl->m_emulationRunning = SettingsStore::GetInstance().GetBool(NXCoreSetting::EmulationRunning);
+    if (impl->m_emulationRunning)
     {
         if (impl->m_renderWindow != nullptr)
         {
@@ -231,7 +231,7 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
     SciterElement renderer(rootElement.GetElementByID("renderer"));
     if (renderer)
     {
-        renderer.SetState(emulationRunning ? SciterElement::STATE_DISABLED : 0, emulationRunning ? 0 : SciterElement::STATE_DISABLED, true);
+        renderer.SetState(impl->m_emulationRunning ? SciterElement::STATE_DISABLED : 0, impl->m_emulationRunning ? 0 : SciterElement::STATE_DISABLED, true);
     }
 }
 
@@ -314,8 +314,11 @@ void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * u
 
 void SciterMainWindow::OnOpenFile(void)
 {
-    SwitchSystem * system = SwitchSystem::GetInstance();
-    system->Systemloader().SelectAndLoad((void *)m_window->GetHandle());
+    if (m_modules.IsValid())
+    {
+        ISystemloader & loader = m_modules.Modules().Systemloader();
+        loader.SelectAndLoad((void *)m_window->GetHandle());    
+    }
 }
 
 void SciterMainWindow::OnFileExit(void)
@@ -325,23 +328,23 @@ void SciterMainWindow::OnFileExit(void)
 
 void SciterMainWindow::OnSystemConfig(void)
 {
-    m_systemConfig.reset(new SystemConfig(m_sciterUI, m_vkDeviceRecords));
+    m_systemConfig.reset(new SystemConfig(m_sciterUI, m_modules, m_vkDeviceRecords));
     m_systemConfig->Display((void*)m_window->GetHandle());
 }
 
 void SciterMainWindow::OnInputConfig(void)
 {
-    m_inputConfig.reset(new InputConfig(m_sciterUI));
+    m_inputConfig.reset(new InputConfig(m_sciterUI, m_modules));
     m_inputConfig->Display((void*)m_window->GetHandle());
 }
         
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
 {
     Stringlist & recentFiles = uiSettings.recentFiles;
-    if (fileIndex < recentFiles.size())
+    if (m_modules.IsValid() && fileIndex < recentFiles.size())
     {
-        SwitchSystem* system = SwitchSystem::GetInstance();
-        system->Systemloader().LoadRom(recentFiles[fileIndex].c_str());
+        ISystemloader & loader = m_modules.Modules().Systemloader();
+        loader.LoadRom(recentFiles[fileIndex].c_str());
     }
 }
 
@@ -378,14 +381,13 @@ float SciterMainWindow::PixelRatio(void) const
 
 bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t /*keyboardState*/)
 {
-    SwitchSystem* system = SwitchSystem::GetInstance();
-    if (system != nullptr)
+    if (m_modules.IsValid())
     {
-        IOperatingSystem& OperatingSystem = system->OperatingSystem();
+        IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
         int keyIndex = SciterKeyToSwitchKey(keyCode);
         if (keyIndex != 0)
         {
-            OperatingSystem.KeyboardKeyPress(0, keyIndex, SciterKeyToVKCode(keyCode));
+            operatingSystem.KeyboardKeyPress(0, keyIndex, SciterKeyToVKCode(keyCode));
         }
     }
     return false;
@@ -393,14 +395,13 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
 
 bool SciterMainWindow::OnKeyUp(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t /*keyboardState*/)
 {
-    SwitchSystem* system = SwitchSystem::GetInstance();
-    if (system != nullptr)
+    if (m_modules.IsValid())
     {
-        IOperatingSystem& OperatingSystem = system->OperatingSystem();
+        IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
         int keyIndex = SciterKeyToSwitchKey(keyCode);
         if (keyIndex != 0)
         {
-            OperatingSystem.KeyboardKeyRelease(0, keyIndex, SciterKeyToVKCode(keyCode));
+            operatingSystem.KeyboardKeyRelease(0, keyIndex, SciterKeyToVKCode(keyCode));
         }
     }
     return false;
@@ -420,10 +421,9 @@ bool SciterMainWindow::OnSizeChanged(SCITER_ELEMENT elem)
         uint32_t width = rect.right - rect.left;
         uint32_t height = rect.bottom - rect.top;
         MoveWindow((HWND)m_renderWindow, rect.left, rect.top, width, height, false);
-        SwitchSystem * system = SwitchSystem::GetInstance();
-        if (system != nullptr)
+        if (m_modules.IsValid())
         {
-            IVideo & video = system->Video();
+            IVideo & video = m_modules.Modules().Video();
             video.UpdateFramebufferLayout(width, height);
         }
     }
@@ -448,10 +448,9 @@ bool SciterMainWindow::OnClick(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source
         settings.SetInt(NXVideoSetting::GraphicsAPI, (int32_t)graphicsAPI);
         stdstr_f text("%s", Settings::CanonicalizeEnum((Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI)).c_str());
         SciterElement(source).SetHTML((const uint8_t*)text.c_str(), text.size());
-        SwitchSystem * system = SwitchSystem::GetInstance();
-        if (system != nullptr)
+        if (m_modules.IsValid())
         {
-            system->FlushSettings();
+            m_modules.FlushSettings();
         }
     }
     else if (source == rootElement.GetElementByID("volume"))
@@ -484,10 +483,9 @@ bool SciterMainWindow::OnStateChange(SCITER_ELEMENT elem, uint32_t /*eventReason
         {
             SettingsStore& settings = SettingsStore::GetInstance();
             settings.SetInt(NXOsSetting::AudioVolume, value.GetValueInt());
-            SwitchSystem * system = SwitchSystem::GetInstance();
-            if (system != nullptr)
+            if (m_modules.IsValid())
             {
-                system->FlushSettings();
+                m_modules.FlushSettings();
             }
         }
     }

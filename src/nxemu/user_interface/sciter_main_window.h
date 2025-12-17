@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
-#include <nxemu-core/modules/module_base.h>
+#include <nxemu-core/modules/system_modules.h>
+#include <nxemu-module-spec/base.h>
 #include <sciter_ui.h>
 #include <sciter_handler.h>
 #include <widgets/menubar.h>
@@ -105,6 +106,7 @@ private:
 
     ISciterUI & m_sciterUI;
     ISciterWindow * m_window;
+    SystemModules m_modules;
     std::vector<VkDeviceRecord> m_vkDeviceRecords;
     std::shared_ptr<IMenuBar> m_menuBar;
     void * m_renderWindow;
@@ -112,4 +114,5 @@ private:
     std::unique_ptr<SystemConfig> m_systemConfig;
     std::unique_ptr<InputConfig> m_inputConfig;
     bool m_volumePopup;
+    bool m_emulationRunning;
 };

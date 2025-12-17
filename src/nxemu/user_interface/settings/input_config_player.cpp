@@ -1,7 +1,6 @@
 #include "input_config.h"
 #include "input_config_player.h"
 #include <common/std_string.h>
-#include <nxemu-core/machine/switch_system.h>
 #include <widgets/combo_box.h>
 #include <unordered_map>
 #include <numbers>
@@ -10,6 +9,7 @@
 #include <yuzu_common/string_util.h>
 #include <yuzu_common/vector_math.h>
 #include "settings/ui_settings.h"
+#include <nxemu-core/modules/system_modules.h>
 
 namespace
 {
@@ -467,16 +467,17 @@ namespace
     }
 } // namespace
 
-InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config, HWINDOW parent, SciterElement page, NpadIdType controllerIndex) :
-    m_operatingSystem(SwitchSystem::GetInstance()->OperatingSystem()),
+InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config, SystemModules & modules, HWINDOW parent, SciterElement page, NpadIdType controllerIndex) :
+    m_operatingSystem(modules.Modules().OperatingSystem()),
     m_sciterUI(sciterUI),
     m_config(config),
+    m_modules(modules),
     m_parent(parent),
     m_page(page),
     m_controllerIndex(controllerIndex),
     m_emulatedController(nullptr),
-    m_emulatedControllerPlayer(SwitchSystem::GetInstance()->OperatingSystem().GetEmulatedController(controllerIndex)),
-    m_emulatedControllerHandheld(SwitchSystem::GetInstance()->OperatingSystem().GetEmulatedController(NpadIdType::Handheld)),
+    m_emulatedControllerPlayer(modules.Modules().OperatingSystem().GetEmulatedController(controllerIndex)),
+    m_emulatedControllerHandheld(modules.Modules().OperatingSystem().GetEmulatedController(NpadIdType::Handheld)),
     m_inputDeviceList(config.InputDeviceList()),
     m_timeoutTimerActive(false),
     m_pollingType(PollingInputType::None),
