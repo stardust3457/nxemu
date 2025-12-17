@@ -1362,11 +1362,13 @@ void InputConfigPlayer::UpdateControllerAvailableButtons()
 {
     NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
     SciterElement proController = m_page.GetElementByID("ProController");
-    const std::array<SciterElement, 20> layout_show = {
+    const std::array<SciterElement, 22> layout_show = {
         m_page.GetElementByID("ProController"),
         m_page.GetElementByID("DualJoycons"),
         m_page.GetElementByID("LeftJoycon"),
+        m_page.GetElementByID("RightJoycon"),
         m_page.GetElementByID("GCController"),
+        m_page.GetElementByID("Handheld"),
         m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
         m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
         m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget"),
@@ -1397,11 +1399,27 @@ void InputConfigPlayer::UpdateControllerAvailableButtons()
     std::vector<SciterElement> layout_hidden;
     switch (layout) {
     case NpadStyleIndex::Fullkey:
-    case NpadStyleIndex::Handheld:
         layout_hidden = {
+            m_page.GetElementByID("Handheld"),
             m_page.GetElementByID("GCController"),
             m_page.GetElementByID("DualJoycons"),
             m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("RightJoycon"),
+            m_page.GetElementByID("bottomLeftSpacer"),
+            m_page.GetElementByID("bottomRightSpacer"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
+            m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget2"),
+            m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget4"),
+        };
+        break;
+    case NpadStyleIndex::Handheld:
+        layout_hidden = {
+            m_page.GetElementByID("ProController"),
+            m_page.GetElementByID("GCController"),
+            m_page.GetElementByID("DualJoycons"),
+            m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("RightJoycon"),
             m_page.GetElementByID("bottomLeftSpacer"),
             m_page.GetElementByID("bottomRightSpacer"),
             m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
@@ -1412,18 +1430,22 @@ void InputConfigPlayer::UpdateControllerAvailableButtons()
         break;
     case NpadStyleIndex::JoyconDual:
         layout_hidden = {
+            m_page.GetElementByID("Handheld"),
             m_page.GetElementByID("ProController"),
             m_page.GetElementByID("GCController"),
             m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("RightJoycon"),
             m_page.GetElementByID("bottomLeftSpacer"),
             m_page.GetElementByID("bottomRightSpacer"),
         };
         break;
     case NpadStyleIndex::JoyconLeft:
         layout_hidden = {
+            m_page.GetElementByID("Handheld"),
             m_page.GetElementByID("ProController"),
             m_page.GetElementByID("GCController"),
             m_page.GetElementByID("DualJoycons"),
+            m_page.GetElementByID("RightJoycon"),
             m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
             m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget2"),
             m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget3"),
@@ -1435,6 +1457,8 @@ void InputConfigPlayer::UpdateControllerAvailableButtons()
         break;
     case NpadStyleIndex::JoyconRight:
         layout_hidden = {
+            m_page.GetElementByID("Handheld"),
+            m_page.GetElementByID("ProController"),
             m_page.GetElementByID("GCController"),
             m_page.GetElementByID("DualJoycons"),
             m_page.GetElementByID("LeftJoycon"),
@@ -1449,9 +1473,11 @@ void InputConfigPlayer::UpdateControllerAvailableButtons()
         break;
     case NpadStyleIndex::GameCube:
         layout_hidden = {
+            m_page.GetElementByID("Handheld"),
             m_page.GetElementByID("ProController"),
             m_page.GetElementByID("DualJoycons"),
             m_page.GetElementByID("LeftJoycon"),
+            m_page.GetElementByID("RightJoycon"),
             m_page.GetElementByID("buttonShoulderButtonsSLSRLeft"),
             m_page.GetElementByID("buttonShoulderButtonsSLSRRight"),
             m_page.GetElementByID("horizontalSpacerShoulderButtonsWidget2"),
@@ -1842,12 +1868,15 @@ SciterElement InputConfigPlayer::GetControllerSvg()
     switch (layout)
     {
     case NpadStyleIndex::Fullkey:
-    case NpadStyleIndex::Handheld:
         return m_page.GetElementByID("ProController");
+    case NpadStyleIndex::Handheld:
+        return m_page.GetElementByID("Handheld");
     case NpadStyleIndex::JoyconDual:
         return m_page.GetElementByID("DualJoycons");
     case NpadStyleIndex::JoyconLeft:
         return m_page.GetElementByID("LeftJoycon");
+    case NpadStyleIndex::JoyconRight:
+        return m_page.GetElementByID("RightJoycon");
     case NpadStyleIndex::GameCube:
         return m_page.GetElementByID("GCController");
     }
