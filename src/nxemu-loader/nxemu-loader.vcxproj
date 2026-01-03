@@ -104,6 +104,7 @@
     <ClInclude Include="core\file_sys\vfs\vfs.h" />
     <ClInclude Include="core\file_sys\vfs\vfs_cached.h" />
     <ClInclude Include="core\file_sys\vfs\vfs_concat.h" />
+    <ClInclude Include="core\file_sys\vfs\vfs_ivirtualfile.h" />
     <ClInclude Include="core\file_sys\vfs\vfs_layered.h" />
     <ClInclude Include="core\file_sys\vfs\vfs_offset.h" />
     <ClInclude Include="core\file_sys\vfs\vfs_real.h" />
@@ -128,6 +129,7 @@
     <ClInclude Include="core\loader\nso.h" />
     <ClInclude Include="core\loader\nsp.h" />
     <ClInclude Include="core\loader\xci.h" />
+    <ClInclude Include="rom_info.h" />
     <ClInclude Include="system_loader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +181,7 @@
     <ClCompile Include="core\file_sys\vfs\vfs.cpp" />
     <ClCompile Include="core\file_sys\vfs\vfs_cached.cpp" />
     <ClCompile Include="core\file_sys\vfs\vfs_concat.cpp" />
+    <ClCompile Include="core\file_sys\vfs\vfs_ivirtualfile.cpp" />
     <ClCompile Include="core\file_sys\vfs\vfs_layered.cpp" />
     <ClCompile Include="core\file_sys\vfs\vfs_offset.cpp" />
     <ClCompile Include="core\file_sys\vfs\vfs_real.cpp" />
@@ -197,6 +200,7 @@
     <ClCompile Include="core\loader\nsp.cpp" />
     <ClCompile Include="core\loader\xci.cpp" />
     <ClCompile Include="nxemu-loader.cpp" />
+    <ClCompile Include="rom_info.cpp" />
     <ClCompile Include="system_loader.cpp" />
   </ItemGroup>
   <ItemGroup>

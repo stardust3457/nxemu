@@ -36,20 +36,21 @@ public:
      *
      * @return FileType::NRO, or FileType::Error if the file is not an NRO file.
      */
-    static FileType IdentifyType(const FileSys::VirtualFile& nro_file);
+    static LoaderFileType IdentifyType(const FileSys::VirtualFile & nro_file);
 
     bool IsHomebrew();
 
-    FileType GetFileType() const override {
+    LoaderFileType GetFileType() const override
+    {
         return IdentifyType(file);
     }
 
     LoadResult Load(Systemloader & loader, ISystemModules & modules) override;
 
-    LoaderResultStatus ReadIcon(std::vector<u8>& buffer) override;
+    LoaderResultStatus ReadIcon(uint8_t * buffer, uint32_t * bufferSize) override;
     LoaderResultStatus ReadProgramId(uint64_t& out_program_id) override;
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& dir) override;
-    LoaderResultStatus ReadTitle(std::string& title) override;
+    LoaderResultStatus ReadTitle(char * buffer, uint32_t * bufferSize) override;
     LoaderResultStatus ReadControlData(FileSys::NACP& control) override;
     bool IsRomFSUpdatable() const override;
 

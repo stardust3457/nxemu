@@ -41,15 +41,15 @@ void FileSystemController::SetPackedUpdate(FileSys::ProcessId process_id, FileSy
     it->second.romfs_factory->SetPackedUpdate(std::move(update_raw));
 }
 
-IFileSysRegisteredCache * FileSystemController::GetSystemNANDContents() const
-{
-    return SystemNANDContents();
-}
-
 ISaveDataController * FileSystemController::OpenSaveDataController() const
 {
     std::shared_ptr<SaveDataController> dataController(std::make_shared<SaveDataController>(loader, CreateSaveDataFactory(FileSys::ProgramId{})));
     return std::make_unique<SaveDataControllerPtr>(dataController).release();
+}
+
+IFileSysRegisteredCache * FileSystemController::GetSystemNANDContents() const
+{
+    return SystemNANDContents();
 }
 
 uint64_t FileSystemController::GetFreeSpaceSize(StorageId id) const

@@ -34,18 +34,19 @@ public:
      * @return FileType::DeconstructedRomDirectory, or FileType::Error
      *         if the file is not a deconstructed ROM directory.
      */
-    static FileType IdentifyType(const FileSys::VirtualFile& dir_file);
+    static LoaderFileType IdentifyType(const FileSys::VirtualFile & dir_file);
 
-    FileType GetFileType() const override {
+    LoaderFileType GetFileType() const override
+    {
         return IdentifyType(file);
     }
 
     LoadResult Load(Systemloader & loader, ISystemModules & systemModules) override;
 
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& out_dir) override;
-    LoaderResultStatus ReadIcon(std::vector<u8>& out_buffer) override;
+    LoaderResultStatus ReadIcon(uint8_t * buffer, uint32_t * bufferSize) override;
     LoaderResultStatus ReadProgramId(uint64_t& out_program_id) override;
-    LoaderResultStatus ReadTitle(std::string& title) override;
+    LoaderResultStatus ReadTitle(char * buffer, uint32_t * bufferSize) override;
     bool IsRomFSUpdatable() const override;
 
     LoaderResultStatus ReadNSOModules(Modules& out_modules) override;

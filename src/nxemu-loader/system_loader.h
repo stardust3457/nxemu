@@ -30,7 +30,7 @@ public:
     bool Initialize() override;
     bool SelectAndLoad(void * parentWindow) override;
     bool LoadRom(const char * fileName) override;
-    IRomInfo * RomInfo(const char * fileName) override;
+    IRomInfo * RomInfo(const char * fileName, uint64_t programId, uint64_t programIndex) override;
 
     IFileSystemController & FileSystemController() override;
     IVirtualFile * SynthesizeSystemArchive(const uint64_t title_id) override;
@@ -38,6 +38,7 @@ public:
     uint32_t GetContentProviderEntries(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId, ContentProviderEntry * entries, uint32_t entryCount) override;
     IFileSysNCA * GetContentProviderEntry(uint64_t title_id, LoaderContentRecordType type) override;
     IFileSysNACP * GetPMControlMetadata(uint64_t programID) override;
+    IManualContentProvider & ManualContentProvider() override;
 
 private:
     Systemloader() = delete;

@@ -14,31 +14,30 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/file_sys/system_archive/system_archive.h"
 #include "core/loader/loader.h"
+#include "rom_info.h"
 
 extern IModuleSettings * g_settings;
 extern IModuleNotification * g_notify;
 
-namespace {
+namespace
+{
 
-    StorageId GetStorageIdForFrontendSlot(
-        std::optional<FileSys::ContentProviderUnionSlot> slot) {
-        if (!slot.has_value()) {
-            return StorageId::None;
-        }
-
-        switch (*slot) {
-        case FileSys::ContentProviderUnionSlot::UserNAND:
-            return StorageId::NandUser;
-        case FileSys::ContentProviderUnionSlot::SysNAND:
-            return StorageId::NandSystem;
-        case FileSys::ContentProviderUnionSlot::SDMC:
-            return StorageId::SdCard;
-        case FileSys::ContentProviderUnionSlot::FrontendManual:
-            return StorageId::Host;
-        default:
-            return StorageId::None;
-        }
+StorageId GetStorageIdForFrontendSlot(std::optional<FileSys::ContentProviderUnionSlot> slot)
+{
+    if (!slot.has_value())
+    {
+        return StorageId::None;
     }
+
+    switch (*slot)
+    {
+    case FileSys::ContentProviderUnionSlot::UserNAND: return StorageId::NandUser;
+    case FileSys::ContentProviderUnionSlot::SysNAND: return StorageId::NandSystem;
+    case FileSys::ContentProviderUnionSlot::SDMC: return StorageId::SdCard;
+    case FileSys::ContentProviderUnionSlot::FrontendManual:return StorageId::Host;
+    }
+    return StorageId::None;
+}
 
     bool HasSupportedFileExtension(const char * fileName)
     {
@@ -66,7 +65,7 @@ struct Systemloader::Impl {
         m_loader(loader),
         m_modules(modules),
         m_fsController(loader),
-        m_provider(std::make_unique<FileSys::ManualContentProvider>()),
+        m_manualContentProvider(std::make_unique<ManualContentProviderImpl>()),
         m_processID(0),
         m_titleID(0)
     {
@@ -77,10 +76,9 @@ struct Systemloader::Impl {
     ISystemModules & m_modules;
     /// RealVfsFilesystem instance
     FileSys::VirtualFilesystem m_virtualFilesystem;
-    /// ContentProviderUnion instance
     std::unique_ptr<FileSys::ContentProviderUnion> m_contentProvider;
     ::FileSystemController m_fsController;
-    std::unique_ptr<FileSys::ManualContentProvider> m_provider;
+    std::unique_ptr<ManualContentProviderImpl> m_manualContentProvider;
     uint64_t m_processID;
     uint64_t m_titleID;
 };
@@ -94,16 +92,18 @@ Systemloader::~Systemloader()
 {
 }
 
-bool Systemloader::Initialize(void)
+bool Systemloader::Initialize()
 {
-    if (impl->m_virtualFilesystem == nullptr) {
+    if (impl->m_virtualFilesystem == nullptr)
+    {
         impl->m_virtualFilesystem = std::make_shared<FileSys::RealVfsFilesystem>();
     }
-    if (impl->m_contentProvider == nullptr) {
+    if (impl->m_contentProvider == nullptr)
+    {
         impl->m_contentProvider = std::make_unique<FileSys::ContentProviderUnion>();
     }
-    impl->m_contentProvider->SetSlot(FileSys::ContentProviderUnionSlot::FrontendManual, impl->m_provider.get());
-    GetFileSystemController().CreateFactories(*GetFilesystem(), false);
+    impl->m_contentProvider->SetSlot(FileSys::ContentProviderUnionSlot::FrontendManual, &impl->m_manualContentProvider->Provider());
+    impl->m_fsController.CreateFactories(*impl->m_virtualFilesystem, false);
     return true;
 }
 
@@ -135,8 +135,9 @@ bool Systemloader::LoadRom(const char * fileName)
         return false;
     }
 
-    const Loader::FileType file_type = impl->app_loader->GetFileType();
-    if (file_type == Loader::FileType::Unknown || file_type == Loader::FileType::Error) 
+    Loader::AppLoader * app_loader = impl->app_loader.get();
+    const LoaderFileType file_type = impl->app_loader->GetFileType();
+    if (file_type == LoaderFileType::Unknown || file_type == LoaderFileType::Error) 
     {
         g_notify->DisplayError("The file format is not supported.", "Error loading file!");
         g_settings->SetBool(NXCoreSetting::RomLoading, false);
@@ -144,17 +145,19 @@ bool Systemloader::LoadRom(const char * fileName)
     }
     uint64_t program_id = 0;
     const LoaderResultStatus res = impl->app_loader->ReadProgramId(program_id);
-    if (res == LoaderResultStatus::Success && file_type == Loader::FileType::NCA) 
+    if (res == LoaderResultStatus::Success && file_type == LoaderFileType::NCA) 
     {
         UNIMPLEMENTED();
     }
-    else if (res == LoaderResultStatus::Success && (file_type == Loader::FileType::XCI || file_type == Loader::FileType::NSP))
+    else if (res == LoaderResultStatus::Success && (file_type == LoaderFileType::XCI || file_type == LoaderFileType::NSP))
     {
-        const auto nsp = file_type == Loader::FileType::NSP ? std::make_shared<FileSys::NSP>(file) : FileSys::XCI{ file }.GetSecurePartitionNSP();
-        for (const auto& title : nsp->GetNCAs()) {
-            for (const auto& entry : title.second) {
-                impl->m_provider->AddEntry(entry.first.first, entry.first.second, title.first,
-                    entry.second->GetBaseFile());
+        const auto nsp = file_type == LoaderFileType::NSP ? std::make_shared<FileSys::NSP>(file) : FileSys::XCI{file}.GetSecurePartitionNSP();
+        for (const auto & title : nsp->GetNCAs())
+        {
+            for (const auto & entry : title.second)
+            {
+                FileSys::VirtualFile file = entry.second->GetBaseFile();
+                impl->m_manualContentProvider->AddEntry(entry.first.first, entry.first.second, title.first, std::make_unique<VirtualFilePtr>(file).release());
             }
         }
     }
@@ -163,13 +166,20 @@ bool Systemloader::LoadRom(const char * fileName)
         LOG_ERROR(Core, "Failed to find title id for ROM!");
     }
 
-    std::string name = "Unknown program";
-    if (impl->app_loader->ReadTitle(name) != LoaderResultStatus::Success)
+    uint32_t title_size = 0;
+    std::string title = "Unknown program";
+    LoaderResultStatus result = app_loader->ReadTitle(nullptr, &title_size);
+    if (result == LoaderResultStatus::Success)
+    {
+        title.resize(title_size);
+        result = impl->app_loader->ReadTitle(title.data(), &title_size);
+    }
+    if (result != LoaderResultStatus::Success)
     {
         LOG_ERROR(Core, "Failed to read title for ROM!");
     }
-
-    const auto [load_result, load_parameters] = impl->app_loader->Load(*this, impl->m_modules);
+    
+    const auto [load_result, load_parameters] = app_loader->Load(*this, impl->m_modules);
     if (load_result != LoaderResultStatus::Success)
     {
         LOG_CRITICAL(Core, "Failed to load ROM (Error {})!", load_result);
@@ -187,12 +197,9 @@ bool Systemloader::LoadRom(const char * fileName)
         nacp_data.resize(sizeof(FileSys::RawNACP));
     }
 
-    //launch.title_id = process.GetProgramId();
-    FileSys::PatchManager pm{ impl->m_titleID, impl->m_fsController, *impl->m_contentProvider };
+    FileSys::PatchManager pm(impl->m_titleID, impl->m_fsController, *impl->m_contentProvider);
     uint32_t version = pm.GetGameVersion().value_or(0);
 
-    std::string title;
-    impl->app_loader->ReadTitle(title);
     g_settings->SetString(NXCoreSetting::GameName, title.c_str());
     g_settings->SetString(NXCoreSetting::GameFile, fileName);
     g_settings->SetBool(NXCoreSetting::RomLoading, false);
@@ -203,12 +210,12 @@ bool Systemloader::LoadRom(const char * fileName)
     StorageId baseGameStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(impl->m_titleID, LoaderContentRecordType::Program));
     StorageId updateStorageId = GetStorageIdForFrontendSlot(impl->m_contentProvider->GetSlotForEntry(FileSys::GetUpdateTitleID(impl->m_titleID), LoaderContentRecordType::Program));
 
-    IOperatingSystem& operatingSystem = impl->m_modules.OperatingSystem();
+    IOperatingSystem & operatingSystem = impl->m_modules.OperatingSystem();
     operatingSystem.StartApplicationProcess(load_parameters->main_thread_priority, load_parameters->main_thread_stack_size, version, baseGameStorageId, updateStorageId, nacp_data.data(), (uint32_t)nacp_data.size());
     return true;
 }
 
-IRomInfo * Systemloader::RomInfo(const char * fileName)
+IRomInfo * Systemloader::RomInfo(const char * fileName, uint64_t programId, uint64_t programIndex)
 {
     if (!HasSupportedFileExtension(fileName))
     {
@@ -219,25 +226,29 @@ IRomInfo * Systemloader::RomInfo(const char * fileName)
     {
         return nullptr;
     }
-    std::unique_ptr<Loader::AppLoader> loader = Loader::GetLoader(*this, file);
+
+    std::unique_ptr<Loader::AppLoader> loader = Loader::GetLoader(*this, file, programId, programIndex);
     if (!loader)
     {
         return nullptr;
     }
-    return nullptr;
+    std::unique_ptr<::RomInfo> info = std::make_unique<::RomInfo>(file, std::move(loader));
+    return info.release();
+}
+
+FileSys::VirtualFilesystem Systemloader::GetFilesystem()
+{
+    return impl->m_virtualFilesystem;
+}
+
+FileSystemController & Systemloader::GetFileSystemController()
+{
+    return impl->m_fsController;
 }
 
 FileSys::ContentProvider & Systemloader::GetContentProvider()
 {
     return *impl->m_contentProvider;
-}
-
-FileSys::VirtualFilesystem Systemloader::GetFilesystem() {
-    return impl->m_virtualFilesystem;
-}
-
-FileSystemController & Systemloader::GetFileSystemController() {
-    return impl->m_fsController;
 }
 
 void Systemloader::RegisterContentProvider(FileSys::ContentProviderUnionSlot slot, FileSys::ContentProvider* provider) 
@@ -300,6 +311,15 @@ IFileSysNCA * Systemloader::GetContentProviderEntry(uint64_t title_id, LoaderCon
 IFileSysNACP * Systemloader::GetPMControlMetadata(uint64_t programID)
 {
     const FileSys::PatchManager pm(programID, GetFileSystemController(), GetContentProvider());
-    FileSys::PatchManager::Metadata control = pm.GetControlMetadata();
-    return control.first.release();
+    FileSys::PatchManager::Metadata metadata = pm.GetControlMetadata();
+    if (metadata.first == nullptr)
+    {
+        return nullptr;
+    }
+    return metadata.first.release();
+}
+
+IManualContentProvider & Systemloader::ManualContentProvider()
+{
+    return *(impl->m_manualContentProvider.get());
 }

@@ -30,24 +30,12 @@ class KProcess;
 
 namespace Loader {
 
-/// File types supported by CTR
-enum class FileType {
-    Error,
-    Unknown,
-    NSO,
-    NRO,
-    NCA,
-    NSP,
-    XCI,
-    DeconstructedRomDirectory,
-};
-
 /**
  * Identifies the type of a bootable file based on the magic value in its header.
  * @param file open file
  * @return FileType of file
  */
-FileType IdentifyFile(FileSys::VirtualFile file);
+LoaderFileType IdentifyFile(FileSys::VirtualFile file);
 
 /**
  * Guess the type of a bootable file from its name
@@ -55,12 +43,12 @@ FileType IdentifyFile(FileSys::VirtualFile file);
  * @return FileType of file. Note: this will return FileType::Unknown if it is unable to determine
  * a filetype, and will never return FileType::Error.
  */
-FileType GuessFromFilename(const std::string& name);
+LoaderFileType GuessFromFilename(const std::string & name);
 
 /**
  * Convert a FileType into a string which can be displayed to the user.
  */
-std::string GetFileTypeString(FileType type);
+std::string GetFileTypeString(LoaderFileType type);
 
 std::string GetResultStatusString(LoaderResultStatus status);
 std::ostream& operator<<(std::ostream& os, LoaderResultStatus status);
@@ -87,7 +75,7 @@ public:
      *
      * @return FileType corresponding to the loaded file
      */
-    virtual FileType GetFileType() const = 0;
+    virtual LoaderFileType GetFileType() const = 0;
 
     /**
      * Load the application and return the created Process instance
@@ -124,7 +112,8 @@ public:
      *
      * @return LoaderResultStatus result of function
      */
-    virtual LoaderResultStatus ReadIcon(std::vector<u8>& buffer) {
+    virtual LoaderResultStatus ReadIcon(uint8_t * /*buffer*/, uint32_t * /*bufferSize*/)
+    {
         return LoaderResultStatus::ErrorNotImplemented;
     }
 
@@ -172,7 +161,8 @@ public:
      *
      * @return LoaderResultStatus result of function
      */
-    virtual LoaderResultStatus ReadProgramIds(std::vector<uint64_t>& out_program_ids) {
+    virtual LoaderResultStatus ReadProgramIds(uint64_t * /*buffer*/, uint32_t * /*count*/)
+    {
         return LoaderResultStatus::ErrorNotImplemented;
     }
 
@@ -217,7 +207,8 @@ public:
      *
      * @return LoaderResultStatus result of function
      */
-    virtual LoaderResultStatus ReadTitle(std::string& title) {
+    virtual LoaderResultStatus ReadTitle(char * /*buffer*/, uint32_t * /*bufferSize*/)
+    {
         return LoaderResultStatus::ErrorNotImplemented;
     }
 

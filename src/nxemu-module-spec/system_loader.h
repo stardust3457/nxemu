@@ -93,6 +93,7 @@ enum class LoaderResultStatus : uint16_t {
     ErrorINITooManyKIPs,
     ErrorIntegrityVerificationNotImplemented,
     ErrorIntegrityVerificationFailed,
+    ErrorBufferTooSmall,
 };
 
 enum class VirtualFileOpenMode : uint32_t {
@@ -131,6 +132,19 @@ enum class SaveDataRank : uint8_t
 {
     Primary = 0,
     Secondary = 1,
+};
+
+enum class LoaderFileType {
+    Error,
+    Unknown,
+    NSO,
+    NRO,
+    NCA,
+    NSP,
+    XCI,
+    NAX,
+    KIP,
+    DeconstructedRomDirectory,
 };
 
 struct ContentProviderEntry
@@ -233,8 +247,20 @@ __interface IFileSystemController
     bool OpenSDMC(IVirtualDirectory** out_sdmc) const = 0;
 };
 
+__interface IManualContentProvider
+{
+    void AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, uint64_t title_id, IVirtualFile * file) = 0;
+    void ClearAllEntries() = 0;
+};
+
 __interface IRomInfo
 {
+    LoaderFileType GetFileType() const = 0;
+    LoaderResultStatus ReadProgramId(uint64_t & out_program_id) = 0;
+    LoaderResultStatus ReadTitle(char * buffer, uint32_t * bufferSize) = 0;
+    LoaderResultStatus ReadIcon(uint8_t * buffer, uint32_t * bufferSize) = 0;
+    LoaderResultStatus ReadProgramIds(uint64_t * buffer, uint32_t * count) = 0;
+    void AddToManualContentProvider(IManualContentProvider & provider) = 0;
     void Release() = 0;
 };
 
@@ -243,7 +269,7 @@ __interface ISystemloader
     bool Initialize() = 0;
     bool SelectAndLoad(void * parentWindow) = 0;
     bool LoadRom(const char * fileName) = 0;
-    IRomInfo * RomInfo(const char * fileName) = 0;
+    IRomInfo * RomInfo(const char * fileName, uint64_t programId, uint64_t programIndex) = 0;
 
     IFileSystemController & FileSystemController() = 0;
     IVirtualFile * SynthesizeSystemArchive(const uint64_t title_id) = 0;
@@ -251,6 +277,7 @@ __interface ISystemloader
     uint32_t GetContentProviderEntries(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId, ContentProviderEntry* entries, uint32_t entryCount) = 0;
     IFileSysNCA * GetContentProviderEntry(uint64_t title_id, LoaderContentRecordType type) = 0;
     IFileSysNACP * GetPMControlMetadata(uint64_t programID) = 0;
+    IManualContentProvider & ManualContentProvider() = 0;
 };
 
 EXPORT ISystemloader * CALL CreateSystemLoader(ISystemModules & modules);

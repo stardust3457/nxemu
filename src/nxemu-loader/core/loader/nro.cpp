@@ -77,41 +77,45 @@ struct AssetHeader {
 };
 static_assert(sizeof(AssetHeader) == 0x38, "AssetHeader has incorrect size.");
 
-AppLoader_NRO::AppLoader_NRO(FileSys::VirtualFile file_) : AppLoader(std::move(file_)) {
+AppLoader_NRO::AppLoader_NRO(FileSys::VirtualFile file_) : AppLoader(std::move(file_))
+{
     NroHeader nro_header{};
-    if (file->ReadObject(&nro_header) != sizeof(NroHeader)) {
+    if (file->ReadObject(&nro_header) != sizeof(NroHeader))
+    {
         return;
     }
 
-    if (file->GetSize() >= nro_header.file_size + sizeof(AssetHeader)) {
+    if (file->GetSize() >= nro_header.file_size + sizeof(AssetHeader))
+    {
         const uint64_t offset = nro_header.file_size;
         AssetHeader asset_header{};
-        if (file->ReadObject(&asset_header, offset) != sizeof(AssetHeader)) {
+        if (file->ReadObject(&asset_header, offset) != sizeof(AssetHeader))
+        {
             return;
         }
 
-        if (asset_header.format_version != 0) {
-            LOG_WARNING(Loader,
-                        "NRO Asset Header has format {}, currently supported format is 0. If "
-                        "strange glitches occur with metadata, check NRO assets.",
-                        asset_header.format_version);
+        if (asset_header.format_version != 0) 
+        {
+            LOG_WARNING(Loader, "NRO Asset Header has format {}, currently supported format is 0. If strange glitches occur with metadata, check NRO assets.", asset_header.format_version);
         }
 
-        if (asset_header.magic != Common::MakeMagic('A', 'S', 'E', 'T')) {
+        if (asset_header.magic != Common::MakeMagic('A', 'S', 'E', 'T'))
+        {
             return;
         }
 
-        if (asset_header.nacp.size > 0) {
-            nacp = std::make_unique<FileSys::NACP>(std::make_shared<FileSys::OffsetVfsFile>(
-                file, asset_header.nacp.size, offset + asset_header.nacp.offset, "Control.nacp"));
+        if (asset_header.nacp.size > 0)
+        {
+            nacp = std::make_unique<FileSys::NACP>(std::make_shared<FileSys::OffsetVfsFile>(file, asset_header.nacp.size, offset + asset_header.nacp.offset, "Control.nacp"));
         }
 
-        if (asset_header.romfs.size > 0) {
-            romfs = std::make_shared<FileSys::OffsetVfsFile>(
-                file, asset_header.romfs.size, offset + asset_header.romfs.offset, "game.romfs");
+        if (asset_header.romfs.size > 0)
+        {
+            romfs = std::make_shared<FileSys::OffsetVfsFile>(file, asset_header.romfs.size, offset + asset_header.romfs.offset, "game.romfs");
         }
 
-        if (asset_header.icon.size > 0) {
+        if (asset_header.icon.size > 0)
+        {
             icon_data = file->ReadBytes(asset_header.icon.size, offset + asset_header.icon.offset);
         }
     }
@@ -119,29 +123,34 @@ AppLoader_NRO::AppLoader_NRO(FileSys::VirtualFile file_) : AppLoader(std::move(f
 
 AppLoader_NRO::~AppLoader_NRO() = default;
 
-FileType AppLoader_NRO::IdentifyType(const FileSys::VirtualFile& nro_file) {
+LoaderFileType AppLoader_NRO::IdentifyType(const FileSys::VirtualFile & nro_file)
+{
     // Read NSO header
     NroHeader nro_header{};
-    if (sizeof(NroHeader) != nro_file->ReadObject(&nro_header)) {
-        return FileType::Error;
+    if (sizeof(NroHeader) != nro_file->ReadObject(&nro_header))
+    {
+        return LoaderFileType::Error;
     }
-    if (nro_header.magic == Common::MakeMagic('N', 'R', 'O', '0')) {
-        return FileType::NRO;
+    if (nro_header.magic == Common::MakeMagic('N', 'R', 'O', '0'))
+    {
+        return LoaderFileType::NRO;
     }
-    return FileType::Error;
+    return LoaderFileType::Error;
 }
 
-bool AppLoader_NRO::IsHomebrew() {
+bool AppLoader_NRO::IsHomebrew()
+{
     // Read NSO header
     NroHeader nro_header{};
-    if (sizeof(NroHeader) != file->ReadObject(&nro_header)) {
+    if (sizeof(NroHeader) != file->ReadObject(&nro_header)) 
+    {
         return false;
     }
-    return nro_header.magic_ext1 == Common::MakeMagic('H', 'O', 'M', 'E') &&
-           nro_header.magic_ext2 == Common::MakeMagic('B', 'R', 'E', 'W');
+    return nro_header.magic_ext1 == Common::MakeMagic('H', 'O', 'M', 'E') && nro_header.magic_ext2 == Common::MakeMagic('B', 'R', 'E', 'W');
 }
 
-static constexpr u32 PageAlignSize(u32 size) {
+static constexpr u32 PageAlignSize(u32 size)
+{
     constexpr std::size_t YUZU_PAGEBITS = 12;
     constexpr uint64_t YUZU_PAGESIZE = 1ULL << YUZU_PAGEBITS;
     constexpr uint64_t YUZU_PAGEMASK = YUZU_PAGESIZE - 1;
@@ -303,12 +312,27 @@ AppLoader_NRO::LoadResult AppLoader_NRO::Load(Systemloader & loader, ISystemModu
                                                   Core::Memory::DEFAULT_STACK_SIZE, baseAddress}};
 }
 
-LoaderResultStatus AppLoader_NRO::ReadIcon(std::vector<u8>& buffer) {
-    if (icon_data.empty()) {
+LoaderResultStatus AppLoader_NRO::ReadIcon(uint8_t * buffer, uint32_t * bufferSize)
+{
+    if (icon_data.empty())
+    {
         return LoaderResultStatus::ErrorNoIcon;
     }
 
-    buffer = icon_data;
+    if (bufferSize == nullptr)
+    {
+        return LoaderResultStatus::ErrorNotImplemented;
+    }
+    if (buffer != nullptr && *bufferSize < (uint32_t)icon_data.size())
+    {
+        return LoaderResultStatus::ErrorBufferTooSmall;
+    }
+    *bufferSize = (uint32_t)icon_data.size();
+    if (buffer == nullptr)
+    {
+        return LoaderResultStatus::Success;
+    }
+    std::memcpy(buffer, icon_data.data(), icon_data.size());
     return LoaderResultStatus::Success;
 }
 
@@ -330,12 +354,27 @@ LoaderResultStatus AppLoader_NRO::ReadRomFS(FileSys::VirtualFile& dir) {
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NRO::ReadTitle(std::string& title) {
-    if (nacp == nullptr) {
+LoaderResultStatus AppLoader_NRO::ReadTitle(char * buffer, uint32_t * bufferSize)
+{
+    if (nacp == nullptr)
+    {
         return LoaderResultStatus::ErrorNoControl;
     }
-
-    title = nacp->GetApplicationName();
+    if (bufferSize == nullptr)
+    {
+        return LoaderResultStatus::ErrorNotImplemented;
+    }
+    std::string title = nacp->GetApplicationName();
+    if (buffer != nullptr && *bufferSize < (uint32_t)title.size())
+    {
+        return LoaderResultStatus::ErrorBufferTooSmall;
+    }
+    *bufferSize = (uint32_t)title.size();
+    if (buffer == nullptr)
+    {
+        return LoaderResultStatus::Success;
+    }
+    std::memcpy(buffer, title.data(), title.size());
     return LoaderResultStatus::Success;
 }
 

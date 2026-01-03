@@ -18,9 +18,11 @@ namespace Loader {
 namespace {
 
 template <Common::DerivedFrom<AppLoader> T>
-std::optional<FileType> IdentifyFileLoader(FileSys::VirtualFile file) {
+std::optional<LoaderFileType> IdentifyFileLoader(FileSys::VirtualFile file)
+{
     const auto file_type = T::IdentifyType(file);
-    if (file_type != FileType::Error) {
+    if (file_type != LoaderFileType::Error)
+    {
         return file_type;
     }
     return std::nullopt;
@@ -28,43 +30,56 @@ std::optional<FileType> IdentifyFileLoader(FileSys::VirtualFile file) {
 
 } // namespace
 
-FileType IdentifyFile(FileSys::VirtualFile file) {
-    if (const auto nro_type = IdentifyFileLoader<AppLoader_NRO>(file)) {
+LoaderFileType IdentifyFile(FileSys::VirtualFile file)
+{
+    if (const auto nro_type = IdentifyFileLoader<AppLoader_NRO>(file))
+    {
         return *nro_type;
-    } else if (const auto xci_type = IdentifyFileLoader<AppLoader_XCI>(file)) {
+    }
+    else if (const auto xci_type = IdentifyFileLoader<AppLoader_XCI>(file))
+    {
         return *xci_type;
-    } else if (const auto nsp_type = IdentifyFileLoader<AppLoader_NSP>(file)) {
+    }
+    else if (const auto nsp_type = IdentifyFileLoader<AppLoader_NSP>(file))
+    {
         return *nsp_type;
-    } else {
-        return FileType::Unknown;
+    }
+    else
+    {
+        return LoaderFileType::Unknown;
     }
 }
 
-FileType GuessFromFilename(const std::string& name) {
-    const std::string extension =
-        Common::ToLower(std::string(Common::FS::GetExtensionFromFilename(name)));
+LoaderFileType GuessFromFilename(const std::string & name)
+{
+    const std::string extension = Common::ToLower(std::string(Common::FS::GetExtensionFromFilename(name)));
 
     if (extension == "nro")
-        return FileType::NRO;
+    {
+        return LoaderFileType::NRO;
+    }
     if (extension == "dxci")
-        return FileType::XCI;
+    {
+        return LoaderFileType::XCI;
+    }
     if (extension == "dnsp")
-        return FileType::NSP;
-
-    return FileType::Unknown;
+    {
+        return LoaderFileType::NSP;
+    }
+    return LoaderFileType::Unknown;
 }
 
-std::string GetFileTypeString(FileType type) {
+std::string GetFileTypeString(LoaderFileType type)
+{
     switch (type) {
-    case FileType::NRO:
+    case LoaderFileType::NRO:
         return "NRO";
-    case FileType::XCI:
+    case LoaderFileType::XCI:
         return "XCI";
-    case FileType::Error:
-    case FileType::Unknown:
+    case LoaderFileType::Error:
+    case LoaderFileType::Unknown:
         break;
     }
-
     return "unknown";
 }
 
@@ -79,35 +94,31 @@ AppLoader::~AppLoader() = default;
  * @param program_index Specifies the index within the container of the program to launch.
  * @return std::unique_ptr<AppLoader> a pointer to a loader object;  nullptr for unsupported type
  */
-static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::VirtualFile file,
-                                                FileType type, uint64_t program_id,
-                                                std::size_t program_index) {
+static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::VirtualFile file, LoaderFileType type, uint64_t program_id, std::size_t program_index)
+{
     switch (type) {
     // NX NRO file format.
-    case FileType::NRO:
+    case LoaderFileType::NRO:
         return std::make_unique<AppLoader_NRO>(std::move(file));
     // NX XCI (nX Card Image) file format.
-    case FileType::XCI:
-        return std::make_unique<AppLoader_XCI>(std::move(file), loader.GetFileSystemController(),
-                                               loader.GetContentProvider(), program_id,
-                                               program_index);
+    case LoaderFileType::XCI:
+        return std::make_unique<AppLoader_XCI>(std::move(file), loader.GetFileSystemController(), loader.GetContentProvider(), program_id, program_index);
     // NX NSP (Nintendo Submission Package) file format
-    case FileType::NSP:
-        return std::make_unique<AppLoader_NSP>(std::move(file), loader.GetFileSystemController(),
-                                               loader.GetContentProvider(), program_id,
-                                               program_index);
+    case LoaderFileType::NSP:
+        return std::make_unique<AppLoader_NSP>(std::move(file), loader.GetFileSystemController(), loader.GetContentProvider(), program_id, program_index);
     }
     return nullptr;
 }
 
-std::unique_ptr<AppLoader> GetLoader(Systemloader& loader, FileSys::VirtualFile file,
-                                     uint64_t program_id, std::size_t program_index) {
-    if (!file) {
+std::unique_ptr<AppLoader> GetLoader(Systemloader& loader, FileSys::VirtualFile file, uint64_t program_id, std::size_t program_index)
+{
+    if (!file)
+    {
         return nullptr;
     }
 
-    FileType type = IdentifyFile(file);
-    const FileType filename_type = GuessFromFilename(file->GetName());
+    LoaderFileType type = IdentifyFile(file);
+    const LoaderFileType filename_type = GuessFromFilename(file->GetName());
 
     LOG_DEBUG(Loader, "Loading file {} as {}...", file->GetName(), GetFileTypeString(type));
 

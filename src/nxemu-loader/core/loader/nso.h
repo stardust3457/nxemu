@@ -83,9 +83,10 @@ public:
      *
      * @return FileType::NSO if found, or FileType::Error if some other type of file.
      */
-    static FileType IdentifyType(const FileSys::VirtualFile& in_file);
+    static LoaderFileType IdentifyType(const FileSys::VirtualFile & in_file);
 
-    FileType GetFileType() const override {
+    LoaderFileType GetFileType() const override
+    {
         return IdentifyType(file);
     }
 

@@ -31,9 +31,10 @@ public:
      *
      * @return FileType::NCA, or FileType::Error if the file is not an NCA file.
      */
-    static FileType IdentifyType(const FileSys::VirtualFile& nca_file);
+    static LoaderFileType IdentifyType(const FileSys::VirtualFile & nca_file);
 
-    FileType GetFileType() const override {
+    LoaderFileType GetFileType() const override
+    {
         return IdentifyType(file);
     }
 

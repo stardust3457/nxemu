@@ -52,76 +52,85 @@ AppLoader_NSP::AppLoader_NSP(FileSys::VirtualFile file_,
 
 AppLoader_NSP::~AppLoader_NSP() = default;
 
-FileType AppLoader_NSP::IdentifyType(const FileSys::VirtualFile& nsp_file) {
+LoaderFileType AppLoader_NSP::IdentifyType(const FileSys::VirtualFile & nsp_file)
+{
     const FileSys::NSP nsp(nsp_file);
 
-    if (nsp.GetStatus() == LoaderResultStatus::Success) {
+    if (nsp.GetStatus() == LoaderResultStatus::Success)
+    {
         // Extracted Type case
-        if (nsp.IsExtractedType() && nsp.GetExeFS() != nullptr &&
-            FileSys::IsDirectoryExeFS(nsp.GetExeFS())) {
-            return FileType::NSP;
+        if (nsp.IsExtractedType() && nsp.GetExeFS() != nullptr && FileSys::IsDirectoryExeFS(nsp.GetExeFS()))
+        {
+            return LoaderFileType::NSP;
         }
 
         // Non-Extracted Type case
         const auto program_id = nsp.GetProgramTitleID();
-        if (!nsp.IsExtractedType() &&
-            nsp.GetNCA(program_id, LoaderContentRecordType::Program) != nullptr &&
-            AppLoader_NCA::IdentifyType(
-                nsp.GetNCAFile(program_id, LoaderContentRecordType::Program)) == FileType::NCA) {
-            return FileType::NSP;
+        if (!nsp.IsExtractedType() && nsp.GetNCA(program_id, LoaderContentRecordType::Program) != nullptr && AppLoader_NCA::IdentifyType(nsp.GetNCAFile(program_id, LoaderContentRecordType::Program)) == LoaderFileType::NCA)
+        {
+            return LoaderFileType::NSP;
         }
     }
-    return FileType::Error;
+    return LoaderFileType::Error;
 }
 
-AppLoader_NSP::LoadResult AppLoader_NSP::Load(Systemloader & loader, ISystemModules & systemModules) {
-    if (is_loaded) {
+AppLoader_NSP::LoadResult AppLoader_NSP::Load(Systemloader & loader, ISystemModules & systemModules)
+{
+    if (is_loaded)
+    {
         return {LoaderResultStatus::ErrorAlreadyLoaded, {}};
     }
 
     const auto title_id = nsp->GetProgramTitleID();
 
-    if (!nsp->IsExtractedType() && title_id == 0) {
+    if (!nsp->IsExtractedType() && title_id == 0)
+    {
         return {LoaderResultStatus::ErrorNSPMissingProgramNCA, {}};
     }
 
     const auto nsp_status = nsp->GetStatus();
-    if (nsp_status != LoaderResultStatus::Success) {
+    if (nsp_status != LoaderResultStatus::Success)
+    {
         return {nsp_status, {}};
     }
 
     const auto nsp_program_status = nsp->GetProgramStatus();
-    if (nsp_program_status != LoaderResultStatus::Success) {
+    if (nsp_program_status != LoaderResultStatus::Success)
+    {
         return {nsp_program_status, {}};
     }
 
-    if (!nsp->IsExtractedType() &&
-        nsp->GetNCA(title_id, LoaderContentRecordType::Program) == nullptr) {
+    if (!nsp->IsExtractedType() && nsp->GetNCA(title_id, LoaderContentRecordType::Program) == nullptr)
+    {
         return {LoaderResultStatus::ErrorNSPMissingProgramNCA, {}};
     }
 
     const auto result = secondary_loader->Load(loader, systemModules);
-    if (result.first != LoaderResultStatus::Success) {
+    if (result.first != LoaderResultStatus::Success)
+    {
         return result;
     }
 
-    if (nsp->IsExtractedType()) {
+    if (nsp->IsExtractedType())
+    {
         UNIMPLEMENTED();
     }
 
     FileSys::VirtualFile update_raw;
-    if (ReadUpdateRaw(update_raw) == LoaderResultStatus::Success && update_raw != nullptr) {
-        loader.GetFileSystemController().SetPackedUpdate(result.second->process_id,
-                                                         std::move(update_raw));
+    if (ReadUpdateRaw(update_raw) == LoaderResultStatus::Success && update_raw != nullptr)
+    {
+        loader.GetFileSystemController().SetPackedUpdate(result.second->process_id, std::move(update_raw));
     }
 
     is_loaded = true;
     return result;
 }
 
-LoaderResultStatus AppLoader_NSP::VerifyIntegrity(std::function<bool(size_t, size_t)> progress_callback) {
+LoaderResultStatus AppLoader_NSP::VerifyIntegrity(std::function<bool(size_t, size_t)> progress_callback)
+{
     // Extracted-type NSPs can't be verified.
-    if (nsp->IsExtractedType()) {
+    if (nsp->IsExtractedType())
+    {
         return LoaderResultStatus::ErrorIntegrityVerificationNotImplemented;
     }
 
@@ -132,20 +141,24 @@ LoaderResultStatus AppLoader_NSP::VerifyIntegrity(std::function<bool(size_t, siz
     size_t processed_size = 0;
 
     // Loop over NCAs, collecting the total size to verify.
-    for (const auto& nca : ncas) {
+    for (const auto& nca : ncas)
+    {
         total_size += nca->GetBaseFile()->GetSize();
     }
 
     // Loop over NCAs again, verifying each.
-    for (const auto& nca : ncas) {
+    for (const auto& nca : ncas)
+    {
         AppLoader_NCA loader_nca(nca->GetBaseFile());
 
-        const auto NcaProgressCallback = [&](size_t nca_processed_size, size_t nca_total_size) {
+        const auto NcaProgressCallback = [&](size_t nca_processed_size, size_t nca_total_size)
+        {
             return progress_callback(processed_size + nca_processed_size, total_size);
         };
 
         const auto verification_result = loader_nca.VerifyIntegrity(NcaProgressCallback);
-        if (verification_result != LoaderResultStatus::Success) {
+        if (verification_result != LoaderResultStatus::Success)
+        {
             return verification_result;
         }
 
@@ -155,24 +168,28 @@ LoaderResultStatus AppLoader_NSP::VerifyIntegrity(std::function<bool(size_t, siz
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadRomFS(FileSys::VirtualFile& out_file) {
+LoaderResultStatus AppLoader_NSP::ReadRomFS(FileSys::VirtualFile& out_file)
+{
     return secondary_loader->ReadRomFS(out_file);
 }
 
-LoaderResultStatus AppLoader_NSP::ReadUpdateRaw(FileSys::VirtualFile& out_file) {
-    if (nsp->IsExtractedType()) {
+LoaderResultStatus AppLoader_NSP::ReadUpdateRaw(FileSys::VirtualFile& out_file)
+{
+    if (nsp->IsExtractedType())
+    {
         return LoaderResultStatus::ErrorNoPackedUpdate;
     }
 
-    const auto read = nsp->GetNCAFile(FileSys::GetUpdateTitleID(nsp->GetProgramTitleID()),
-                                      LoaderContentRecordType::Program);
+    const auto read = nsp->GetNCAFile(FileSys::GetUpdateTitleID(nsp->GetProgramTitleID()), LoaderContentRecordType::Program);
 
-    if (read == nullptr) {
+    if (read == nullptr)
+    {
         return LoaderResultStatus::ErrorNoPackedUpdate;
     }
 
     const auto nca_test = std::make_shared<FileSys::NCA>(read);
-    if (nca_test->GetStatus() != LoaderResultStatus::ErrorMissingBKTRBaseRomFS) {
+    if (nca_test->GetStatus() != LoaderResultStatus::ErrorMissingBKTRBaseRomFS)
+    {
         return nca_test->GetStatus();
     }
 
@@ -180,39 +197,91 @@ LoaderResultStatus AppLoader_NSP::ReadUpdateRaw(FileSys::VirtualFile& out_file) 
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadProgramId(uint64_t& out_program_id) {
+LoaderResultStatus AppLoader_NSP::ReadProgramId(uint64_t& out_program_id)
+{
     out_program_id = nsp->GetProgramTitleID();
-    if (out_program_id == 0) {
+    if (out_program_id == 0)
+    {
         return LoaderResultStatus::ErrorNotInitialized;
     }
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadProgramIds(std::vector<uint64_t>& out_program_ids) {
-    out_program_ids = nsp->GetProgramTitleIDs();
+LoaderResultStatus AppLoader_NSP::ReadProgramIds(uint64_t * buffer, uint32_t * count)
+{
+    if (count == nullptr)
+    {
+        return LoaderResultStatus::ErrorNotImplemented;
+    }
+    std::vector<uint64_t> program_ids = nsp->GetProgramTitleIDs();
+    const uint32_t required_count = (uint32_t)program_ids.size();
+
+    if (buffer != nullptr && *count < required_count)
+    {
+        return LoaderResultStatus::ErrorBufferTooSmall;
+    }
+    *count = required_count;
+    if (buffer == nullptr)
+    {
+        return LoaderResultStatus::Success;
+    }
+    std::memcpy(buffer, program_ids.data(), program_ids.size() * sizeof(uint64_t));
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadIcon(std::vector<u8>& buffer) {
-    if (icon_file == nullptr) {
+LoaderResultStatus AppLoader_NSP::ReadIcon(uint8_t * buffer, uint32_t * bufferSize)
+{
+    if (icon_file == nullptr)
+    {
         return LoaderResultStatus::ErrorNoControl;
     }
 
-    buffer = icon_file->ReadAllBytes();
+    if (bufferSize == nullptr)
+    {
+        return LoaderResultStatus::ErrorNotImplemented;
+    }
+    std::vector<u8> icon = icon_file->ReadAllBytes();
+    if (buffer != nullptr && *bufferSize < (uint32_t)icon.size())
+    {
+        return LoaderResultStatus::ErrorBufferTooSmall;
+    }
+    *bufferSize = (uint32_t)icon.size();
+    if (buffer == nullptr)
+    {
+        return LoaderResultStatus::Success;
+    }
+    std::memcpy(buffer, icon.data(), icon.size());
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadTitle(std::string& title) {
-    if (nacp_file == nullptr) {
+LoaderResultStatus AppLoader_NSP::ReadTitle(char * buffer, uint32_t * bufferSize)
+{
+    if (nacp_file == nullptr)
+    {
         return LoaderResultStatus::ErrorNoControl;
     }
-
-    title = nacp_file->GetApplicationName();
+    if (bufferSize == nullptr)
+    {
+        return LoaderResultStatus::ErrorNotImplemented;
+    }
+    std::string title = nacp_file->GetApplicationName();
+    if (buffer != nullptr && *bufferSize < (uint32_t)title.size())
+    {
+        return LoaderResultStatus::ErrorBufferTooSmall;
+    }
+    *bufferSize = (uint32_t)title.size();
+    if (buffer == nullptr)
+    {
+        return LoaderResultStatus::Success;
+    }
+    std::memcpy(buffer, title.data(), title.size());
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadControlData(FileSys::NACP& nacp) {
-    if (nacp_file == nullptr) {
+LoaderResultStatus AppLoader_NSP::ReadControlData(FileSys::NACP& nacp)
+{
+    if (nacp_file == nullptr)
+    {
         return LoaderResultStatus::ErrorNoControl;
     }
 
@@ -220,20 +289,24 @@ LoaderResultStatus AppLoader_NSP::ReadControlData(FileSys::NACP& nacp) {
     return LoaderResultStatus::Success;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadManualRomFS(FileSys::VirtualFile& out_file) {
+LoaderResultStatus AppLoader_NSP::ReadManualRomFS(FileSys::VirtualFile& out_file)
+{
     UNIMPLEMENTED();
     return LoaderResultStatus::ErrorNoRomFS;
 }
 
-LoaderResultStatus AppLoader_NSP::ReadBanner(std::vector<u8>& buffer) {
+LoaderResultStatus AppLoader_NSP::ReadBanner(std::vector<u8>& buffer)
+{
     return secondary_loader->ReadBanner(buffer);
 }
 
-LoaderResultStatus AppLoader_NSP::ReadLogo(std::vector<u8>& buffer) {
+LoaderResultStatus AppLoader_NSP::ReadLogo(std::vector<u8>& buffer)
+{
     return secondary_loader->ReadLogo(buffer);
 }
 
-LoaderResultStatus AppLoader_NSP::ReadNSOModules(Modules& modules) {
+LoaderResultStatus AppLoader_NSP::ReadNSOModules(Modules& modules)
+{
     return secondary_loader->ReadNSOModules(modules);
 }
 

@@ -35,9 +35,10 @@ public:
      *
      * @return FileType::XCI, or FileType::Error if the file is not an XCI file.
      */
-    static FileType IdentifyType(const FileSys::VirtualFile& xci_file);
+    static LoaderFileType IdentifyType(const FileSys::VirtualFile & xci_file);
 
-    FileType GetFileType() const override {
+    LoaderFileType GetFileType() const override
+    {
         return IdentifyType(file);
     }
 
@@ -48,9 +49,9 @@ public:
     LoaderResultStatus ReadRomFS(FileSys::VirtualFile& out_file) override;
     LoaderResultStatus ReadUpdateRaw(FileSys::VirtualFile& out_file) override;
     LoaderResultStatus ReadProgramId(uint64_t& out_program_id) override;
-    LoaderResultStatus ReadProgramIds(std::vector<uint64_t>& out_program_ids) override;
-    LoaderResultStatus ReadIcon(std::vector<u8>& buffer) override;
-    LoaderResultStatus ReadTitle(std::string& title) override;
+    LoaderResultStatus ReadProgramIds(uint64_t * buffer, uint32_t * count) override;
+    LoaderResultStatus ReadIcon(uint8_t * buffer, uint32_t * bufferSize) override;
+    LoaderResultStatus ReadTitle(char * buffer, uint32_t * bufferSize) override;
     LoaderResultStatus ReadControlData(FileSys::NACP& control) override;
     LoaderResultStatus ReadManualRomFS(FileSys::VirtualFile& out_file) override;
 

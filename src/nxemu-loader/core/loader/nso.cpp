@@ -59,40 +59,43 @@ bool NSOHeader::IsSegmentCompressed(size_t segment_num) const {
 
 AppLoader_NSO::AppLoader_NSO(FileSys::VirtualFile file_) : AppLoader(std::move(file_)) {}
 
-FileType AppLoader_NSO::IdentifyType(const FileSys::VirtualFile& in_file) {
+LoaderFileType AppLoader_NSO::IdentifyType(const FileSys::VirtualFile & in_file)
+{
     u32 magic = 0;
-    if (in_file->ReadObject(&magic) != sizeof(magic)) {
-        return FileType::Error;
+    if (in_file->ReadObject(&magic) != sizeof(magic))
+    {
+        return LoaderFileType::Error;
     }
 
-    if (Common::MakeMagic('N', 'S', 'O', '0') != magic) {
-        return FileType::Error;
+    if (Common::MakeMagic('N', 'S', 'O', '0') != magic)
+    {
+        return LoaderFileType::Error;
     }
 
-    return FileType::NSO;
+    return LoaderFileType::NSO;
 }
 
-std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader, ISystemModules& systemModules,
-                                               const FileSys::VfsFile& nso_file, VAddr load_base,
-                                               bool should_pass_arguments, bool load_into_process,
-                                               std::optional<FileSys::PatchManager> pm,
-                                               std::vector<Core::NCE::Patcher>* patches,
-                                               s32 patch_index) {
-    if (nso_file.GetSize() < sizeof(NSOHeader)) {
+std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader, ISystemModules& systemModules, const FileSys::VfsFile& nso_file, VAddr load_base, bool should_pass_arguments, bool load_into_process, std::optional<FileSys::PatchManager> pm, std::vector<Core::NCE::Patcher>* patches, s32 patch_index)
+{
+    if (nso_file.GetSize() < sizeof(NSOHeader))
+    {
         return std::nullopt;
     }
 
     NSOHeader nso_header{};
-    if (sizeof(NSOHeader) != nso_file.ReadObject(&nso_header)) {
+    if (sizeof(NSOHeader) != nso_file.ReadObject(&nso_header))
+    {
         return std::nullopt;
     }
 
-    if (nso_header.magic != Common::MakeMagic('N', 'S', 'O', '0')) {
+    if (nso_header.magic != Common::MakeMagic('N', 'S', 'O', '0'))
+    {
         return std::nullopt;
     }
 
     // Allocate some space at the beginning if we are patching in PreText mode.
-    const size_t module_start = [&]() -> size_t {
+    const size_t module_start = [&]() -> size_t
+    {
 #ifdef HAS_NCE
         if (patches && load_into_process) {
             auto* patch = &patches->operator[](patch_index);
@@ -107,53 +110,49 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader, ISystemMod
     // Build program image
     Kernel::CodeSet codeset;
     Kernel::PhysicalMemory program_image;
-    for (std::size_t i = 0; i < nso_header.segments.size(); ++i) {
-        std::vector<u8> data = nso_file.ReadBytes(nso_header.segments_compressed_size[i],
-                                                  nso_header.segments[i].offset);
-        if (nso_header.IsSegmentCompressed(i)) {
+    for (std::size_t i = 0; i < nso_header.segments.size(); ++i)
+    {
+        std::vector<u8> data = nso_file.ReadBytes(nso_header.segments_compressed_size[i], nso_header.segments[i].offset);
+        if (nso_header.IsSegmentCompressed(i))
+        {
             data = DecompressSegment(data, nso_header.segments[i]);
         }
-        program_image.resize(module_start + nso_header.segments[i].location +
-                             static_cast<u32>(data.size()));
-        std::memcpy(program_image.data() + module_start + nso_header.segments[i].location,
-                    data.data(), data.size());
+        program_image.resize(module_start + nso_header.segments[i].location + static_cast<u32>(data.size()));
+        std::memcpy(program_image.data() + module_start + nso_header.segments[i].location, data.data(), data.size());
         codeset.segments[i].addr = module_start + nso_header.segments[i].location;
         codeset.segments[i].offset = module_start + nso_header.segments[i].location;
         codeset.segments[i].size = nso_header.segments[i].size;
     }
 
-    if (should_pass_arguments && !Settings::values.program_args.GetValue().empty()) {
+    if (should_pass_arguments && !Settings::values.program_args.GetValue().empty())
+    {
         const auto arg_data{Settings::values.program_args.GetValue()};
 
         codeset.DataSegment().size += NSO_ARGUMENT_DATA_ALLOCATION_SIZE;
-        NSOArgumentHeader args_header{
-            NSO_ARGUMENT_DATA_ALLOCATION_SIZE, static_cast<u32_le>(arg_data.size()), {}};
+        NSOArgumentHeader args_header{NSO_ARGUMENT_DATA_ALLOCATION_SIZE, static_cast<u32_le>(arg_data.size()), {}};
         const auto end_offset = program_image.size();
-        program_image.resize(static_cast<u32>(program_image.size()) +
-                             NSO_ARGUMENT_DATA_ALLOCATION_SIZE);
+        program_image.resize(static_cast<u32>(program_image.size()) + NSO_ARGUMENT_DATA_ALLOCATION_SIZE);
         std::memcpy(program_image.data() + end_offset, &args_header, sizeof(NSOArgumentHeader));
-        std::memcpy(program_image.data() + end_offset + sizeof(NSOArgumentHeader), arg_data.data(),
-                    arg_data.size());
+        std::memcpy(program_image.data() + end_offset + sizeof(NSOArgumentHeader), arg_data.data(), arg_data.size());
     }
 
     codeset.DataSegment().size += nso_header.segments[2].bss_size;
-    u32 image_size{
-        PageAlignSize(static_cast<u32>(program_image.size()) + nso_header.segments[2].bss_size)};
+    u32 image_size{PageAlignSize(static_cast<u32>(program_image.size()) + nso_header.segments[2].bss_size)};
     program_image.resize(image_size);
 
-    for (std::size_t i = 0; i < nso_header.segments.size(); ++i) {
+    for (std::size_t i = 0; i < nso_header.segments.size(); ++i)
+    {
         codeset.segments[i].size = PageAlignSize(codeset.segments[i].size);
     }
 
     // Apply patches if necessary
     const auto name = nso_file.GetName();
-    if (pm && (pm->HasNSOPatch(nso_header.build_id, name) || Settings::values.dump_nso)) {
-        std::span<u8> patchable_section(program_image.data() + module_start,
-                                        program_image.size() - module_start);
+    if (pm && (pm->HasNSOPatch(nso_header.build_id, name) || Settings::values.dump_nso))
+    {
+        std::span<u8> patchable_section(program_image.data() + module_start, program_image.size() - module_start);
         std::vector<u8> pi_header(sizeof(NSOHeader) + patchable_section.size());
         std::memcpy(pi_header.data(), &nso_header, sizeof(NSOHeader));
-        std::memcpy(pi_header.data() + sizeof(NSOHeader), patchable_section.data(),
-                    patchable_section.size());
+        std::memcpy(pi_header.data() + sizeof(NSOHeader), patchable_section.data(), patchable_section.size());
 
         pi_header = pm->PatchNSO(pi_header, name);
 
@@ -185,7 +184,8 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader, ISystemMod
 #endif
 
     // If we aren't actually loading (i.e. just computing the process code layout), we are done
-    if (!load_into_process) {
+    if (!load_into_process)
+    {
         return load_base + image_size;
     }
 
@@ -199,8 +199,10 @@ std::optional<VAddr> AppLoader_NSO::LoadModule(Systemloader & loader, ISystemMod
     return load_base + image_size;
 }
 
-AppLoader_NSO::LoadResult AppLoader_NSO::Load(Systemloader & loader, ISystemModules & systemModules) {
-    if (is_loaded) {
+AppLoader_NSO::LoadResult AppLoader_NSO::Load(Systemloader & loader, ISystemModules & systemModules)
+{
+    if (is_loaded)
+    {
         return {LoaderResultStatus::ErrorAlreadyLoaded, {}};
     }
 
@@ -211,7 +213,8 @@ AppLoader_NSO::LoadResult AppLoader_NSO::Load(Systemloader & loader, ISystemModu
     return { LoaderResultStatus::ErrorAlreadyLoaded, {} };
 }
 
-LoaderResultStatus AppLoader_NSO::ReadNSOModules(Modules& out_modules) {
+LoaderResultStatus AppLoader_NSO::ReadNSOModules(Modules& out_modules)
+{
     out_modules = this->modules;
     return LoaderResultStatus::Success;
 }

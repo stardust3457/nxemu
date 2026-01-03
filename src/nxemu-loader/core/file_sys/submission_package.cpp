@@ -132,23 +132,29 @@ std::multimap<uint64_t, std::shared_ptr<NCA>> NSP::GetNCAsByTitleID() const {
     return out;
 }
 
-std::map<uint64_t, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>>
-NSP::GetNCAs() const {
+std::map<uint64_t, std::map<std::pair<LoaderTitleType, LoaderContentRecordType>, std::shared_ptr<NCA>>> NSP::GetNCAs() const
+{
     return ncas;
 }
 
-std::shared_ptr<NCA> NSP::GetNCA(uint64_t title_id, LoaderContentRecordType type, LoaderTitleType title_type) const {
+std::shared_ptr<NCA> NSP::GetNCA(uint64_t title_id, LoaderContentRecordType type, LoaderTitleType title_type) const
+{
     if (extracted)
-        LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");
+    {
+        LOG_WARNING(Service_FS, "called on an NSP that is of type extracted.");    
+    }
 
     const auto title_id_iter = ncas.find(title_id);
     if (title_id_iter == ncas.end())
-        return nullptr;
+    {
+        return nullptr;    
+    }
 
     const auto type_iter = title_id_iter->second.find({title_type, type});
     if (type_iter == title_id_iter->second.end())
+    {
         return nullptr;
-
+    }
     return type_iter->second;
 }
 

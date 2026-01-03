@@ -17,6 +17,7 @@
 #include "core/file_sys/submission_package.h"
 #include "core/file_sys/vfs/vfs_concat.h"
 #include "core/loader/loader.h"
+#include "core/file_sys/vfs/vfs_ivirtualfile.h"
 
 bool operator<(const ContentProviderEntry& lhs, const ContentProviderEntry& rhs) {
     return (lhs.titleID < rhs.titleID) || (lhs.titleID == rhs.titleID && lhs.type < rhs.type);
@@ -748,19 +749,24 @@ bool RegisteredCache::RawInstallYuzuMeta(const CNMT& cnmt) {
 
 ContentProviderUnion::~ContentProviderUnion() = default;
 
-void ContentProviderUnion::SetSlot(ContentProviderUnionSlot slot, ContentProvider* provider) {
+void ContentProviderUnion::SetSlot(ContentProviderUnionSlot slot, ContentProvider* provider)
+{
     providers[slot] = provider;
 }
 
-void ContentProviderUnion::ClearSlot(ContentProviderUnionSlot slot) {
+void ContentProviderUnion::ClearSlot(ContentProviderUnionSlot slot)
+{
     providers[slot] = nullptr;
 }
 
-void ContentProviderUnion::Refresh() {
-    for (auto& provider : providers) {
+void ContentProviderUnion::Refresh()
+{
+    for (auto& provider : providers)
+    {
         if (provider.second == nullptr)
-            continue;
-
+        {
+            continue;        
+        }
         provider.second->Refresh();
     }
 }
@@ -950,3 +956,18 @@ std::vector<ContentProviderEntry> ManualContentProvider::ListEntriesFilter(
     return out;
 }
 } // namespace FileSys
+
+void ManualContentProviderImpl::AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, uint64_t title_id, IVirtualFile * file)
+{
+    provider.AddEntry(title_type, content_type, title_id, std::make_shared<VfsVirtualFile>(file));
+}
+
+void ManualContentProviderImpl::ClearAllEntries()
+{
+    provider.ClearAllEntries();
+}
+
+FileSys::ManualContentProvider & ManualContentProviderImpl::Provider()
+{
+    return provider;
+}

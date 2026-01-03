@@ -256,3 +256,17 @@ private:
 };
 
 } // namespace FileSys
+
+class ManualContentProviderImpl :
+    public IManualContentProvider
+{
+public:
+    FileSys::ManualContentProvider & Provider();
+
+    // IManualContentProvider
+    void AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, uint64_t title_id, IVirtualFile * file) override;
+    void ClearAllEntries() override;
+
+private:
+    FileSys::ManualContentProvider provider;
+};

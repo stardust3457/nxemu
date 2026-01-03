@@ -40,9 +40,7 @@ public:
     using BuildID = std::array<u8, 0x20>;
     using Metadata = std::pair<std::unique_ptr<NACP>, VirtualFile>;
 
-    explicit PatchManager(uint64_t title_id_,
-                          const FileSystemController& fs_controller_,
-                          const ContentProvider& content_provider_);
+    explicit PatchManager(uint64_t title_id_, const FileSystemController& fs_controller_, const ContentProvider& content_provider_);
     ~PatchManager();
 
     [[nodiscard]] uint64_t GetTitleID() const;
