@@ -1,4 +1,5 @@
 #include "std_string.h"
+#include <algorithm>
 #include <Windows.h>
 
 stdstr::stdstr()
@@ -65,6 +66,18 @@ void stdstr::Format(const char * strFormat, ...)
     va_start(args, strFormat);
     ArgFormat(strFormat, args);
     va_end(args);
+}
+
+stdstr & stdstr::ToLower()
+{
+    std::transform(begin(), end(), begin(), (char (*)(int))tolower);
+    return *this;
+}
+
+stdstr & stdstr::ToUpper()
+{
+    std::transform(begin(), end(), begin(), (char (*)(int))toupper);
+    return *this;
 }
 
 stdstr & stdstr::Replace(const char search, const char replace)

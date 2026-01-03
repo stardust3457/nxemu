@@ -24,6 +24,8 @@ public:
     strvector Tokenize(char delimiter) const;
     strvector Tokenize(const char * delimiter) const;
     void Format(const char * strFormat, ...);
+    stdstr & ToLower();
+    stdstr & ToUpper();
 
     stdstr & Replace(const char search, const char replace);
     stdstr & Replace(const char * search, const char replace);

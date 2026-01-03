@@ -1,6 +1,6 @@
 #include "os_settings.h"
 #include "os_settings_identifiers.h"
-#include <common/json.h>
+#include <common/json_util.h>
 #include <common/std_string.h>
 #include <nxemu-module-spec/base.h>
 #include <yuzu_common/settings_enums.h>
@@ -430,42 +430,6 @@ namespace
         { NXOsSetting::AudioMuted, "audio\\muted", &Settings::values.audio_muted },
     };
 
-    JsonValue GetNestedValue(const JsonValue & section, const char * key)
-    {
-        strvector parts = stdstr(key).Tokenize('\\');
-        JsonValue current = section;
-
-        for (const stdstr & part : parts)
-        {
-            if (!current.isObject())
-            {
-                return JsonValue();
-            }
-            current = current[part];
-        }
-        return current;
-    }
-
-    void SetNestedValue(JsonValue& section, const char* key, const JsonValue& value)
-    {
-        strvector parts = stdstr(key).Tokenize('\\');
-        if (parts.empty())
-        {
-            return;
-        }
-
-        JsonValue * current = &section;
-        for (size_t i = 0; i < parts.size() - 1; i++)
-        {
-            if (!(*current)[parts[i]].isObject())
-            {
-                (*current)[parts[i]] = JsonValue(JsonValueType::Object);
-            }
-            current = &(*current)[parts[i]];
-        }
-        (*current)[parts.back()] = value;
-    }
-
     template <typename T>
     std::vector<std::pair<std::string, T>> Canonicalizations();
 
@@ -608,7 +572,7 @@ void SetupOsSetting(void)
     {
         for (const OsSetting & osSetting : settings)
         {
-            JsonValue value = GetNestedValue(root, osSetting.json_path);
+            JsonValue value = JsonGetNestedValue(root, osSetting.json_path);
             switch (osSetting.settingType)
             {
             case SettingType::StringSetting:
@@ -722,55 +686,55 @@ void SaveOsSettings(void)
         case SettingType::StringSetting:
             if (osSetting.setting.stringSetting->GetValue() != osSetting.setting.stringSetting->GetDefault())
             {
-                SetNestedValue(root, osSetting.json_path, osSetting.setting.stringSetting->GetValue());
+                JsonSetNestedValue(root, osSetting.json_path, osSetting.setting.stringSetting->GetValue());
             }
             break;
         case SettingType::AudioEngine:
             if (osSetting.setting.audioEngine->GetValue() != osSetting.setting.audioEngine->GetDefault())
             {
-                SetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.audioEngine->GetValue()));
+                JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.audioEngine->GetValue()));
             }
             break;
         case SettingType::AudioMode:
             if (osSetting.setting.audioMode->GetValue() != osSetting.setting.audioMode->GetDefault())
             {
-                SetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.audioMode->GetValue()));
+                JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.audioMode->GetValue()));
             }
             break;
         case SettingType::U8:
             if (osSetting.setting.u8->GetValue() != osSetting.setting.u8->GetDefault())
             {
-                SetNestedValue(root, osSetting.json_path, (int32_t)osSetting.setting.u8->GetValue());
+                JsonSetNestedValue(root, osSetting.json_path, (int32_t)osSetting.setting.u8->GetValue());
             }
             break;
         case SettingType::BooleanSetting:
             if (osSetting.setting.booleanSetting->GetValue() != osSetting.setting.booleanSetting->GetDefault())
             {
-                SetNestedValue(root, osSetting.json_path, osSetting.setting.booleanSetting->GetValue() != 0);
+                JsonSetNestedValue(root, osSetting.json_path, osSetting.setting.booleanSetting->GetValue() != 0);
             }
             break;
         case SettingType::BooleanValue:
             if (*osSetting.setting.boolValue != osSetting.defaultValue.boolValue)
             {
-                SetNestedValue(root, osSetting.json_path, *osSetting.setting.boolValue != 0);
+                JsonSetNestedValue(root, osSetting.json_path, *osSetting.setting.boolValue != 0);
             }
             break;
         case SettingType::UnsignedInt:
             if (*osSetting.setting.uint32Value != osSetting.defaultValue.uint32Value)
             {
-                SetNestedValue(root, osSetting.json_path, *osSetting.setting.uint32Value);
+                JsonSetNestedValue(root, osSetting.json_path, *osSetting.setting.uint32Value);
             }
             break;
         case SettingType::StringValue:
             if (*osSetting.setting.stringValue != osSetting.defaultValue.sringValue)
             {
-                SetNestedValue(root, osSetting.json_path, *osSetting.setting.stringValue);
+                JsonSetNestedValue(root, osSetting.json_path, *osSetting.setting.stringValue);
             }
             break;
         case SettingType::ControllerType:
             if (*osSetting.setting.controllerType != osSetting.defaultValue.controllerType)
             {
-                SetNestedValue(root, osSetting.json_path, CanonicalizeEnum(*osSetting.setting.controllerType));
+                JsonSetNestedValue(root, osSetting.json_path, CanonicalizeEnum(*osSetting.setting.controllerType));
             }
             break;
         default:

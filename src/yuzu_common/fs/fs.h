@@ -119,21 +119,17 @@ template <typename Path1, typename Path2>
  *
  * @returns A shared pointer to the opened file. Returns nullptr on failure.
  */
-[[nodiscard]] std::shared_ptr<IOFile> FileOpen(const std::filesystem::path& path,
-                                               FileAccessMode mode,
-                                               FileType type = FileType::BinaryFile,
-                                               FileShareFlag flag = FileShareFlag::ShareReadOnly);
+[[nodiscard]] std::shared_ptr<IOFile> FileOpen(const std::filesystem::path& path, FileAccessMode mode, FileType type = FileType::BinaryFile, FileShareFlag flag = FileShareFlag::ShareReadOnly);
 
 #ifdef _WIN32
 template <typename Path>
-[[nodiscard]] std::shared_ptr<IOFile> FileOpen(const Path& path, FileAccessMode mode,
-                                               FileType type = FileType::BinaryFile,
-                                               FileShareFlag flag = FileShareFlag::ShareReadOnly) {
-    if constexpr (IsChar<typename Path::value_type>) {
+[[nodiscard]] std::shared_ptr<IOFile> FileOpen(const Path& path, FileAccessMode mode, FileType type = FileType::BinaryFile, FileShareFlag flag = FileShareFlag::ShareReadOnly)
+{
+    if constexpr (IsChar<typename Path::value_type>)
+    {
         return FileOpen(ToU8String(path), mode, type, flag);
-    } else {
-        return FileOpen(std::filesystem::path{path}, mode, type, flag);
     }
+    return FileOpen(std::filesystem::path{path}, mode, type, flag);
 }
 #endif
 
