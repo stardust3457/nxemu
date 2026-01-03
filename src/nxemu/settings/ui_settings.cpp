@@ -1,5 +1,6 @@
+#include "ui_identifiers.h"
 #include "ui_settings.h"
-#include <common/json.h>
+#include <common/json_util.h>
 #include <common/path.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/notification.h>
@@ -12,6 +13,7 @@ namespace
     {
         Path,
         String,
+        int32,
         Bool,
         StringList,
     };
@@ -19,11 +21,13 @@ namespace
     class UISetting
     {
     public:
-        UISetting(const char * key, Path * path, std::string * value, Path defaultPath, const char * defaultValue);
-        UISetting(const char * key, std::string * value, const char * defaultValue);
-        UISetting(const char * key, bool * value, bool defaultValue);
-        UISetting(const char * key, Stringlist * value);
+        UISetting(const char * id, const char * key, Path * path, std::string * value, Path defaultPath, const char * defaultValue);
+        UISetting(const char * id, const char * key, std::string * value, const char * defaultValue);
+        UISetting(const char * id, const char * key, bool * value, bool defaultValue);
+        UISetting(const char * id, const char * key, int32_t * value, uint32_t defaultValue);
+        UISetting(const char * id, const char * key, Stringlist * value);
 
+        const char * identifier;
         const char * json_key;
         SettingType settingType;
         union
@@ -31,32 +35,41 @@ namespace
             Path * path;
             std::string * string;
             bool * boolean;
+            int32_t * int32;
             Stringlist * string_list;
         } setting;
         std::string * settingValue;
         Path default_path;
-        const char * default_string;
-        const bool default_bool;
+        union
+        {
+            const char * default_string;
+            const uint32_t default_int32;
+            const bool default_bool;        
+        };
     };
 
     static UISetting settings[] = {
-        { "RecentFiles", &uiSettings.recentFiles},
-        { "GameDirectories", &uiSettings.gameDirectories},
-        { "LanguageDirectory", &uiSettings.languageDir, &uiSettings.languageDirValue, GetDefaultLanguageDir(), "./lang"},
-        { "LanguageBase", &uiSettings.languageBase, "english"},
-        { "LanguageCurrent", &uiSettings.languageCurrent, "english"},
-        { "SciterConsole", &uiSettings.sciterConsole, false},
-        { "PerformVulkanCheck", &uiSettings.performVulkanCheck, true},
-        { nullptr, &uiSettings.hasBrokenVulkan, false},
-        { nullptr, &uiSettings.enableAllControllers, false},
+        {nullptr, "RecentFiles", &uiSettings.recentFiles},
+        {nullptr, "GameDirectories", &uiSettings.gameDirectories},
+        {nullptr, "Language\\Directory", &uiSettings.languageDir, &uiSettings.languageDirValue, GetDefaultLanguageDir(), "./lang"},
+        {nullptr, "Language\\Base", &uiSettings.languageBase, "english"},
+        {nullptr, "Language\\Current", &uiSettings.languageCurrent, "english"},
+        {nullptr, "SciterConsole", &uiSettings.sciterConsole, false},
+        {nullptr, "PerformVulkanCheck", &uiSettings.performVulkanCheck, true},
+        {nullptr, nullptr, &uiSettings.hasBrokenVulkan, false},
+        {nullptr, nullptr, &uiSettings.enableAllControllers, false},
     };
+
+    void UISettingChanged(const char * setting, void * /*userData*/);
 
 } // namespace
 
 UISettings uiSettings = {};
 
-void LoadUISetting(void)
+void SetupUISetting(void)
 {
+    SettingsStore & settingsStore = SettingsStore::GetInstance();
+
     uiSettings = {};
     for (const UISetting & setting : settings)
     {
@@ -72,6 +85,9 @@ void LoadUISetting(void)
         case SettingType::Bool:
             *(setting.setting.boolean) = setting.default_bool;
             break;
+        case SettingType::int32:
+            *(setting.setting.int32) = setting.default_int32;
+            break;
         case SettingType::StringList:
             *(setting.setting.string_list) = {};
             break;
@@ -83,14 +99,13 @@ void LoadUISetting(void)
     JsonValue section = SettingsStore::GetInstance().GetSettings("UI");
     for (const UISetting & setting : settings)
     {
-        const JsonValue * node;
+        JsonValue value = JsonGetNestedValue(section, setting.json_key);
         switch (setting.settingType)
         {
         case SettingType::Path:
-            node = setting.json_key ? section.Find(setting.json_key) : nullptr;
-            if (node != nullptr && node->isString())
+            if (value.isString())
             {
-                std::string dirValue = node->asString();
+                std::string dirValue = value.asString();
                 if (!dirValue.empty())
                 {
                     *(setting.settingValue) = dirValue;
@@ -99,35 +114,54 @@ void LoadUISetting(void)
             }
             break;
         case SettingType::String:
-            node = setting.json_key ? section.Find(setting.json_key) : nullptr;
-            if (node != nullptr && node->isString())
+            if (value.isString())
             {
-                *(setting.setting.string) = node->asString();
+                *(setting.setting.string) = value.asString();
+            }
+            break;
+        case SettingType::int32:
+            if (value.isInt())
+            {
+                *(setting.setting.int32) = (uint32_t)value.asUInt64();
             }
             break;
         case SettingType::Bool:
-            node = setting.json_key ? section.Find(setting.json_key) : nullptr;
-            if (node != nullptr && node->isBool())
+            if (value.isBool())
             {
-                *(setting.setting.boolean) = node->asBool();
+                *(setting.setting.boolean) = value.asBool();
             }
             break;
         case SettingType::StringList:
-            node = setting.json_key ? section.Find(setting.json_key) : nullptr;
-            if (node != nullptr && node->isArray())
+            if (value.isArray())
             {
-                for (uint32_t i = 0; i < node->size(); i++)
+                for (uint32_t i = 0; i < value.size(); i++)
                 {
-                    const JsonValue & item = (*node)[i];
-                    if (item.isString())
-                    {                        
-                        setting.setting.string_list->push_back(item.asString());
+                    if (!value[i].isString())
+                    { 
+                        continue;
                     }
+                    setting.setting.string_list->push_back(value[i].asString());
                 }
             }
             break;
         default:
             g_notify->BreakPoint(__FILE__, __LINE__);
+        }
+ 
+
+        if (setting.identifier != nullptr)
+        {
+            switch (setting.settingType)
+            {
+            case SettingType::int32:
+                settingsStore.SetDefaultInt(setting.identifier, setting.default_int32);
+                settingsStore.SetInt(setting.identifier, setting.setting.int32 != nullptr ? *setting.setting.int32 : setting.default_int32);
+                break;
+            default:
+                g_notify->BreakPoint(__FILE__, __LINE__);
+            }
+
+            settingsStore.RegisterCallback(setting.identifier, UISettingChanged, nullptr);        
         }
     }
 }
@@ -135,7 +169,7 @@ void LoadUISetting(void)
 void SaveUISetting(void)
 {
     JsonValue json;
-    for (const UISetting& setting : settings)
+    for (const UISetting & setting : settings)
     {
         switch (setting.settingType)
         {
@@ -147,25 +181,31 @@ void SaveUISetting(void)
                 {
                     jsonList.Append(JsonValue(item));
                 }
-                json[setting.json_key] = std::move(jsonList);
+                JsonSetNestedValue(json, setting.json_key, std::move(jsonList));
             }
             break;
         case SettingType::Path:
             if (strcmp(setting.settingValue->c_str(), setting.default_string) != 0)
             {
-                json[setting.json_key] = JsonValue(*setting.settingValue);
+                JsonSetNestedValue(json, setting.json_key, JsonValue(*setting.settingValue));
             }
             break;
         case SettingType::String:
             if (strcmp(setting.setting.string->c_str(), setting.default_string) != 0)
             {
-                json[setting.json_key] = JsonValue(*setting.setting.string);
+                JsonSetNestedValue(json, setting.json_key, JsonValue(*setting.setting.string));
             }
             break;
         case SettingType::Bool:
             if (*setting.setting.boolean != setting.default_bool)
             {
-                json[setting.json_key] = JsonValue(*setting.setting.boolean);
+                JsonSetNestedValue(json, setting.json_key, JsonValue(*setting.setting.boolean));
+            }
+            break;
+        case SettingType::int32:
+            if (*setting.setting.boolean != setting.default_bool)
+            {
+                JsonSetNestedValue(json, setting.json_key, JsonValue(*setting.setting.int32));
             }
             break;
         default:
@@ -187,45 +227,79 @@ namespace
         return dir;
     }
 
-    UISetting::UISetting(const char * key, Path * path, std::string * value, Path defaultPath, const char * defaultValue) :
+    UISetting::UISetting(const char * id, const char * key, Path * path, std::string * value, Path defaultPath, const char * defaultValue) :
+        identifier(id),
         json_key(key),
         settingType(SettingType::Path),
         settingValue(value),
         default_path(defaultPath),
-        default_string(defaultValue),
-        default_bool(false)
+        default_string(defaultValue)
     {
         setting.path = path;
     }
 
-    UISetting::UISetting(const char * key, std::string * value, const char * defaultValue) :
+    UISetting::UISetting(const char * id, const char * key, std::string * value, const char * defaultValue) :
+        identifier(id),
         json_key(key),
         settingType(SettingType::String),
         settingValue(nullptr),
-        default_string(defaultValue),
-        default_bool(false)
+        default_string(defaultValue)
     {
         setting.string = value;
     }
 
-    UISetting::UISetting(const char * key, bool * value, bool defaultValue) :
+    UISetting::UISetting(const char * id, const char * key, int32_t * value, uint32_t defaultValue) :
+        identifier(id),
+        json_key(key),
+        settingType(SettingType::int32),
+        settingValue(nullptr),
+        default_int32(defaultValue)
+    {
+        setting.int32 = value;
+    }
+
+    UISetting::UISetting(const char * id, const char * key, bool * value, bool defaultValue) :
+        identifier(id),
         json_key(key),
         settingType(SettingType::Bool),
         settingValue(nullptr),
-        default_string(nullptr),
         default_bool(defaultValue)
     {
         setting.boolean = value;
     }
 
-    UISetting::UISetting(const char* key, Stringlist* value) :
+    UISetting::UISetting(const char * id, const char * key, Stringlist * value) :
+        identifier(id),
         json_key(key),
         settingType(SettingType::StringList),
         settingValue(nullptr),
-        default_string(nullptr),
-        default_bool(false)
+        default_string(nullptr)
     {
         setting.string_list = value;
     }
 
+    void UISettingChanged(const char * setting, void * /*userData*/)
+    {
+        SettingsStore & settingsStore = SettingsStore::GetInstance();
+
+        for (const UISetting & uiSetting : settings)
+        {
+            if (uiSetting.identifier == nullptr || strcmp(uiSetting.identifier, setting) != 0)
+            {
+                continue;
+            }
+            switch (uiSetting.settingType)
+            {
+            case SettingType::int32:
+                if (uiSetting.setting.int32 != nullptr)
+                {
+                    *uiSetting.setting.int32 = settingsStore.GetInt(setting);
+                }
+                break;
+            default:
+                g_notify->BreakPoint(__FILE__, __LINE__);
+            }
+            break;
+        }
+    }
 }

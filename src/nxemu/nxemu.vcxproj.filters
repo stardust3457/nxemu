@@ -122,6 +122,9 @@
     <ClInclude Include="user_interface\key_mappings.h">
       <Filter>Header Files\user_interface</Filter>
     </ClInclude>
+    <ClInclude Include="settings\ui_identifiers.h">
+      <Filter>Header Files\settings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="user_interface\nxemu.rc">

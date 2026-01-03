@@ -53,6 +53,7 @@
     <ClCompile Include="user_interface\settings\system_config_graphics.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="settings\ui_identifiers.h" />
     <ClInclude Include="settings\ui_settings.h" />
     <ClInclude Include="settings\ui_settings_identifiers.h" />
     <ClInclude Include="startup_checks.h" />

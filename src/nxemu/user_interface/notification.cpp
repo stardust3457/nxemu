@@ -25,7 +25,7 @@ void Notification::BreakPoint(const char * fileName, uint32_t lineNumber)
 
 void Notification::AppInitDone(void)
 {
-    LoadUISetting();
+    SetupUISetting();
 }
 
 Notification & Notification::GetInstance()

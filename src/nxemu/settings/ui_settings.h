@@ -14,6 +14,7 @@ struct UISettings
     std::string languageBase;
     std::string languageCurrent;
     bool sciterConsole;
+    int32_t gameBrowserMyGameIconSize;
     bool performVulkanCheck;
     bool hasBrokenVulkan;
     bool enableAllControllers;
@@ -21,5 +22,5 @@ struct UISettings
 
 extern UISettings uiSettings;
 
-void LoadUISetting(void);
+void SetupUISetting(void);
 void SaveUISetting(void);
