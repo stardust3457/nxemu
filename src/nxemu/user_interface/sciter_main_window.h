@@ -47,6 +47,7 @@ public:
 
     void ResetMenu();
     bool Show(void);
+    void ShowConfig(const char * startPage);
 
     // IRenderWindow
     void * RenderSurface(void) const override;

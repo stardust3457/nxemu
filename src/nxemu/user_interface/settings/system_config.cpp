@@ -27,7 +27,7 @@ SystemConfig::~SystemConfig()
 {
 }
 
-void SystemConfig::Display(void * parentWindow)
+void SystemConfig::Display(void * parentWindow, const char * startPage)
 {
     InitializeTranslations();
 
@@ -50,8 +50,11 @@ void SystemConfig::Display(void * parentWindow)
         {
             m_pageNav = std::static_pointer_cast<IPageNav>(interfacePtr);
             m_pageNav->AddSink(this);
+            if (startPage != nullptr)
+            {
+                m_pageNav->SetCurrentPage(startPage);
+            }
         }
-
         SciterElement okButton = root.FindFirst("button[role=\"window-ok\"]");
         m_sciterUI.AttachHandler(okButton, IID_ICLICKSINK, (IClickSink*)this);
     }

@@ -32,7 +32,7 @@ public:
     SystemConfig(ISciterUI & SciterUI, SystemModules & modules, std::vector<VkDeviceRecord> & vkDeviceRecords);
     ~SystemConfig();
 
-    void Display(void * parentWindow);
+    void Display(void * parentWindow, const char * startPage);
     void SavePage(SCITER_ELEMENT pageElement, const ConfigSetting * settings, size_t settingsCount);
     void SetupPage(SCITER_ELEMENT pageElement, const ConfigSetting * settings, size_t settingsCount);    
 

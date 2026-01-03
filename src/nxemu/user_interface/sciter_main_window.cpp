@@ -87,12 +87,12 @@ bool SciterMainWindow::Show(void)
         WINDOW_WIDTH = 760,
     };
 
-    if (!m_sciterUI.WindowCreate(nullptr, "main_window.html", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, SUIW_MAIN, m_window))
+    if (!m_sciterUI.WindowCreate(nullptr, "main_window.html", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, SUIW_MAIN | SUIW_HIDDEN, m_window))
     {
         return false;
     }
     SciterElement rootElement(m_window->GetRootElement());
-    m_sciterUI.AttachHandler(rootElement, IID_IKEYSINK, (IKeySink*)this);
+    m_sciterUI.AttachHandler(rootElement, IID_IKEYSINK, (IKeySink *)this);
     m_window->OnDestroySinkAdd(this);
     m_window->CenterWindow();
     SetCaption(m_windowTitle);
@@ -109,27 +109,34 @@ bool SciterMainWindow::Show(void)
     SciterElement mainContents(rootElement.GetElementByID("MainContents"));
     if (mainContents.IsValid())
     {
-        m_sciterUI.AttachHandler(mainContents, IID_IRESIZESINK, (IResizeSink*)this);
+        m_sciterUI.AttachHandler(mainContents, IID_IRESIZESINK, (IResizeSink *)this);
         rect = mainContents.GetLocation();
     }
 
     CreateRenderWindow();
+    UpdateStatusbar();
     m_modules.Setup(*this);
 
-    UpdateStatusbar();
-    m_sciterUI.AttachHandler(rootElement, IID_IMOUSEUPDOWNSINK, (IMouseUpDownSink*)this);
-    m_sciterUI.AttachHandler(rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink*)this);
-    m_sciterUI.AttachHandler(rootElement.GetElementByID("volume"), IID_ICLICKSINK, (IClickSink*)this);
-    m_sciterUI.AttachHandler(rootElement.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink*)this);
+    m_sciterUI.AttachHandler(rootElement, IID_IMOUSEUPDOWNSINK, (IMouseUpDownSink *)this);
+    m_sciterUI.AttachHandler(rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink *)this);
+    m_sciterUI.AttachHandler(rootElement.GetElementByID("volume"), IID_ICLICKSINK, (IClickSink *)this);
+    m_sciterUI.AttachHandler(rootElement.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink *)this);
 
-    m_sciterUI.AttachHandler(rootElement, IID_ITIMERSINK, (ITimerSink*)this);
-    rootElement.SetTimer(25, (uint32_t*)TIMER_UPDATE_INPUT);
+    m_sciterUI.AttachHandler(rootElement, IID_ITIMERSINK, (ITimerSink *)this);
+    rootElement.SetTimer(25, (uint32_t *)TIMER_UPDATE_INPUT);
 
     if (!uiSettings.hasBrokenVulkan)
     {
         PopulateVulkanRecords(m_vkDeviceRecords, RenderSurface());
     }
+    m_window->Show();
     return true;
+}
+
+void SciterMainWindow::ShowConfig(const char * startPage)
+{
+    m_systemConfig.reset(new SystemConfig(m_sciterUI, m_modules, m_vkDeviceRecords));
+    m_systemConfig->Display((void *)m_window->GetHandle(), startPage);
 }
 
 void SciterMainWindow::ShowLoadingScreen()
@@ -147,12 +154,18 @@ void SciterMainWindow::UpdateStatusbar()
     SettingsStore & settings = SettingsStore::GetInstance();
     SciterElement rootElement(m_window->GetRootElement());
     SciterElement renderer(rootElement.GetElementByID("renderer"));
-    stdstr_f text("%s", Settings::CanonicalizeEnum((Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI)).c_str());
-    renderer.SetHTML((const uint8_t*)text.c_str(), text.size());
+    if (renderer.IsValid())
+    {
+        stdstr_f text("%s", Settings::CanonicalizeEnum((Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI)).c_str());
+        renderer.SetHTML((const uint8_t *)text.c_str(), text.size());
+    }
 
     SciterElement volume(rootElement.GetElementByID("volume"));
-    text.Format("VOLUME: %d %%", settings.GetInt(NXOsSetting::AudioVolume));
-    volume.SetHTML((const uint8_t *)text.c_str(), text.size());
+    if (volume.IsValid())
+    {
+        stdstr_f text("VOLUME: %d %%", settings.GetInt(NXOsSetting::AudioVolume));
+        volume.SetHTML((const uint8_t *)text.c_str(), text.size());    
+    }
 }
 
 void SciterMainWindow::DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int32_t y)
@@ -328,8 +341,7 @@ void SciterMainWindow::OnFileExit(void)
 
 void SciterMainWindow::OnSystemConfig(void)
 {
-    m_systemConfig.reset(new SystemConfig(m_sciterUI, m_modules, m_vkDeviceRecords));
-    m_systemConfig->Display((void*)m_window->GetHandle());
+    ShowConfig(nullptr);
 }
 
 void SciterMainWindow::OnInputConfig(void)
