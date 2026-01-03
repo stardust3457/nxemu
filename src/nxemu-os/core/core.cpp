@@ -39,11 +39,17 @@ MICROPROFILE_DEFINE(ARM_CPU3, "ARM", "CPU 3", MP_RGB(255, 64, 64));
 namespace Core {
 
 struct System::Impl {
-    explicit Impl(System & system, ISystemModules & modules_)
-        : kernel{system}, hid_core{}, cpu_manager{system}, room_network{},
-        applet_manager{system}, frontend_applets{system}, modules(modules_),
+    explicit Impl(System & system_, ISystemModules & modules_) : 
+        kernel{system_},
+        hid_core{},
+        cpu_manager{system_},
+        room_network{},
+        applet_manager{system_},
+        frontend_applets{system_},
+        modules(modules_),
         input_subsystem{std::make_shared<InputCommon::InputSubsystem>()},
-        reporter{system}, fs_controller(modules_.Systemloader().FileSystemController())
+        reporter{system_},
+        fs_controller(modules_.Systemloader().FileSystemController())
     {
         device_memory = std::make_unique<Core::DeviceMemory>();
     }
@@ -158,7 +164,6 @@ struct System::Impl {
 
         LOG_DEBUG(Core, "Initialized OK");
     }
-
 
     bool IsShuttingDown() const {
         return is_shutting_down;
@@ -416,7 +421,8 @@ u64 System::GetApplicationProcessProgramID() const {
     return impl->kernel.ApplicationProcess()->GetProgramId();
 }
 
-void System::AddGlueRegistrationForProcess(Kernel::KProcess & process, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t * nacpData, uint32_t nacpDataLen) {
+void System::AddGlueRegistrationForProcess(Kernel::KProcess & process, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t * nacpData, uint32_t nacpDataLen)
+{
     std::vector<u8> nacp_data;
     if (nacpDataLen > 0)
     {
@@ -433,31 +439,38 @@ void System::AddGlueRegistrationForProcess(Kernel::KProcess & process, uint32_t 
     impl->arp_manager.Register(launch.title_id, launch, std::move(nacp_data));
 }
 
-void System::SetFrontendAppletSet(Service::AM::Frontend::FrontendAppletSet&& set) {
+void System::SetFrontendAppletSet(Service::AM::Frontend::FrontendAppletSet&& set)
+{
     impl->frontend_applets.SetFrontendAppletSet(std::move(set));
 }
 
-Service::AM::Frontend::FrontendAppletHolder& System::GetFrontendAppletHolder() {
+Service::AM::Frontend::FrontendAppletHolder& System::GetFrontendAppletHolder()
+{
     return impl->frontend_applets;
 }
 
-const Service::AM::Frontend::FrontendAppletHolder& System::GetFrontendAppletHolder() const {
+const Service::AM::Frontend::FrontendAppletHolder& System::GetFrontendAppletHolder() const
+{
     return impl->frontend_applets;
 }
 
-Service::AM::AppletManager& System::GetAppletManager() {
+Service::AM::AppletManager& System::GetAppletManager()
+{
     return impl->applet_manager;
 }
 
-IFileSystemController & System::GetFileSystemController() {
+IFileSystemController & System::GetFileSystemController()
+{
     return impl->fs_controller;
 }
 
-const Reporter& System::GetReporter() const {
+const Reporter& System::GetReporter() const
+{
     return impl->reporter;
 }
 
-Service::Glue::ARPManager& System::GetARPManager() {
+Service::Glue::ARPManager& System::GetARPManager()
+{
     return impl->arp_manager;
 }
 

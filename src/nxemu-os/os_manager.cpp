@@ -123,7 +123,7 @@ bool OSManager::CreateApplicationProcess(uint64_t codeSize, const IProgramMetada
 {
     if (m_process != nullptr)
     {
-       return false;
+        return false;
     }
     m_coreSystem.Run();
     m_coreSystem.InitializeKernel(metaData.GetTitleID());
@@ -145,6 +145,7 @@ bool OSManager::CreateApplicationProcess(uint64_t codeSize, const IProgramMetada
     auto params = Service::AM::FrontendAppletParameters{
         .applet_id = Service::AM::AppletId::Application,
         .applet_type = Service::AM::AppletType::Application,
+        .launch_type = Service::AM::LaunchType::FrontendInitiated,
     };
     params.program_id = metaData.GetTitleID();
     m_coreSystem.GetAppletManager().CreateAndInsertByFrontendAppletParameters(m_process->GetProcessId(), params);

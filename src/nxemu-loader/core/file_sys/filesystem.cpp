@@ -20,7 +20,7 @@ FileSystemController::~FileSystemController() = default;
 
 bool FileSystemController::RegisterProcess(FileSys::ProcessId process_id, FileSys::ProgramId program_id, std::shared_ptr<FileSys::RomFSFactory>&& romfs_factory)
 {
-    std::scoped_lock lk{ registration_lock };
+    std::scoped_lock lk{registration_lock};
 
     registrations.emplace(process_id, Registration{.program_id = program_id, .romfs_factory = std::move(romfs_factory), .save_data_factory = CreateSaveDataFactory(program_id), });
 

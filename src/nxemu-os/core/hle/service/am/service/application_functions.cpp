@@ -181,10 +181,9 @@ Result IApplicationFunctions::GetDesiredLanguage(Out<u64> out_language_code)
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::SetTerminateResult(Result terminate_result) {
-    LOG_INFO(Service_AM, "(STUBBED) called, result={:#x} ({}-{})", terminate_result.GetInnerValue(),
-             static_cast<u32>(terminate_result.GetModule()) + 2000,
-             terminate_result.GetDescription());
+Result IApplicationFunctions::SetTerminateResult(Result terminate_result)
+{
+    LOG_INFO(Service_AM, "(STUBBED) called, result={:#x} ({}-{})", terminate_result.GetInnerValue(), static_cast<u32>(terminate_result.GetModule()) + 2000, terminate_result.GetDescription());
 
     std::scoped_lock lk{m_applet->lock};
     m_applet->terminate_result = terminate_result;
@@ -192,7 +191,8 @@ Result IApplicationFunctions::SetTerminateResult(Result terminate_result) {
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetDisplayVersion(Out<DisplayVersion> out_display_version) {
+Result IApplicationFunctions::GetDisplayVersion(Out<DisplayVersion> out_display_version)
+{
     LOG_DEBUG(Service_AM, "called");
 
     ISystemloader & loader = system.GetSystemloader();
@@ -216,11 +216,9 @@ Result IApplicationFunctions::GetDisplayVersion(Out<DisplayVersion> out_display_
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::ExtendSaveData(Out<u64> out_required_size, SaveDataType type,
-                                             Common::UUID user_id, u64 normal_size,
-                                             u64 journal_size) {
-    LOG_DEBUG(Service_AM, "called with type={} user_id={} normal={:#x} journal={:#x}",
-              static_cast<u8>(type), user_id.FormattedString(), normal_size, journal_size);
+Result IApplicationFunctions::ExtendSaveData(Out<u64> out_required_size, SaveDataType type, Common::UUID user_id, u64 normal_size, u64 journal_size)
+{
+    LOG_DEBUG(Service_AM, "called with type={} user_id={} normal={:#x} journal={:#x}", static_cast<u8>(type), user_id.FormattedString(), normal_size, journal_size);
 
     UNIMPLEMENTED();
     // The following value is used to indicate the amount of space remaining on failure
@@ -230,23 +228,19 @@ Result IApplicationFunctions::ExtendSaveData(Out<u64> out_required_size, SaveDat
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetSaveDataSize(Out<u64> out_normal_size, Out<u64> out_journal_size,
-                                              SaveDataType type, Common::UUID user_id) {
+Result IApplicationFunctions::GetSaveDataSize(Out<u64> out_normal_size, Out<u64> out_journal_size, SaveDataType type, Common::UUID user_id)
+{
     LOG_DEBUG(Service_AM, "called with type={} user_id={}", type, user_id.FormattedString());
 
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::CreateCacheStorage(Out<u32> out_target_media,
-                                                 Out<u64> out_required_size, u16 index,
-                                                 u64 normal_size, u64 journal_size) {
-    LOG_WARNING(Service_AM, "(STUBBED) called with index={} size={:#x} journal_size={:#x}", index,
-                normal_size, journal_size);
-
+Result IApplicationFunctions::CreateCacheStorage(Out<u32> out_target_media, Out<u64> out_required_size, u16 index, u64 normal_size, u64 journal_size)
+{
+    LOG_WARNING(Service_AM, "(STUBBED) called with index={} size={:#x} journal_size={:#x}", index, normal_size, journal_size);
     *out_target_media = 1; // Nand
     *out_required_size = 0;
-
     R_SUCCEED();
 }
 
@@ -260,15 +254,16 @@ Result IApplicationFunctions::GetSaveDataSizeMax(Out<u64> out_max_normal_size,
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetCacheStorageMax(Out<u32> out_cache_storage_index_max,
-                                                 Out<u64> out_max_journal_size) {
+Result IApplicationFunctions::GetCacheStorageMax(Out<u32> out_cache_storage_index_max, Out<u64> out_max_journal_size)
+{
     LOG_DEBUG(Service_AM, "called");
     UNIMPLEMENTED();
 
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::BeginBlockingHomeButtonShortAndLongPressed(s64 unused) {
+Result IApplicationFunctions::BeginBlockingHomeButtonShortAndLongPressed(s64 unused)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
 
     std::scoped_lock lk{m_applet->lock};
@@ -278,7 +273,8 @@ Result IApplicationFunctions::BeginBlockingHomeButtonShortAndLongPressed(s64 unu
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::EndBlockingHomeButtonShortAndLongPressed() {
+Result IApplicationFunctions::EndBlockingHomeButtonShortAndLongPressed()
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
 
     std::scoped_lock lk{m_applet->lock};
@@ -288,7 +284,8 @@ Result IApplicationFunctions::EndBlockingHomeButtonShortAndLongPressed() {
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::BeginBlockingHomeButton(s64 timeout_ns) {
+Result IApplicationFunctions::BeginBlockingHomeButton(s64 timeout_ns)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called, timeout_ns={}", timeout_ns);
 
     std::scoped_lock lk{m_applet->lock};
@@ -299,7 +296,8 @@ Result IApplicationFunctions::BeginBlockingHomeButton(s64 timeout_ns) {
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::EndBlockingHomeButton() {
+Result IApplicationFunctions::EndBlockingHomeButton()
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
 
     std::scoped_lock lk{m_applet->lock};
@@ -310,20 +308,22 @@ Result IApplicationFunctions::EndBlockingHomeButton() {
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::NotifyRunning(Out<bool> out_became_running) {
+Result IApplicationFunctions::NotifyRunning(Out<bool> out_became_running)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     *out_became_running = true;
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetPseudoDeviceId(Out<Common::UUID> out_pseudo_device_id) {
+Result IApplicationFunctions::GetPseudoDeviceId(Out<Common::UUID> out_pseudo_device_id)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     *out_pseudo_device_id = {};
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::IsGamePlayRecordingSupported(
-    Out<bool> out_is_game_play_recording_supported) {
+Result IApplicationFunctions::IsGamePlayRecordingSupported(Out<bool> out_is_game_play_recording_supported)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     *out_is_game_play_recording_supported = m_applet->game_play_recording_supported;
     R_SUCCEED();
@@ -335,8 +335,8 @@ Result IApplicationFunctions::InitializeGamePlayRecording(
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::SetGamePlayRecordingState(
-    GamePlayRecordingState game_play_recording_state) {
+Result IApplicationFunctions::SetGamePlayRecordingState(GamePlayRecordingState game_play_recording_state)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
 
     std::scoped_lock lk{m_applet->lock};
@@ -345,7 +345,8 @@ Result IApplicationFunctions::SetGamePlayRecordingState(
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::EnableApplicationCrashReport(bool enabled) {
+Result IApplicationFunctions::EnableApplicationCrashReport(bool enabled)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
 
     std::scoped_lock lk{m_applet->lock};
@@ -354,47 +355,42 @@ Result IApplicationFunctions::EnableApplicationCrashReport(bool enabled) {
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::InitializeApplicationCopyrightFrameBuffer(
-    s32 width, s32 height, u64 transfer_memory_size,
-    InCopyHandle<Kernel::KTransferMemory> transfer_memory_handle) {
+Result IApplicationFunctions::InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, u64 transfer_memory_size, InCopyHandle<Kernel::KTransferMemory> transfer_memory_handle)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::SetApplicationCopyrightImage(
-    s32 x, s32 y, s32 width, s32 height, WindowOriginMode window_origin_mode,
-    InBuffer<BufferAttr_HipcMapTransferAllowsNonSecure | BufferAttr_HipcMapAlias> image_data) {
+Result IApplicationFunctions::SetApplicationCopyrightImage(s32 x, s32 y, s32 width, s32 height, WindowOriginMode window_origin_mode, InBuffer<BufferAttr_HipcMapTransferAllowsNonSecure | BufferAttr_HipcMapAlias> image_data)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::SetApplicationCopyrightVisibility(bool visible) {
+Result IApplicationFunctions::SetApplicationCopyrightVisibility(bool visible)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called, is_visible={}", visible);
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::QueryApplicationPlayStatistics(
-    Out<s32> out_entries,
-    OutArray<ApplicationPlayStatistics, BufferAttr_HipcMapAlias> out_play_statistics,
-    InArray<u64, BufferAttr_HipcMapAlias> application_ids) {
+Result IApplicationFunctions::QueryApplicationPlayStatistics(Out<s32> out_entries, OutArray<ApplicationPlayStatistics, BufferAttr_HipcMapAlias> out_play_statistics, InArray<u64, BufferAttr_HipcMapAlias> application_ids)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     *out_entries = 0;
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::QueryApplicationPlayStatisticsByUid(
-    Out<s32> out_entries,
-    OutArray<ApplicationPlayStatistics, BufferAttr_HipcMapAlias> out_play_statistics,
-    Common::UUID user_id, InArray<u64, BufferAttr_HipcMapAlias> application_ids) {
+Result IApplicationFunctions::QueryApplicationPlayStatisticsByUid(Out<s32> out_entries, OutArray<ApplicationPlayStatistics, BufferAttr_HipcMapAlias> out_play_statistics, Common::UUID user_id, InArray<u64, BufferAttr_HipcMapAlias> application_ids)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     *out_entries = 0;
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::ExecuteProgram(ProgramSpecifyKind kind, u64 value) {
+Result IApplicationFunctions::ExecuteProgram(ProgramSpecifyKind kind, u64 value)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called, kind={}, value={}", kind, value);
-    ASSERT(kind == ProgramSpecifyKind::ExecuteProgram ||
-           kind == ProgramSpecifyKind::RestartProgram);
+    ASSERT(kind == ProgramSpecifyKind::ExecuteProgram || kind == ProgramSpecifyKind::RestartProgram);
 
     // Copy user channel ownership into the system so that it will be preserved
     system.GetUserChannel() = m_applet->user_channel_launch_parameter;
@@ -402,46 +398,49 @@ Result IApplicationFunctions::ExecuteProgram(ProgramSpecifyKind kind, u64 value)
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::ClearUserChannel() {
+Result IApplicationFunctions::ClearUserChannel()
+{
     LOG_DEBUG(Service_AM, "called");
     m_applet->user_channel_launch_parameter.clear();
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::UnpopToUserChannel(SharedPointer<IStorage> storage) {
+Result IApplicationFunctions::UnpopToUserChannel(SharedPointer<IStorage> storage)
+{
     LOG_DEBUG(Service_AM, "called");
     m_applet->user_channel_launch_parameter.push_back(storage->GetData());
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetPreviousProgramIndex(Out<s32> out_previous_program_index) {
+Result IApplicationFunctions::GetPreviousProgramIndex(Out<s32> out_previous_program_index)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     *out_previous_program_index = m_applet->previous_program_index;
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetGpuErrorDetectedSystemEvent(
-    OutCopyHandle<Kernel::KReadableEvent> out_event) {
+Result IApplicationFunctions::GetGpuErrorDetectedSystemEvent(OutCopyHandle<Kernel::KReadableEvent> out_event)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
     *out_event = m_applet->gpu_error_detected_event.GetHandle();
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::GetFriendInvitationStorageChannelEvent(
-    OutCopyHandle<Kernel::KReadableEvent> out_event) {
+Result IApplicationFunctions::GetFriendInvitationStorageChannelEvent(OutCopyHandle<Kernel::KReadableEvent> out_event)
+{
     LOG_DEBUG(Service_AM, "called");
     *out_event = m_applet->friend_invitation_storage_channel_event.GetHandle();
     R_SUCCEED();
 }
 
-Result IApplicationFunctions::TryPopFromFriendInvitationStorageChannel(
-    Out<SharedPointer<IStorage>> out_storage) {
+Result IApplicationFunctions::TryPopFromFriendInvitationStorageChannel(Out<SharedPointer<IStorage>> out_storage)
+{
     LOG_INFO(Service_AM, "(STUBBED) called");
     R_THROW(AM::ResultNoDataInChannel);
 }
 
-Result IApplicationFunctions::GetNotificationStorageChannelEvent(
-    OutCopyHandle<Kernel::KReadableEvent> out_event) {
+Result IApplicationFunctions::GetNotificationStorageChannelEvent(OutCopyHandle<Kernel::KReadableEvent> out_event)
+{
     LOG_DEBUG(Service_AM, "called");
     *out_event = m_applet->notification_storage_channel_event.GetHandle();
     R_SUCCEED();
