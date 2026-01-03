@@ -91,6 +91,7 @@ SystemModules::SystemModules()
 
 SystemModules::~SystemModules()
 {
+    ShutDown();
 }
 
 void SystemModules::Setup(IRenderWindow & window)

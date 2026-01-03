@@ -16,28 +16,25 @@
 
 namespace {
 
-std::unique_ptr<VideoCore::RendererBase> CreateRenderer(
-    Tegra::Host1x::Host1x & host1x, Core::Frontend::EmuWindow & emu_window, Tegra::GPU & gpu,
-    std::unique_ptr<Core::Frontend::GraphicsContext> context) {
+std::unique_ptr<VideoCore::RendererBase> CreateRenderer(Tegra::Host1x::Host1x & host1x, Core::Frontend::EmuWindow & emu_window, Tegra::GPU & gpu, std::unique_ptr<Core::Frontend::GraphicsContext> context)
+{
     auto & device_memory = host1x.MemoryManager();
 
-    switch (Settings::values.renderer_backend.GetValue()) {
-    case Settings::RendererBackend::OpenGL:
-        return std::make_unique<OpenGL::RendererOpenGL>(emu_window, device_memory, gpu, std::move(context));
-    case Settings::RendererBackend::Vulkan:
-        return std::make_unique<Vulkan::RendererVulkan>(emu_window, device_memory, gpu, std::move(context));
-    case Settings::RendererBackend::Null:
-        return std::make_unique<Null::RendererNull>(emu_window, gpu, std::move(context));
-    default:
-        return nullptr;
+    switch (Settings::values.renderer_backend.GetValue())
+    {
+    case Settings::RendererBackend::OpenGL: return std::make_unique<OpenGL::RendererOpenGL>(emu_window, device_memory, gpu, std::move(context));
+    case Settings::RendererBackend::Vulkan: return std::make_unique<Vulkan::RendererVulkan>(emu_window, device_memory, gpu, std::move(context));
+    case Settings::RendererBackend::Null: return std::make_unique<Null::RendererNull>(emu_window, gpu, std::move(context));
     }
+    return nullptr;
 }
 
 } // Anonymous namespace
 
 namespace VideoCore {
 
-std::unique_ptr<Tegra::GPU> CreateGPU(ISystemModules & modules, Core::Frontend::EmuWindow& emu_window, Tegra::Host1x::Host1x & host1x) {
+std::unique_ptr<Tegra::GPU> CreateGPU(ISystemModules & modules, Core::Frontend::EmuWindow& emu_window, Tegra::Host1x::Host1x & host1x)
+{
     Settings::UpdateRescalingInfo();
 
     const auto nvdec_value = Settings::values.nvdec_emulation.GetValue();

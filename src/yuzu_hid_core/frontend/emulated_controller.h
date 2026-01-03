@@ -230,7 +230,7 @@ public:
     void ReloadColorsFromSettings();
 
     /// Saves the current mapped configuration
-    void SaveCurrentConfig();
+    void SaveCurrentConfig() override;
 
     /// Reverts any mapped changes made that weren't saved
     void RestoreConfig();

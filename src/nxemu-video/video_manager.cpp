@@ -53,6 +53,9 @@ VideoManager::VideoManager(IRenderWindow & window, ISystemModules & modules) :
 
 VideoManager::~VideoManager()
 {
+    impl->m_host1x.release();
+    impl->m_gpuCore.release();
+    impl->m_emuWindow.release();
 }
 
 void VideoManager::EmulationStarting(void)
