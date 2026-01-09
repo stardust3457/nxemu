@@ -47,39 +47,42 @@ void SciterMainWindow::ResetMenu()
     {
         return;
     }
+    MenuBarItemList mainTitleMenu;
     MenuBarItemList fileMenu;
     fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "Load File..."));
-    fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
 
     Stringlist & recentFiles = uiSettings.recentFiles;
-    MenuBarItemList RecentGameMenu;
+    MenuBarItemList RecentFileMenu;
     if (recentFiles.size() > 0)
     {
         int32_t recentFileIndex = 0;
         for (Stringlist::const_iterator itr = recentFiles.begin(); itr != recentFiles.end(); itr++)
         {
             stdstr_f MenuString("%d %s", recentFileIndex + 1, itr->c_str());
-            RecentGameMenu.push_back(MenuBarItem(ID_RECENT_FILE_START + recentFileIndex, MenuString.c_str()));
+            RecentFileMenu.push_back(MenuBarItem(ID_RECENT_FILE_START + recentFileIndex, MenuString.c_str()));
             recentFileIndex += 1;
         }
-        fileMenu.emplace_back(MenuBarItem::SUB_MENU, "Recent Games", &RecentGameMenu);
-        fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
+        fileMenu.emplace_back(MenuBarItem::SUB_MENU, "Recent File", &RecentFileMenu);
     }
+
+    fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
     fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit"));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "File", &fileMenu));
 
     MenuBarItemList emulationMenu;
     emulationMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
     emulationMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Configure..."));
 
-    MenuBarItemList mainTitleMenu;
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "File", &fileMenu));
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Emulation", &emulationMenu));
+    MenuBarItemList optionsMenu;
+    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
+    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Configure..."));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Options", &optionsMenu));
 
     m_menuBar->AddSink(this);
     m_menuBar->SetMenuContent(mainTitleMenu);
 }
 
-bool SciterMainWindow::Show(void)
+bool SciterMainWindow::Show()
 {
     enum
     {
@@ -198,7 +201,7 @@ void SciterMainWindow::UpdateInputDrivers()
     }
 }
 
-void SciterMainWindow::CreateRenderWindow(void)
+void SciterMainWindow::CreateRenderWindow()
 {
     SciterElement rootElement(m_window->GetRootElement());
     SciterElement mainContents(rootElement.GetElementByID("MainContents"));
@@ -246,6 +249,7 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
     {
         renderer.SetState(impl->m_emulationRunning ? SciterElement::STATE_DISABLED : 0, impl->m_emulationRunning ? 0 : SciterElement::STATE_DISABLED, true);
     }
+    impl->ResetMenu();
 }
 
 void SciterMainWindow::GameFileChanged(const char * /*setting*/, void * userData)
@@ -325,7 +329,7 @@ void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * u
     ShowWindow((HWND)impl->m_renderWindow, SW_SHOW);
 }
 
-void SciterMainWindow::OnOpenFile(void)
+void SciterMainWindow::OnOpenFile()
 {
     if (m_modules.IsValid())
     {
@@ -334,17 +338,17 @@ void SciterMainWindow::OnOpenFile(void)
     }
 }
 
-void SciterMainWindow::OnFileExit(void)
+void SciterMainWindow::OnFileExit()
 {
     m_sciterUI.Stop();
 }
 
-void SciterMainWindow::OnSystemConfig(void)
+void SciterMainWindow::OnSystemConfig()
 {
     ShowConfig(nullptr);
 }
 
-void SciterMainWindow::OnInputConfig(void)
+void SciterMainWindow::OnInputConfig()
 {
     m_inputConfig.reset(new InputConfig(m_sciterUI, m_modules));
     m_inputConfig->Display((void*)m_window->GetHandle());
@@ -381,12 +385,12 @@ void SciterMainWindow::OnMenuItem(int32_t id, SCITER_ELEMENT /*item*/)
     }
 }
 
-void * SciterMainWindow::RenderSurface(void) const
+void * SciterMainWindow::RenderSurface() const
 {
     return m_renderWindow;
 }
 
-float SciterMainWindow::PixelRatio(void) const
+float SciterMainWindow::PixelRatio() const
 {
     return 1.0;
 }

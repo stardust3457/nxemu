@@ -46,34 +46,34 @@ public:
     ~SciterMainWindow();
 
     void ResetMenu();
-    bool Show(void);
+    bool Show();
     void ShowConfig(const char * startPage);
 
     // IRenderWindow
-    void * RenderSurface(void) const override;
-    float PixelRatio(void) const override; 
+    void * RenderSurface() const override;
+    float PixelRatio() const override; 
 
 private:
-    SciterMainWindow(void) = delete;
+    SciterMainWindow() = delete;
     SciterMainWindow(const SciterMainWindow &) = delete;
     SciterMainWindow & operator=(const SciterMainWindow &) = delete;
 
-    void CreateRenderWindow(void);
+    void CreateRenderWindow();
     void SetCaption(const std::string & caption);
     static void EmulationRunning(const char * setting, void * userData);
     static void GameFileChanged(const char * setting, void * userData);
     static void GameNameChanged(const char * setting, void * userData);
     static void RomLoadingChanged(const char * setting, void * userData);
     static void DisplayedFramesChanged(const char * setting, void * userData);
-    void ShowLoadingScreen(void);
+    void ShowLoadingScreen();
     void UpdateStatusbar();
     void DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int32_t y);
     void UpdateInputDrivers();
 
-    void OnOpenFile(void);
-    void OnFileExit(void);
-    void OnSystemConfig(void);
-    void OnInputConfig(void);
+    void OnOpenFile();
+    void OnFileExit();
+    void OnSystemConfig();
+    void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
 
     // IWindowDestroySink
