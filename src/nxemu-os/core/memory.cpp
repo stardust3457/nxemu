@@ -1011,10 +1011,6 @@ bool Memory::WriteExclusive64(uint64_t addr, uint64_t data, uint64_t expected) {
     return impl->WriteExclusive64(addr, data, expected);
 }
 
-bool Memory::WriteExclusive128(Common::ProcessAddress addr, u128 data, u128 expected) {
-    return impl->WriteExclusive128(addr, data, expected);
-}
-
 std::string Memory::ReadCString(Common::ProcessAddress vaddr, std::size_t max_length) {
     return impl->ReadCString(vaddr, max_length);
 }

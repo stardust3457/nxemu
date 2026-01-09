@@ -14,6 +14,7 @@
 #include <widgets/page_nav.h>
 #include <yuzu_common/settings_enums.h>
 #include <nxemu-core/modules/system_modules.h>
+#include <nxemu-core/settings/core_settings.h>
 
 SystemConfig::SystemConfig(ISciterUI & SciterUI, SystemModules & modules, std::vector<VkDeviceRecord> & vkDeviceRecords) :
     m_sciterUI(SciterUI),
@@ -289,6 +290,7 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
         {
             m_modules.FlushSettings();
         }
+        SaveCoreSetting();
         m_window->Destroy();
     }
     return true;
