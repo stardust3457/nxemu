@@ -1067,7 +1067,7 @@ Result SendMessage(KernelCore& kernel, uint64_t src_message_buffer, size_t src_b
 void ReplyAsyncError(KProcess* to_process, uint64_t to_msg_buf, size_t to_msg_buf_size,
                      Result result) {
     // Convert the address to a linear pointer.
-    u32* to_msg = to_process->GetMemory().GetPointer<u32>(to_msg_buf);
+    u32* to_msg = to_process->GetCoreMemory().GetPointer<u32>(to_msg_buf);
 
     // Set the error.
     MessageBuffer msg(to_msg, to_msg_buf_size);
@@ -1139,15 +1139,16 @@ Result KServerSession::ReceiveRequest(uintptr_t server_message, uintptr_t server
     // Receive the message.
     Result result = ResultSuccess;
 
-    if (out_context != nullptr) {
+    if (out_context != nullptr)
+    {
         // HLE request.
-        if (!client_message) {
+        if (!client_message)
+        {
             client_message = GetInteger(client_thread->GetTlsAddress());
         }
-        Core::Memory::Memory& memory{client_thread->GetOwnerProcess()->GetMemory()};
+        Core::Memory::Memory & memory{client_thread->GetOwnerProcess()->GetCoreMemory()};
         u32* cmd_buf{reinterpret_cast<u32*>(memory.GetPointer(client_message))};
-        *out_context =
-            std::make_shared<Service::HLERequestContext>(m_kernel, memory, this, client_thread);
+        *out_context = std::make_shared<Service::HLERequestContext>(m_kernel, memory, this, client_thread);
         (*out_context)->SetSessionRequestManager(manager);
         (*out_context)->PopulateFromIncomingCommandBuffer(cmd_buf);
         // We succeeded.

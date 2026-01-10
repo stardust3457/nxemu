@@ -357,11 +357,11 @@ const Core::DeviceMemory& System::DeviceMemory() const {
 }
 
 Memory::Memory& System::ApplicationMemory() {
-    return impl->kernel.ApplicationProcess()->GetMemory();
+    return impl->kernel.ApplicationProcess()->GetCoreMemory();
 }
 
 const Core::Memory::Memory& System::ApplicationMemory() const {
-    return impl->kernel.ApplicationProcess()->GetMemory();
+    return impl->kernel.ApplicationProcess()->GetCoreMemory();
 }
 
 Kernel::KernelCore& System::Kernel() {

@@ -119,7 +119,8 @@ void GenerateRandom(std::span<u64> out_random) {
 
 } // namespace
 
-void KProcess::Finalize() {
+void KProcess::Finalize()
+{
     // Delete the process local region.
     this->DeleteThreadLocalRegion(m_plr_address);
 
@@ -130,8 +131,10 @@ void KProcess::Finalize() {
     m_page_table.Finalize();
 
     // Finish using our system resource.
-    if (m_system_resource) {
-        if (m_system_resource->IsSecureResource()) {
+    if (m_system_resource)
+    {
+        if (m_system_resource->IsSecureResource())
+        {
             // Finalize optimized memory. If memory wasn't optimized, this is a no-op.
             m_kernel.MemoryManager().FinalizeOptimizedMemory(this->GetId(), m_memory_pool);
         }
@@ -143,11 +146,13 @@ void KProcess::Finalize() {
     // Free all shared memory infos.
     {
         auto it = m_shared_memory_list.begin();
-        while (it != m_shared_memory_list.end()) {
-            KSharedMemoryInfo* info = std::addressof(*it);
-            KSharedMemory* shmem = info->GetSharedMemory();
+        while (it != m_shared_memory_list.end())
+        {
+            KSharedMemoryInfo * info = std::addressof(*it);
+            KSharedMemory * shmem = info->GetSharedMemory();
 
-            while (!info->Close()) {
+            while (!info->Close())
+            {
                 shmem->Close();
             }
             shmem->Close();
@@ -162,15 +167,16 @@ void KProcess::Finalize() {
     ASSERT(m_fully_used_tlp_tree.empty());
 
     // Release memory to the resource limit.
-    if (m_resource_limit != nullptr) {
+    if (m_resource_limit != nullptr)
+    {
         ASSERT(used_memory_size >= m_memory_release_hint);
-        m_resource_limit->Release(Svc::LimitableResource::PhysicalMemoryMax, used_memory_size,
-                                  used_memory_size - m_memory_release_hint);
+        m_resource_limit->Release(Svc::LimitableResource::PhysicalMemoryMax, used_memory_size, used_memory_size - m_memory_release_hint);
         m_resource_limit->Close();
     }
 
     // Clear expensive resources, as the destructor is not called for guest objects.
-    for (auto& interface : m_arm_interfaces) {
+    for (auto& interface : m_arm_interfaces)
+    {
         interface.reset();
     }
     if (m_exclusive_monitor != nullptr)
@@ -189,7 +195,7 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, KResource
     if (is_real) {
         // Create and clear the process local region.
         R_TRY(this->CreateThreadLocalRegion(std::addressof(m_plr_address)));
-        this->GetMemory().ZeroBlock(m_plr_address, Svc::ThreadLocalRegionSize);
+        this->GetCoreMemory().ZeroBlock(m_plr_address, Svc::ThreadLocalRegionSize);
     }
 
     // Copy in the name from parameters.
@@ -1110,9 +1116,9 @@ void KProcess::UnpinThread(KThread* thread) {
     KScheduler::SetSchedulerUpdateNeeded(m_kernel);
 }
 
-Result KProcess::GetThreadList(s32* out_num_threads, KProcessAddress out_thread_ids,
-                               s32 max_out_count) {
-    auto& memory = this->GetMemory();
+Result KProcess::GetThreadList(s32* out_num_threads, KProcessAddress out_thread_ids, s32 max_out_count)
+{
+    auto & memory = this->GetCoreMemory();
 
     // Lock the list.
     KScopedLightLock lk(m_list_lock);
@@ -1233,47 +1239,46 @@ Result KProcess::LoadFromMetadata(const IProgramMetadata & metadata, std::size_t
 
 void KProcess::LoadModule(const IModuleInfo & module, KProcessAddress base_addr)
 {
-    const auto ReprotectSegment = [&](const CodeSet::Segment& segment,
-                                      Svc::MemoryPermission permission) {
+    const auto ReprotectSegment = [&](const CodeSet::Segment & segment, Svc::MemoryPermission permission) {
         m_page_table.SetProcessMemoryPermission(segment.addr + base_addr, segment.size, permission);
     };
 
-    this->GetMemory().WriteBlock(base_addr, module.Data(), module.DataSize());
+    this->GetCoreMemory().WriteBlock(base_addr, module.Data(), module.DataSize());
 
     m_page_table.SetProcessMemoryPermission((KProcessAddress)(module.CodeSegmentAddr()) + base_addr, module.CodeSegmentSize(), Svc::MemoryPermission::ReadExecute);
     m_page_table.SetProcessMemoryPermission((KProcessAddress)(module.RODataSegmentAddr()) + base_addr, module.RODataSegmentSize(), Svc::MemoryPermission::Read);
     m_page_table.SetProcessMemoryPermission((KProcessAddress)(module.DataSegmentAddr()) + base_addr, module.DataSegmentSize(), Svc::MemoryPermission::ReadWrite);
 
 #ifdef HAS_NCE
-    const auto& patch = code_set.PatchSegment();
-    if (this->IsApplication() && Settings::IsNceEnabled() && patch.size != 0) {
-        auto& buffer = m_kernel.System().DeviceMemory().buffer;
-        const auto& code = code_set.CodeSegment();
-        buffer.Protect(GetInteger(base_addr + code.addr), code.size,
-                       Common::MemoryPermission::Read | Common::MemoryPermission::Execute);
-        buffer.Protect(GetInteger(base_addr + patch.addr), patch.size,
-                       Common::MemoryPermission::Read | Common::MemoryPermission::Execute);
+    const auto & patch = code_set.PatchSegment();
+    if (this->IsApplication() && Settings::IsNceEnabled() && patch.size != 0)
+    {
+        auto & buffer = m_kernel.System().DeviceMemory().buffer;
+        const auto & code = code_set.CodeSegment();
+        buffer.Protect(GetInteger(base_addr + code.addr), code.size, Common::MemoryPermission::Read | Common::MemoryPermission::Execute);
+        buffer.Protect(GetInteger(base_addr + patch.addr), patch.size, Common::MemoryPermission::Read | Common::MemoryPermission::Execute);
         ReprotectSegment(code_set.PatchSegment(), Svc::MemoryPermission::None);
     }
 #endif
 }
 
-void KProcess::InitializeInterfaces() {
-    m_exclusive_monitor = m_kernel.System().GetSystemModules().Cpu().CreateExclusiveMonitor(this->GetMemory(), Core::Hardware::NUM_CPU_CORES);
-
+void KProcess::InitializeInterfaces()
+{
+    m_exclusive_monitor = m_kernel.System().GetSystemModules().Cpu().CreateExclusiveMonitor(this->GetCoreMemory(), Core::Hardware::NUM_CPU_CORES);
     for (uint32_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++)
     {
         m_arm_interfaces[i] = std::make_unique<Core::ArmCpuModule>(m_kernel.System(), Is64Bit(), m_kernel.IsMulticore(), this, i);
     }
-
 }
 
-bool KProcess::InsertWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type) {
+bool KProcess::InsertWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type)
+{
     const auto watch{std::find_if(m_watchpoints.begin(), m_watchpoints.end(), [&](const auto& wp) {
         return wp.type == DebugWatchpointType::None;
     })};
 
-    if (watch == m_watchpoints.end()) {
+    if (watch == m_watchpoints.end())
+    {
         return false;
     }
 
@@ -1281,17 +1286,18 @@ bool KProcess::InsertWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointT
     watch->end_address = addr + size;
     watch->type = type;
 
-    for (KProcessAddress page = Common::AlignDown(GetInteger(addr), PageSize); page < addr + size;
-         page += PageSize) {
+    for (KProcessAddress page = Common::AlignDown(GetInteger(addr), PageSize); page < addr + size; page += PageSize)
+    {
         m_debug_page_refcounts[page]++;
-        this->GetMemory().MarkRegionDebug(page, PageSize, true);
+        this->GetCoreMemory().MarkRegionDebug(page, PageSize, true);
     }
 
     return true;
 }
 
-bool KProcess::RemoveWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type) {
-    const auto watch{std::find_if(m_watchpoints.begin(), m_watchpoints.end(), [&](const auto& wp) {
+bool KProcess::RemoveWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type)
+{
+    const auto watch{std::find_if(m_watchpoints.begin(), m_watchpoints.end(), [&](const auto & wp) {
         return wp.start_address == addr && wp.end_address == addr + size && wp.type == type;
     })};
 
@@ -1303,11 +1309,12 @@ bool KProcess::RemoveWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointT
     watch->end_address = 0;
     watch->type = DebugWatchpointType::None;
 
-    for (KProcessAddress page = Common::AlignDown(GetInteger(addr), PageSize); page < addr + size;
-         page += PageSize) {
+    for (KProcessAddress page = Common::AlignDown(GetInteger(addr), PageSize); page < addr + size; page += PageSize)
+    {
         m_debug_page_refcounts[page]--;
-        if (!m_debug_page_refcounts[page]) {
-            this->GetMemory().MarkRegionDebug(page, PageSize, false);
+        if (!m_debug_page_refcounts[page])
+        {
+            this->GetCoreMemory().MarkRegionDebug(page, PageSize, false);
         }
     }
 

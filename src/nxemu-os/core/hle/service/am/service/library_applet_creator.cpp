@@ -190,7 +190,7 @@ Result ILibraryAppletCreator::CreateTransferMemoryStorage(
     }
 
     *out_storage = std::make_shared<IStorage>(
-        system, AM::CreateTransferMemoryStorage(transfer_memory_handle->GetOwner()->GetMemory(),
+        system, AM::CreateTransferMemoryStorage(transfer_memory_handle->GetOwner()->GetCoreMemory(),
                                                 transfer_memory_handle.Get(), is_writable, size));
     R_SUCCEED();
 }
@@ -211,7 +211,7 @@ Result ILibraryAppletCreator::CreateHandleStorage(
     }
 
     *out_storage = std::make_shared<IStorage>(
-        system, AM::CreateHandleStorage(transfer_memory_handle->GetOwner()->GetMemory(),
+        system, AM::CreateHandleStorage(transfer_memory_handle->GetOwner()->GetCoreMemory(),
                                         transfer_memory_handle.Get(), size));
     R_SUCCEED();
 }

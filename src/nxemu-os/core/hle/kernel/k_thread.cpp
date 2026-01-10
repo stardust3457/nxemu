@@ -216,7 +216,7 @@ Result KThread::Initialize(KThreadFunction func, uintptr_t arg, KProcessAddress 
         // Setup the TLS, if needed.
         if (type == ThreadType::User) {
             R_TRY(owner->CreateThreadLocalRegion(std::addressof(m_tls_address)));
-            owner->GetMemory().ZeroBlock(m_tls_address, Svc::ThreadLocalRegionSize);
+            owner->GetCoreMemory().ZeroBlock(m_tls_address, Svc::ThreadLocalRegionSize);
         }
 
         m_parent = owner;
@@ -555,7 +555,7 @@ u16 KThread::GetUserDisableCount() const {
         return {};
     }
 
-    auto& memory = this->GetOwnerProcess()->GetMemory();
+    auto& memory = this->GetOwnerProcess()->GetCoreMemory();
     return memory.Read16((m_tls_address + offsetof(ThreadLocalRegion, disable_count)).GetValue());
 }
 
@@ -565,7 +565,7 @@ void KThread::SetInterruptFlag() {
         return;
     }
 
-    auto& memory = this->GetOwnerProcess()->GetMemory();
+    auto& memory = this->GetOwnerProcess()->GetCoreMemory();
     memory.Write16(m_tls_address.GetValue() + offsetof(ThreadLocalRegion, interrupt_flag), 1);
 }
 
@@ -575,7 +575,7 @@ void KThread::ClearInterruptFlag() {
         return;
     }
 
-    auto& memory = this->GetOwnerProcess()->GetMemory();
+    auto& memory = this->GetOwnerProcess()->GetCoreMemory();
     memory.Write16(m_tls_address.GetValue() + offsetof(ThreadLocalRegion, interrupt_flag), 0);
 }
 
@@ -1414,19 +1414,23 @@ KProcess* GetCurrentProcessPointer(KernelCore& kernel) {
     return GetCurrentThread(kernel).GetOwnerProcess();
 }
 
-KProcess& GetCurrentProcess(KernelCore& kernel) {
+KProcess& GetCurrentProcess(KernelCore& kernel)
+{
     return *GetCurrentProcessPointer(kernel);
 }
 
-s32 GetCurrentCoreId(KernelCore& kernel) {
+s32 GetCurrentCoreId(KernelCore& kernel)
+{
     return GetCurrentThread(kernel).GetCurrentCore();
 }
 
-Core::Memory::Memory& GetCurrentMemory(KernelCore& kernel) {
-    return GetCurrentProcess(kernel).GetMemory();
+Core::Memory::Memory & GetCurrentMemory(KernelCore& kernel)
+{
+    return GetCurrentProcess(kernel).GetCoreMemory();
 }
 
-KScopedDisableDispatch::~KScopedDisableDispatch() {
+KScopedDisableDispatch::~KScopedDisableDispatch()
+{
     // If we are shutting down the kernel, none of this is relevant anymore.
     if (m_kernel.IsShuttingDown()) {
         return;

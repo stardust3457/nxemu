@@ -13,7 +13,7 @@ public:
         m_arm64Executor(arm64Executor),
         m_system(system),
         m_process(process),
-        m_memory(process->GetMemory()),
+        m_memory(process->GetCoreMemory()),
         m_svn(0)
     {
     }

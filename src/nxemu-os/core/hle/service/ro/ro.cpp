@@ -176,7 +176,7 @@ struct ProcessContext {
             const u64 size = nro_header->GetSize();
 
             std::vector<u8> nro_data(size);
-            m_process->GetMemory().ReadBlock(base_address, nro_data.data(), size);
+            m_process->GetCoreMemory().ReadBlock(base_address, nro_data.data(), size);
             UNIMPLEMENTED();
         }
 
@@ -207,7 +207,7 @@ struct ProcessContext {
 
         // Read the NRO header.
         NroHeader header{};
-        m_process->GetMemory().ReadBlock(base_address, std::addressof(header), sizeof(header));
+        m_process->GetCoreMemory().ReadBlock(base_address, std::addressof(header), sizeof(header));
 
         // Validate header.
         R_UNLESS(header.IsMagicValid(), RO::ResultInvalidNro);
@@ -346,7 +346,7 @@ public:
 
         // Read NRR.
         NrrHeader header{};
-        process->GetMemory().ReadBlock(nrr_address, std::addressof(header), sizeof(header));
+        process->GetCoreMemory().ReadBlock(nrr_address, std::addressof(header), sizeof(header));
 
         // Set NRR info.
         context->SetNrrInfoInUse(nrr_info, true);
@@ -355,7 +355,7 @@ public:
 
         // Read NRR hash list.
         nrr_info->hashes.resize(header.GetNumHashes());
-        process->GetMemory().ReadBlock(nrr_address + header.GetHashesOffset(),
+        process->GetCoreMemory().ReadBlock(nrr_address + header.GetHashesOffset(),
                                        nrr_info->hashes.data(),
                                        sizeof(Sha256Hash) * header.GetNumHashes());
 
