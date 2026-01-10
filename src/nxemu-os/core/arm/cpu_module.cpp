@@ -77,10 +77,10 @@ ArmCpuModule::~ArmCpuModule()
     }
 }
 
-Architecture ArmCpuModule::GetArchitecture() const
+ProcessorArchitecture ArmCpuModule::GetArchitecture() const
 {
     UNIMPLEMENTED();
-    return Architecture::AArch64;
+    return ProcessorArchitecture::AArch64;
 }
 
 HaltReason ArmCpuModule::RunThread(Kernel::KThread * thread)

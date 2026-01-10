@@ -14,6 +14,8 @@
 
 #include "core/hle/kernel/svc_types.h"
 
+#include <nxemu-module-spec/cpu.h>
+
 namespace Common {
 struct PageTable;
 }
@@ -38,11 +40,6 @@ enum class HaltReason : u64 {
     PrefetchAbort = 0x20000000,
 };
 DECLARE_ENUM_FLAG_OPERATORS(HaltReason);
-
-enum class Architecture {
-    AArch64,
-    AArch32,
-};
 
 /// Generic ARMv8 CPU interface
 class ArmInterface {
@@ -74,7 +71,7 @@ public:
 
     // Get the current architecture.
     // This returns AArch64 when PSTATE.nRW == 0 and AArch32 when PSTATE.nRW == 1.
-    virtual Architecture GetArchitecture() const = 0;
+    virtual ProcessorArchitecture GetArchitecture() const = 0;
 
     // Context accessors.
     // These should not be called if the CPU is running.

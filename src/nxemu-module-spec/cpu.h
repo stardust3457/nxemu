@@ -53,6 +53,12 @@ __interface IArm64Executor
     void HaltExecution(HaltReason hr) = 0;
 };
 
+enum class ProcessorArchitecture
+{
+    AArch64,
+    AArch32,
+};
+
 __interface IMemory
 {
     void RasterizerMarkRegionCached(uint64_t vaddr, uint64_t size, bool cached) = 0;

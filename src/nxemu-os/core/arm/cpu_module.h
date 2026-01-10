@@ -17,7 +17,7 @@ public:
     ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClock, Kernel::KProcess * process, uint32_t coreIndex);
     ~ArmCpuModule();
 
-    Architecture GetArchitecture() const override;
+    ProcessorArchitecture GetArchitecture() const override;
     HaltReason RunThread(Kernel::KThread * thread) override;
     HaltReason StepThread(Kernel::KThread * thread) override;
 
