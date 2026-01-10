@@ -1,28 +1,25 @@
 #pragma once
 #include <nxemu-module-spec/cpu.h>
-#include <memory>
+#include "dynarmic/interface/exclusive_monitor.h"
 
-class ExclusiveMonitor;
-
-class CpuManager :
+class CpuInterface :
     public ICpu
 {
 public:
-    CpuManager(ISystemModules & modules);
-    ~CpuManager();
+    CpuInterface(ISystemModules & modules, uint32_t processorCount);
+    ~CpuInterface();
 
     //ICpu
-    bool Initialize(void);
-    IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory, uint32_t processorCount);
-    void DestroyExclusiveMonitor(IExclusiveMonitor * monitor);
-    IArm64Executor * CreateArm64Executor(IExclusiveMonitor * monitor, ICpuInfo & info, uint32_t coreIndex);
-    void DestroyArm64Executor(IArm64Executor * executor);
+    bool Initialize(void) override;
+    IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) override;
+    IArm64Executor * CreateArm64Executor(ICpuInfo & info, bool is64Bit, bool usesWallClock, uint32_t coreIndex) override;
+    void DestroyArm64Executor(IArm64Executor * executor) override;
 
 private:
-    CpuManager() = delete;
-    CpuManager(const CpuManager &) = delete;
-    CpuManager & operator=(const CpuManager &) = delete;
+    CpuInterface() = delete;
+    CpuInterface(const CpuInterface &) = delete;
+    CpuInterface & operator=(const CpuInterface &) = delete;
 
-    std::unique_ptr<ExclusiveMonitor> m_exclusiveMonitor;
     ISystemModules & m_modules;
+    Dynarmic::ExclusiveMonitor m_monitor;
 };

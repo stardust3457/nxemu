@@ -4,7 +4,7 @@
 
 extern IModuleNotification * g_notify;
 
-ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor * monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex) :
+ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex) :
     m_jit(nullptr),
     m_modules(modules),
     m_CpuInfo(cpuInfo),
@@ -48,7 +48,7 @@ void ArmDynarmic64::HaltExecution(HaltReason hr)
     }
 }
 
-std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMonitor * monitor)
+std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMonitor & monitor)
 {
     Dynarmic::A64::UserConfig config;
     config.callbacks = this;
@@ -67,7 +67,7 @@ std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMo
     config.fastmem_exclusive_access = config.fastmem_pointer != nullptr;
     config.recompile_on_exclusive_fastmem_failure = true;
     config.processor_id = m_coreIndex;
-    config.global_monitor = monitor;
+    config.global_monitor = &monitor;
 
     // System registers
     config.tpidrro_el0 = &m_reg.m_tpidrro_el0;

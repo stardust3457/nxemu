@@ -8,7 +8,7 @@ class ArmDynarmic64 :
     private Dynarmic::A64::UserCallbacks
 {
 public:
-    ArmDynarmic64(Dynarmic::ExclusiveMonitor * monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex);
+    ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex);
 
     IArm64Reg & Reg(void) { return m_reg; }
 
@@ -22,7 +22,7 @@ private:
     ArmDynarmic64(const ArmDynarmic64 &) = delete;
     ArmDynarmic64 & operator=(const ArmDynarmic64 &) = delete;
 
-    std::unique_ptr<Dynarmic::A64::Jit> MakeJit(Dynarmic::ExclusiveMonitor * monitor);
+    std::unique_ptr<Dynarmic::A64::Jit> MakeJit(Dynarmic::ExclusiveMonitor & monitor);
 
     //Dynarmic::A64::UserCallbacks
     std::uint8_t MemoryRead8(std::uint64_t vaddr);
@@ -56,7 +56,7 @@ private:
     ICpuInfo & m_CpuInfo;
     IMemory & m_memory;
     IOperatingSystem & m_OperatingSystem;
-    Dynarmic::ExclusiveMonitor * m_monitor;
+    Dynarmic::ExclusiveMonitor & m_monitor;
     A64Registers m_reg;
     uint32_t m_coreIndex;
 };

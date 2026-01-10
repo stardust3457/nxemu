@@ -181,7 +181,7 @@ void KProcess::Finalize()
     }
     if (m_exclusive_monitor != nullptr)
     {
-        m_kernel.System().GetSystemModules().Cpu().DestroyExclusiveMonitor(m_exclusive_monitor);
+        m_exclusive_monitor->Release();
         m_exclusive_monitor = nullptr;
     }
 
@@ -1264,7 +1264,7 @@ void KProcess::LoadModule(const IModuleInfo & module, KProcessAddress base_addr)
 
 void KProcess::InitializeInterfaces()
 {
-    m_exclusive_monitor = m_kernel.System().GetSystemModules().Cpu().CreateExclusiveMonitor(this->GetCoreMemory(), Core::Hardware::NUM_CPU_CORES);
+    m_exclusive_monitor = m_kernel.System().GetSystemModules().Cpu().CreateExclusiveMonitor(this->GetCoreMemory());
     for (uint32_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++)
     {
         m_arm_interfaces[i] = std::make_unique<Core::ArmCpuModule>(m_kernel.System(), Is64Bit(), m_kernel.IsMulticore(), this, i);

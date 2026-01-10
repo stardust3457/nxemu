@@ -74,10 +74,11 @@ __interface IMemory
     void Write32(uint64_t addr, uint32_t value) = 0;
     void Write64(uint64_t addr, uint64_t value) = 0;
 
-    bool WriteExclusive8(uint64_t addr, uint8_t data, uint8_t expected) = 0;
-    bool WriteExclusive16(uint64_t addr, uint16_t data, uint16_t expected) = 0;
-    bool WriteExclusive32(uint64_t addr, uint32_t data, uint32_t expected) = 0;
-    bool WriteExclusive64(uint64_t addr, uint64_t data, uint64_t expected) = 0;
+    bool WriteExclusive8(uint64_t addr, uint8_t value, uint8_t expected) = 0;
+    bool WriteExclusive16(uint64_t addr, uint16_t value, uint16_t expected) = 0;
+    bool WriteExclusive32(uint64_t addr, uint32_t value, uint32_t expected) = 0;
+    bool WriteExclusive64(uint64_t addr, uint64_t value, uint64_t expected) = 0;
+    bool WriteExclusive128(uint64_t addr, uint64_t valueHi, uint64_t valueLow, uint64_t expectedHi, uint64_t expectedLow) = 0;
 };
 
 __interface ICpuInfo
@@ -95,22 +96,24 @@ __interface IExclusiveMonitor
     uint16_t ExclusiveRead16(uint32_t coreIndex, uint64_t addr) = 0;
     uint32_t ExclusiveRead32(uint32_t coreIndex, uint64_t addr) = 0;
     uint64_t ExclusiveRead64(uint32_t coreIndex, uint64_t addr) = 0;
+    void ExclusiveRead128(uint32_t coreIndex, uint64_t addr, uint64_t & outHigh, uint64_t & outLow) = 0;
     void ClearExclusive(uint32_t coreIndex) = 0;
 
     bool ExclusiveWrite8(uint32_t coreIndex, uint64_t addr, uint8_t value) = 0;
     bool ExclusiveWrite16(uint32_t coreIndex, uint64_t addr, uint16_t value) = 0;
     bool ExclusiveWrite32(uint32_t coreIndex, uint64_t addr, uint32_t value) = 0;
     bool ExclusiveWrite64(uint32_t coreIndex, uint64_t addr, uint64_t value) = 0;
+    bool ExclusiveWrite128(uint32_t coreIndex, uint64_t addr, uint64_t valueHigh, uint64_t valueLow) = 0;
+
+    void Release() = 0;
 };
 
 __interface ICpu
 {
     bool Initialize(void) = 0;
 
-    IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory, uint32_t processorCount) = 0;
-    void DestroyExclusiveMonitor(IExclusiveMonitor * monitor) = 0;
-
-    IArm64Executor * CreateArm64Executor(IExclusiveMonitor * monitor, ICpuInfo & info, uint32_t coreIndex) = 0;
+    IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) = 0;
+    IArm64Executor * CreateArm64Executor(ICpuInfo & info, bool is64Bit, bool usesWallClock, uint32_t coreIndex) = 0;
     void DestroyArm64Executor(IArm64Executor * executor) = 0;
 };
 

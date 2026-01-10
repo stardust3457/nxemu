@@ -64,7 +64,7 @@ ArmCpuModule::ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClo
 {
     if (is64Bit)
     {
-        m_arm64Executor = system.GetSystemModules().Cpu().CreateArm64Executor(process->GetExclusiveMonitor(), *m_cb, coreIndex);    
+        m_arm64Executor = system.GetSystemModules().Cpu().CreateArm64Executor(*m_cb, is64Bit, usesWallClock, coreIndex);    
     }
 }
 

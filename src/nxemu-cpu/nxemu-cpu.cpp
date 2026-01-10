@@ -4,7 +4,7 @@
 #include <nxemu-core/settings/identifiers.h>
 #include <yuzu_common/logging/backend.h>
 
-std::unique_ptr<CpuManager> g_cpuManager;
+std::unique_ptr<CpuInterface> g_cpuInterface;
 IModuleNotification * g_notify = nullptr;
 IModuleSettings * g_settings = nullptr;
 
@@ -95,18 +95,23 @@ EXPORT void CALL FlushSettings()
 
 ICpu * CALL CreateCpu(ISystemModules & modules)
 {
-    if (g_cpuManager.get() != nullptr)
+    enum
+    {
+        NUM_CPU_CORES = 4,
+    };
+    
+    if (g_cpuInterface.get() != nullptr)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return nullptr;
     }
-    g_cpuManager = std::make_unique<CpuManager>(modules);
-    return g_cpuManager.get();
+    g_cpuInterface = std::make_unique<CpuInterface>(modules, NUM_CPU_CORES);
+    return g_cpuInterface.get();
 }
 
 void CALL DestroyCpu(ICpu * Cpu)
 {
-    if (Cpu == nullptr || g_cpuManager.get() != Cpu)
+    if (Cpu == nullptr || g_cpuInterface.get() != Cpu)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return;

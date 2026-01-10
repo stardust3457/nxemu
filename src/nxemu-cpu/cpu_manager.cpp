@@ -1,45 +1,40 @@
 #include "cpu_manager.h"
 #include "arm_dynarmic_64.h"
+#if defined(ARCHITECTURE_x86_64) || defined(ARCHITECTURE_arm64)
 #include "exclusive_monitor_interface.h"
+#endif
 
-CpuManager::CpuManager(ISystemModules & modules) :
-    m_modules(modules)
+CpuInterface::CpuInterface(ISystemModules & modules, uint32_t processorCount) :
+    m_modules(modules),
+    m_monitor(processorCount)
 {
 }
 
-CpuManager::~CpuManager()
+CpuInterface::~CpuInterface()
 {
 }
 
-bool CpuManager::Initialize(void)
+bool CpuInterface::Initialize(void)
 {
     return true;
 }
 
-IExclusiveMonitor * CpuManager::CreateExclusiveMonitor(IMemory & memory, uint32_t processorCount)
+IExclusiveMonitor * CpuInterface::CreateExclusiveMonitor(IMemory & memory)
 {
-    if (m_exclusiveMonitor.get() != nullptr)
-    {
-        return nullptr;
-    }
-    m_exclusiveMonitor.reset(std::make_unique<ExclusiveMonitor>(memory, processorCount).release());
-    return m_exclusiveMonitor.get();
-};
-
-void CpuManager::DestroyExclusiveMonitor(IExclusiveMonitor * monitor)
-{
-    if (m_exclusiveMonitor.get() == monitor)
-    {
-        m_exclusiveMonitor.reset(nullptr);
-    }
+#if defined(ARCHITECTURE_x86_64) || defined(ARCHITECTURE_arm64)
+    return new ExclusiveMonitor(memory, m_monitor);
+#else
+    // TODO(merry): Passthrough exclusive monitor
+    return nullptr;
+#endif
 }
 
-IArm64Executor * CpuManager::CreateArm64Executor(IExclusiveMonitor * monitor, ICpuInfo & info, uint32_t coreIndex)
+IArm64Executor * CpuInterface::CreateArm64Executor(ICpuInfo & info, bool /*is64Bit*/, bool /*usesWallClock*/, uint32_t coreIndex)
 {
-    return new ArmDynarmic64(monitor == m_exclusiveMonitor.get() ? m_exclusiveMonitor.get() : nullptr, m_modules, info, coreIndex);
-}
+    return new ArmDynarmic64(m_monitor, m_modules, info, coreIndex);
+}   
 
-void CpuManager::DestroyArm64Executor(IArm64Executor * executor)
+void CpuInterface::DestroyArm64Executor(IArm64Executor * executor)
 {
     delete (ArmDynarmic64 *)executor;
 }

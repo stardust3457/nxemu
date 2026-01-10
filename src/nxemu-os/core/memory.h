@@ -216,7 +216,7 @@ public:
      *
      * @post The memory at the given virtual address contains the specified data value.
      */
-    void Write8(uint64_t addr, uint8_t data);
+    void Write8(uint64_t addr, uint8_t data) override;
 
     /**
      * Writes a 16-bit unsigned integer to the given virtual address in
@@ -227,7 +227,7 @@ public:
      *
      * @post The memory range [addr, sizeof(data)) contains the given data value.
      */
-    void Write16(uint64_t addr, uint16_t data);
+    void Write16(uint64_t addr, uint16_t data) override;
 
     /**
      * Writes a 32-bit unsigned integer to the given virtual address in
@@ -238,7 +238,7 @@ public:
      *
      * @post The memory range [addr, sizeof(data)) contains the given data value.
      */
-    void Write32(uint64_t addr, uint32_t data);
+    void Write32(uint64_t addr, uint32_t data) override;
 
     /**
      * Writes a 64-bit unsigned integer to the given virtual address in
@@ -249,7 +249,7 @@ public:
      *
      * @post The memory range [addr, sizeof(data)) contains the given data value.
      */
-    void Write64(uint64_t addr, uint64_t data);
+    void Write64(uint64_t addr, uint64_t data) override;
 
     /**
      * Writes a 8-bit unsigned integer to the given virtual address in
@@ -314,7 +314,7 @@ public:
      *
      * @post The memory range [addr, sizeof(data)) contains the given data value.
      */
-    bool WriteExclusive128(Common::ProcessAddress addr, u128 data, u128 expected);
+    bool WriteExclusive128(uint64_t addr, uint64_t dataHi, uint64_t dataLow, uint64_t expectedHi, uint64_t expectedLow) override;
 
     /**
      * Reads a null-terminated string from the given virtual address.
