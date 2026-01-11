@@ -1238,7 +1238,7 @@ void KernelCore::SuspendEmulation(bool suspended) {
 
         for (auto& process : processes) {
             for (auto i = 0; i < static_cast<s32>(Core::Hardware::NUM_CPU_CORES); ++i) {
-                if (Scheduler(i).GetSchedulerCurrentThread()->GetOwnerProcess() ==
+                if (Scheduler(i).GetSchedulerCurrentThread()->GetOwnerKProcess() ==
                     process.GetPointerUnsafe()) {
                     // A thread has not finished running yet.
                     // Continue waiting.

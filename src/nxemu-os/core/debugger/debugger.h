@@ -6,10 +6,10 @@
 #include <memory>
 
 #include "yuzu_common/common_types.h"
+#include <nxemu-module-spec/cpu.h>
 
 namespace Kernel {
 class KThread;
-struct DebugWatchpoint;
 } // namespace Kernel
 
 namespace Core {
@@ -44,7 +44,7 @@ public:
     /*
      * Notify the debugger that the given thread has stopped due to hitting a watchpoint.
      */
-    bool NotifyThreadWatchpoint(Kernel::KThread* thread, const Kernel::DebugWatchpoint& watch);
+    bool NotifyThreadWatchpoint(Kernel::KThread * thread, const CpuDebugWatchpoint & watch);
 
 private:
     std::unique_ptr<DebuggerImpl> impl;

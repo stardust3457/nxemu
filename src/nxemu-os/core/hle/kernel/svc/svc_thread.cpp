@@ -147,7 +147,7 @@ Result GetThreadContext3(Core::System& system, u64 out_context, Handle thread_ha
     R_UNLESS(thread.IsNotNull(), ResultInvalidHandle);
 
     // Require the handle be to a non-current thread in the current process.
-    R_UNLESS(thread->GetOwnerProcess() == GetCurrentProcessPointer(kernel), ResultInvalidHandle);
+    R_UNLESS(thread->GetOwnerKProcess() == GetCurrentProcessPointer(kernel), ResultInvalidHandle);
     R_UNLESS(thread.GetPointerUnsafe() != GetCurrentThreadPointer(kernel), ResultBusy);
 
     // Get the thread context.

@@ -147,7 +147,7 @@ void HLERequestContext::ParseCommandBuffer(u32_le* src_cmdbuf, bool incoming) {
     if (command_header->enable_handle_descriptor) {
         handle_descriptor_header = rp.PopRaw<IPC::HandleDescriptorHeader>();
         if (handle_descriptor_header->send_current_pid) {
-            pid = thread->GetOwnerProcess()->GetProcessId();
+            pid = thread->GetOwnerKProcess()->GetProcessId();
             rp.Skip(2, false);
         }
         if (incoming) {
@@ -256,7 +256,7 @@ void HLERequestContext::ParseCommandBuffer(u32_le* src_cmdbuf, bool incoming) {
 }
 
 Result HLERequestContext::PopulateFromIncomingCommandBuffer(u32_le* src_cmdbuf) {
-    client_handle_table = &thread->GetOwnerProcess()->GetHandleTable();
+    client_handle_table = &thread->GetOwnerKProcess()->GetHandleTable();
 
     ParseCommandBuffer(src_cmdbuf, true);
 
@@ -272,7 +272,7 @@ Result HLERequestContext::PopulateFromIncomingCommandBuffer(u32_le* src_cmdbuf) 
 
 Result HLERequestContext::WriteToOutgoingCommandBuffer() {
     auto current_offset = handles_offset;
-    auto& owner_process = *thread->GetOwnerProcess();
+    auto& owner_process = *thread->GetOwnerKProcess();
     auto& handle_table = owner_process.GetHandleTable();
 
     for (auto& object : outgoing_copy_objects) {

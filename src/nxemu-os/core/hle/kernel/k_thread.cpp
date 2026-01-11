@@ -555,7 +555,7 @@ u16 KThread::GetUserDisableCount() const {
         return {};
     }
 
-    auto& memory = this->GetOwnerProcess()->GetCoreMemory();
+    auto& memory = this->GetOwnerKProcess()->GetCoreMemory();
     return memory.Read16((m_tls_address + offsetof(ThreadLocalRegion, disable_count)).GetValue());
 }
 
@@ -565,7 +565,7 @@ void KThread::SetInterruptFlag() {
         return;
     }
 
-    auto& memory = this->GetOwnerProcess()->GetCoreMemory();
+    auto& memory = this->GetOwnerKProcess()->GetCoreMemory();
     memory.Write16(m_tls_address.GetValue() + offsetof(ThreadLocalRegion, interrupt_flag), 1);
 }
 
@@ -575,7 +575,7 @@ void KThread::ClearInterruptFlag() {
         return;
     }
 
-    auto& memory = this->GetOwnerProcess()->GetCoreMemory();
+    auto& memory = this->GetOwnerKProcess()->GetCoreMemory();
     memory.Write16(m_tls_address.GetValue() + offsetof(ThreadLocalRegion, interrupt_flag), 0);
 }
 
@@ -824,8 +824,8 @@ void KThread::Continue() {
 
 void KThread::CloneFpuStatus() {
     // We shouldn't reach here when starting kernel threads.
-    ASSERT(this->GetOwnerProcess() != nullptr);
-    ASSERT(this->GetOwnerProcess() == GetCurrentProcessPointer(m_kernel));
+    ASSERT(this->GetOwnerKProcess() != nullptr);
+    ASSERT(this->GetOwnerKProcess() == GetCurrentProcessPointer(m_kernel));
 
     m_kernel.CurrentPhysicalCore().CloneFpuStatus(this);
 }
@@ -1159,7 +1159,7 @@ Result KThread::Run() {
         }
 
         // If we're not a kernel thread and we've been asked to suspend, suspend ourselves.
-        if (KProcess* owner = this->GetOwnerProcess(); owner != nullptr) {
+        if (KProcess* owner = this->GetOwnerKProcess(); owner != nullptr) {
             if (this->IsUserThread() && this->IsSuspended()) {
                 this->UpdateState();
             }
@@ -1247,7 +1247,7 @@ ThreadState KThread::RequestTerminate() {
 
         // If the thread is pinned, unpin it.
         if (this->GetStackParameters().is_pinned) {
-            this->GetOwnerProcess()->UnpinThread(this);
+            this->GetOwnerKProcess()->UnpinThread(this);
         }
 
         // If the thread is suspended, continue it.
@@ -1411,7 +1411,7 @@ KThread& GetCurrentThread(KernelCore& kernel) {
 }
 
 KProcess* GetCurrentProcessPointer(KernelCore& kernel) {
-    return GetCurrentThread(kernel).GetOwnerProcess();
+    return GetCurrentThread(kernel).GetOwnerKProcess();
 }
 
 KProcess& GetCurrentProcess(KernelCore& kernel)

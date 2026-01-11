@@ -21,14 +21,12 @@ struct PageTable;
 }
 
 namespace Kernel {
-enum class DebugWatchpointType : u8;
-struct DebugWatchpoint;
 class KThread;
 class KProcess;
 } // namespace Kernel
 
 namespace Core {
-using WatchpointArray = std::array<Kernel::DebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS>;
+using WatchpointArray = std::array<CpuDebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS>;
 
 // NOTE: these values match the HaltReason enum in Dynarmic
 enum class HaltReason : u64 {
@@ -95,12 +93,11 @@ public:
     void LogBacktrace(Kernel::KProcess* process) const;
 
     // Debug functionality.
-    virtual const Kernel::DebugWatchpoint* HaltedWatchpoint() const = 0;
+    virtual const CpuDebugWatchpoint * HaltedWatchpoint() const = 0;
     virtual void RewindBreakpointInstruction() = 0;
 
 protected:
-    const Kernel::DebugWatchpoint* MatchingWatchpoint(
-        u64 addr, u64 size, Kernel::DebugWatchpointType access_type) const;
+    const CpuDebugWatchpoint * MatchingWatchpoint(u64 addr, u64 size, CpuDebugWatchpointType access_type) const;
 
 protected:
     const WatchpointArray* m_watchpoints{};

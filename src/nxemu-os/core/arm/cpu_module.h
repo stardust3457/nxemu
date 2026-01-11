@@ -34,7 +34,7 @@ public:
     void InvalidateCacheRange(u64 addr, std::size_t size) override;
 
 protected:
-    const Kernel::DebugWatchpoint * HaltedWatchpoint() const override;
+    const CpuDebugWatchpoint * HaltedWatchpoint() const override;
     void RewindBreakpointInstruction() override;
 
 private:

@@ -35,7 +35,7 @@ Result GetProcessId(Core::System& system, u64* out_process_id, Handle handle) {
         process = p;
     } else if (KThread* t = obj->DynamicCast<KThread*>(); t != nullptr) {
         // The object is a thread, so we want to use its parent.
-        process = reinterpret_cast<KThread*>(obj.GetPointerUnsafe())->GetOwnerProcess();
+        process = reinterpret_cast<KThread*>(obj.GetPointerUnsafe())->GetOwnerKProcess();
     } else {
         // TODO(bunnei): This should also handle debug objects before returning.
         UNIMPLEMENTED_MSG("Debug objects not implemented");

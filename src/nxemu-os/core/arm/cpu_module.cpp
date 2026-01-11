@@ -229,7 +229,7 @@ void ArmCpuModule::InvalidateCacheRange(u64 addr, std::size_t size)
     }
 }
 
-const Kernel::DebugWatchpoint * ArmCpuModule::HaltedWatchpoint() const
+const CpuDebugWatchpoint * ArmCpuModule::HaltedWatchpoint() const
 {
     UNIMPLEMENTED();
     return nullptr;

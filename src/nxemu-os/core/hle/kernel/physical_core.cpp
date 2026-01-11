@@ -20,7 +20,7 @@ PhysicalCore::PhysicalCore(KernelCore& kernel, std::size_t core_index)
 PhysicalCore::~PhysicalCore() = default;
 
 void PhysicalCore::RunThread(Kernel::KThread* thread) {
-    auto* process = thread->GetOwnerProcess();
+    auto* process = thread->GetOwnerKProcess();
     auto& system = m_kernel.System();
     auto* interface = process->GetArmInterface(m_core_index);
 
@@ -149,7 +149,7 @@ void PhysicalCore::RunThread(Kernel::KThread* thread) {
 }
 
 void PhysicalCore::LoadContext(const KThread* thread) {
-    auto* const process = thread->GetOwnerProcess();
+    auto* const process = thread->GetOwnerKProcess();
     if (!process) {
         // Kernel threads do not run on emulated CPU cores.
         return;
@@ -168,7 +168,7 @@ void PhysicalCore::LoadSvcArguments(const KProcess& process, std::span<const uin
 }
 
 void PhysicalCore::SaveContext(KThread* thread) const {
-    auto* const process = thread->GetOwnerProcess();
+    auto* const process = thread->GetOwnerKProcess();
     if (!process) {
         // Kernel threads do not run on emulated CPU cores.
         return;
@@ -185,7 +185,7 @@ void PhysicalCore::SaveSvcArguments(KProcess& process, std::span<uint64_t, 8> ar
 }
 
 void PhysicalCore::CloneFpuStatus(KThread* dst) const {
-    auto* process = dst->GetOwnerProcess();
+    auto* process = dst->GetOwnerKProcess();
 
     Svc::ThreadContext ctx{};
     process->GetArmInterface(m_core_index)->GetContext(ctx);

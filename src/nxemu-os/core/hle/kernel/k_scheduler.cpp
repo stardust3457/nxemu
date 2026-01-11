@@ -22,7 +22,7 @@
 namespace Kernel {
 
 static void IncrementScheduledCount(Kernel::KThread* thread) {
-    if (auto process = thread->GetOwnerProcess(); process) {
+    if (auto process = thread->GetOwnerKProcess(); process) {
         process->IncrementScheduledCount();
     }
 }
@@ -189,7 +189,7 @@ u64 KScheduler::UpdateHighestPriorityThread(KThread* highest_thread) {
         }
         if (m_state.should_count_idle) {
             if (highest_thread != nullptr) [[likely]] {
-                if (KProcess* process = highest_thread->GetOwnerProcess(); process != nullptr) {
+                if (KProcess* process = highest_thread->GetOwnerKProcess(); process != nullptr) {
                     process->SetRunningThread(m_core_id, highest_thread, m_state.idle_count, 0);
                 }
             } else {
@@ -221,7 +221,7 @@ u64 KScheduler::UpdateHighestPriorityThreadsImpl(KernelCore& kernel) {
         KThread* top_thread = priority_queue.GetScheduledFront(static_cast<s32>(core_id));
         if (top_thread != nullptr) {
             // We need to check if the thread's process has a pinned thread.
-            if (KProcess* parent = top_thread->GetOwnerProcess()) {
+            if (KProcess* parent = top_thread->GetOwnerKProcess()) {
                 // Check that there's a pinned thread other than the current top thread.
                 if (KThread* pinned = parent->GetPinnedThread(static_cast<s32>(core_id));
                     pinned != nullptr && pinned != top_thread) {
@@ -371,7 +371,7 @@ void KScheduler::SwitchThread(KThread* next_thread) {
     }
 
     // Switch the current process, if we're switching processes.
-    // if (KProcess *next_process = next_thread->GetOwnerProcess(); next_process != cur_process) {
+    // if (KProcess *next_process = next_thread->GetOwnerKProcess(); next_process != cur_process) {
     //     KProcess::Switch(cur_process, next_process);
     // }
 

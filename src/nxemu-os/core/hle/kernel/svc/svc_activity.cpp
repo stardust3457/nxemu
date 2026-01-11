@@ -27,7 +27,7 @@ Result SetThreadActivity(Core::System& system, Handle thread_handle,
     R_UNLESS(thread.IsNotNull(), ResultInvalidHandle);
 
     // Check that the activity is being set on a non-current thread for the current process.
-    R_UNLESS(thread->GetOwnerProcess() == GetCurrentProcessPointer(system.Kernel()),
+    R_UNLESS(thread->GetOwnerKProcess() == GetCurrentProcessPointer(system.Kernel()),
              ResultInvalidHandle);
     R_UNLESS(thread.GetPointerUnsafe() != GetCurrentThreadPointer(system.Kernel()), ResultBusy);
 

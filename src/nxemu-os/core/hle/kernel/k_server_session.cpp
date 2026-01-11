@@ -403,7 +403,7 @@ Result CleanupServerHandles(KernelCore& kernel, uint64_t message, size_t buffer_
         }
 
         // Get the handle table.
-        auto& handle_table = thread.GetOwnerProcess()->GetHandleTable();
+        auto& handle_table = thread.GetOwnerKProcess()->GetHandleTable();
 
         // Close the handles.
         for (auto i = 0; i < special_header.GetMoveHandleCount(); ++i) {
@@ -543,8 +543,8 @@ Result ReceiveMessage(KernelCore& kernel, bool& recv_list_broken, uint64_t dst_m
                       KServerSession* session, KSessionRequest* request) {
     // Prepare variables for receive.
     KThread& dst_thread = GetCurrentThread(kernel);
-    KProcess& dst_process = *(dst_thread.GetOwnerProcess());
-    KProcess& src_process = *(src_thread.GetOwnerProcess());
+    KProcess& dst_process = *(dst_thread.GetOwnerKProcess());
+    KProcess& src_process = *(src_thread.GetOwnerKProcess());
     auto& dst_page_table = dst_process.GetPageTable();
     auto& src_page_table = src_process.GetPageTable();
 
@@ -862,8 +862,8 @@ Result SendMessage(KernelCore& kernel, uint64_t src_message_buffer, size_t src_b
                    KSessionRequest* request) {
     // Prepare variables for send.
     KThread& src_thread = GetCurrentThread(kernel);
-    KProcess& dst_process = *(dst_thread.GetOwnerProcess());
-    KProcess& src_process = *(src_thread.GetOwnerProcess());
+    KProcess& dst_process = *(dst_thread.GetOwnerKProcess());
+    KProcess& src_process = *(src_thread.GetOwnerKProcess());
     auto& dst_page_table = dst_process.GetPageTable();
     auto& src_page_table = src_process.GetPageTable();
 
@@ -1146,7 +1146,7 @@ Result KServerSession::ReceiveRequest(uintptr_t server_message, uintptr_t server
         {
             client_message = GetInteger(client_thread->GetTlsAddress());
         }
-        Core::Memory::Memory & memory{client_thread->GetOwnerProcess()->GetCoreMemory()};
+        Core::Memory::Memory & memory{client_thread->GetOwnerKProcess()->GetCoreMemory()};
         u32* cmd_buf{reinterpret_cast<u32*>(memory.GetPointer(client_message))};
         *out_context = std::make_shared<Service::HLERequestContext>(m_kernel, memory, this, client_thread);
         (*out_context)->SetSessionRequestManager(manager);
@@ -1184,7 +1184,7 @@ Result KServerSession::ReceiveRequest(uintptr_t server_message, uintptr_t server
             // Get the event to check whether the request is async.
             if (KEvent* event = request->GetEvent(); event != nullptr) {
                 // The client sent an async request.
-                KProcess* client = client_thread->GetOwnerProcess();
+                KProcess* client = client_thread->GetOwnerKProcess();
                 auto& client_pt = client->GetPageTable();
 
                 // Send the async result.
@@ -1268,7 +1268,7 @@ Result KServerSession::SendReply(uintptr_t server_message, uintptr_t server_buff
         // Otherwise, we'll need to do some cleanup.
         KProcess* server_process = request->GetServerProcess();
         KProcess* client_process =
-            (client_thread != nullptr) ? client_thread->GetOwnerProcess() : nullptr;
+            (client_thread != nullptr) ? client_thread->GetOwnerKProcess() : nullptr;
         KProcessPageTable* client_page_table =
             (client_process != nullptr) ? std::addressof(client_process->GetPageTable()) : nullptr;
 
@@ -1298,7 +1298,7 @@ Result KServerSession::SendReply(uintptr_t server_message, uintptr_t server_buff
     if (client_thread != nullptr) {
         if (event != nullptr) {
             // Get the client process/page table.
-            KProcess* client_process = client_thread->GetOwnerProcess();
+            KProcess* client_process = client_thread->GetOwnerKProcess();
             KProcessPageTable* client_page_table = std::addressof(client_process->GetPageTable());
 
             // If we need to, reply with an async error.
@@ -1413,7 +1413,7 @@ void KServerSession::CleanupRequests() {
 
         KProcess* server_process = request->GetServerProcess();
         KProcess* client_process =
-            (client_thread != nullptr) ? client_thread->GetOwnerProcess() : nullptr;
+            (client_thread != nullptr) ? client_thread->GetOwnerKProcess() : nullptr;
         KProcessPageTable* client_page_table =
             (client_process != nullptr) ? std::addressof(client_process->GetPageTable()) : nullptr;
 
@@ -1520,7 +1520,7 @@ void KServerSession::OnClientClosed() {
             ASSERT(request->GetExchangeCount() == 0);
 
             // Get the process and page table.
-            KProcess* client_process = thread->GetOwnerProcess();
+            KProcess* client_process = thread->GetOwnerKProcess();
             auto& client_pt = client_process->GetPageTable();
 
             // Reply to the request.

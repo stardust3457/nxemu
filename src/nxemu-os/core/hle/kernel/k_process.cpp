@@ -768,7 +768,7 @@ void KProcess::DecrementRunningThreadCount() {
 bool KProcess::EnterUserException() {
     // Get the current thread.
     KThread* cur_thread = GetCurrentThreadPointer(m_kernel);
-    ASSERT(this == cur_thread->GetOwnerProcess());
+    ASSERT(this == cur_thread->GetOwnerKProcess());
 
     // Check that we haven't already claimed the exception thread.
     if (m_exception_thread == cur_thread) {

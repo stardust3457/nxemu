@@ -88,7 +88,7 @@ KScopedAutoObject<KAutoObject> KHandleTable::GetObjectForIpc(Handle handle,
     // Handle pseudo-handles.
     ASSERT(cur_thread != nullptr);
     if (handle == Svc::PseudoHandle::CurrentProcess) {
-        auto* const cur_process = cur_thread->GetOwnerProcess();
+        auto* const cur_process = cur_thread->GetOwnerKProcess();
         ASSERT(cur_process != nullptr);
         return cur_process;
     }
