@@ -120,9 +120,11 @@ KProcess& GetCurrentProcess(KernelCore& kernel);
 s32 GetCurrentCoreId(KernelCore& kernel);
 Core::Memory::Memory& GetCurrentMemory(KernelCore& kernel);
 
-class KThread final : public KAutoObjectWithSlabHeapAndContainer<KThread, KWorkerTask>,
-                      public Common::IntrusiveListBaseNode<KThread>,
-                      public KTimerTask {
+class KThread final : 
+    public KAutoObjectWithSlabHeapAndContainer<KThread, KWorkerTask>, 
+    public Common::IntrusiveListBaseNode<KThread>, 
+    public KTimerTask
+{
     KERNEL_AUTOOBJECT_TRAITS(KThread, KSynchronizationObject);
 
 private:
@@ -316,11 +318,13 @@ public:
         m_current_core_id = core;
     }
 
-    KProcess* GetOwnerKProcess() const {
+    KProcess * GetOwnerKProcess() const
+    {
         return m_parent;
     }
 
-    bool IsUserThread() const {
+    bool IsUserThread() const
+    {
         return m_parent != nullptr;
     }
 

@@ -175,15 +175,11 @@ void KProcess::Finalize()
     }
 
     // Clear expensive resources, as the destructor is not called for guest objects.
-    for (auto& interface : m_arm_interfaces)
+    for (auto & interface : m_cpucore)
     {
         interface.reset();
     }
-    if (m_exclusive_monitor != nullptr)
-    {
-        m_exclusive_monitor->Release();
-        m_exclusive_monitor = nullptr;
-    }
+    m_exclusive_monitor.reset();
 
     // Perform inherited finalization.
     KSynchronizationObject::Finalize();
@@ -1264,10 +1260,11 @@ void KProcess::LoadModule(const IModuleInfo & module, KProcessAddress base_addr)
 
 void KProcess::InitializeInterfaces()
 {
-    m_exclusive_monitor = m_kernel.System().GetSystemModules().Cpu().CreateExclusiveMonitor(this->GetCoreMemory());
+    ICpu & cpu = m_kernel.System().GetSystemModules().Cpu();
+    m_exclusive_monitor.reset(cpu.CreateExclusiveMonitor(this->GetCoreMemory()));
     for (uint32_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++)
     {
-        m_arm_interfaces[i] = std::make_unique<Core::ArmCpuModule>(m_kernel.System(), Is64Bit(), m_kernel.IsMulticore(), this, i);
+        m_cpucore[i] = std::make_unique<Core::ArmCpuModule>(m_kernel.System(), Is64Bit(), m_kernel.IsMulticore(), this, i);
     }
 }
 

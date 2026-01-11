@@ -21,7 +21,22 @@
 
 namespace Kernel {
 
-class KProcess final : public KAutoObjectWithSlabHeapAndContainer<KProcess, KWorkerTask> {
+struct ExclusiveMonitorDeleter
+{
+    void operator()(IExclusiveMonitor * monitor) const
+    {
+        if (monitor)
+        {
+            monitor->Release();
+        }
+    }
+};
+
+using ExclusiveMonitorPtr = std::unique_ptr<IExclusiveMonitor, ExclusiveMonitorDeleter>;
+
+class KProcess final :
+    public KAutoObjectWithSlabHeapAndContainer<KProcess, KWorkerTask>
+{
     KERNEL_AUTOOBJECT_TRAITS(KProcess, KSynchronizationObject);
 
 public:
@@ -94,7 +109,7 @@ private:
     bool m_is_suspended{};
     bool m_is_immortal{};
     bool m_is_handle_table_initialized{};
-    std::array<std::unique_ptr<Core::ArmInterface>, Core::Hardware::NUM_CPU_CORES> m_arm_interfaces{};
+    std::array<std::unique_ptr<Core::ArmInterface>, Core::Hardware::NUM_CPU_CORES> m_cpucore{};
     std::array<KThread*, Core::Hardware::NUM_CPU_CORES> m_running_threads{};
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_idle_counts{};
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_switch_counts{};
@@ -112,7 +127,7 @@ private:
 #ifdef HAS_NCE
     std::unordered_map<u64, u64> m_post_handlers{};
 #endif
-    IExclusiveMonitor * m_exclusive_monitor;
+    ExclusiveMonitorPtr m_exclusive_monitor;
     Core::Memory::Memory m_memory;
 
 private:
@@ -530,9 +545,9 @@ public:
     }
 #endif
 
-    Core::ArmInterface * GetArmInterface(size_t core_index) const
+    Core::ArmInterface * GetCpuCore(int32_t coreIndex) const
     {
-        return m_arm_interfaces[core_index].get();
+        return m_cpucore[coreIndex].get();
     }
 
 public:
@@ -559,9 +574,9 @@ public:
         return m_memory;
     }
 
-    IExclusiveMonitor * GetExclusiveMonitor() const
+    IExclusiveMonitor & GetExclusiveMonitor() const
     {
-        return m_exclusive_monitor;
+        return *m_exclusive_monitor;
     }
 
 public:

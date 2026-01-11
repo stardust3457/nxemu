@@ -81,8 +81,12 @@ public:
     virtual void SetSvcArguments(std::span<const uint64_t, 8> args) = 0;
     virtual u32 GetSvcNumber() const = 0;
 
-    void SetWatchpointArray(const WatchpointArray* watchpoints) {
-        m_watchpoints = watchpoints;
+    void SetWatchpointArray(const CpuDebugWatchpoint * watchpoints, uint32_t count)
+    {
+        for (uint32_t i = 0, n = count < (uint32_t)m_watchpoints.size() ? count : (uint32_t)m_watchpoints.size(); i < n; i++)
+        {
+            m_watchpoints[i] = watchpoints[i];
+        }
     }
 
     // Signal an interrupt for execution to halt as soon as possible.
@@ -100,7 +104,7 @@ protected:
     const CpuDebugWatchpoint * MatchingWatchpoint(u64 addr, u64 size, CpuDebugWatchpointType access_type) const;
 
 protected:
-    const WatchpointArray* m_watchpoints{};
+    WatchpointArray m_watchpoints{};
     bool m_uses_wall_clock{};
 };
 

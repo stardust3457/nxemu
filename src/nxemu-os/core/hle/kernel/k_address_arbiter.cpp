@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "core/arm/exclusive_monitor.h"
 #include "core/core.h"
 #include "core/hle/kernel/k_address_arbiter.h"
 #include "core/hle/kernel/k_process.h"
@@ -14,21 +13,29 @@
 #include "core/hle/kernel/svc_results.h"
 #include "core/memory.h"
 
-namespace Kernel {
+namespace Kernel
+{
 
-KAddressArbiter::KAddressArbiter(Core::System& system)
-    : m_system{system}, m_kernel{system.Kernel()} {}
+KAddressArbiter::KAddressArbiter(Core::System & system) :
+    m_system{system}, 
+    m_kernel{system.Kernel()}
+{
+}
+
 KAddressArbiter::~KAddressArbiter() = default;
 
-namespace {
+namespace
+{
 
-bool ReadFromUser(KernelCore& kernel, s32* out, KProcessAddress address) {
+bool ReadFromUser(KernelCore& kernel, s32* out, KProcessAddress address)
+{
     *out = GetCurrentMemory(kernel).Read32(GetInteger(address));
     return true;
 }
 
-bool DecrementIfLessThan(KernelCore& kernel, s32* out, KProcessAddress address, s32 value) {
-    auto* monitor = GetCurrentProcess(kernel).GetExclusiveMonitor();
+bool DecrementIfLessThan(KernelCore& kernel, s32* out, KProcessAddress address, s32 value)
+{
+    auto& monitor = GetCurrentProcess(kernel).GetExclusiveMonitor();
     const auto current_core = kernel.CurrentPhysicalCoreIndex();
 
     // NOTE: If scheduler lock is not held here, interrupt disable is required.
@@ -38,26 +45,30 @@ bool DecrementIfLessThan(KernelCore& kernel, s32* out, KProcessAddress address, 
 
     s32 current_value{};
 
-    while (true) {
+    while (true)
+    {
         // Load the value from the address.
         current_value =
-            static_cast<s32>(monitor->ExclusiveRead32((uint32_t)current_core, GetInteger(address)));
+            static_cast<s32>(monitor.ExclusiveRead32((uint32_t)current_core, GetInteger(address)));
 
         // Compare it to the desired one.
-        if (current_value < value) {
+        if (current_value < value)
+        {
             // If less than, we want to try to decrement.
             const s32 decrement_value = current_value - 1;
 
             // Decrement and try to store.
-            if (monitor->ExclusiveWrite32((uint32_t)current_core, GetInteger(address),
-                                         static_cast<u32>(decrement_value))) {
+            if (monitor.ExclusiveWrite32((uint32_t)current_core, GetInteger(address), static_cast<u32>(decrement_value)))
+            {
                 break;
             }
 
             // If we failed to store, try again.
-        } else {
+        }
+        else
+        {
             // Otherwise, clear our exclusive hold and finish
-            monitor->ClearExclusive((uint32_t)current_core);
+            monitor.ClearExclusive((uint32_t)current_core);
             break;
         }
     }
@@ -69,7 +80,7 @@ bool DecrementIfLessThan(KernelCore& kernel, s32* out, KProcessAddress address, 
 
 bool UpdateIfEqual(KernelCore& kernel, s32* out, KProcessAddress address, s32 value,
                    s32 new_value) {
-    auto* monitor = GetCurrentProcess(kernel).GetExclusiveMonitor();
+    auto& monitor = GetCurrentProcess(kernel).GetExclusiveMonitor();
     const auto current_core = kernel.CurrentPhysicalCoreIndex();
 
     // NOTE: If scheduler lock is not held here, interrupt disable is required.
@@ -81,23 +92,24 @@ bool UpdateIfEqual(KernelCore& kernel, s32* out, KProcessAddress address, s32 va
 
     // Load the value from the address.
     while (true) {
-        current_value =
-            static_cast<s32>(monitor->ExclusiveRead32((uint32_t)current_core, GetInteger(address)));
+        current_value = static_cast<s32>(monitor.ExclusiveRead32((uint32_t)current_core, GetInteger(address)));
 
         // Compare it to the desired one.
         if (current_value == value) {
             // If equal, we want to try to write the new value.
 
             // Try to store.
-            if (monitor->ExclusiveWrite32((uint32_t)current_core, GetInteger(address),
-                                         static_cast<u32>(new_value))) {
+            if (monitor.ExclusiveWrite32((uint32_t)current_core, GetInteger(address), static_cast<u32>(new_value)))
+            {
                 break;
             }
 
             // If we failed to store, try again.
-        } else {
+        }
+        else
+        {
             // Otherwise, clear our exclusive hold and finish.
-            monitor->ClearExclusive((uint32_t)current_core);
+            monitor.ClearExclusive((uint32_t)current_core);
             break;
         }
     }

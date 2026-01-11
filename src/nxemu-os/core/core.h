@@ -210,9 +210,7 @@ public:
      * @param program_index Specifies the index within the container of the program to launch.
      * @returns SystemResultStatus code, indicating if the operation succeeded.
      */
-    [[nodiscard]] SystemResultStatus Load(Frontend::EmuWindow& emu_window,
-                                          const std::string& filepath,
-                                          Service::AM::FrontendAppletParameters& params);
+    [[nodiscard]] SystemResultStatus Load(Frontend::EmuWindow& emu_window, const std::string& filepath, Service::AM::FrontendAppletParameters& params);
 
     /**
      * Indicates if the emulated system is powered on (all subsystems initialized and able to run an

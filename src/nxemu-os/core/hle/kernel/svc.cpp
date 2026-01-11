@@ -4426,7 +4426,7 @@ void Call(Core::System& system, u32 imm) {
     auto& kernel = system.Kernel();
     auto& process = GetCurrentProcess(kernel);
 
-    std::array<uint64_t, 8> args;
+    uint64_t args[8];
     kernel.CurrentPhysicalCore().SaveSvcArguments(process, args);
     kernel.EnterSVCProfile();
 

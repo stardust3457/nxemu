@@ -12,6 +12,7 @@
 
 namespace Kernel {
 class KernelCore;
+class KThread;
 } // namespace Kernel
 
 namespace Core {
@@ -20,9 +21,10 @@ class System;
 
 namespace Kernel {
 
-class PhysicalCore {
+class PhysicalCore
+{
 public:
-    PhysicalCore(KernelCore& kernel, std::size_t core_index);
+    PhysicalCore(KernelCore & kernel, uint32_t core_index);
     ~PhysicalCore();
 
     YUZU_NON_COPYABLE(PhysicalCore);
@@ -33,11 +35,11 @@ public:
 
     // Copy context from thread to current core.
     void LoadContext(const KThread* thread);
-    void LoadSvcArguments(const KProcess& process, std::span<const uint64_t, 8> args);
+    void LoadSvcArguments(const KProcess & process, const uint64_t (&args)[8]);
 
     // Copy context from current core to thread.
     void SaveContext(KThread* thread) const;
-    void SaveSvcArguments(KProcess& process, std::span<uint64_t, 8> args) const;
+    void SaveSvcArguments(KProcess & process, uint64_t (&args)[8]) const;
 
     // Copy floating point status registers to the target thread.
     void CloneFpuStatus(KThread* dst) const;
@@ -57,18 +59,19 @@ public:
     // Check if this core is interrupted.
     bool IsInterrupted() const;
 
-    std::size_t CoreIndex() const {
+    uint32_t CoreIndex() const
+    {
         return m_core_index;
     }
 
 private:
     KernelCore& m_kernel;
-    const std::size_t m_core_index;
+    const uint32_t m_core_index;
 
     std::mutex m_guard;
     std::condition_variable m_on_interrupt;
-    Core::ArmInterface* m_arm_interface{};
-    KThread* m_current_thread{};
+    Core::ArmInterface * m_cpucore{};
+    KThread * m_current_thread{};
     bool m_is_interrupted{};
     bool m_is_single_core{};
 };

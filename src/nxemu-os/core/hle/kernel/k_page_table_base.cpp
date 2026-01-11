@@ -69,53 +69,65 @@ public:
 };
 
 template <typename AddressType>
-void InvalidateInstructionCache(KernelCore& kernel, KPageTableBase* table, AddressType addr,
-                                u64 size) {
+void InvalidateInstructionCache(KernelCore & kernel, KPageTableBase * table, AddressType addr, u64 size)
+{
     // TODO: lock the process list
-    for (auto& process : kernel.GetProcessList()) {
-        if (std::addressof(process->GetPageTable().GetBasePageTable()) != table) {
+    for (auto & process : kernel.GetProcessList())
+    {
+        if (std::addressof(process->GetPageTable().GetBasePageTable()) != table)
+        {
             continue;
         }
 
-        for (size_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++) {
-            auto* interface = process->GetArmInterface(i);
-            if (interface) {
+        for (uint32_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++)
+        {
+            auto * interface = process->GetCpuCore(i);
+            if (interface)
+            {
                 interface->InvalidateCacheRange(GetInteger(addr), size);
             }
         }
     }
 }
 
-void ClearBackingRegion(Core::System& system, KPhysicalAddress addr, u64 size, u32 fill_value) {
+void ClearBackingRegion(Core::System & system, KPhysicalAddress addr, u64 size, u32 fill_value)
+{
     system.DeviceMemory().buffer.ClearBackingRegion(GetInteger(addr) - Core::DramMemoryMap::Base,
                                                     size, fill_value);
 }
 
 template <typename AddressType>
-Result InvalidateDataCache(AddressType addr, u64 size) {
+Result InvalidateDataCache(AddressType addr, u64 size)
+{
     R_SUCCEED();
 }
 
 template <typename AddressType>
-Result StoreDataCache(AddressType addr, u64 size) {
+Result StoreDataCache(AddressType addr, u64 size)
+{
     R_SUCCEED();
 }
 
 template <typename AddressType>
-Result FlushDataCache(AddressType addr, u64 size) {
+Result FlushDataCache(AddressType addr, u64 size)
+{
     R_SUCCEED();
 }
 
-constexpr Common::MemoryPermission ConvertToMemoryPermission(KMemoryPermission perm) {
+constexpr Common::MemoryPermission ConvertToMemoryPermission(KMemoryPermission perm)
+{
     Common::MemoryPermission perms{};
-    if (True(perm & KMemoryPermission::UserRead)) {
+    if (True(perm & KMemoryPermission::UserRead))
+    {
         perms |= Common::MemoryPermission::Read;
     }
-    if (True(perm & KMemoryPermission::UserWrite)) {
+    if (True(perm & KMemoryPermission::UserWrite))
+    {
         perms |= Common::MemoryPermission::Write;
     }
 #ifdef HAS_NCE
-    if (True(perm & KMemoryPermission::UserExecute)) {
+    if (True(perm & KMemoryPermission::UserExecute))
+    {
         perms |= Common::MemoryPermission::Execute;
     }
 #endif
@@ -124,16 +136,20 @@ constexpr Common::MemoryPermission ConvertToMemoryPermission(KMemoryPermission p
 
 } // namespace
 
-void KPageTableBase::MemoryRange::Open() {
+void KPageTableBase::MemoryRange::Open()
+{
     // If the range contains heap pages, open them.
-    if (this->IsHeap()) {
+    if (this->IsHeap())
+    {
         m_kernel.MemoryManager().Open(this->GetAddress(), this->GetSize() / PageSize);
     }
 }
 
-void KPageTableBase::MemoryRange::Close() {
+void KPageTableBase::MemoryRange::Close()
+{
     // If the range contains heap pages, close them.
-    if (this->IsHeap()) {
+    if (this->IsHeap())
+    {
         m_kernel.MemoryManager().Close(this->GetAddress(), this->GetSize() / PageSize);
     }
 }
@@ -3236,8 +3252,7 @@ Result KPageTableBase::WriteDebugMemory(KProcessAddress dst_address, KProcessAdd
         if (cur_size >= sizeof(u32)) {
             const size_t copy_size = Common::AlignDown(cur_size, sizeof(u32));
             void* copy_dst = GetLinearMappedVirtualPointer(m_kernel, cur_addr);
-            R_UNLESS(src_memory.ReadBlock(src_address, copy_dst, copy_size),
-                     ResultInvalidCurrentMemory);
+            R_UNLESS(src_memory.ReadBlock(src_address.GetValue(), copy_dst, copy_size), ResultInvalidCurrentMemory);
 
             StoreDataCache(GetLinearMappedVirtualPointer(m_kernel, cur_addr), copy_size);
 
@@ -3247,10 +3262,10 @@ Result KPageTableBase::WriteDebugMemory(KProcessAddress dst_address, KProcessAdd
         }
 
         // Copy remaining data.
-        if (cur_size > 0) {
+        if (cur_size > 0)
+        {
             void* copy_dst = GetLinearMappedVirtualPointer(m_kernel, cur_addr);
-            R_UNLESS(src_memory.ReadBlock(src_address, copy_dst, cur_size),
-                     ResultInvalidCurrentMemory);
+            R_UNLESS(src_memory.ReadBlock(src_address.GetValue(), copy_dst, cur_size), ResultInvalidCurrentMemory);
 
             StoreDataCache(GetLinearMappedVirtualPointer(m_kernel, cur_addr), cur_size);
         }
@@ -3871,15 +3886,13 @@ Result KPageTableBase::CopyMemoryFromLinearToKernel(
     R_SUCCEED();
 }
 
-Result KPageTableBase::CopyMemoryFromUserToLinear(
-    KProcessAddress dst_addr, size_t size, KMemoryState dst_state_mask, KMemoryState dst_state,
-    KMemoryPermission dst_test_perm, KMemoryAttribute dst_attr_mask, KMemoryAttribute dst_attr,
-    KProcessAddress src_addr) {
+Result KPageTableBase::CopyMemoryFromUserToLinear(KProcessAddress dst_addr, size_t size, KMemoryState dst_state_mask, KMemoryState dst_state, KMemoryPermission dst_test_perm, KMemoryAttribute dst_attr_mask, KMemoryAttribute dst_attr, KProcessAddress src_addr)
+{
     // Lightly validate the range before doing anything else.
     R_UNLESS(this->Contains(dst_addr, size), ResultInvalidCurrentMemory);
 
     // Get the source memory reference.
-    auto& src_memory = GetCurrentMemory(m_kernel);
+    auto & src_memory = GetCurrentMemory(m_kernel);
 
     // Copy the memory.
     {
@@ -3887,23 +3900,19 @@ Result KPageTableBase::CopyMemoryFromUserToLinear(
         KScopedLightLock lk(m_general_lock);
 
         // Check memory state.
-        R_TRY(this->CheckMemoryStateContiguous(
-            dst_addr, size, dst_state_mask, dst_state, dst_test_perm, dst_test_perm,
-            dst_attr_mask | KMemoryAttribute::Uncached, dst_attr));
+        R_TRY(this->CheckMemoryStateContiguous(dst_addr, size, dst_state_mask, dst_state, dst_test_perm, dst_test_perm, dst_attr_mask | KMemoryAttribute::Uncached, dst_attr));
 
-        auto& impl = this->GetImpl();
+        auto & impl = this->GetImpl();
 
         // Begin traversal.
         TraversalContext context;
         TraversalEntry next_entry;
-        bool traverse_valid =
-            impl.BeginTraversal(std::addressof(next_entry), std::addressof(context), dst_addr);
+        bool traverse_valid = impl.BeginTraversal(std::addressof(next_entry), std::addressof(context), dst_addr);
         ASSERT(traverse_valid);
 
         // Prepare tracking variables.
         KPhysicalAddress cur_addr = next_entry.phys_addr;
-        size_t cur_size =
-            next_entry.block_size - (GetInteger(cur_addr) & (next_entry.block_size - 1));
+        size_t cur_size = next_entry.block_size - (GetInteger(cur_addr) & (next_entry.block_size - 1));
         size_t tot_size = cur_size;
 
         auto PerformCopy = [&]() -> Result {
@@ -3911,35 +3920,33 @@ Result KPageTableBase::CopyMemoryFromUserToLinear(
             R_UNLESS(IsLinearMappedPhysicalAddress(cur_addr), ResultInvalidCurrentMemory);
 
             // Copy as much aligned data as we can.
-            if (cur_size >= sizeof(u32)) {
+            if (cur_size >= sizeof(u32))
+            {
                 const size_t copy_size = Common::AlignDown(cur_size, sizeof(u32));
-                R_UNLESS(src_memory.ReadBlock(src_addr,
-                                              GetLinearMappedVirtualPointer(m_kernel, cur_addr),
-                                              copy_size),
-                         ResultInvalidCurrentMemory);
+                R_UNLESS(src_memory.ReadBlock(src_addr.GetValue(), GetLinearMappedVirtualPointer(m_kernel, cur_addr), copy_size), ResultInvalidCurrentMemory);
                 src_addr += copy_size;
                 cur_addr += copy_size;
                 cur_size -= copy_size;
             }
 
             // Copy remaining data.
-            if (cur_size > 0) {
-                R_UNLESS(src_memory.ReadBlock(
-                             src_addr, GetLinearMappedVirtualPointer(m_kernel, cur_addr), cur_size),
-                         ResultInvalidCurrentMemory);
+            if (cur_size > 0)
+            {
+                R_UNLESS(src_memory.ReadBlock(src_addr.GetValue(), GetLinearMappedVirtualPointer(m_kernel, cur_addr), cur_size), ResultInvalidCurrentMemory);
             }
 
             R_SUCCEED();
         };
 
         // Iterate.
-        while (tot_size < size) {
+        while (tot_size < size)
+        {
             // Continue the traversal.
-            traverse_valid =
-                impl.ContinueTraversal(std::addressof(next_entry), std::addressof(context));
+            traverse_valid = impl.ContinueTraversal(std::addressof(next_entry), std::addressof(context));
             ASSERT(traverse_valid);
 
-            if (next_entry.phys_addr != (cur_addr + cur_size)) {
+            if (next_entry.phys_addr != (cur_addr + cur_size))
+            {
                 // Perform copy.
                 R_TRY(PerformCopy());
 
@@ -3948,7 +3955,9 @@ Result KPageTableBase::CopyMemoryFromUserToLinear(
 
                 cur_addr = next_entry.phys_addr;
                 cur_size = next_entry.block_size;
-            } else {
+            }
+            else
+            {
                 cur_size += next_entry.block_size;
             }
 
@@ -3956,7 +3965,8 @@ Result KPageTableBase::CopyMemoryFromUserToLinear(
         }
 
         // Ensure we use the right size for the last block.
-        if (tot_size > size) {
+        if (tot_size > size)
+        {
             cur_size -= (tot_size - size);
         }
 

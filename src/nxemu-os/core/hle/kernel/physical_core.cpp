@@ -13,16 +13,19 @@
 
 namespace Kernel {
 
-PhysicalCore::PhysicalCore(KernelCore& kernel, std::size_t core_index)
-    : m_kernel{kernel}, m_core_index{core_index} {
+PhysicalCore::PhysicalCore(KernelCore & kernel, uint32_t core_index) :
+    m_kernel{kernel}, 
+    m_core_index{core_index}
+{
     m_is_single_core = !kernel.IsMulticore();
 }
 PhysicalCore::~PhysicalCore() = default;
 
-void PhysicalCore::RunThread(Kernel::KThread* thread) {
-    auto* process = thread->GetOwnerKProcess();
-    auto& system = m_kernel.System();
-    auto* interface = process->GetArmInterface(m_core_index);
+void PhysicalCore::RunThread(Kernel::KThread * thread)
+{
+    auto * process = thread->GetOwnerKProcess();
+    auto & system = m_kernel.System();
+    auto * interface = process->GetCpuCore(m_core_index);
 
     interface->Initialize();
 
@@ -33,12 +36,13 @@ void PhysicalCore::RunThread(Kernel::KThread* thread) {
         std::scoped_lock lk{m_guard};
 
         // Check if we are already interrupted. If we are, we can just stop immediately.
-        if (m_is_interrupted) {
+        if (m_is_interrupted)
+        {
             return false;
         }
 
         // Mark that we are running.
-        m_arm_interface = interface;
+        m_cpucore = interface;
         m_current_thread = thread;
 
         // Acquire the lock on the thread parameters.
@@ -56,21 +60,24 @@ void PhysicalCore::RunThread(Kernel::KThread* thread) {
         std::scoped_lock lk{m_guard};
 
         // On exit, we no longer are running.
-        m_arm_interface = nullptr;
+        m_cpucore = nullptr;
         m_current_thread = nullptr;
 
         system.ExitCPUProfile();
     };
 
-    while (true) {
+    while (true)
+    {
         // If the thread is scheduled for termination, exit.
-        if (thread->HasDpc() && thread->IsTerminationRequested()) {
+        if (thread->HasDpc() && thread->IsTerminationRequested())
+        {
             thread->Exit();
         }
 
         // Notify the debugger and go to sleep if a step was performed
         // and this thread has been scheduled again.
-        if (thread->GetStepState() == StepState::StepPerformed) {
+        if (thread->GetStepState() == StepState::StepPerformed)
+        {
             if (system.DebuggerEnabled())
             {
                 UNIMPLEMENTED();
@@ -83,17 +90,22 @@ void PhysicalCore::RunThread(Kernel::KThread* thread) {
         Core::HaltReason hr{};
         {
             // If we were interrupted, exit immediately.
-            if (!EnterContext()) {
+            if (!EnterContext())
+            {
                 return;
             }
 
-            if (thread->GetStepState() == StepState::StepPending) {
+            if (thread->GetStepState() == StepState::StepPending)
+            {
                 hr = interface->StepThread(thread);
 
-                if (True(hr & Core::HaltReason::StepThread)) {
+                if (True(hr & Core::HaltReason::StepThread))
+                {
                     thread->SetStepState(StepState::StepPerformed);
                 }
-            } else {
+            }
+            else
+            {
                 hr = interface->RunThread(thread);
             }
 
@@ -112,13 +124,18 @@ void PhysicalCore::RunThread(Kernel::KThread* thread) {
 
         // Notify the debugger and go to sleep if a breakpoint was hit,
         // or if the thread is unable to continue for any reason.
-        if (breakpoint || prefetch_abort) {
-            if (breakpoint) {
+        if (breakpoint || prefetch_abort)
+        {
+            if (breakpoint)
+            {
                 interface->RewindBreakpointInstruction();
             }
-            if (system.DebuggerEnabled()) {
+            if (system.DebuggerEnabled())
+            {
                 UNIMPLEMENTED();
-            } else {
+            }
+            else
+            {
                 UNIMPLEMENTED();
             }
             thread->RequestSuspend(SuspendType::Debug);
@@ -126,8 +143,10 @@ void PhysicalCore::RunThread(Kernel::KThread* thread) {
         }
 
         // Notify the debugger and go to sleep on data abort.
-        if (data_abort) {
-            if (system.DebuggerEnabled()) {
+        if (data_abort)
+        {
+            if (system.DebuggerEnabled())
+            {
                 UNIMPLEMENTED();
             }
             thread->RequestSuspend(SuspendType::Debug);
@@ -135,93 +154,110 @@ void PhysicalCore::RunThread(Kernel::KThread* thread) {
         }
 
         // Handle system calls.
-        if (supervisor_call) {
+        if (supervisor_call)
+        {
             // Perform call.
             Svc::Call(system, interface->GetSvcNumber());
             return;
         }
 
         // Handle external interrupt sources.
-        if (interrupt || m_is_single_core) {
+        if (interrupt || m_is_single_core)
+        {
             return;
         }
     }
 }
 
-void PhysicalCore::LoadContext(const KThread* thread) {
-    auto* const process = thread->GetOwnerKProcess();
-    if (!process) {
+void PhysicalCore::LoadContext(const KThread * thread)
+{
+    auto * const process = thread->GetOwnerKProcess();
+    if (!process)
+    {
         // Kernel threads do not run on emulated CPU cores.
         return;
     }
 
-    auto* interface = process->GetArmInterface(m_core_index);
-    if (interface) {
+    auto * interface = process->GetCpuCore(m_core_index);
+    if (interface)
+    {
         interface->SetContext(thread->GetContext());
         interface->SetTpidrroEl0(GetInteger(thread->GetTlsAddress()));
-        interface->SetWatchpointArray(&process->GetWatchpoints());
+        interface->SetWatchpointArray(process->GetWatchpoints().data(), (uint32_t)process->GetWatchpoints().size());
     }
 }
 
-void PhysicalCore::LoadSvcArguments(const KProcess& process, std::span<const uint64_t, 8> args) {
-    process.GetArmInterface(m_core_index)->SetSvcArguments(args);
+void PhysicalCore::LoadSvcArguments(const KProcess & process, const uint64_t (&args)[8])
+{
+    process.GetCpuCore(m_core_index)->SetSvcArguments(args);
 }
 
-void PhysicalCore::SaveContext(KThread* thread) const {
-    auto* const process = thread->GetOwnerKProcess();
-    if (!process) {
+void PhysicalCore::SaveContext(KThread * thread) const
+{
+    auto * const process = thread->GetOwnerKProcess();
+    if (!process)
+    {
         // Kernel threads do not run on emulated CPU cores.
         return;
     }
 
-    auto* interface = process->GetArmInterface(m_core_index);
-    if (interface) {
+    auto * interface = process->GetCpuCore(m_core_index);
+    if (interface)
+    {
         interface->GetContext(thread->GetContext());
     }
 }
 
-void PhysicalCore::SaveSvcArguments(KProcess& process, std::span<uint64_t, 8> args) const {
-    process.GetArmInterface(m_core_index)->GetSvcArguments(args);
+void PhysicalCore::SaveSvcArguments(KProcess & process, uint64_t (&args)[8]) const
+{
+    process.GetCpuCore(m_core_index)->GetSvcArguments(args);
 }
 
-void PhysicalCore::CloneFpuStatus(KThread* dst) const {
-    auto* process = dst->GetOwnerKProcess();
+void PhysicalCore::CloneFpuStatus(KThread * dst) const
+{
+    auto * process = dst->GetOwnerKProcess();
 
     Svc::ThreadContext ctx{};
-    process->GetArmInterface(m_core_index)->GetContext(ctx);
+    process->GetCpuCore(m_core_index)->GetContext(ctx);
 
     dst->GetContext().fpcr = ctx.fpcr;
     dst->GetContext().fpsr = ctx.fpsr;
 }
 
-void PhysicalCore::LogBacktrace() {
-    auto* process = GetCurrentProcessPointer(m_kernel);
-    if (!process) {
+void PhysicalCore::LogBacktrace()
+{
+    auto * process = GetCurrentProcessPointer(m_kernel);
+    if (!process)
+    {
         return;
     }
 
-    auto* interface = process->GetArmInterface(m_core_index);
-    if (interface) {
+    auto * interface = process->GetCpuCore(m_core_index);
+    if (interface)
+    {
         UNIMPLEMENTED();
     }
 }
 
-void PhysicalCore::Idle() {
+void PhysicalCore::Idle()
+{
     std::unique_lock lk{m_guard};
     m_on_interrupt.wait(lk, [this] { return m_is_interrupted; });
 }
 
-bool PhysicalCore::IsInterrupted() const {
+bool PhysicalCore::IsInterrupted() const
+{
     return m_is_interrupted;
 }
 
-void PhysicalCore::Interrupt() {
+void PhysicalCore::Interrupt()
+{
     // Lock core context.
     std::scoped_lock lk{m_guard};
 
     // Load members.
-    auto* arm_interface = m_arm_interface;
-    auto* thread = m_current_thread;
+    auto * cpucore = m_cpucore;
+    auto * thread = m_current_thread;
 
     // Add interrupt flag.
     m_is_interrupted = true;
@@ -230,15 +266,17 @@ void PhysicalCore::Interrupt() {
     m_on_interrupt.notify_one();
 
     // If there is no thread running, we are done.
-    if (arm_interface == nullptr) {
+    if (cpucore == nullptr)
+    {
         return;
     }
 
     // Interrupt the CPU.
-    arm_interface->SignalInterrupt(thread);
+    cpucore->SignalInterrupt(thread);
 }
 
-void PhysicalCore::ClearInterrupt() {
+void PhysicalCore::ClearInterrupt()
+{
     std::scoped_lock lk{m_guard};
     m_is_interrupted = false;
 }
