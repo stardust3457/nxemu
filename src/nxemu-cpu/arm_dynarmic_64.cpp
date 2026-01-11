@@ -17,15 +17,15 @@ ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModule
     m_reg.SetJit(m_jit.get());
 }
 
-IArm64Executor::HaltReason ArmDynarmic64::Execute()
+ICpuCore::HaltReason ArmDynarmic64::Execute()
 {
     m_jit->ClearExclusiveState();
     Dynarmic::HaltReason Reason = m_jit->Run(); 
     switch (Reason)
     {
-    case Dynarmic::HaltReason::UserDefined2: return IArm64Executor::HaltReason::BreakLoop;
-    case Dynarmic::HaltReason::UserDefined3: return IArm64Executor::HaltReason::SupervisorCall;
-    case (Dynarmic::HaltReason::UserDefined2and3): return IArm64Executor::HaltReason::SupervisorCallBreakLoop;
+    case Dynarmic::HaltReason::UserDefined2: return ICpuCore::HaltReason::BreakLoop;
+    case Dynarmic::HaltReason::UserDefined3: return ICpuCore::HaltReason::SupervisorCall;
+    case (Dynarmic::HaltReason::UserDefined2and3): return ICpuCore::HaltReason::SupervisorCallBreakLoop;
     }
 
     g_notify->BreakPoint(__FILE__, __LINE__);
@@ -46,6 +46,11 @@ void ArmDynarmic64::HaltExecution(HaltReason hr)
     default:
         g_notify->BreakPoint(__FILE__, __LINE__);
     }
+}
+
+void ArmDynarmic64::Release()
+{
+    delete this;
 }
 
 std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMonitor & monitor)

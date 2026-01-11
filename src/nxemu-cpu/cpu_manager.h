@@ -12,9 +12,8 @@ public:
     //ICpu
     bool Initialize(void) override;
     IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) override;
-    IArm64Executor * CreateArm64Executor(ICpuInfo & info, bool is64Bit, bool usesWallClock, uint32_t coreIndex) override;
-    void DestroyArm64Executor(IArm64Executor * executor) override;
-
+    ICpuCore * CreateCpuCore(ICpuInfo & info, bool is64Bit, bool usesWallClock, uint32_t coreIndex) override;
+    
 private:
     CpuInterface() = delete;
     CpuInterface(const CpuInterface &) = delete;

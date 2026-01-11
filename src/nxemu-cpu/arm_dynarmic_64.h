@@ -4,7 +4,7 @@
 #include "cpu_manager.h"
 
 class ArmDynarmic64 :
-    public IArm64Executor,
+    public ICpuCore,
     private Dynarmic::A64::UserCallbacks
 {
 public:
@@ -12,10 +12,11 @@ public:
 
     IArm64Reg & Reg(void) { return m_reg; }
 
-    //IArm64Executor
+    //ICpuCore
     HaltReason Execute(void);
     void InvalidateCacheRange(uint64_t addr, uint64_t size);
     void HaltExecution(HaltReason hr);
+    void Release();
 
 private:
     ArmDynarmic64() = delete;

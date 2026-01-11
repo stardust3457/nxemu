@@ -9,8 +9,8 @@ namespace Core
 class CpuModuleCallback : public ICpuInfo
 {
 public:
-    explicit CpuModuleCallback(IArm64Executor *& arm64Executor, Core::System & system, Kernel::KProcess * process) :
-        m_arm64Executor(arm64Executor),
+    explicit CpuModuleCallback(ICpuCore *& arm64Executor, Core::System & system, Kernel::KProcess * process) :
+        m_cpuCore(arm64Executor),
         m_system(system),
         m_process(process),
         m_memory(process->GetCoreMemory()),
@@ -31,7 +31,7 @@ public:
     void ServiceCall(uint32_t index)
     {
         m_svn = index;
-        m_arm64Executor->HaltExecution(IArm64Executor::HaltReason::SupervisorCall);
+        m_cpuCore->HaltExecution(ICpuCore::HaltReason::SupervisorCall);
     }
 
     IMemory & Memory() override
@@ -49,7 +49,7 @@ public:
         return m_memory.WriteBlock(addr, buffer, len);
     }
 
-    IArm64Executor *& m_arm64Executor;
+    ICpuCore *& m_cpuCore;
     Kernel::KProcess * m_process{};
     Core::System & m_system;
     Core::Memory::Memory & m_memory;
@@ -59,21 +59,21 @@ public:
 ArmCpuModule::ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClock, Kernel::KProcess * process, uint32_t coreIndex) :
     ArmInterface{usesWallClock},
     m_system(system),
-    m_cb(std::make_unique<CpuModuleCallback>(m_arm64Executor, system, process)),
-    m_arm64Executor(nullptr)
+    m_cb(std::make_unique<CpuModuleCallback>(m_cpuCore, system, process)),
+    m_cpuCore(nullptr)
 {
     if (is64Bit)
     {
-        m_arm64Executor = system.GetSystemModules().Cpu().CreateArm64Executor(*m_cb, is64Bit, usesWallClock, coreIndex);    
+        m_cpuCore = system.GetSystemModules().Cpu().CreateCpuCore(*m_cb, is64Bit, usesWallClock, coreIndex);
     }
 }
 
 ArmCpuModule::~ArmCpuModule()
 {
-    if (m_arm64Executor != nullptr)
+    if (m_cpuCore != nullptr)
     {
-        m_system.GetSystemModules().Cpu().DestroyArm64Executor(m_arm64Executor);
-        m_arm64Executor = nullptr;
+        m_cpuCore->Release();
+        m_cpuCore = nullptr;
     }
 }
 
@@ -85,14 +85,14 @@ ProcessorArchitecture ArmCpuModule::GetArchitecture() const
 
 HaltReason ArmCpuModule::RunThread(Kernel::KThread * thread)
 {
-    if (m_arm64Executor != nullptr)
+    if (m_cpuCore != nullptr)
     {
-        IArm64Executor::HaltReason reason = m_arm64Executor->Execute();
+        ICpuCore::HaltReason reason = m_cpuCore->Execute();
         switch (reason)
         {
-        case IArm64Executor::HaltReason::BreakLoop: return HaltReason::BreakLoop;
-        case IArm64Executor::HaltReason::SupervisorCall: return HaltReason::SupervisorCall;
-        case IArm64Executor::HaltReason::SupervisorCallBreakLoop: return (HaltReason::SupervisorCall | HaltReason::BreakLoop);
+        case ICpuCore::HaltReason::BreakLoop: return HaltReason::BreakLoop;
+        case ICpuCore::HaltReason::SupervisorCall: return HaltReason::SupervisorCall;
+        case ICpuCore::HaltReason::SupervisorCallBreakLoop: return (HaltReason::SupervisorCall | HaltReason::BreakLoop);
         default:
             UNIMPLEMENTED();
         }
@@ -109,9 +109,9 @@ HaltReason ArmCpuModule::StepThread(Kernel::KThread * thread)
 
 void ArmCpuModule::GetContext(Kernel::Svc::ThreadContext & ctx) const
 {
-    if (m_arm64Executor != nullptr)
+    if (m_cpuCore != nullptr)
     {
-        IArm64Reg & reg = m_arm64Executor->Reg();
+        IArm64Reg & reg = m_cpuCore->Reg();
         for (size_t i = 0; i < 29; i++)
         {
             ctx.r[i] = reg.Get64((IArm64Reg::Reg)(((uint32_t)IArm64Reg::Reg::X0) + i));
@@ -138,9 +138,9 @@ void ArmCpuModule::GetContext(Kernel::Svc::ThreadContext & ctx) const
 
 void ArmCpuModule::SetContext(const Kernel::Svc::ThreadContext & ctx)
 {
-    if (m_arm64Executor != nullptr)
+    if (m_cpuCore != nullptr)
     {
-        IArm64Reg & reg = m_arm64Executor->Reg();
+        IArm64Reg & reg = m_cpuCore->Reg();
         for (size_t i = 0; i < 29; i++)
         {
             reg.Set64((IArm64Reg::Reg)(((uint32_t)IArm64Reg::Reg::X0) + i), ctx.r[i]);
@@ -166,9 +166,9 @@ void ArmCpuModule::SetContext(const Kernel::Svc::ThreadContext & ctx)
 
 void ArmCpuModule::SetTpidrroEl0(u64 value)
 {
-    if (m_arm64Executor != nullptr)
+    if (m_cpuCore != nullptr)
     {
-        IArm64Reg & reg = m_arm64Executor->Reg();
+        IArm64Reg & reg = m_cpuCore->Reg();
         reg.Set64(IArm64Reg::Reg::TPIDRRO_EL0, value);
     }
     else
@@ -179,7 +179,7 @@ void ArmCpuModule::SetTpidrroEl0(u64 value)
 
 void ArmCpuModule::GetSvcArguments(std::span<uint64_t, 8> args) const
 {
-    IArm64Reg & reg = m_arm64Executor->Reg();
+    IArm64Reg & reg = m_cpuCore->Reg();
     for (size_t i = 0; i < 8; i++)
     {
         args[i] = reg.Get64((IArm64Reg::Reg)(((uint32_t)IArm64Reg::Reg::X0) + i));
@@ -188,7 +188,7 @@ void ArmCpuModule::GetSvcArguments(std::span<uint64_t, 8> args) const
 
 void ArmCpuModule::SetSvcArguments(std::span<const uint64_t, 8> args)
 {
-    IArm64Reg & reg = m_arm64Executor->Reg();
+    IArm64Reg & reg = m_cpuCore->Reg();
     for (size_t i = 0; i < 8; i++)
     {
         reg.Set64((IArm64Reg::Reg)(((uint32_t)IArm64Reg::Reg::X0) + i), args[i]);
@@ -202,9 +202,9 @@ u32 ArmCpuModule::GetSvcNumber() const
 
 void ArmCpuModule::SignalInterrupt(Kernel::KThread * thread)
 {
-    if (m_arm64Executor != nullptr)
+    if (m_cpuCore != nullptr)
     {
-        m_arm64Executor->HaltExecution(IArm64Executor::HaltReason::BreakLoop);
+        m_cpuCore->HaltExecution(ICpuCore::HaltReason::BreakLoop);
     }
     else
     {
@@ -219,9 +219,9 @@ void ArmCpuModule::ClearInstructionCache()
 
 void ArmCpuModule::InvalidateCacheRange(u64 addr, std::size_t size)
 {
-    if (m_arm64Executor != nullptr)
+    if (m_cpuCore != nullptr)
     {
-        m_arm64Executor->InvalidateCacheRange(addr, size);
+        m_cpuCore->InvalidateCacheRange(addr, size);
     }
     else
     {

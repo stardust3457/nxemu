@@ -37,22 +37,6 @@ __interface IArm64Reg
     void SetFPSR(uint32_t value) = 0;
 };
 
-__interface IArm64Executor
-{
-    enum class HaltReason
-    {
-        Stopped,
-        SupervisorCall,
-        SupervisorCallBreakLoop,
-        BreakLoop,
-    };
-
-    IArm64Reg & Reg(void) = 0;
-    HaltReason Execute(void) = 0;
-    void InvalidateCacheRange(uint64_t addr, uint64_t size) = 0;
-    void HaltExecution(HaltReason hr) = 0;
-};
-
 enum class CpuDebugWatchpointType : uint8_t
 {
     None = 0,
@@ -123,13 +107,30 @@ __interface IExclusiveMonitor
     void Release() = 0;
 };
 
+__interface ICpuCore
+{
+    enum class HaltReason
+    {
+        Stopped,
+        SupervisorCall,
+        SupervisorCallBreakLoop,
+        BreakLoop,
+    };
+
+    IArm64Reg & Reg(void) = 0;
+    HaltReason Execute(void) = 0;
+    void InvalidateCacheRange(uint64_t addr, uint64_t size) = 0;
+    void HaltExecution(HaltReason hr) = 0;
+    
+    void Release() = 0;
+};
+
 __interface ICpu
 {
     bool Initialize(void) = 0;
 
     IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) = 0;
-    IArm64Executor * CreateArm64Executor(ICpuInfo & info, bool is64Bit, bool usesWallClock, uint32_t coreIndex) = 0;
-    void DestroyArm64Executor(IArm64Executor * executor) = 0;
+    ICpuCore * CreateCpuCore(ICpuInfo & info, bool is64Bit, bool usesWallClock, uint32_t coreIndex) = 0;
 };
 
 EXPORT ICpu * CALL CreateCpu(ISystemModules & modules);

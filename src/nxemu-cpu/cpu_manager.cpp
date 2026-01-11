@@ -29,12 +29,8 @@ IExclusiveMonitor * CpuInterface::CreateExclusiveMonitor(IMemory & memory)
 #endif
 }
 
-IArm64Executor * CpuInterface::CreateArm64Executor(ICpuInfo & info, bool /*is64Bit*/, bool /*usesWallClock*/, uint32_t coreIndex)
+ICpuCore * CpuInterface::CreateCpuCore(ICpuInfo & info, bool /*is64Bit*/, bool /*usesWallClock*/, uint32_t coreIndex)
 {
     return new ArmDynarmic64(m_monitor, m_modules, info, coreIndex);
 }   
 
-void CpuInterface::DestroyArm64Executor(IArm64Executor * executor)
-{
-    delete (ArmDynarmic64 *)executor;
-}

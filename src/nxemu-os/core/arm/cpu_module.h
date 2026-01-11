@@ -41,6 +41,6 @@ private:
     friend class CpuModuleCallback;
     Core::System & m_system;
     std::unique_ptr<CpuModuleCallback> m_cb{};
-    IArm64Executor * m_arm64Executor;
+    ICpuCore * m_cpuCore;
 };
 }
