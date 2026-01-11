@@ -21,20 +21,6 @@
 
 namespace Kernel {
 
-enum class DebugWatchpointType : u8 {
-    None = 0,
-    Read = 1 << 0,
-    Write = 1 << 1,
-    ReadOrWrite = Read | Write,
-};
-DECLARE_ENUM_FLAG_OPERATORS(DebugWatchpointType);
-
-struct DebugWatchpoint {
-    KProcessAddress start_address;
-    KProcessAddress end_address;
-    DebugWatchpointType type;
-};
-
 class KProcess final : public KAutoObjectWithSlabHeapAndContainer<KProcess, KWorkerTask> {
     KERNEL_AUTOOBJECT_TRAITS(KProcess, KSynchronizationObject);
 
@@ -113,7 +99,7 @@ private:
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_idle_counts{};
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_switch_counts{};
     std::array<KThread*, Core::Hardware::NUM_CPU_CORES> m_pinned_threads{};
-    std::array<DebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS> m_watchpoints{};
+    std::array<CpuDebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS> m_watchpoints{};
     std::map<KProcessAddress, u64> m_debug_page_refcounts{};
     std::atomic<s64> m_cpu_time{};
     std::atomic<s64> m_num_process_switches{};
@@ -551,12 +537,12 @@ public:
 
 public:
     // Attempts to insert a watchpoint into a free slot. Returns false if none are available.
-    bool InsertWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type);
+    bool InsertWatchpoint(KProcessAddress addr, u64 size, CpuDebugWatchpointType type);
 
     // Attempts to remove the watchpoint specified by the given parameters.
-    bool RemoveWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type);
+    bool RemoveWatchpoint(KProcessAddress addr, u64 size, CpuDebugWatchpointType type);
 
-    const std::array<DebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS> & GetWatchpoints() const 
+    const std::array<CpuDebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS> & GetWatchpoints() const
     {
         return m_watchpoints;
     }

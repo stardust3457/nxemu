@@ -1271,10 +1271,10 @@ void KProcess::InitializeInterfaces()
     }
 }
 
-bool KProcess::InsertWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type)
+bool KProcess::InsertWatchpoint(KProcessAddress addr, u64 size, CpuDebugWatchpointType type)
 {
-    const auto watch{std::find_if(m_watchpoints.begin(), m_watchpoints.end(), [&](const auto& wp) {
-        return wp.type == DebugWatchpointType::None;
+    const auto watch{std::find_if(m_watchpoints.begin(), m_watchpoints.end(), [&](const auto & wp) {
+        return wp.type == CpuDebugWatchpointType::None;
     })};
 
     if (watch == m_watchpoints.end())
@@ -1282,8 +1282,8 @@ bool KProcess::InsertWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointT
         return false;
     }
 
-    watch->start_address = addr;
-    watch->end_address = addr + size;
+    watch->startAddress = addr.GetValue();
+    watch->endAddress = addr.GetValue() + size;
     watch->type = type;
 
     for (KProcessAddress page = Common::AlignDown(GetInteger(addr), PageSize); page < addr + size; page += PageSize)
@@ -1295,19 +1295,20 @@ bool KProcess::InsertWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointT
     return true;
 }
 
-bool KProcess::RemoveWatchpoint(KProcessAddress addr, u64 size, DebugWatchpointType type)
+bool KProcess::RemoveWatchpoint(KProcessAddress addr, u64 size, CpuDebugWatchpointType type)
 {
     const auto watch{std::find_if(m_watchpoints.begin(), m_watchpoints.end(), [&](const auto & wp) {
-        return wp.start_address == addr && wp.end_address == addr + size && wp.type == type;
+        return wp.startAddress == addr && wp.endAddress == addr + size && wp.type == type;
     })};
 
-    if (watch == m_watchpoints.end()) {
+    if (watch == m_watchpoints.end())
+    {
         return false;
     }
 
-    watch->start_address = 0;
-    watch->end_address = 0;
-    watch->type = DebugWatchpointType::None;
+    watch->startAddress = 0;
+    watch->endAddress = 0;
+    watch->type = CpuDebugWatchpointType::None;
 
     for (KProcessAddress page = Common::AlignDown(GetInteger(addr), PageSize); page < addr + size; page += PageSize)
     {

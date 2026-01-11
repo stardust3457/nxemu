@@ -53,6 +53,21 @@ __interface IArm64Executor
     void HaltExecution(HaltReason hr) = 0;
 };
 
+enum class CpuDebugWatchpointType : uint8_t
+{
+    None = 0,
+    Read = 1 << 0,
+    Write = 1 << 1,
+    ReadOrWrite = Read | Write,
+};
+
+struct CpuDebugWatchpoint
+{
+    uint64_t startAddress;
+    uint64_t endAddress;
+    CpuDebugWatchpointType type;
+};
+
 enum class ProcessorArchitecture
 {
     AArch64,
