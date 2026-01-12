@@ -217,7 +217,7 @@ void PhysicalCore::CloneFpuStatus(KThread * dst) const
 {
     auto * process = dst->GetOwnerKProcess();
 
-    Svc::ThreadContext ctx{};
+    CpuThreadContext ctx{};
     process->GetCpuCore(m_core_index)->GetContext(ctx);
 
     dst->GetContext().fpcr = ctx.fpcr;

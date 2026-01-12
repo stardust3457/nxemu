@@ -456,21 +456,6 @@ struct SecureMonitorArguments {
 static_assert(sizeof(SecureMonitorArguments) == 0x20);
 } // namespace ilp32
 
-struct ThreadContext {
-    std::array<u64, 29> r;
-    u64 fp;
-    u64 lr;
-    u64 sp;
-    u64 pc;
-    u32 pstate;
-    u32 padding;
-    std::array<u128, 32> v;
-    u32 fpcr;
-    u32 fpsr;
-    u64 tpidr;
-};
-static_assert(sizeof(ThreadContext) == 0x320);
-
 struct MemoryInfo {
     u64 base_address;
     u64 size;

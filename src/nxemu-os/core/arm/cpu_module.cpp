@@ -107,7 +107,7 @@ HaltReason ArmCpuModule::StepThread(Kernel::KThread * thread)
     return HaltReason::DataAbort;
 }
 
-void ArmCpuModule::GetContext(Kernel::Svc::ThreadContext & ctx) const
+void ArmCpuModule::GetContext(CpuThreadContext & ctx) const
 {
     if (m_cpuCore != nullptr)
     {
@@ -136,7 +136,7 @@ void ArmCpuModule::GetContext(Kernel::Svc::ThreadContext & ctx) const
     }
 }
 
-void ArmCpuModule::SetContext(const Kernel::Svc::ThreadContext & ctx)
+void ArmCpuModule::SetContext(const CpuThreadContext & ctx)
 {
     if (m_cpuCore != nullptr)
     {

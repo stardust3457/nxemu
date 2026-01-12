@@ -41,8 +41,8 @@ namespace {
 
 constexpr inline s32 TerminatingThreadPriority = Kernel::Svc::SystemThreadPriorityHighest - 1;
 
-static void ResetThreadContext32(Kernel::Svc::ThreadContext& ctx, u64 stack_top, u64 entry_point,
-                                 u64 arg) {
+static void ResetThreadContext32(CpuThreadContext & ctx, u64 stack_top, u64 entry_point, u64 arg)
+{
     ctx = {};
     ctx.r[0] = arg;
     ctx.r[15] = entry_point;
@@ -51,8 +51,8 @@ static void ResetThreadContext32(Kernel::Svc::ThreadContext& ctx, u64 stack_top,
     ctx.fpsr = 0;
 }
 
-static void ResetThreadContext64(Kernel::Svc::ThreadContext& ctx, u64 stack_top, u64 entry_point,
-                                 u64 arg) {
+static void ResetThreadContext64(CpuThreadContext & ctx, u64 stack_top, u64 entry_point, u64 arg)
+{
     ctx = {};
     ctx.r[0] = arg;
     ctx.r[18] = Kernel::KSystemControl::GenerateRandomU64() | 1;
@@ -903,7 +903,8 @@ Result KThread::SetActivity(Svc::ThreadActivity activity) {
     R_SUCCEED();
 }
 
-Result KThread::GetThreadContext3(Svc::ThreadContext* out) {
+Result KThread::GetThreadContext3(CpuThreadContext * out)
+{
     // Lock ourselves.
     KScopedLightLock lk{m_activity_pause_lock};
 

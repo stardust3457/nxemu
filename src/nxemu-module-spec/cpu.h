@@ -107,6 +107,22 @@ __interface IExclusiveMonitor
     void Release() = 0;
 };
 
+struct CpuThreadContext
+{
+    uint64_t r[29];
+    uint64_t fp;
+    uint64_t lr;
+    uint64_t sp;
+    uint64_t pc;
+    uint32_t pstate;
+    uint32_t padding;
+    uint64_t v[32][2];
+    uint32_t fpcr;
+    uint32_t fpsr;
+    uint64_t tpidr;
+};
+static_assert(sizeof(CpuThreadContext) == 0x320);
+
 __interface ICpuCore
 {
     enum class HaltReason

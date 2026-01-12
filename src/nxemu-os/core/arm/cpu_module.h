@@ -21,8 +21,8 @@ public:
     HaltReason RunThread(Kernel::KThread * thread) override;
     HaltReason StepThread(Kernel::KThread * thread) override;
 
-    void GetContext(Kernel::Svc::ThreadContext & ctx) const override;
-    void SetContext(const Kernel::Svc::ThreadContext & ctx) override;
+    void GetContext(CpuThreadContext & ctx) const override;
+    void SetContext(const CpuThreadContext & ctx) override;
     void SetTpidrroEl0(u64 value) override;
 
     void GetSvcArguments(std::span<uint64_t, 8> args) const override;

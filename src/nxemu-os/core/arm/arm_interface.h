@@ -73,8 +73,8 @@ public:
 
     // Context accessors.
     // These should not be called if the CPU is running.
-    virtual void GetContext(Kernel::Svc::ThreadContext& ctx) const = 0;
-    virtual void SetContext(const Kernel::Svc::ThreadContext& ctx) = 0;
+    virtual void GetContext(CpuThreadContext & ctx) const = 0;
+    virtual void SetContext(const CpuThreadContext & ctx) = 0;
     virtual void SetTpidrroEl0(u64 value) = 0;
 
     virtual void GetSvcArguments(std::span<uint64_t, 8> args) const = 0;

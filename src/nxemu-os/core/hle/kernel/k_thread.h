@@ -30,18 +30,22 @@
 #include "core/hle/kernel/svc_types.h"
 #include "core/hle/result.h"
 
-namespace Common {
+namespace Common
+{
 class Fiber;
 }
 
-namespace Core {
-namespace Memory {
+namespace Core
+{
+namespace Memory
+{
 class Memory;
 }
 class System;
 } // namespace Core
 
-namespace Kernel {
+namespace Kernel
+{
 
 class GlobalSchedulerContext;
 class KernelCore;
@@ -51,7 +55,8 @@ class KThreadQueue;
 
 using KThreadFunction = KProcessAddress;
 
-enum class ThreadType : u32 {
+enum class ThreadType : u32
+{
     Main = 0,
     Kernel = 1,
     HighPriority = 2,
@@ -60,7 +65,8 @@ enum class ThreadType : u32 {
 };
 DECLARE_ENUM_FLAG_OPERATORS(ThreadType);
 
-enum class SuspendType : u32 {
+enum class SuspendType : u32
+{
     Process = 0,
     Thread = 1,
     Debug = 2,
@@ -71,7 +77,8 @@ enum class SuspendType : u32 {
     Count,
 };
 
-enum class ThreadState : u16 {
+enum class ThreadState : u16
+{
     Initialized = 0,
     Waiting = 1,
     Runnable = 2,
@@ -91,12 +98,14 @@ enum class ThreadState : u16 {
 };
 DECLARE_ENUM_FLAG_OPERATORS(ThreadState);
 
-enum class DpcFlag : u32 {
+enum class DpcFlag : u32
+{
     Terminating = (1 << 0),
     Terminated = (1 << 1),
 };
 
-enum class ThreadWaitReasonForDebugging : u32 {
+enum class ThreadWaitReasonForDebugging : u32
+{
     None,            ///< Thread is not waiting
     Sleep,           ///< Thread is waiting due to a SleepThread SVC
     IPC,             ///< Thread is waiting for the reply from an IPC request
@@ -106,23 +115,24 @@ enum class ThreadWaitReasonForDebugging : u32 {
     Suspended,       ///< Thread is waiting due to process suspension
 };
 
-enum class StepState : u32 {
+enum class StepState : u32
+{
     NotStepping,   ///< Thread is not currently stepping
     StepPending,   ///< Thread will step when next scheduled
     StepPerformed, ///< Thread has stepped, waiting to be scheduled again
 };
 
-void SetCurrentThread(KernelCore& kernel, KThread* thread);
-KThread* GetCurrentThreadPointer(KernelCore& kernel);
-KThread& GetCurrentThread(KernelCore& kernel);
-KProcess* GetCurrentProcessPointer(KernelCore& kernel);
-KProcess& GetCurrentProcess(KernelCore& kernel);
-s32 GetCurrentCoreId(KernelCore& kernel);
-Core::Memory::Memory& GetCurrentMemory(KernelCore& kernel);
+void SetCurrentThread(KernelCore & kernel, KThread * thread);
+KThread * GetCurrentThreadPointer(KernelCore & kernel);
+KThread & GetCurrentThread(KernelCore & kernel);
+KProcess * GetCurrentProcessPointer(KernelCore & kernel);
+KProcess & GetCurrentProcess(KernelCore & kernel);
+s32 GetCurrentCoreId(KernelCore & kernel);
+Core::Memory::Memory & GetCurrentMemory(KernelCore & kernel);
 
-class KThread final : 
-    public KAutoObjectWithSlabHeapAndContainer<KThread, KWorkerTask>, 
-    public Common::IntrusiveListBaseNode<KThread>, 
+class KThread final :
+    public KAutoObjectWithSlabHeapAndContainer<KThread, KWorkerTask>,
+    public Common::IntrusiveListBaseNode<KThread>,
     public KTimerTask
 {
     KERNEL_AUTOOBJECT_TRAITS(KThread, KSynchronizationObject);
@@ -136,7 +146,7 @@ public:
     static constexpr s32 IdleThreadPriority = Svc::LowestThreadPriority + 1;
     static constexpr s32 DummyThreadPriority = Svc::LowestThreadPriority + 2;
 
-    explicit KThread(KernelCore& kernel);
+    explicit KThread(KernelCore & kernel);
     ~KThread() override;
 
 public:
@@ -146,7 +156,8 @@ public:
      * Gets the thread's current priority
      * @return The current thread's priority
      */
-    s32 GetPriority() const {
+    s32 GetPriority() const
+    {
         return m_priority;
     }
 
@@ -154,7 +165,8 @@ public:
      * Sets the thread's current priority.
      * @param priority The new priority.
      */
-    void SetPriority(s32 value) {
+    void SetPriority(s32 value)
+    {
         m_priority = value;
     }
 
@@ -162,7 +174,8 @@ public:
      * Gets the thread's nominal priority.
      * @return The current thread's nominal priority.
      */
-    s32 GetBasePriority() const {
+    s32 GetBasePriority() const
+    {
         return m_base_priority;
     }
 
@@ -170,12 +183,15 @@ public:
      * Gets the thread's thread ID
      * @return The thread's ID
      */
-    u64 GetThreadId() const {
+    u64 GetThreadId() const
+    {
         return m_thread_id;
     }
 
-    void ContinueIfHasKernelWaiters() {
-        if (GetNumKernelWaiters() > 0) {
+    void ContinueIfHasKernelWaiters()
+    {
+        if (GetNumKernelWaiters() > 0)
+        {
             Continue();
         }
     }
@@ -190,21 +206,25 @@ public:
 
     ThreadState RequestTerminate();
 
-    u32 GetSuspendFlags() const {
+    u32 GetSuspendFlags() const
+    {
         return m_suspend_allowed_flags & m_suspend_request_flags;
     }
 
-    bool IsSuspended() const {
+    bool IsSuspended() const
+    {
         return GetSuspendFlags() != 0;
     }
 
-    bool IsSuspendRequested(SuspendType type) const {
+    bool IsSuspendRequested(SuspendType type) const
+    {
         return (m_suspend_request_flags &
                 (1U << (static_cast<u32>(ThreadState::SuspendShift) + static_cast<u32>(type)))) !=
                0;
     }
 
-    bool IsSuspendRequested() const {
+    bool IsSuspendRequested() const
+    {
         return m_suspend_request_flags != 0;
     }
 
@@ -218,19 +238,23 @@ public:
 
     void Continue();
 
-    constexpr void SetSyncedIndex(s32 index) {
+    constexpr void SetSyncedIndex(s32 index)
+    {
         m_synced_index = index;
     }
 
-    constexpr s32 GetSyncedIndex() const {
+    constexpr s32 GetSyncedIndex() const
+    {
         return m_synced_index;
     }
 
-    constexpr void SetWaitResult(Result wait_res) {
+    constexpr void SetWaitResult(Result wait_res)
+    {
         m_wait_result = wait_res;
     }
 
-    constexpr Result GetWaitResult() const {
+    constexpr Result GetWaitResult() const
+    {
         return m_wait_result;
     }
 
@@ -238,7 +262,8 @@ public:
      * Returns the Thread Local Storage address of the current thread
      * @returns Address of the thread's TLS
      */
-    KProcessAddress GetTlsAddress() const {
+    KProcessAddress GetTlsAddress() const
+    {
         return m_tls_address;
     }
 
@@ -246,75 +271,91 @@ public:
      * Returns the value of the TPIDR_EL0 Read/Write system register for this thread.
      * @returns The value of the TPIDR_EL0 register.
      */
-    u64 GetTpidrEl0() const {
+    u64 GetTpidrEl0() const
+    {
         return m_thread_context.tpidr;
     }
 
     /// Sets the value of the TPIDR_EL0 Read/Write system register for this thread.
-    void SetTpidrEl0(u64 value) {
+    void SetTpidrEl0(uint32_t value) 
+    {
         m_thread_context.tpidr = value;
     }
 
     void CloneFpuStatus();
 
-    Svc::ThreadContext& GetContext() {
+    CpuThreadContext & GetContext()
+    {
         return m_thread_context;
     }
 
-    const Svc::ThreadContext& GetContext() const {
+    const CpuThreadContext GetContext() const
+    {
         return m_thread_context;
     }
 
     std::shared_ptr<Common::Fiber>& GetHostContext();
 
-    ThreadState GetState() const {
+    ThreadState GetState() const
+    {
         return m_thread_state.load(std::memory_order_relaxed) & ThreadState::Mask;
     }
 
-    ThreadState GetRawState() const {
+    ThreadState GetRawState() const
+    {
         return m_thread_state.load(std::memory_order_relaxed);
     }
 
     void SetState(ThreadState state);
 
-    StepState GetStepState() const {
+    StepState GetStepState() const
+    {
         return m_step_state;
     }
 
-    void SetStepState(StepState state) {
+    void SetStepState(StepState state)
+    {
         m_step_state = state;
     }
 
-    s64 GetLastScheduledTick() const {
+    s64 GetLastScheduledTick() const
+    {
         return m_last_scheduled_tick;
     }
 
-    void SetLastScheduledTick(s64 tick) {
+    void SetLastScheduledTick(s64 tick)
+    {
         m_last_scheduled_tick = tick;
     }
 
-    void AddCpuTime(s32 core_id, s64 amount) {
+    void AddCpuTime(s32 core_id, s64 amount)
+    {
         m_cpu_time += amount;
         // TODO(bunnei): Debug kernels track per-core tick counts. Should we?
     }
 
-    s64 GetCpuTime() const {
+    s64 GetCpuTime() const
+    {
         return m_cpu_time;
     }
 
-    s32 GetActiveCore() const {
+    s32 GetActiveCore() const
+    {
         return m_core_id;
     }
 
-    void SetActiveCore(s32 core) {
+    void SetActiveCore(s32 core)
+    {
         m_core_id = core;
     }
 
-    s32 GetCurrentCore() const {
+    s32 GetCurrentCore() const
+    {
         return m_current_core_id;
     }
 
-    void SetCurrentCore(s32 core) {
+    void SetCurrentCore(s32 core)
+    {
         m_current_core_id = core;
     }
 
@@ -328,11 +369,13 @@ public:
         return m_parent != nullptr;
     }
 
-    std::span<KSynchronizationObject*> GetSynchronizationObjectBuffer() {
+    std::span<KSynchronizationObject *> GetSynchronizationObjectBuffer()
+    {
         return m_sync_object_buffer.sync_objects;
     }
 
-    std::span<Handle> GetHandleBuffer() {
+    std::span<Handle> GetHandleBuffer()
+    {
         return {m_sync_object_buffer.handles.data() + Svc::ArgumentHandleCountMax,
                 Svc::ArgumentHandleCountMax};
     }
@@ -341,15 +384,16 @@ public:
     void SetInterruptFlag();
     void ClearInterruptFlag();
 
-    KThread* GetLockOwner() const;
+    KThread * GetLockOwner() const;
 
-    const KAffinityMask& GetAffinityMask() const {
+    const KAffinityMask & GetAffinityMask() const
+    {
         return m_physical_affinity_mask;
     }
 
-    Result GetCoreMask(s32* out_ideal_core, u64* out_affinity_mask);
+    Result GetCoreMask(s32 * out_ideal_core, u64 * out_affinity_mask);
 
-    Result GetPhysicalCoreMask(s32* out_ideal_core, u64* out_affinity_mask);
+    Result GetPhysicalCoreMask(s32 * out_ideal_core, u64 * out_affinity_mask);
 
     Result SetCoreMask(s32 cpu_core_id, u64 v_affinity_mask);
 
@@ -357,56 +401,69 @@ public:
 
     Result Sleep(s64 timeout);
 
-    s64 GetYieldScheduleCount() const {
+    s64 GetYieldScheduleCount() const
+    {
         return m_schedule_count;
     }
 
-    void SetYieldScheduleCount(s64 count) {
+    void SetYieldScheduleCount(s64 count)
+    {
         m_schedule_count = count;
     }
 
     void WaitCancel();
 
-    bool IsWaitCancelled() const {
+    bool IsWaitCancelled() const
+    {
         return m_wait_cancelled;
     }
 
-    void ClearWaitCancelled() {
+    void ClearWaitCancelled()
+    {
         m_wait_cancelled = false;
     }
 
-    bool IsCancellable() const {
+    bool IsCancellable() const
+    {
         return m_cancellable;
     }
 
-    void SetCancellable() {
+    void SetCancellable()
+    {
         m_cancellable = true;
     }
 
-    void ClearCancellable() {
+    void ClearCancellable()
+    {
         m_cancellable = false;
     }
 
-    u32* GetLightSessionData() const {
+    u32 * GetLightSessionData() const
+    {
         return m_light_ipc_data;
     }
-    void SetLightSessionData(u32* data) {
+    void SetLightSessionData(u32 * data)
+    {
         m_light_ipc_data = data;
     }
 
-    bool IsTerminationRequested() const {
+    bool IsTerminationRequested() const
+    {
         return m_termination_requested || GetRawState() == ThreadState::Terminated;
     }
 
-    u64 GetId() const override {
+    u64 GetId() const override
+    {
         return this->GetThreadId();
     }
 
-    bool IsInitialized() const override {
+    bool IsInitialized() const override
+    {
         return m_initialized;
     }
 
-    uintptr_t GetPostDestroyArgument() const override {
+    uintptr_t GetPostDestroyArgument() const override
+    {
         return reinterpret_cast<uintptr_t>(m_parent) | (m_resource_limit_release_hint ? 1 : 0);
     }
 
@@ -420,25 +477,26 @@ public:
 
     static void PostDestroy(uintptr_t arg);
 
-    static Result InitializeDummyThread(KThread* thread, KProcess* owner);
+    static Result InitializeDummyThread(KThread * thread, KProcess * owner);
 
-    static Result InitializeMainThread(Core::System& system, KThread* thread, s32 virt_core);
+    static Result InitializeMainThread(Core::System & system, KThread * thread, s32 virt_core);
 
-    static Result InitializeIdleThread(Core::System& system, KThread* thread, s32 virt_core);
+    static Result InitializeIdleThread(Core::System & system, KThread * thread, s32 virt_core);
 
-    static Result InitializeHighPriorityThread(Core::System& system, KThread* thread,
+    static Result InitializeHighPriorityThread(Core::System & system, KThread * thread,
                                                KThreadFunction func, uintptr_t arg, s32 virt_core);
 
-    static Result InitializeUserThread(Core::System& system, KThread* thread, KThreadFunction func,
+    static Result InitializeUserThread(Core::System & system, KThread * thread, KThreadFunction func,
                                        uintptr_t arg, KProcessAddress user_stack_top, s32 prio,
-                                       s32 virt_core, KProcess* owner);
+                                       s32 virt_core, KProcess * owner);
 
-    static Result InitializeServiceThread(Core::System& system, KThread* thread,
-                                          std::function<void()>&& thread_func, s32 prio,
-                                          s32 virt_core, KProcess* owner);
+    static Result InitializeServiceThread(Core::System & system, KThread * thread,
+                                          std::function<void()> && thread_func, s32 prio,
+                                          s32 virt_core, KProcess * owner);
 
 public:
-    struct StackParameters {
+    struct StackParameters
+    {
         u8 svc_permission[0x10];
         std::atomic<u8> dpc_flags;
         u8 current_svc_id;
@@ -446,62 +504,75 @@ public:
         bool is_in_exception_handler;
         bool is_pinned;
         s32 disable_count;
-        KThread* cur_thread;
+        KThread * cur_thread;
     };
 
-    StackParameters& GetStackParameters() {
+    StackParameters & GetStackParameters()
+    {
         return m_stack_parameters;
     }
 
-    const StackParameters& GetStackParameters() const {
+    const StackParameters & GetStackParameters() const
+    {
         return m_stack_parameters;
     }
 
-    class QueueEntry {
+    class QueueEntry
+    {
     public:
         constexpr QueueEntry() = default;
 
-        constexpr void Initialize() {
+        constexpr void Initialize()
+        {
             m_prev = nullptr;
             m_next = nullptr;
         }
 
-        constexpr KThread* GetPrev() const {
+        constexpr KThread * GetPrev() const
+        {
             return m_prev;
         }
-        constexpr KThread* GetNext() const {
+        constexpr KThread * GetNext() const
+        {
             return m_next;
         }
-        constexpr void SetPrev(KThread* thread) {
+        constexpr void SetPrev(KThread * thread)
+        {
             m_prev = thread;
         }
-        constexpr void SetNext(KThread* thread) {
+        constexpr void SetNext(KThread * thread)
+        {
             m_next = thread;
         }
 
     private:
-        KThread* m_prev{};
-        KThread* m_next{};
+        KThread * m_prev{};
+        KThread * m_next{};
     };
 
-    QueueEntry& GetPriorityQueueEntry(s32 core) {
+    QueueEntry & GetPriorityQueueEntry(s32 core)
+    {
         return m_per_core_priority_queue_entry[core];
     }
 
-    const QueueEntry& GetPriorityQueueEntry(s32 core) const {
+    const QueueEntry & GetPriorityQueueEntry(s32 core) const
+    {
         return m_per_core_priority_queue_entry[core];
     }
 
-    s32 GetDisableDispatchCount() const {
+    s32 GetDisableDispatchCount() const
+    {
         return this->GetStackParameters().disable_count;
     }
 
-    void DisableDispatch() {
+    void DisableDispatch()
+    {
         ASSERT(GetCurrentThread(m_kernel).GetDisableDispatchCount() >= 0);
         this->GetStackParameters().disable_count++;
     }
 
-    void EnableDispatch() {
+    void EnableDispatch()
+    {
         ASSERT(GetCurrentThread(m_kernel).GetDisableDispatchCount() > 0);
         this->GetStackParameters().disable_count--;
     }
@@ -510,89 +581,109 @@ public:
 
     void Unpin();
 
-    void SetInExceptionHandler() {
+    void SetInExceptionHandler()
+    {
         this->GetStackParameters().is_in_exception_handler = true;
     }
 
-    void ClearInExceptionHandler() {
+    void ClearInExceptionHandler()
+    {
         this->GetStackParameters().is_in_exception_handler = false;
     }
 
-    bool IsInExceptionHandler() const {
+    bool IsInExceptionHandler() const
+    {
         return this->GetStackParameters().is_in_exception_handler;
     }
 
-    void SetIsCallingSvc() {
+    void SetIsCallingSvc()
+    {
         this->GetStackParameters().is_calling_svc = true;
     }
 
-    void ClearIsCallingSvc() {
+    void ClearIsCallingSvc()
+    {
         this->GetStackParameters().is_calling_svc = false;
     }
 
-    bool IsCallingSvc() const {
+    bool IsCallingSvc() const
+    {
         return this->GetStackParameters().is_calling_svc;
     }
 
-    u8 GetSvcId() const {
+    u8 GetSvcId() const
+    {
         return this->GetStackParameters().current_svc_id;
     }
 
-    void RegisterDpc(DpcFlag flag) {
+    void RegisterDpc(DpcFlag flag)
+    {
         this->GetStackParameters().dpc_flags |= static_cast<u8>(flag);
     }
 
-    void ClearDpc(DpcFlag flag) {
+    void ClearDpc(DpcFlag flag)
+    {
         this->GetStackParameters().dpc_flags &= ~static_cast<u8>(flag);
     }
 
-    u8 GetDpc() const {
+    u8 GetDpc() const
+    {
         return this->GetStackParameters().dpc_flags;
     }
 
-    bool HasDpc() const {
+    bool HasDpc() const
+    {
         return this->GetDpc() != 0;
     }
 
-    void SetWaitReasonForDebugging(ThreadWaitReasonForDebugging reason) {
+    void SetWaitReasonForDebugging(ThreadWaitReasonForDebugging reason)
+    {
         m_wait_reason_for_debugging = reason;
     }
 
-    ThreadWaitReasonForDebugging GetWaitReasonForDebugging() const {
+    ThreadWaitReasonForDebugging GetWaitReasonForDebugging() const
+    {
         return m_wait_reason_for_debugging;
     }
 
-    ThreadType GetThreadType() const {
+    ThreadType GetThreadType() const
+    {
         return m_thread_type;
     }
 
-    bool IsDummyThread() const {
+    bool IsDummyThread() const
+    {
         return this->GetThreadType() == ThreadType::Dummy;
     }
 
-    void AddWaiter(KThread* thread);
+    void AddWaiter(KThread * thread);
 
-    void RemoveWaiter(KThread* thread);
+    void RemoveWaiter(KThread * thread);
 
-    Result GetThreadContext3(Svc::ThreadContext* out);
+    Result GetThreadContext3(CpuThreadContext * out);
 
-    KThread* RemoveUserWaiterByKey(bool* out_has_waiters, KProcessAddress key) {
+    KThread * RemoveUserWaiterByKey(bool * out_has_waiters, KProcessAddress key)
+    {
         return this->RemoveWaiterByKey(out_has_waiters, key, false);
     }
 
-    KThread* RemoveKernelWaiterByKey(bool* out_has_waiters, KProcessAddress key) {
+    KThread * RemoveKernelWaiterByKey(bool * out_has_waiters, KProcessAddress key)
+    {
         return this->RemoveWaiterByKey(out_has_waiters, key, true);
     }
 
-    KProcessAddress GetAddressKey() const {
+    KProcessAddress GetAddressKey() const
+    {
         return m_address_key;
     }
 
-    u32 GetAddressKeyValue() const {
+    u32 GetAddressKeyValue() const
+    {
         return m_address_key_value;
     }
 
-    bool GetIsKernelAddressKey() const {
+    bool GetIsKernelAddressKey() const
+    {
         return m_is_kernel_address_key;
     }
 
@@ -602,37 +693,43 @@ public:
     // to cope with arbitrary host pointers making their way
     // into things.
 
-    void SetUserAddressKey(KProcessAddress key, u32 val) {
+    void SetUserAddressKey(KProcessAddress key, u32 val)
+    {
         ASSERT(m_waiting_lock_info == nullptr);
         m_address_key = key;
         m_address_key_value = val;
         m_is_kernel_address_key = false;
     }
 
-    void SetKernelAddressKey(KProcessAddress key) {
+    void SetKernelAddressKey(KProcessAddress key)
+    {
         ASSERT(m_waiting_lock_info == nullptr);
         m_address_key = key;
         m_is_kernel_address_key = true;
     }
 
-    void ClearWaitQueue() {
+    void ClearWaitQueue()
+    {
         m_wait_queue = nullptr;
     }
 
-    void BeginWait(KThreadQueue* queue);
-    void NotifyAvailable(KSynchronizationObject* signaled_object, Result wait_result);
+    void BeginWait(KThreadQueue * queue);
+    void NotifyAvailable(KSynchronizationObject * signaled_object, Result wait_result);
     void EndWait(Result wait_result);
     void CancelWait(Result wait_result, bool cancel_timer_task);
 
-    s32 GetNumKernelWaiters() const {
+    s32 GetNumKernelWaiters() const
+    {
         return m_num_kernel_waiters;
     }
 
-    u64 GetConditionVariableKey() const {
+    u64 GetConditionVariableKey() const
+    {
         return m_condvar_key;
     }
 
-    u64 GetAddressArbiterKey() const {
+    u64 GetAddressArbiterKey() const
+    {
         return m_condvar_key;
     }
 
@@ -644,145 +741,155 @@ public:
     void DummyThreadBeginWait();
     void DummyThreadEndWait();
 
-    uintptr_t GetArgument() const {
+    uintptr_t GetArgument() const
+    {
         return m_argument;
     }
 
-    KProcessAddress GetUserStackTop() const {
+    KProcessAddress GetUserStackTop() const
+    {
         return m_stack_top;
     }
 
 public:
     // TODO: This shouldn't be defined in kernel namespace
-    struct NativeExecutionParameters {
+    struct NativeExecutionParameters
+    {
         u64 tpidr_el0{};
         u64 tpidrro_el0{};
-        void* native_context{};
+        void * native_context{};
         std::atomic<u32> lock{1};
         bool is_running{};
         u32 magic{Common::MakeMagic('Y', 'U', 'Z', 'U')};
     };
 
-    NativeExecutionParameters& GetNativeExecutionParameters() {
+    NativeExecutionParameters & GetNativeExecutionParameters()
+    {
         return m_native_execution_parameters;
     }
 
 private:
-    KThread* RemoveWaiterByKey(bool* out_has_waiters, KProcessAddress key,
-                               bool is_kernel_address_key);
+    KThread * RemoveWaiterByKey(bool * out_has_waiters, KProcessAddress key, bool is_kernel_address_key);
 
     static constexpr size_t PriorityInheritanceCountMax = 10;
-    union SyncObjectBuffer {
-        std::array<KSynchronizationObject*, Svc::ArgumentHandleCountMax> sync_objects{};
-        std::array<Handle,
-                   Svc::ArgumentHandleCountMax * (sizeof(KSynchronizationObject*) / sizeof(Handle))>
-            handles;
-        constexpr SyncObjectBuffer() {}
+    union SyncObjectBuffer
+    {
+        std::array<KSynchronizationObject *, Svc::ArgumentHandleCountMax> sync_objects{};
+        std::array<Handle, Svc::ArgumentHandleCountMax * (sizeof(KSynchronizationObject *) / sizeof(Handle))> handles;
+        constexpr SyncObjectBuffer()
+        {
+        }
     };
     static_assert(sizeof(SyncObjectBuffer::sync_objects) == sizeof(SyncObjectBuffer::handles));
 
-    struct ConditionVariableComparator {
-        struct RedBlackKeyType {
+    struct ConditionVariableComparator
+    {
+        struct RedBlackKeyType
+        {
             u64 cv_key{};
             s32 priority{};
 
-            constexpr u64 GetConditionVariableKey() const {
+            constexpr u64 GetConditionVariableKey() const
+            {
                 return cv_key;
             }
 
-            constexpr s32 GetPriority() const {
+            constexpr s32 GetPriority() const
+            {
                 return priority;
             }
         };
 
         template <typename T>
             requires(std::same_as<T, KThread> || std::same_as<T, RedBlackKeyType>)
-        static constexpr int Compare(const T& lhs, const KThread& rhs) {
+        static constexpr int Compare(const T & lhs, const KThread & rhs)
+        {
             const u64 l_key = lhs.GetConditionVariableKey();
             const u64 r_key = rhs.GetConditionVariableKey();
 
-            if (l_key < r_key) {
+            if (l_key < r_key)
+            {
                 // Sort first by key
                 return -1;
-            } else if (l_key == r_key && lhs.GetPriority() < rhs.GetPriority()) {
+            }
+            else if (l_key == r_key && lhs.GetPriority() < rhs.GetPriority())
+            {
                 // And then by priority.
                 return -1;
-            } else {
+            }
+            else
+            {
                 return 1;
             }
         }
     };
 
-    void AddWaiterImpl(KThread* thread);
-    void RemoveWaiterImpl(KThread* thread);
-    static void RestorePriority(KernelCore& kernel, KThread* thread);
+    void AddWaiterImpl(KThread * thread);
+    void RemoveWaiterImpl(KThread * thread);
+    static void RestorePriority(KernelCore & kernel, KThread * thread);
 
     void StartTermination();
     void FinishTermination();
 
     void IncreaseBasePriority(s32 priority);
 
-    Result Initialize(KThreadFunction func, uintptr_t arg, KProcessAddress user_stack_top, s32 prio,
-                      s32 virt_core, KProcess* owner, ThreadType type);
+    Result Initialize(KThreadFunction func, uintptr_t arg, KProcessAddress user_stack_top, s32 prio, s32 virt_core, KProcess * owner, ThreadType type);
 
-    static Result InitializeThread(KThread* thread, KThreadFunction func, uintptr_t arg,
-                                   KProcessAddress user_stack_top, s32 prio, s32 core,
-                                   KProcess* owner, ThreadType type,
-                                   std::function<void()>&& init_func);
+    static Result InitializeThread(KThread * thread, KThreadFunction func, uintptr_t arg, KProcessAddress user_stack_top, s32 prio, s32 core, KProcess * owner, ThreadType type, std::function<void()> && init_func);
 
     // For core KThread implementation
-    Svc::ThreadContext m_thread_context{};
+    CpuThreadContext m_thread_context{};
     Common::IntrusiveListNode m_process_list_node;
     Common::IntrusiveRedBlackTreeNode m_condvar_arbiter_tree_node{};
     s32 m_priority{};
-    using ConditionVariableThreadTreeTraits =
-        Common::IntrusiveRedBlackTreeMemberTraitsDeferredAssert<
-            &KThread::m_condvar_arbiter_tree_node>;
-    using ConditionVariableThreadTree =
-        ConditionVariableThreadTreeTraits::TreeType<ConditionVariableComparator>;
+    using ConditionVariableThreadTreeTraits = Common::IntrusiveRedBlackTreeMemberTraitsDeferredAssert<&KThread::m_condvar_arbiter_tree_node>;
+    using ConditionVariableThreadTree = ConditionVariableThreadTreeTraits::TreeType<ConditionVariableComparator>;
 
 private:
-    struct LockWithPriorityInheritanceComparator {
-        struct RedBlackKeyType {
+    struct LockWithPriorityInheritanceComparator
+    {
+        struct RedBlackKeyType
+        {
             s32 m_priority;
 
-            constexpr s32 GetPriority() const {
+            constexpr s32 GetPriority() const
+            {
                 return m_priority;
             }
         };
 
         template <typename T>
             requires(std::same_as<T, KThread> || std::same_as<T, RedBlackKeyType>)
-        static constexpr int Compare(const T& lhs, const KThread& rhs) {
-            if (lhs.GetPriority() < rhs.GetPriority()) {
+        static constexpr int Compare(const T & lhs, const KThread & rhs)
+        {
+            if (lhs.GetPriority() < rhs.GetPriority())
+            {
                 // Sort by priority.
                 return -1;
-            } else {
+            }
+            else
+            {
                 return 1;
             }
         }
     };
-    static_assert(std::same_as<Common::RedBlackKeyType<LockWithPriorityInheritanceComparator, void>,
-                               LockWithPriorityInheritanceComparator::RedBlackKeyType>);
+    static_assert(std::same_as<Common::RedBlackKeyType<LockWithPriorityInheritanceComparator, void>, LockWithPriorityInheritanceComparator::RedBlackKeyType>);
 
-    using LockWithPriorityInheritanceThreadTreeTraits =
-        Common::IntrusiveRedBlackTreeMemberTraitsDeferredAssert<
-            &KThread::m_condvar_arbiter_tree_node>;
-    using LockWithPriorityInheritanceThreadTree =
-        ConditionVariableThreadTreeTraits::TreeType<LockWithPriorityInheritanceComparator>;
+    using LockWithPriorityInheritanceThreadTreeTraits = Common::IntrusiveRedBlackTreeMemberTraitsDeferredAssert< &KThread::m_condvar_arbiter_tree_node>;
+    using LockWithPriorityInheritanceThreadTree = ConditionVariableThreadTreeTraits::TreeType<LockWithPriorityInheritanceComparator>;
 
 public:
-    class LockWithPriorityInheritanceInfo
-        : public KSlabAllocated<LockWithPriorityInheritanceInfo>,
-          public Common::IntrusiveListBaseNode<LockWithPriorityInheritanceInfo> {
+    class LockWithPriorityInheritanceInfo : public KSlabAllocated<LockWithPriorityInheritanceInfo>, public Common::IntrusiveListBaseNode<LockWithPriorityInheritanceInfo>
+    {
     public:
-        explicit LockWithPriorityInheritanceInfo(KernelCore&) {}
+        explicit LockWithPriorityInheritanceInfo(KernelCore &)
+        {
+        }
 
-        static LockWithPriorityInheritanceInfo* Create(KernelCore& kernel,
-                                                       KProcessAddress address_key,
-                                                       bool is_kernel_address_key) {
+        static LockWithPriorityInheritanceInfo * Create(KernelCore & kernel, KProcessAddress address_key, bool is_kernel_address_key)
+        {
             // Create a new lock info.
-            auto* new_lock = LockWithPriorityInheritanceInfo::Allocate(kernel);
+            auto * new_lock = LockWithPriorityInheritanceInfo::Allocate(kernel);
             ASSERT(new_lock != nullptr);
 
             // Set the new lock's address key.
@@ -792,12 +899,14 @@ public:
             return new_lock;
         }
 
-        void SetOwner(KThread* new_owner) {
+        void SetOwner(KThread * new_owner)
+        {
             // Set new owner.
             m_owner = new_owner;
         }
 
-        void AddWaiter(KThread* waiter) {
+        void AddWaiter(KThread * waiter)
+        {
             // Insert the waiter.
             m_tree.insert(*waiter);
             m_waiter_count++;
@@ -805,7 +914,8 @@ public:
             waiter->SetWaitingLockInfo(this);
         }
 
-        bool RemoveWaiter(KThread* waiter) {
+        bool RemoveWaiter(KThread * waiter)
+        {
             m_tree.erase(m_tree.iterator_to(*waiter));
 
             waiter->SetWaitingLockInfo(nullptr);
@@ -813,76 +923,84 @@ public:
             return (--m_waiter_count) == 0;
         }
 
-        KThread* GetHighestPriorityWaiter() {
+        KThread * GetHighestPriorityWaiter()
+        {
             return std::addressof(m_tree.front());
         }
-        const KThread* GetHighestPriorityWaiter() const {
+        const KThread * GetHighestPriorityWaiter() const
+        {
             return std::addressof(m_tree.front());
         }
 
-        LockWithPriorityInheritanceThreadTree& GetThreadTree() {
+        LockWithPriorityInheritanceThreadTree & GetThreadTree()
+        {
             return m_tree;
         }
-        const LockWithPriorityInheritanceThreadTree& GetThreadTree() const {
+        const LockWithPriorityInheritanceThreadTree & GetThreadTree() const
+        {
             return m_tree;
         }
 
-        KProcessAddress GetAddressKey() const {
+        KProcessAddress GetAddressKey() const
+        {
             return m_address_key;
         }
-        bool GetIsKernelAddressKey() const {
+        bool GetIsKernelAddressKey() const
+        {
             return m_is_kernel_address_key;
         }
-        KThread* GetOwner() const {
+        KThread * GetOwner() const
+        {
             return m_owner;
         }
-        u32 GetWaiterCount() const {
+        u32 GetWaiterCount() const
+        {
             return m_waiter_count;
         }
 
     private:
         LockWithPriorityInheritanceThreadTree m_tree{};
         KProcessAddress m_address_key{};
-        KThread* m_owner{};
+        KThread * m_owner{};
         u32 m_waiter_count{};
         bool m_is_kernel_address_key{};
     };
 
-    void SetWaitingLockInfo(LockWithPriorityInheritanceInfo* lock) {
+    void SetWaitingLockInfo(LockWithPriorityInheritanceInfo * lock)
+    {
         m_waiting_lock_info = lock;
     }
 
-    LockWithPriorityInheritanceInfo* GetWaitingLockInfo() {
+    LockWithPriorityInheritanceInfo * GetWaitingLockInfo()
+    {
         return m_waiting_lock_info;
     }
 
-    void AddHeldLock(LockWithPriorityInheritanceInfo* lock_info);
-    LockWithPriorityInheritanceInfo* FindHeldLock(KProcessAddress address_key,
-                                                  bool is_kernel_address_key);
+    void AddHeldLock(LockWithPriorityInheritanceInfo * lock_info);
+    LockWithPriorityInheritanceInfo * FindHeldLock(KProcessAddress address_key, bool is_kernel_address_key);
 
 private:
-    using LockWithPriorityInheritanceInfoList =
-        Common::IntrusiveListBaseTraits<LockWithPriorityInheritanceInfo>::ListType;
+    using LockWithPriorityInheritanceInfoList = Common::IntrusiveListBaseTraits<LockWithPriorityInheritanceInfo>::ListType;
 
-    ConditionVariableThreadTree* m_condvar_tree{};
+    ConditionVariableThreadTree * m_condvar_tree{};
     u64 m_condvar_key{};
     u64 m_virtual_affinity_mask{};
     KAffinityMask m_physical_affinity_mask{};
     u64 m_thread_id{};
     std::atomic<s64> m_cpu_time{};
     KProcessAddress m_address_key{};
-    KProcess* m_parent{};
+    KProcess * m_parent{};
     KVirtualAddress m_kernel_stack_top{};
-    u32* m_light_ipc_data{};
+    u32 * m_light_ipc_data{};
     KProcessAddress m_tls_address{};
     KLightLock m_activity_pause_lock;
     SyncObjectBuffer m_sync_object_buffer{};
     s64 m_schedule_count{};
     s64 m_last_scheduled_tick{};
     std::array<QueueEntry, Core::Hardware::NUM_CPU_CORES> m_per_core_priority_queue_entry{};
-    KThreadQueue* m_wait_queue{};
+    KThreadQueue * m_wait_queue{};
     LockWithPriorityInheritanceInfoList m_held_lock_info_list{};
-    LockWithPriorityInheritanceInfo* m_waiting_lock_info{};
+    LockWithPriorityInheritanceInfo * m_waiting_lock_info{};
     WaiterList m_pinned_waiter_list{};
     u32 m_address_key_value{};
     u32 m_suspend_request_flags{};
@@ -920,7 +1038,7 @@ private:
     std::condition_variable m_dummy_thread_cv{};
 
     // For debugging
-    std::vector<KSynchronizationObject*> m_wait_objects_for_debugging{};
+    std::vector<KSynchronizationObject *> m_wait_objects_for_debugging{};
     KProcessAddress m_mutex_wait_address_for_debugging{};
     ThreadWaitReasonForDebugging m_wait_reason_for_debugging{};
     uintptr_t m_argument{};
@@ -930,8 +1048,9 @@ private:
 public:
     using ConditionVariableThreadTreeType = ConditionVariableThreadTree;
 
-    void SetConditionVariable(ConditionVariableThreadTree* tree, KProcessAddress address,
-                              u64 cv_key, u32 value) {
+    void SetConditionVariable(ConditionVariableThreadTree * tree, KProcessAddress address,
+                              u64 cv_key, u32 value)
+    {
         ASSERT(m_waiting_lock_info == nullptr);
         m_condvar_tree = tree;
         m_condvar_key = cv_key;
@@ -940,38 +1059,48 @@ public:
         m_is_kernel_address_key = false;
     }
 
-    void ClearConditionVariable() {
+    void ClearConditionVariable()
+    {
         m_condvar_tree = nullptr;
     }
 
-    bool IsWaitingForConditionVariable() const {
+    bool IsWaitingForConditionVariable() const
+    {
         return m_condvar_tree != nullptr;
     }
 
-    void SetAddressArbiter(ConditionVariableThreadTree* tree, u64 address) {
+    void SetAddressArbiter(ConditionVariableThreadTree * tree, u64 address)
+    {
         ASSERT(m_waiting_lock_info == nullptr);
         m_condvar_tree = tree;
         m_condvar_key = address;
     }
 
-    void ClearAddressArbiter() {
+    void ClearAddressArbiter()
+    {
         m_condvar_tree = nullptr;
     }
 
-    bool IsWaitingForAddressArbiter() const {
+    bool IsWaitingForAddressArbiter() const
+    {
         return m_condvar_tree != nullptr;
     }
 
-    ConditionVariableThreadTree* GetConditionVariableTree() const {
+    ConditionVariableThreadTree * GetConditionVariableTree() const
+    {
         return m_condvar_tree;
     }
 };
 
-class KScopedDisableDispatch {
+class KScopedDisableDispatch
+{
 public:
-    explicit KScopedDisableDispatch(KernelCore& kernel) : m_kernel{kernel} {
+    explicit KScopedDisableDispatch(KernelCore & kernel) :
+        m_kernel{kernel}
+    {
         // If we are shutting down the kernel, none of this is relevant anymore.
-        if (m_kernel.IsShuttingDown()) {
+        if (m_kernel.IsShuttingDown())
+        {
             return;
         }
         GetCurrentThread(kernel).DisableDispatch();
@@ -980,11 +1109,12 @@ public:
     ~KScopedDisableDispatch();
 
 private:
-    KernelCore& m_kernel;
+    KernelCore & m_kernel;
 };
 
-inline void KTimerTask::OnTimer() {
-    static_cast<KThread*>(this)->OnTimer();
+inline void KTimerTask::OnTimer()
+{
+    static_cast<KThread *>(this)->OnTimer();
 }
 
 } // namespace Kernel

@@ -151,7 +151,7 @@ Result GetThreadContext3(Core::System& system, u64 out_context, Handle thread_ha
     R_UNLESS(thread.GetPointerUnsafe() != GetCurrentThreadPointer(kernel), ResultBusy);
 
     // Get the thread context.
-    Svc::ThreadContext context{};
+    CpuThreadContext context{};
     R_TRY(thread->GetThreadContext3(std::addressof(context)));
 
     // Copy the thread context to user space.
