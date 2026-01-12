@@ -1,6 +1,11 @@
+// SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#include <yuzu_common/settings.h>
 #include "arm_dynarmic_64.h"
 #include "dynarmic/interface/exclusive_monitor.h"
 #include <common/maths.h>
+#include <yuzu_common/settings.h>
 
 extern IModuleNotification * g_notify;
 
@@ -9,42 +14,47 @@ class DynarmicCallbacks64 :
 {
 public:
     explicit DynarmicCallbacks64(ArmDynarmic64 & parent, ICpuInfo & cpuInfo) :
+        m_parent{parent}, 
         m_memory(cpuInfo.Memory()),
-        m_CpuInfo(cpuInfo)
-    {    
+        m_CpuInfo(cpuInfo),
+        m_debugger_enabled(false),
+        m_check_memory_access{m_debugger_enabled || !Settings::values.cpuopt_ignore_memory_aborts.GetValue()}
+    {
     }
 
-    std::uint8_t MemoryRead8(std::uint64_t vaddr)
+    uint8_t MemoryRead8(uint64_t vaddr) override
     {
-        uint8_t Value;
-        if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
+        if (m_check_memory_access)
         {
-            return Value;
+            CheckMemoryAccess(vaddr, 1, CpuDebugWatchpointType::Read);        
         }
-        return 0;
+        return m_memory.Read8(vaddr);
     }
-
-    std::uint16_t MemoryRead16(std::uint64_t vaddr)
+    uint16_t MemoryRead16(uint64_t vaddr) override
     {
-        uint16_t Value;
-        if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
+        if (m_check_memory_access)
         {
-            return Value;
+            CheckMemoryAccess(vaddr, 2, CpuDebugWatchpointType::Read);
         }
-        return 0;
+        return m_memory.Read16(vaddr);
     }
-
-    std::uint32_t MemoryRead32(std::uint64_t vaddr)
+    uint32_t MemoryRead32(uint64_t vaddr) override
     {
+        if (m_check_memory_access)
+        {
+            CheckMemoryAccess(vaddr, 4, CpuDebugWatchpointType::Read);
+        }
         return m_memory.Read32(vaddr);
     }
-
-    std::uint64_t MemoryRead64(std::uint64_t vaddr)
+    uint64_t MemoryRead64(uint64_t vaddr) override
     {
+        if (m_check_memory_access)
+        {
+            CheckMemoryAccess(vaddr, 8, CpuDebugWatchpointType::Read);
+        }
         return m_memory.Read64(vaddr);
     }
-
-    Dynarmic::A64::Vector MemoryRead128(std::uint64_t vaddr)
+    Dynarmic::A64::Vector MemoryRead128(uint64_t vaddr)
     {
         Dynarmic::A64::Vector Value;
         if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
@@ -54,63 +64,68 @@ public:
         return {0, 0};
     }
 
-    void MemoryWrite8(std::uint64_t vaddr, std::uint8_t value)
+    void MemoryWrite8(uint64_t vaddr, uint8_t value) override
     {
-        m_memory.Write8(vaddr, value);
+        if (!m_check_memory_access || CheckMemoryAccess(vaddr, 1, CpuDebugWatchpointType::Write))
+        {
+            m_memory.Write8(vaddr, value);
+        }
     }
 
-    void MemoryWrite16(std::uint64_t vaddr, std::uint16_t value)
+    void MemoryWrite16(uint64_t vaddr, uint16_t value) override
     {
-        m_memory.Write16(vaddr, value);
+        if (!m_check_memory_access || CheckMemoryAccess(vaddr, 2, CpuDebugWatchpointType::Write))
+        {
+            m_memory.Write16(vaddr, value);
+        }
     }
 
-    void MemoryWrite32(std::uint64_t vaddr, std::uint32_t value)
+    void MemoryWrite32(uint64_t vaddr, uint32_t value) override
     {
-        m_memory.Write32(vaddr, value);
+        if (!m_check_memory_access || CheckMemoryAccess(vaddr, 4, CpuDebugWatchpointType::Write))
+        {
+            m_memory.Write32(vaddr, value);
+        }
     }
-
-    void MemoryWrite64(std::uint64_t vaddr, std::uint64_t value)
+    void MemoryWrite64(uint64_t vaddr, uint64_t value) override
     {
-        m_memory.Write64(vaddr, value);
+        if (!m_check_memory_access || CheckMemoryAccess(vaddr, 8, CpuDebugWatchpointType::Write))
+        {
+            m_memory.Write64(vaddr, value);
+        }
     }
-
     void MemoryWrite128(std::uint64_t vaddr, Dynarmic::A64::Vector value)
     {
         m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
     }
 
-    bool MemoryWriteExclusive8(std::uint64_t vaddr, std::uint8_t value, std::uint8_t /*expected*/)
+    bool MemoryWriteExclusive8(u64 vaddr, std::uint8_t value, std::uint8_t expected) override
     {
-        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+        return CheckMemoryAccess(vaddr, 1, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive8(vaddr, value, expected);
     }
-
-    bool MemoryWriteExclusive16(std::uint64_t vaddr, std::uint16_t value, std::uint16_t /*expected*/)
+    bool MemoryWriteExclusive16(u64 vaddr, std::uint16_t value, std::uint16_t expected) override
     {
-        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+        return CheckMemoryAccess(vaddr, 2, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive16(vaddr, value, expected);
     }
-
-    bool MemoryWriteExclusive32(std::uint64_t vaddr, std::uint32_t value, std::uint32_t /*expected*/)
+    bool MemoryWriteExclusive32(u64 vaddr, std::uint32_t value, std::uint32_t expected) override
     {
-        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+        return CheckMemoryAccess(vaddr, 4, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive32(vaddr, value, expected);
     }
-
-    bool MemoryWriteExclusive64(std::uint64_t vaddr, std::uint64_t value, std::uint64_t /*expected*/)
+    bool MemoryWriteExclusive64(u64 vaddr, std::uint64_t value, std::uint64_t expected) override
     {
-        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+        return CheckMemoryAccess(vaddr, 8, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive64(vaddr, value, expected);
     }
-
     bool MemoryWriteExclusive128(std::uint64_t vaddr, Dynarmic::A64::Vector value, Dynarmic::A64::Vector /*expected*/)
     {
         return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
     }
 
-    bool IsReadOnlyMemory(std::uint64_t /*vaddr*/)
+    void InterpreterFallback(std::uint64_t /*pc*/, size_t /*num_instructions*/)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
-        return false;
     }
 
-    void InterpreterFallback(std::uint64_t /*pc*/, size_t /*num_instructions*/)
+    void ExceptionRaised(std::uint64_t /*pc*/, Dynarmic::A64::Exception /*exception*/)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
     }
@@ -120,9 +135,10 @@ public:
         m_CpuInfo.ServiceCall(swi);
     }
 
-    void ExceptionRaised(std::uint64_t /*pc*/, Dynarmic::A64::Exception /*exception*/)
+    bool IsReadOnlyMemory(std::uint64_t /*vaddr*/)
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
+        return false;
     }
 
     void DataCacheOperationRaised(Dynarmic::A64::DataCacheOperation /*op*/, std::uint64_t /*value*/)
@@ -162,8 +178,21 @@ public:
         return div128_to_64(hi, lo, BASE_CLOCK_RATE, &rem);
     }
 
+    bool CheckMemoryAccess(u64 addr, u64 size, CpuDebugWatchpointType type)
+    {
+        if (!m_check_memory_access)
+        {
+            return true;
+        }
+        g_notify->BreakPoint(__FILE__, __LINE__);
+        return true;
+    }
+
+    ArmDynarmic64 & m_parent;
     IMemory & m_memory;
     ICpuInfo & m_CpuInfo;
+    const bool m_debugger_enabled{};
+    const bool m_check_memory_access{};
 };
 
 ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex) :
