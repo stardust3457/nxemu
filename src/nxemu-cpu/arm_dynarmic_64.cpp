@@ -4,6 +4,168 @@
 
 extern IModuleNotification * g_notify;
 
+class DynarmicCallbacks64 :
+    public Dynarmic::A64::UserCallbacks
+{
+public:
+    explicit DynarmicCallbacks64(ArmDynarmic64 & parent, ICpuInfo & cpuInfo) :
+        m_memory(cpuInfo.Memory()),
+        m_CpuInfo(cpuInfo)
+    {    
+    }
+
+    std::uint8_t MemoryRead8(std::uint64_t vaddr)
+    {
+        uint8_t Value;
+        if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
+        {
+            return Value;
+        }
+        return 0;
+    }
+
+    std::uint16_t MemoryRead16(std::uint64_t vaddr)
+    {
+        uint16_t Value;
+        if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
+        {
+            return Value;
+        }
+        return 0;
+    }
+
+    std::uint32_t MemoryRead32(std::uint64_t vaddr)
+    {
+        return m_memory.Read32(vaddr);
+    }
+
+    std::uint64_t MemoryRead64(std::uint64_t vaddr)
+    {
+        return m_memory.Read64(vaddr);
+    }
+
+    Dynarmic::A64::Vector MemoryRead128(std::uint64_t vaddr)
+    {
+        Dynarmic::A64::Vector Value;
+        if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
+        {
+            return Value;
+        }
+        return {0, 0};
+    }
+
+    void MemoryWrite8(std::uint64_t vaddr, std::uint8_t value)
+    {
+        m_memory.Write8(vaddr, value);
+    }
+
+    void MemoryWrite16(std::uint64_t vaddr, std::uint16_t value)
+    {
+        m_memory.Write16(vaddr, value);
+    }
+
+    void MemoryWrite32(std::uint64_t vaddr, std::uint32_t value)
+    {
+        m_memory.Write32(vaddr, value);
+    }
+
+    void MemoryWrite64(std::uint64_t vaddr, std::uint64_t value)
+    {
+        m_memory.Write64(vaddr, value);
+    }
+
+    void MemoryWrite128(std::uint64_t vaddr, Dynarmic::A64::Vector value)
+    {
+        m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    }
+
+    bool MemoryWriteExclusive8(std::uint64_t vaddr, std::uint8_t value, std::uint8_t /*expected*/)
+    {
+        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    }
+
+    bool MemoryWriteExclusive16(std::uint64_t vaddr, std::uint16_t value, std::uint16_t /*expected*/)
+    {
+        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    }
+
+    bool MemoryWriteExclusive32(std::uint64_t vaddr, std::uint32_t value, std::uint32_t /*expected*/)
+    {
+        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    }
+
+    bool MemoryWriteExclusive64(std::uint64_t vaddr, std::uint64_t value, std::uint64_t /*expected*/)
+    {
+        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    }
+
+    bool MemoryWriteExclusive128(std::uint64_t vaddr, Dynarmic::A64::Vector value, Dynarmic::A64::Vector /*expected*/)
+    {
+        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+    }
+
+    bool IsReadOnlyMemory(std::uint64_t /*vaddr*/)
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+        return false;
+    }
+
+    void InterpreterFallback(std::uint64_t /*pc*/, size_t /*num_instructions*/)
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+    }
+
+    void CallSVC(std::uint32_t swi)
+    {
+        m_CpuInfo.ServiceCall(swi);
+    }
+
+    void ExceptionRaised(std::uint64_t /*pc*/, Dynarmic::A64::Exception /*exception*/)
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+    }
+
+    void DataCacheOperationRaised(Dynarmic::A64::DataCacheOperation /*op*/, std::uint64_t /*value*/)
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+    }
+
+    void InstructionCacheOperationRaised(Dynarmic::A64::InstructionCacheOperation /*op*/, std::uint64_t /*value*/)
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+    }
+
+    void InstructionSynchronizationBarrierRaised()
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+    }
+
+    void AddTicks(std::uint64_t /*ticks*/)
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+    }
+
+    std::uint64_t GetTicksRemaining()
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+        return 0;
+    }
+
+    std::uint64_t GetCNTPCT()
+    {
+        const uint64_t BASE_CLOCK_RATE = 1019215872; // Switch clock speed - 1020MHz
+        const uint64_t COUNT_FREQ = 19200000;
+
+        uint64_t ticks = m_CpuInfo.CpuTicks();
+        uint64_t hi, rem;
+        uint64_t lo = mull128_u64(ticks, COUNT_FREQ, &hi);
+        return div128_to_64(hi, lo, BASE_CLOCK_RATE, &rem);
+    }
+
+    IMemory & m_memory;
+    ICpuInfo & m_CpuInfo;
+};
+
 ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex) :
     m_jit(nullptr),
     m_modules(modules),
@@ -11,6 +173,7 @@ ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModule
     m_memory(cpuInfo.Memory()),
     m_OperatingSystem(modules.OperatingSystem()),
     m_monitor(monitor),
+    m_cb(std::make_unique<DynarmicCallbacks64>(*this, cpuInfo)),
     m_coreIndex(coreIndex)
 {
     m_jit = MakeJit(monitor);
@@ -56,7 +219,7 @@ void ArmDynarmic64::Release()
 std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMonitor & monitor)
 {
     Dynarmic::A64::UserConfig config;
-    config.callbacks = this;
+    config.callbacks = m_cb.get();
     config.page_table = nullptr; // reinterpret_cast<void **>(page_table->pointers.data());
     config.page_table_address_space_bits = 27; //address_space_bits;
     config.page_table_pointer_mask_bits = 2;   // Common::PageTable::ATTRIBUTE_BITS;
@@ -93,150 +256,3 @@ std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMo
     return std::make_unique<Dynarmic::A64::Jit>(config);
 }
 
-std::uint8_t ArmDynarmic64::MemoryRead8(std::uint64_t vaddr)
-{
-    uint8_t Value;
-    if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
-    {
-        return Value;
-    }
-    return 0;
-}
-
-std::uint16_t ArmDynarmic64::MemoryRead16(std::uint64_t vaddr)
-{
-    uint16_t Value;
-    if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
-    {
-        return Value;
-    }
-    return 0;
-}
-
-std::uint32_t ArmDynarmic64::MemoryRead32(std::uint64_t vaddr)
-{
-    return m_memory.Read32(vaddr);
-}
-
-std::uint64_t ArmDynarmic64::MemoryRead64(std::uint64_t vaddr)
-{
-    return m_memory.Read64(vaddr);
-}
-
-Dynarmic::A64::Vector ArmDynarmic64::MemoryRead128(std::uint64_t vaddr)
-{
-    Dynarmic::A64::Vector Value;
-    if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
-    {
-        return Value;
-    }
-    return {0, 0};
-}
-
-void ArmDynarmic64::MemoryWrite8(std::uint64_t vaddr, std::uint8_t value)
-{
-    m_memory.Write8(vaddr, value);
-}
-
-void ArmDynarmic64::MemoryWrite16(std::uint64_t vaddr, std::uint16_t value)
-{
-    m_memory.Write16(vaddr, value);
-}
-
-void ArmDynarmic64::MemoryWrite32(std::uint64_t vaddr, std::uint32_t value)
-{
-    m_memory.Write32(vaddr, value);
-}
-
-void ArmDynarmic64::MemoryWrite64(std::uint64_t vaddr, std::uint64_t value)
-{
-    m_memory.Write64(vaddr, value);
-}
-
-void ArmDynarmic64::MemoryWrite128(std::uint64_t vaddr, Dynarmic::A64::Vector value)
-{
-    m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
-}
-
-bool ArmDynarmic64::MemoryWriteExclusive8(std::uint64_t vaddr, std::uint8_t value, std::uint8_t /*expected*/)
-{
-    return m_CpuInfo.WriteMemory(vaddr, (const uint8_t*)&value, sizeof(value));
-}
-
-bool ArmDynarmic64::MemoryWriteExclusive16(std::uint64_t vaddr, std::uint16_t value, std::uint16_t /*expected*/)
-{
-    return m_CpuInfo.WriteMemory(vaddr, (const uint8_t*)&value, sizeof(value));
-}
-
-bool ArmDynarmic64::MemoryWriteExclusive32(std::uint64_t vaddr, std::uint32_t value, std::uint32_t /*expected*/)
-{
-    return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
-}
-
-bool ArmDynarmic64::MemoryWriteExclusive64(std::uint64_t vaddr, std::uint64_t value, std::uint64_t /*expected*/)
-{
-    return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
-}
-
-bool ArmDynarmic64::MemoryWriteExclusive128(std::uint64_t vaddr, Dynarmic::A64::Vector value, Dynarmic::A64::Vector /*expected*/)
-{
-    return m_CpuInfo.WriteMemory(vaddr, (const uint8_t*)&value, sizeof(value));
-}
-
-bool ArmDynarmic64::IsReadOnlyMemory(std::uint64_t /*vaddr*/)
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-    return false;
-}
-
-void ArmDynarmic64::InterpreterFallback(std::uint64_t /*pc*/, size_t /*num_instructions*/)
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-}
-
-void ArmDynarmic64::CallSVC(std::uint32_t swi)
-{
-    m_CpuInfo.ServiceCall(swi);
-}
-
-void ArmDynarmic64::ExceptionRaised(std::uint64_t /*pc*/, Dynarmic::A64::Exception /*exception*/)
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-}
-
-void ArmDynarmic64::DataCacheOperationRaised(Dynarmic::A64::DataCacheOperation /*op*/, std::uint64_t /*value*/)
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-}
-
-void ArmDynarmic64::InstructionCacheOperationRaised(Dynarmic::A64::InstructionCacheOperation /*op*/, std::uint64_t /*value*/)
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-}
-
-void ArmDynarmic64::InstructionSynchronizationBarrierRaised()
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-}
-
-void ArmDynarmic64::AddTicks(std::uint64_t /*ticks*/)
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-}
-
-std::uint64_t ArmDynarmic64::GetTicksRemaining()
-{
-    g_notify->BreakPoint(__FILE__, __LINE__);
-    return 0;
-}
-
-std::uint64_t ArmDynarmic64::GetCNTPCT()
-{
-    const uint64_t BASE_CLOCK_RATE = 1019215872; // Switch clock speed - 1020MHz
-    const uint64_t COUNT_FREQ = 19200000;
-
-    uint64_t ticks = m_CpuInfo.CpuTicks();
-    uint64_t hi, rem;
-    uint64_t lo = mull128_u64(ticks, COUNT_FREQ, &hi);
-    return div128_to_64(hi, lo, BASE_CLOCK_RATE, &rem);
-}
