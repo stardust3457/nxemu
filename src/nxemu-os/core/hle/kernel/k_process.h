@@ -333,11 +333,11 @@ public:
         return m_list_lock;
     }
 
-    KProcessPageTable & GetPageTable()
+    KProcessPageTable & GetKPageTable()
     {
         return m_page_table;
     }
-    const KProcessPageTable & GetPageTable() const
+    const KProcessPageTable & GetKPageTable() const
     {
         return m_page_table;
     }

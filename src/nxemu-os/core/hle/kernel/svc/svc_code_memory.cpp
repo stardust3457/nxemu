@@ -50,7 +50,7 @@ Result CreateCodeMemory(Core::System& system, Handle* out, u64 address, uint64_t
     };
 
     // Verify that the region is in range.
-    R_UNLESS(GetCurrentProcess(system.Kernel()).GetPageTable().Contains(address, size),
+    R_UNLESS(GetCurrentProcess(system.Kernel()).GetKPageTable().Contains(address, size),
              ResultInvalidCurrentMemory);
 
     // Initialize the code memory.
@@ -94,7 +94,7 @@ Result ControlCodeMemory(Core::System& system, Handle code_memory_handle,
     case CodeMemoryOperation::Map: {
         // Check that the region is in range.
         R_UNLESS(GetCurrentProcess(system.Kernel())
-                     .GetPageTable()
+                     .GetKPageTable()
                      .CanContain(address, size, KMemoryState::CodeOut),
                  ResultInvalidMemoryRegion);
 
@@ -107,7 +107,7 @@ Result ControlCodeMemory(Core::System& system, Handle code_memory_handle,
     case CodeMemoryOperation::Unmap: {
         // Check that the region is in range.
         R_UNLESS(GetCurrentProcess(system.Kernel())
-                     .GetPageTable()
+                     .GetKPageTable()
                      .CanContain(address, size, KMemoryState::CodeOut),
                  ResultInvalidMemoryRegion);
 
@@ -119,7 +119,7 @@ Result ControlCodeMemory(Core::System& system, Handle code_memory_handle,
     } break;
     case CodeMemoryOperation::MapToOwner: {
         // Check that the region is in range.
-        R_UNLESS(code_mem->GetOwner()->GetPageTable().CanContain(address, size,
+        R_UNLESS(code_mem->GetOwner()->GetKPageTable().CanContain(address, size,
                                                                  KMemoryState::GeneratedCode),
                  ResultInvalidMemoryRegion);
 
@@ -131,7 +131,7 @@ Result ControlCodeMemory(Core::System& system, Handle code_memory_handle,
     } break;
     case CodeMemoryOperation::UnmapFromOwner: {
         // Check that the region is in range.
-        R_UNLESS(code_mem->GetOwner()->GetPageTable().CanContain(address, size,
+        R_UNLESS(code_mem->GetOwner()->GetKPageTable().CanContain(address, size,
                                                                  KMemoryState::GeneratedCode),
                  ResultInvalidMemoryRegion);
 

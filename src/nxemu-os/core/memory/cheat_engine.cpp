@@ -240,7 +240,7 @@ void CheatEngine::Initialize() {
     metadata.process_id = system.ApplicationProcess()->GetProcessId();
     metadata.title_id = system.GetApplicationProcessProgramID();
 
-    const auto& page_table = system.ApplicationProcess()->GetPageTable();
+    const auto& page_table = system.ApplicationProcess()->GetKPageTable();
     metadata.heap_extents = {
         .base = GetInteger(page_table.GetHeapRegionStart()),
         .size = page_table.GetHeapRegionSize(),

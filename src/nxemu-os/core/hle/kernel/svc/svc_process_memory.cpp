@@ -49,7 +49,7 @@ Result SetProcessMemoryPermission(Core::System& system, Handle process_handle, u
     R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
 
     // Validate that the address is in range.
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
     R_UNLESS(page_table.Contains(address, size), ResultInvalidCurrentMemory);
 
     // Set the memory permission.
@@ -77,8 +77,8 @@ Result MapProcessMemory(Core::System& system, u64 dst_address, Handle process_ha
     R_UNLESS(src_process.IsNotNull(), ResultInvalidHandle);
 
     // Get the page tables.
-    auto& dst_pt = dst_process->GetPageTable();
-    auto& src_pt = src_process->GetPageTable();
+    auto& dst_pt = dst_process->GetKPageTable();
+    auto& src_pt = src_process->GetKPageTable();
 
     // Validate that the mapping is in range.
     R_UNLESS(src_pt.Contains(src_address, size), ResultInvalidCurrentMemory);
@@ -118,8 +118,8 @@ Result UnmapProcessMemory(Core::System& system, u64 dst_address, Handle process_
     R_UNLESS(src_process.IsNotNull(), ResultInvalidHandle);
 
     // Get the page tables.
-    auto& dst_pt = dst_process->GetPageTable();
-    auto& src_pt = src_process->GetPageTable();
+    auto& dst_pt = dst_process->GetKPageTable();
+    auto& src_pt = src_process->GetKPageTable();
 
     // Validate that the mapping is in range.
     R_UNLESS(src_pt.Contains(src_address, size), ResultInvalidCurrentMemory);
@@ -178,7 +178,7 @@ Result MapProcessCodeMemory(Core::System& system, Handle process_handle, u64 dst
         R_THROW(ResultInvalidHandle);
     }
 
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
     if (!page_table.Contains(src_address, size)) {
         LOG_ERROR(Kernel_SVC,
                   "Source address range is not within the address space (src_address=0x{:016X}, "
@@ -238,7 +238,7 @@ Result UnmapProcessCodeMemory(Core::System& system, Handle process_handle, u64 d
         R_THROW(ResultInvalidHandle);
     }
 
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
     if (!page_table.Contains(src_address, size)) {
         LOG_ERROR(Kernel_SVC,
                   "Source address range is not within the address space (src_address=0x{:016X}, "

@@ -53,7 +53,7 @@ Result MapSharedBufferIntoProcessAddressSpace(Common::ProcessAddress* out_map_ad
                                               Kernel::KProcess* process, Core::System& system) {
     using Core::Memory::YUZU_PAGESIZE;
 
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
 
     // Get bounds of where mapping is possible.
     const VAddr alias_code_begin = GetInteger(page_table.GetAliasCodeRegionStart());

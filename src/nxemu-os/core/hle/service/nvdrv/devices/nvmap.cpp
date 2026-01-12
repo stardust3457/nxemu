@@ -131,7 +131,7 @@ NvResult nvmap::IocAlloc(IocAllocParams& params, DeviceFD fd) {
     }
     bool is_out_io{};
     auto process = container.GetSession(sessions[fd])->process;
-    ASSERT(process->GetPageTable()
+    ASSERT(process->GetKPageTable()
                .LockForMapDeviceAddressSpace(&is_out_io, handle_description->address,
                                              handle_description->size,
                                              Kernel::KMemoryPermission::None, true, false)
@@ -242,7 +242,7 @@ NvResult nvmap::IocFree(IocFreeParams& params, DeviceFD fd) {
     if (auto freeInfo{file.FreeHandle(params.handle, false)}) {
         auto process = container.GetSession(sessions[fd])->process;
         if (freeInfo->can_unlock) {
-            ASSERT(process->GetPageTable()
+            ASSERT(process->GetKPageTable()
                        .UnlockForDeviceAddressSpace(freeInfo->address, freeInfo->size)
                        .IsSuccess());
         }

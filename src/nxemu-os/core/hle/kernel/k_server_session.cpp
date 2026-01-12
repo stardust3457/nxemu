@@ -420,7 +420,7 @@ Result CleanupServerMap(KSessionRequest* request, KProcess* server_process) {
     R_SUCCEED_IF(server_process == nullptr);
 
     // Get the page table.
-    auto& server_page_table = server_process->GetPageTable();
+    auto& server_page_table = server_process->GetKPageTable();
 
     // Cleanup Send mappings.
     for (size_t i = 0; i < request->GetSendCount(); ++i) {
@@ -545,8 +545,8 @@ Result ReceiveMessage(KernelCore& kernel, bool& recv_list_broken, uint64_t dst_m
     KThread& dst_thread = GetCurrentThread(kernel);
     KProcess& dst_process = *(dst_thread.GetOwnerKProcess());
     KProcess& src_process = *(src_thread.GetOwnerKProcess());
-    auto& dst_page_table = dst_process.GetPageTable();
-    auto& src_page_table = src_process.GetPageTable();
+    auto& dst_page_table = dst_process.GetKPageTable();
+    auto& src_page_table = src_process.GetKPageTable();
 
     // NOTE: Session is used only for debugging, and so may go unused.
     (void)session;
@@ -864,8 +864,8 @@ Result SendMessage(KernelCore& kernel, uint64_t src_message_buffer, size_t src_b
     KThread& src_thread = GetCurrentThread(kernel);
     KProcess& dst_process = *(dst_thread.GetOwnerKProcess());
     KProcess& src_process = *(src_thread.GetOwnerKProcess());
-    auto& dst_page_table = dst_process.GetPageTable();
-    auto& src_page_table = src_process.GetPageTable();
+    auto& dst_page_table = dst_process.GetKPageTable();
+    auto& src_page_table = src_process.GetKPageTable();
 
     // NOTE: Session is used only for debugging, and so may go unused.
     (void)session;
@@ -1185,7 +1185,7 @@ Result KServerSession::ReceiveRequest(uintptr_t server_message, uintptr_t server
             if (KEvent* event = request->GetEvent(); event != nullptr) {
                 // The client sent an async request.
                 KProcess* client = client_thread->GetOwnerKProcess();
-                auto& client_pt = client->GetPageTable();
+                auto& client_pt = client->GetKPageTable();
 
                 // Send the async result.
                 if (R_FAILED(result_for_client)) {
@@ -1270,7 +1270,7 @@ Result KServerSession::SendReply(uintptr_t server_message, uintptr_t server_buff
         KProcess* client_process =
             (client_thread != nullptr) ? client_thread->GetOwnerKProcess() : nullptr;
         KProcessPageTable* client_page_table =
-            (client_process != nullptr) ? std::addressof(client_process->GetPageTable()) : nullptr;
+            (client_process != nullptr) ? std::addressof(client_process->GetKPageTable()) : nullptr;
 
         // Cleanup server handles.
         result = CleanupServerHandles(m_kernel, server_message, server_buffer_size,
@@ -1299,7 +1299,7 @@ Result KServerSession::SendReply(uintptr_t server_message, uintptr_t server_buff
         if (event != nullptr) {
             // Get the client process/page table.
             KProcess* client_process = client_thread->GetOwnerKProcess();
-            KProcessPageTable* client_page_table = std::addressof(client_process->GetPageTable());
+            KProcessPageTable* client_page_table = std::addressof(client_process->GetKPageTable());
 
             // If we need to, reply with an async error.
             if (R_FAILED(client_result)) {
@@ -1415,7 +1415,7 @@ void KServerSession::CleanupRequests() {
         KProcess* client_process =
             (client_thread != nullptr) ? client_thread->GetOwnerKProcess() : nullptr;
         KProcessPageTable* client_page_table =
-            (client_process != nullptr) ? std::addressof(client_process->GetPageTable()) : nullptr;
+            (client_process != nullptr) ? std::addressof(client_process->GetKPageTable()) : nullptr;
 
         // Cleanup the mappings.
         Result result = CleanupMap(request, server_process, client_page_table);
@@ -1521,7 +1521,7 @@ void KServerSession::OnClientClosed() {
 
             // Get the process and page table.
             KProcess* client_process = thread->GetOwnerKProcess();
-            auto& client_pt = client_process->GetPageTable();
+            auto& client_pt = client_process->GetKPageTable();
 
             // Reply to the request.
             ReplyAsyncError(client_process, request->GetAddress(), request->GetSize(),

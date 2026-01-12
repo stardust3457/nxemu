@@ -42,7 +42,7 @@ size_t SetupNroProcessMemoryRegions(ProcessMemoryRegion* regions, u64 nro_heap_a
 
 Result SetProcessMemoryPermission(Kernel::KProcess* process, u64 address, u64 size,
                                   Kernel::Svc::MemoryPermission permission) {
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
 
     // Set permission.
     R_RETURN(page_table.SetProcessMemoryPermission(address, size, permission));
@@ -53,7 +53,7 @@ Result UnmapProcessCodeMemory(Kernel::KProcess* process, u64 process_code_addres
     // Get the total process memory region size.
     const size_t total_size = GetTotalProcessMemoryRegionSize(regions, num_regions);
 
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
 
     // Unmap each region in order.
     size_t cur_offset = total_size;
@@ -94,7 +94,7 @@ Result EnsureGuardPages(Kernel::KProcessPageTable& page_table, u64 map_address, 
 
 Result MapProcessCodeMemory(u64* out, Kernel::KProcess* process, const ProcessMemoryRegion* regions,
                             size_t num_regions, std::mt19937_64& generate_random) {
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
     const u64 alias_code_start =
         GetInteger(page_table.GetAliasCodeRegionStart()) / Kernel::PageSize;
     const u64 alias_code_size = page_table.GetAliasCodeRegionSize() / Kernel::PageSize;

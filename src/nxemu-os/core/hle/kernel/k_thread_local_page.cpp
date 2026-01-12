@@ -27,7 +27,7 @@ Result KThreadLocalPage::Initialize(KernelCore& kernel, KProcess* process) {
 
     // Map the address in.
     const auto phys_addr = kernel.System().DeviceMemory().GetPhysicalAddr(page_buf);
-    R_TRY(m_owner->GetPageTable().MapPages(std::addressof(m_virt_addr), 1, PageSize, phys_addr,
+    R_TRY(m_owner->GetKPageTable().MapPages(std::addressof(m_virt_addr), 1, PageSize, phys_addr,
                                            KMemoryState::ThreadLocal,
                                            KMemoryPermission::UserReadWrite));
 
@@ -40,10 +40,10 @@ Result KThreadLocalPage::Initialize(KernelCore& kernel, KProcess* process) {
 Result KThreadLocalPage::Finalize() {
     // Get the physical address of the page.
     KPhysicalAddress phys_addr{};
-    ASSERT(m_owner->GetPageTable().GetPhysicalAddress(std::addressof(phys_addr), m_virt_addr));
+    ASSERT(m_owner->GetKPageTable().GetPhysicalAddress(std::addressof(phys_addr), m_virt_addr));
 
     // Unmap the page.
-    R_TRY(m_owner->GetPageTable().UnmapPages(this->GetAddress(), 1, KMemoryState::ThreadLocal));
+    R_TRY(m_owner->GetKPageTable().UnmapPages(this->GetAddress(), 1, KMemoryState::ThreadLocal));
 
     // Free the page.
     KPageBuffer::Free(*m_kernel, KPageBuffer::FromPhysicalAddress(m_kernel->System(), phys_addr));

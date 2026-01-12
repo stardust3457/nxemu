@@ -33,7 +33,7 @@ Result QueryProcessMemory(Core::System& system, uint64_t out_memory_info, PageIn
     auto& current_memory{GetCurrentMemory(system.Kernel())};
 
     KMemoryInfo mem_info;
-    R_TRY(process->GetPageTable().QueryInfo(std::addressof(mem_info), out_page_info, address));
+    R_TRY(process->GetKPageTable().QueryInfo(std::addressof(mem_info), out_page_info, address));
 
     const auto svc_mem_info = mem_info.GetSvcMemoryInfo();
     current_memory.WriteBlock(out_memory_info, std::addressof(svc_mem_info), sizeof(svc_mem_info));

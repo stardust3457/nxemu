@@ -114,7 +114,7 @@ Result ReplyAndReceiveImpl(KernelCore& kernel, int32_t* out_index, uintptr_t mes
     // Copy user handles.
     if (num_handles > 0) {
         // Ensure that we can try to get the handles.
-        R_UNLESS(process.GetPageTable().Contains(user_handles, num_handles * sizeof(Handle)),
+        R_UNLESS(process.GetKPageTable().Contains(user_handles, num_handles * sizeof(Handle)),
                  ResultInvalidPointer);
 
         // Get the handles
@@ -157,7 +157,7 @@ Result SendSyncRequestWithUserBuffer(Core::System& system, uint64_t message, uin
     R_UNLESS(message < message + buffer_size, ResultInvalidCurrentMemory);
 
     // Get the process page table.
-    auto& page_table = GetCurrentProcess(kernel).GetPageTable();
+    auto& page_table = GetCurrentProcess(kernel).GetKPageTable();
 
     // Lock the message buffer.
     R_TRY(page_table.LockForIpcUserBuffer(nullptr, message, buffer_size));
@@ -244,7 +244,7 @@ Result ReplyAndReceiveWithUserBuffer(Core::System& system, int32_t* out_index, u
     R_UNLESS(message < message + buffer_size, ResultInvalidCurrentMemory);
 
     // Get the process page table.
-    auto& page_table = GetCurrentProcess(system.Kernel()).GetPageTable();
+    auto& page_table = GetCurrentProcess(system.Kernel()).GetKPageTable();
 
     // Lock the message buffer, getting its physical address.
     KPhysicalAddress message_paddr;

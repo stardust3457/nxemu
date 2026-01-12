@@ -18,7 +18,7 @@ Result SetHeapSize(Core::System& system, u64* out_address, u64 size) {
     // Set the heap size.
     KProcessAddress address{};
     R_TRY(GetCurrentProcess(system.Kernel())
-              .GetPageTable()
+              .GetKPageTable()
               .SetHeapSize(std::addressof(address), size));
 
     // We succeeded.
@@ -51,7 +51,7 @@ Result MapPhysicalMemory(Core::System& system, u64 addr, u64 size) {
     }
 
     KProcess* const current_process{GetCurrentProcessPointer(system.Kernel())};
-    auto& page_table{current_process->GetPageTable()};
+    auto& page_table{current_process->GetKPageTable()};
 
     if (current_process->GetTotalSystemResourceSize() == 0) {
         LOG_ERROR(Kernel_SVC, "System Resource Size is zero");
@@ -100,7 +100,7 @@ Result UnmapPhysicalMemory(Core::System& system, u64 addr, u64 size) {
     }
 
     KProcess* const current_process{GetCurrentProcessPointer(system.Kernel())};
-    auto& page_table{current_process->GetPageTable()};
+    auto& page_table{current_process->GetKPageTable()};
 
     if (current_process->GetTotalSystemResourceSize() == 0) {
         LOG_ERROR(Kernel_SVC, "System Resource Size is zero");

@@ -109,7 +109,7 @@ Result MapDeviceAddressSpaceByForce(Core::System& system, Handle das_handle, Han
     R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
 
     // Validate that the process address is within range.
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
     R_UNLESS(page_table.Contains(process_address, size), ResultInvalidCurrentMemory);
 
     // Map.
@@ -150,7 +150,7 @@ Result MapDeviceAddressSpaceAligned(Core::System& system, Handle das_handle, Han
     R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
 
     // Validate that the process address is within range.
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
     R_UNLESS(page_table.Contains(process_address, size), ResultInvalidCurrentMemory);
 
     // Map.
@@ -182,7 +182,7 @@ Result UnmapDeviceAddressSpace(Core::System& system, Handle das_handle, Handle p
     R_UNLESS(process.IsNotNull(), ResultInvalidHandle);
 
     // Validate that the process address is within range.
-    auto& page_table = process->GetPageTable();
+    auto& page_table = process->GetKPageTable();
     R_UNLESS(page_table.Contains(process_address, size), ResultInvalidCurrentMemory);
 
     R_RETURN(das->Unmap(std::addressof(page_table), process_address, size, device_address));

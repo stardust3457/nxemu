@@ -20,7 +20,7 @@ Result KTransferMemory::Initialize(KProcessAddress addr, std::size_t size,
     m_owner = GetCurrentProcessPointer(m_kernel);
 
     // Get the owner page table.
-    auto& page_table = m_owner->GetPageTable();
+    auto& page_table = m_owner->GetKPageTable();
 
     // Construct the page group, guarding to make sure our state is valid on exit.
     m_page_group.emplace(m_kernel, page_table.GetBlockInfoManager());
@@ -49,7 +49,7 @@ void KTransferMemory::Finalize() {
     if (!m_is_mapped) {
         const size_t size = m_page_group->GetNumPages() * PageSize;
         ASSERT(R_SUCCEEDED(
-            m_owner->GetPageTable().UnlockForTransferMemory(m_address, size, *m_page_group)));
+            m_owner->GetKPageTable().UnlockForTransferMemory(m_address, size, *m_page_group)));
     }
 
     // Close the page group.
@@ -80,7 +80,7 @@ Result KTransferMemory::Map(KProcessAddress address, size_t size, Svc::MemoryPer
     const KMemoryState state = (m_owner_perm == Svc::MemoryPermission::None)
                                    ? KMemoryState::Transferred
                                    : KMemoryState::SharedTransferred;
-    R_TRY(GetCurrentProcess(m_kernel).GetPageTable().MapPageGroup(
+    R_TRY(GetCurrentProcess(m_kernel).GetKPageTable().MapPageGroup(
         address, *m_page_group, state, KMemoryPermission::UserReadWrite));
 
     // Mark ourselves as mapped.
@@ -100,7 +100,7 @@ Result KTransferMemory::Unmap(KProcessAddress address, size_t size) {
     const KMemoryState state = (m_owner_perm == Svc::MemoryPermission::None)
                                    ? KMemoryState::Transferred
                                    : KMemoryState::SharedTransferred;
-    R_TRY(GetCurrentProcess(m_kernel).GetPageTable().UnmapPageGroup(address, *m_page_group, state));
+    R_TRY(GetCurrentProcess(m_kernel).GetKPageTable().UnmapPageGroup(address, *m_page_group, state));
 
     // Mark ourselves as unmapped.
     ASSERT(m_is_mapped);

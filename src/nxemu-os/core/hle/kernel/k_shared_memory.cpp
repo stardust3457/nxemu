@@ -90,7 +90,7 @@ Result KSharedMemory::Map(KProcess& target_process, KProcessAddress address, std
         R_UNLESS(map_perm == test_perm, ResultInvalidNewMemoryPermission);
     }
 
-    R_RETURN(target_process.GetPageTable().MapPageGroup(
+    R_RETURN(target_process.GetKPageTable().MapPageGroup(
         address, *m_page_group, KMemoryState::Shared, ConvertToKMemoryPermission(map_perm)));
 }
 
@@ -100,7 +100,7 @@ Result KSharedMemory::Unmap(KProcess& target_process, KProcessAddress address,
     R_UNLESS(m_size == unmap_size, ResultInvalidSize);
 
     R_RETURN(
-        target_process.GetPageTable().UnmapPageGroup(address, *m_page_group, KMemoryState::Shared));
+        target_process.GetKPageTable().UnmapPageGroup(address, *m_page_group, KMemoryState::Shared));
 }
 
 } // namespace Kernel

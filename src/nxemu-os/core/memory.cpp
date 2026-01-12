@@ -44,7 +44,7 @@ struct Memory::Impl {
     explicit Impl(Core::System& system_) : system{system_} {}
 
     void SetCurrentPageTable(Kernel::KProcess& process) {
-        current_page_table = &process.GetPageTable().GetImpl();
+        current_page_table = &process.GetKPageTable().GetImpl();
 
         if (std::addressof(process) == system.ApplicationProcess() &&
             Settings::IsFastmemEnabled()) {

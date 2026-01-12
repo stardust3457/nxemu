@@ -74,7 +74,7 @@ void InvalidateInstructionCache(KernelCore & kernel, KPageTableBase * table, Add
     // TODO: lock the process list
     for (auto & process : kernel.GetProcessList())
     {
-        if (std::addressof(process->GetPageTable().GetBasePageTable()) != table)
+        if (std::addressof(process->GetKPageTable().GetBasePageTable()) != table)
         {
             continue;
         }
@@ -3094,7 +3094,7 @@ Result KPageTableBase::InvalidateProcessDataCache(KProcessAddress address, size_
 
 Result KPageTableBase::InvalidateCurrentProcessDataCache(KProcessAddress address, size_t size) {
     // Check pre-condition: this is being called on the current process.
-    ASSERT(this == std::addressof(GetCurrentProcess(m_kernel).GetPageTable().GetBasePageTable()));
+    ASSERT(this == std::addressof(GetCurrentProcess(m_kernel).GetKPageTable().GetBasePageTable()));
 
     // Check that the region is in range.
     R_UNLESS(this->Contains(address, size), ResultInvalidCurrentMemory);
@@ -3389,7 +3389,7 @@ Result KPageTableBase::ReadDebugIoMemory(KProcessAddress dst_address, KProcessAd
 
     // We need to lock both this table, and the current process's table, so set up some aliases.
     KPageTableBase& src_page_table = *this;
-    KPageTableBase& dst_page_table = GetCurrentProcess(m_kernel).GetPageTable().GetBasePageTable();
+    KPageTableBase& dst_page_table = GetCurrentProcess(m_kernel).GetKPageTable().GetBasePageTable();
 
     // Acquire the table locks.
     KScopedLightLockPair lk(src_page_table.m_general_lock, dst_page_table.m_general_lock);
@@ -3431,7 +3431,7 @@ Result KPageTableBase::WriteDebugIoMemory(KProcessAddress dst_address, KProcessA
 
     // We need to lock both this table, and the current process's table, so set up some aliases.
     KPageTableBase& src_page_table = *this;
-    KPageTableBase& dst_page_table = GetCurrentProcess(m_kernel).GetPageTable().GetBasePageTable();
+    KPageTableBase& dst_page_table = GetCurrentProcess(m_kernel).GetKPageTable().GetBasePageTable();
 
     // Acquire the table locks.
     KScopedLightLockPair lk(src_page_table.m_general_lock, dst_page_table.m_general_lock);
