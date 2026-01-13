@@ -6,15 +6,29 @@
 #include "core/hle/kernel/k_page_table.h"
 #include "core/hle/kernel/k_scoped_lock.h"
 #include "core/hle/kernel/svc_types.h"
+#include <nxemu-module-spec/cpu.h>
 
 namespace Kernel {
 
-class KProcessPageTable {
+class KProcessPageTable :
+    public IKProcessPageTable
+{
 private:
     KPageTable m_page_table;
 
 public:
     KProcessPageTable(KernelCore& kernel) : m_page_table(kernel) {}
+
+    //IKProcessPageTable
+    uint8_t * FastmemArena() const override
+    {
+        return GetImpl().fastmem_arena;
+    }
+
+    void ** PageTable() const override
+    {
+        return (void **)(GetImpl().pointers.data());
+    }
 
     Result Initialize(Svc::CreateProcessFlag as_type, bool enable_aslr, bool enable_das_merge,
                       bool from_back, KMemoryManager::Pool pool, KProcessAddress code_address,
@@ -76,8 +90,8 @@ public:
         R_RETURN(m_page_table.SetMaxHeapSize(size));
     }
 
-    Result QueryInfo(KMemoryInfo* out_info, Svc::PageInfo* out_page_info,
-                     KProcessAddress addr) const {
+    Result QueryInfo(KMemoryInfo* out_info, Svc::PageInfo* out_page_info, KProcessAddress addr) const 
+    {
         R_RETURN(m_page_table.QueryInfo(out_info, out_page_info, addr));
     }
 

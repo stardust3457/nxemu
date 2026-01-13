@@ -87,6 +87,7 @@ public:
 
     /// Read floating point and SIMD register.
     Vector GetVector(std::size_t index) const;
+    uint64_t * GetVectorData();
     /// Modify floating point and SIMD register.
     void SetVector(std::size_t index, Vector value);
 

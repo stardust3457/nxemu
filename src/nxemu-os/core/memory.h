@@ -134,7 +134,7 @@ public:
      *
      * @returns True if all bytes in the given range are valid, false otherwise.
      */
-    [[nodiscard]] bool IsValidVirtualAddressRange(Common::ProcessAddress base, u64 size) const;
+    [[nodiscard]] bool IsValidVirtualAddressRange(uint64_t base, uint64_t size) const override;
 
     /**
      * Gets a pointer to the given address.

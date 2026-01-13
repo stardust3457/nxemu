@@ -3277,5 +3277,8 @@
     <ClCompile Include="core\reporter.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
+    <ClCompile Include="core\arm\debug.cpp">
+      <Filter>Source Files\core\arm</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

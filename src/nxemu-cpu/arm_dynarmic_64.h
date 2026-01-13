@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #pragma once
 #include "dynarmic/interface/A64/a64.h"
 #include "arm64_registers.h"
@@ -12,11 +15,13 @@ class ArmDynarmic64 final :
 
 public:
     ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex);
+    ~ArmDynarmic64();
 
     IArm64Reg & Reg(void) { return m_reg; }
 
-    //ICpuCore
+    // ICpuCore
     HaltReason Execute(void);
+    void GetContext(CpuThreadContext & ctx) const override;
     void InvalidateCacheRange(uint64_t addr, uint64_t size) override;
     void HaltExecution(HaltReason hr);
     void Release() override;

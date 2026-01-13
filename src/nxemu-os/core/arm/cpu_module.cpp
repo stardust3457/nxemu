@@ -64,7 +64,7 @@ ArmCpuModule::ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClo
 {
     if (is64Bit)
     {
-        m_cpuCore = system.GetSystemModules().Cpu().CreateCpuCore(*m_cb, is64Bit, usesWallClock, coreIndex);
+        m_cpuCore = system.GetSystemModules().Cpu().CreateCpuCore(*m_cb, is64Bit, usesWallClock, *process, coreIndex);
     }
 }
 

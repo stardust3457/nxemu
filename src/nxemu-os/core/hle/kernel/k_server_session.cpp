@@ -1267,8 +1267,7 @@ Result KServerSession::SendReply(uintptr_t server_message, uintptr_t server_buff
     } else if (!is_hle) {
         // Otherwise, we'll need to do some cleanup.
         KProcess* server_process = request->GetServerProcess();
-        KProcess* client_process =
-            (client_thread != nullptr) ? client_thread->GetOwnerKProcess() : nullptr;
+        KProcess * client_process = (client_thread != nullptr) ? client_thread->GetOwnerKProcess() : nullptr;
         KProcessPageTable* client_page_table =
             (client_process != nullptr) ? std::addressof(client_process->GetKPageTable()) : nullptr;
 

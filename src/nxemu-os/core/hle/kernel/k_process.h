@@ -35,12 +35,14 @@ struct ExclusiveMonitorDeleter
 using ExclusiveMonitorPtr = std::unique_ptr<IExclusiveMonitor, ExclusiveMonitorDeleter>;
 
 class KProcess final :
-    public KAutoObjectWithSlabHeapAndContainer<KProcess, KWorkerTask>
+    public KAutoObjectWithSlabHeapAndContainer<KProcess, KWorkerTask>,
+    public IKernelProcess
 {
     KERNEL_AUTOOBJECT_TRAITS(KProcess, KSynchronizationObject);
 
 public:
-    enum class State {
+    enum class State
+    {
         Created = static_cast<u32>(Svc::ProcessState::Created),
         CreatedAttached = static_cast<u32>(Svc::ProcessState::CreatedAttached),
         Running = static_cast<u32>(Svc::ProcessState::Running),
@@ -74,8 +76,8 @@ private:
     TLPTree m_fully_used_tlp_tree{};
     TLPTree m_partially_used_tlp_tree{};
     s32 m_ideal_core_id{};
-    KResourceLimit* m_resource_limit{};
-    KSystemResource* m_system_resource{};
+    KResourceLimit * m_resource_limit{};
+    KSystemResource * m_system_resource{};
     size_t m_memory_release_hint{};
     State m_state{};
     KLightLock m_state_lock;
@@ -103,17 +105,17 @@ private:
     u32 m_version{};
     KHandleTable m_handle_table;
     KProcessAddress m_plr_address{};
-    KThread* m_exception_thread{};
+    KThread * m_exception_thread{};
     ThreadList m_thread_list{};
     SharedMemoryInfoList m_shared_memory_list{};
     bool m_is_suspended{};
     bool m_is_immortal{};
     bool m_is_handle_table_initialized{};
     std::array<std::unique_ptr<Core::ArmInterface>, Core::Hardware::NUM_CPU_CORES> m_cpucore{};
-    std::array<KThread*, Core::Hardware::NUM_CPU_CORES> m_running_threads{};
+    std::array<KThread *, Core::Hardware::NUM_CPU_CORES> m_running_threads{};
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_idle_counts{};
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_switch_counts{};
-    std::array<KThread*, Core::Hardware::NUM_CPU_CORES> m_pinned_threads{};
+    std::array<KThread *, Core::Hardware::NUM_CPU_CORES> m_pinned_threads{};
     std::array<CpuDebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS> m_watchpoints{};
     std::map<KProcessAddress, u64> m_debug_page_refcounts{};
     std::atomic<s64> m_cpu_time{};
@@ -134,14 +136,16 @@ private:
     Result StartTermination();
     void FinishTermination();
 
-    void PinThread(s32 core_id, KThread* thread) {
+    void PinThread(s32 core_id, KThread * thread)
+    {
         ASSERT(0 <= core_id && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES));
         ASSERT(thread != nullptr);
         ASSERT(m_pinned_threads[core_id] == nullptr);
         m_pinned_threads[core_id] = thread;
     }
 
-    void UnpinThread(s32 core_id, KThread* thread) {
+    void UnpinThread(s32 core_id, KThread * thread)
+    {
         ASSERT(0 <= core_id && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES));
         ASSERT(thread != nullptr);
         ASSERT(m_pinned_threads[core_id] == thread);
@@ -149,7 +153,7 @@ private:
     }
 
 public:
-    explicit KProcess(KernelCore& kernel);
+    explicit KProcess(KernelCore & kernel);
     ~KProcess() override;
 
     Result Initialize(const Svc::CreateProcessParameter & params, KResourceLimit * res_limit, bool is_real);
@@ -209,7 +213,7 @@ public:
         return static_cast<u32>(m_flags);
     }
 
-    bool Is64Bit() const
+    bool Is64Bit() const override
     {
         return True(m_flags & Svc::CreateProcessFlag::Is64Bit);
     }
@@ -301,7 +305,7 @@ public:
 
     bool EnterUserException();
     bool LeaveUserException();
-    bool ReleaseUserException(KThread* thread);
+    bool ReleaseUserException(KThread * thread);
 
     KThread * GetPinnedThread(s32 core_id) const
     {
@@ -331,6 +335,11 @@ public:
     KLightLock & GetListLock()
     {
         return m_list_lock;
+    }
+
+    IKProcessPageTable & GetPageTable() override
+    {
+        return m_page_table;
     }
 
     KProcessPageTable & GetKPageTable()
@@ -569,6 +578,11 @@ public:
 
     void InitializeInterfaces();
 
+    IMemory & GetMemory() override
+    {
+        return m_memory;
+    }
+
     Core::Memory::Memory & GetCoreMemory()
     {
         return m_memory;
@@ -578,6 +592,8 @@ public:
     {
         return *m_exclusive_monitor;
     }
+
+    void LogBacktrace(ICpuCore & cpuCore) override;
 
 public:
     // Overridden parent functions.

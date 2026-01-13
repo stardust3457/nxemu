@@ -191,6 +191,7 @@ public:
     ArmDynarmic64 & m_parent;
     IMemory & m_memory;
     ICpuInfo & m_CpuInfo;
+    u64 m_tpidr_el0{};
     const bool m_debugger_enabled{};
     const bool m_check_memory_access{};
 };
@@ -207,6 +208,10 @@ ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModule
 {
     m_jit = MakeJit(monitor);
     m_reg.SetJit(m_jit.get());
+}
+
+ArmDynarmic64::~ArmDynarmic64()
+{
 }
 
 ICpuCore::HaltReason ArmDynarmic64::Execute()
@@ -243,6 +248,28 @@ void ArmDynarmic64::HaltExecution(HaltReason hr)
 void ArmDynarmic64::Release()
 {
     delete this;
+}
+
+void ArmDynarmic64::GetContext(CpuThreadContext & ctx) const
+{
+    Dynarmic::A64::Jit& j = *m_jit;
+    auto gpr = j.GetRegisters();
+
+    // TODO: this is inconvenient
+    for (size_t i = 0; i < 29; i++)
+    {
+        ctx.r[i] = gpr[i];
+    }
+    ctx.fp = gpr[29];
+    ctx.lr = gpr[30];
+
+    ctx.sp = j.GetSP();
+    ctx.pc = j.GetPC();
+    ctx.pstate = j.GetPstate();
+    memcpy(ctx.v, j.GetVectorData(), sizeof(ctx.v));
+    ctx.fpcr = j.GetFpcr();
+    ctx.fpsr = j.GetFpsr();
+    ctx.tpidr = m_cb->m_tpidr_el0;
 }
 
 std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMonitor & monitor)

@@ -114,18 +114,13 @@ Result ReplyAndReceiveImpl(KernelCore& kernel, int32_t* out_index, uintptr_t mes
     // Copy user handles.
     if (num_handles > 0) {
         // Ensure that we can try to get the handles.
-        R_UNLESS(process.GetKPageTable().Contains(user_handles, num_handles * sizeof(Handle)),
-                 ResultInvalidPointer);
+        R_UNLESS(process.GetKPageTable().Contains(user_handles, num_handles * sizeof(Handle)),ResultInvalidPointer);
 
         // Get the handles
-        R_UNLESS(
-            GetCurrentMemory(kernel).ReadBlock(user_handles, handles, sizeof(Handle) * num_handles),
-            ResultInvalidPointer);
+        R_UNLESS(GetCurrentMemory(kernel).ReadBlock(user_handles.GetValue(), handles, sizeof(Handle) * num_handles),ResultInvalidPointer);
 
         // Convert the handles to objects.
-        R_UNLESS(
-            handle_table.GetMultipleObjects<KSynchronizationObject>(objs, handles, num_handles),
-            ResultInvalidHandle);
+        R_UNLESS(handle_table.GetMultipleObjects<KSynchronizationObject>(objs, handles, num_handles),ResultInvalidHandle);
     }
 
     // Ensure handles are closed when we're done.

@@ -184,7 +184,13 @@ public:
         jit_state.vec.at(index * 2 + 1) = value[1];
     }
 
-    std::array<Vector, 32> GetVectors() const {
+    uint64_t * GetVectorData()
+    {
+        return jit_state.vec.data();
+    }
+
+    std::array<Vector, 32> GetVectors() const
+    {
         std::array<Vector, 32> ret;
         static_assert(sizeof(ret) == sizeof(jit_state.vec));
         std::memcpy(ret.data(), jit_state.vec.data(), sizeof(jit_state.vec));
@@ -406,7 +412,13 @@ void Jit::SetVectors(const std::array<Vector, 32>& value) {
     impl->SetVectors(value);
 }
 
-u32 Jit::GetFpcr() const {
+uint64_t * Jit::GetVectorData()
+{
+    return impl->GetVectorData();
+}
+
+u32 Jit::GetFpcr() const
+{
     return impl->GetFpcr();
 }
 

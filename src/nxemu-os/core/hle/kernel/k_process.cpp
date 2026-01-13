@@ -14,6 +14,7 @@
 #include "core/hle/kernel/k_thread_local_page.h"
 #include "core/hle/kernel/k_thread_queue.h"
 #include "core/hle/kernel/k_worker_task_manager.h"
+#include "core/arm/debug.h"
 
 namespace Kernel {
 
@@ -1265,6 +1266,21 @@ void KProcess::InitializeInterfaces()
     for (uint32_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++)
     {
         m_cpucore[i] = std::make_unique<Core::ArmCpuModule>(m_kernel.System(), Is64Bit(), m_kernel.IsMulticore(), this, i);
+    }
+}
+
+void KProcess::LogBacktrace(ICpuCore & cpuCore)
+{
+    CpuThreadContext ctx;
+    cpuCore.GetContext(ctx);
+
+    LOG_ERROR(Core_ARM, "Backtrace, sp={:016X}, pc={:016X}", ctx.sp, ctx.pc);
+    LOG_ERROR(Core_ARM, "{:20}{:20}{:20}{:20}{}", "Module Name", "Address", "Original Address", "Offset", "Symbol");
+    LOG_ERROR(Core_ARM, "");
+    const auto backtrace = Core::GetBacktraceFromContext(this, ctx);
+    for (const auto & entry : backtrace)
+    {
+        LOG_ERROR(Core_ARM, "{:20}{:016X}    {:016X}    {:016X}    {}", entry.module, entry.address, entry.original_address, entry.offset, entry.name);
     }
 }
 

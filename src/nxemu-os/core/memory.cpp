@@ -1026,10 +1026,10 @@ bool Memory::IsValidVirtualAddress(const Common::ProcessAddress vaddr) const
            type == Common::PageType::DebugMemory;
 }
 
-bool Memory::IsValidVirtualAddressRange(Common::ProcessAddress base, u64 size) const
+bool Memory::IsValidVirtualAddressRange(uint64_t base, uint64_t size) const
 {
     Common::ProcessAddress end = base + size;
-    Common::ProcessAddress page = Common::AlignDown(GetInteger(base), YUZU_PAGESIZE);
+    Common::ProcessAddress page = Common::AlignDown(base, YUZU_PAGESIZE);
 
     for (; page < end; page += YUZU_PAGESIZE)
     {

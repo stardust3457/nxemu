@@ -935,7 +935,8 @@ Result KThread::GetThreadContext3(CpuThreadContext * out)
     R_SUCCEED();
 }
 
-void KThread::AddHeldLock(LockWithPriorityInheritanceInfo* lock_info) {
+void KThread::AddHeldLock(LockWithPriorityInheritanceInfo* lock_info)
+{
     ASSERT(KScheduler::IsSchedulerLockedByCurrentThread(m_kernel));
 
     // Set ourselves as the lock's owner.
@@ -945,14 +946,16 @@ void KThread::AddHeldLock(LockWithPriorityInheritanceInfo* lock_info) {
     m_held_lock_info_list.push_front(*lock_info);
 }
 
-KThread::LockWithPriorityInheritanceInfo* KThread::FindHeldLock(KProcessAddress address_key,
-                                                                bool is_kernel_address_key) {
+KThread::LockWithPriorityInheritanceInfo * KThread::FindHeldLock(KProcessAddress address_key, bool is_kernel_address_key)
+{
     ASSERT(KScheduler::IsSchedulerLockedByCurrentThread(m_kernel));
 
     // Try to find an existing held lock.
-    for (auto& held_lock : m_held_lock_info_list) {
+    for (auto & held_lock : m_held_lock_info_list)
+    {
         if (held_lock.GetAddressKey() == address_key &&
-            held_lock.GetIsKernelAddressKey() == is_kernel_address_key) {
+            held_lock.GetIsKernelAddressKey() == is_kernel_address_key)
+        {
             return std::addressof(held_lock);
         }
     }
@@ -960,7 +963,8 @@ KThread::LockWithPriorityInheritanceInfo* KThread::FindHeldLock(KProcessAddress 
     return nullptr;
 }
 
-void KThread::AddWaiterImpl(KThread* thread) {
+void KThread::AddWaiterImpl(KThread * thread)
+{
     ASSERT(KScheduler::IsSchedulerLockedByCurrentThread(m_kernel));
     ASSERT(thread->GetConditionVariableTree() == nullptr);
 
@@ -969,14 +973,16 @@ void KThread::AddWaiterImpl(KThread* thread) {
     const auto is_kernel_address_key = thread->GetIsKernelAddressKey();
 
     // Keep track of how many kernel waiters we have.
-    if (is_kernel_address_key) {
+    if (is_kernel_address_key)
+    {
         ASSERT((m_num_kernel_waiters++) >= 0);
         KScheduler::SetSchedulerUpdateNeeded(m_kernel);
     }
 
     // Get the relevant lock info.
-    auto* lock_info = this->FindHeldLock(address_key, is_kernel_address_key);
-    if (lock_info == nullptr) {
+    auto * lock_info = this->FindHeldLock(address_key, is_kernel_address_key);
+    if (lock_info == nullptr)
+    {
         // Create a new lock for the address key.
         lock_info =
             LockWithPriorityInheritanceInfo::Create(m_kernel, address_key, is_kernel_address_key);

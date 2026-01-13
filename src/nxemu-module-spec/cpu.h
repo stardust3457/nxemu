@@ -1,6 +1,8 @@
 #pragma once
 #include "base.h"
 
+__interface ICpuCore;
+
 __interface IArm64Reg
 {
     // clang-format off
@@ -60,6 +62,7 @@ enum class ProcessorArchitecture
 
 __interface IMemory
 {
+    bool IsValidVirtualAddressRange(uint64_t base, uint64_t size) const = 0;
     void RasterizerMarkRegionCached(uint64_t vaddr, uint64_t size, bool cached) = 0;
     uint8_t * GetPointerSilent(uint64_t vaddr) = 0;
 
@@ -107,6 +110,26 @@ __interface IExclusiveMonitor
     void Release() = 0;
 };
 
+__interface IKProcessPageTable
+{
+    uint32_t GetAddressSpaceWidth() const = 0;
+    uint8_t * FastmemArena() const = 0;
+    void ** PageTable() const = 0;
+};
+
+__interface IKernelProcess
+{
+    IKProcessPageTable & GetPageTable() = 0;
+    IMemory & GetMemory() = 0;
+    bool Is64Bit() const = 0;
+    void LogBacktrace(ICpuCore & cpuCore) = 0;
+};
+
+__interface IKernelThread
+{
+    IKernelProcess * GetOwnerProcess() const = 0;
+};
+
 struct CpuThreadContext
 {
     uint64_t r[29];
@@ -134,6 +157,7 @@ __interface ICpuCore
     };
 
     IArm64Reg & Reg(void) = 0;
+    void GetContext(CpuThreadContext & ctx) const = 0;
     HaltReason Execute(void) = 0;
     void InvalidateCacheRange(uint64_t addr, uint64_t size) = 0;
     void HaltExecution(HaltReason hr) = 0;
@@ -146,7 +170,7 @@ __interface ICpu
     bool Initialize(void) = 0;
 
     IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) = 0;
-    ICpuCore * CreateCpuCore(ICpuInfo & info, bool is64Bit, bool usesWallClock, uint32_t coreIndex) = 0;
+    ICpuCore * CreateCpuCore(ICpuInfo & info, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex) = 0;
 };
 
 EXPORT ICpu * CALL CreateCpu(ISystemModules & modules);
