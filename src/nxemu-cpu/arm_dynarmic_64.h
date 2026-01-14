@@ -14,12 +14,13 @@ class ArmDynarmic64 final :
     friend class DynarmicCallbacks64;
 
 public:
-    ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, IKernelProcess & process, uint32_t coreIndex);
+    ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICoreSystem & system, IKernelProcess & process, uint32_t coreIndex);
     ~ArmDynarmic64();
 
     IArm64Reg & Reg(void) { return m_reg; }
 
     // ICpuCore
+    uint32_t GetSvcNumber() const override;
     CpuHaltReason Execute(void);
     void GetContext(CpuThreadContext & ctx) const override;
     void InvalidateCacheRange(uint64_t addr, uint64_t size) override;
@@ -36,10 +37,11 @@ private:
     std::unique_ptr<Dynarmic::A64::Jit> m_jit{};
     std::unique_ptr<DynarmicCallbacks64> m_cb{};
     ISystemModules & m_modules;
-    ICpuInfo & m_CpuInfo;
+    ICoreSystem & m_system;
     IMemory & m_memory;
     IOperatingSystem & m_OperatingSystem;
     Dynarmic::ExclusiveMonitor & m_monitor;
+    uint32_t m_svc;
     A64Registers m_reg;
     IKernelProcess & m_process;
     uint32_t m_coreIndex;

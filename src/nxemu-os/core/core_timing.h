@@ -18,6 +18,8 @@
 #include "yuzu_common/thread.h"
 #include "yuzu_common/wall_clock.h"
 
+#include <nxemu-module-spec/cpu.h>
+
 namespace Core::Timing {
 
 /// A callback that may be scheduled for a particular core timing event.
@@ -55,7 +57,9 @@ enum class UnscheduleEventType {
  * inside callback:
  *   ScheduleEvent(period_in_ns - ns_late, callback, "whatever")
  */
-class CoreTiming {
+class CoreTiming :
+    public ICoreTiming
+{
 public:
     CoreTiming();
     ~CoreTiming();
@@ -109,18 +113,19 @@ public:
     void UnscheduleEvent(const std::shared_ptr<EventType>& event_type,
                          UnscheduleEventType type = UnscheduleEventType::Wait);
 
-    void AddTicks(u64 ticks_to_add);
+    void AddTicks(uint64_t ticks_to_add) override;
 
     void ResetTicks();
 
     void Idle();
 
-    s64 GetDowncount() const {
+    int64_t GetDowncount() const override
+    {
         return downcount;
     }
 
     /// Returns the current CNTPCT tick value.
-    u64 GetClockTicks() const;
+    uint64_t GetClockTicks() const override;
 
     /// Returns the current GPU tick value.
     u64 GetGPUTicks() const;

@@ -12,8 +12,8 @@ public:
     //ICpu
     bool Initialize(void) override;
     IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) override;
-    ICpuCore * CreateCpuCore(ICpuInfo & info, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex) override;
-    
+    ICpuCore * CreateCpuCore(ICoreSystem & system, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex) override;
+
 private:
     CpuInterface() = delete;
     CpuInterface(const CpuInterface &) = delete;

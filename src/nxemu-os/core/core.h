@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <nxemu-module-spec/operating_system.h>
+#include <nxemu-module-spec/cpu.h>
 #include "yuzu_common/common_types.h"
 
 enum class StorageId : uint8_t;
@@ -142,7 +143,9 @@ enum class SystemResultStatus : u32 {
     ErrorLoader,         ///< The base for loader errors (too many to repeat)
 };
 
-class System {
+class System :
+    public ICoreSystem
+{
 public:
     using CurrentBuildProcessID = std::array<u8, 0x20>;
 
@@ -150,11 +153,11 @@ public:
 
     ~System();
 
-    System(const System&) = delete;
-    System& operator=(const System&) = delete;
+    System(const System &) = delete;
+    System & operator=(const System &) = delete;
 
-    System(System&&) = delete;
-    System& operator=(System&&) = delete;
+    System(System &&) = delete;
+    System & operator=(System &&) = delete;
 
     void InitializeKernel(uint64_t titleID);
 
@@ -210,7 +213,7 @@ public:
      * @param program_index Specifies the index within the container of the program to launch.
      * @returns SystemResultStatus code, indicating if the operation succeeded.
      */
-    [[nodiscard]] SystemResultStatus Load(Frontend::EmuWindow& emu_window, const std::string& filepath, Service::AM::FrontendAppletParameters& params);
+    [[nodiscard]] SystemResultStatus Load(Frontend::EmuWindow & emu_window, const std::string & filepath, Service::AM::FrontendAppletParameters & params);
 
     /**
      * Indicates if the emulated system is powered on (all subsystems initialized and able to run an
@@ -236,76 +239,78 @@ public:
     [[nodiscard]] PerfStatsResults GetAndResetPerfStats();
 
     /// Gets the physical core for the CPU core that is currently running
-    [[nodiscard]] Kernel::PhysicalCore& CurrentPhysicalCore();
+    [[nodiscard]] Kernel::PhysicalCore & CurrentPhysicalCore();
 
     /// Gets the physical core for the CPU core that is currently running
-    [[nodiscard]] const Kernel::PhysicalCore& CurrentPhysicalCore() const;
+    [[nodiscard]] const Kernel::PhysicalCore & CurrentPhysicalCore() const;
 
     /// Gets a reference to the underlying CPU manager.
-    [[nodiscard]] CpuManager& GetCpuManager();
+    [[nodiscard]] CpuManager & GetCpuManager();
 
     /// Gets a const reference to the underlying CPU manager
-    [[nodiscard]] const CpuManager& GetCpuManager() const;
+    [[nodiscard]] const CpuManager & GetCpuManager() const;
 
     /// Gets a mutable reference to the system memory instance.
-    [[nodiscard]] Core::Memory::Memory& ApplicationMemory();
+    [[nodiscard]] Core::Memory::Memory & ApplicationMemory();
 
     /// Gets a constant reference to the system memory instance.
-    [[nodiscard]] const Core::Memory::Memory& ApplicationMemory() const;
+    [[nodiscard]] const Core::Memory::Memory & ApplicationMemory() const;
 
     /// Gets a mutable reference to the audio interface
-    [[nodiscard]] AudioCore::AudioCore& AudioCore();
+    [[nodiscard]] AudioCore::AudioCore & AudioCore();
 
     /// Gets an immutable reference to the audio interface.
-    [[nodiscard]] const AudioCore::AudioCore& AudioCore() const;
+    [[nodiscard]] const AudioCore::AudioCore & AudioCore() const;
 
     /// Gets the global scheduler
-    [[nodiscard]] Kernel::GlobalSchedulerContext& GlobalSchedulerContext();
+    [[nodiscard]] Kernel::GlobalSchedulerContext & GlobalSchedulerContext();
 
     /// Gets the global scheduler
-    [[nodiscard]] const Kernel::GlobalSchedulerContext& GlobalSchedulerContext() const;
+    [[nodiscard]] const Kernel::GlobalSchedulerContext & GlobalSchedulerContext() const;
 
     /// Gets the manager for the guest device memory
-    [[nodiscard]] Core::DeviceMemory& DeviceMemory();
+    [[nodiscard]] Core::DeviceMemory & DeviceMemory();
 
     /// Gets the manager for the guest device memory
-    [[nodiscard]] const Core::DeviceMemory& DeviceMemory() const;
+    [[nodiscard]] const Core::DeviceMemory & DeviceMemory() const;
 
     /// Provides a pointer to the application process
-    [[nodiscard]] Kernel::KProcess* ApplicationProcess();
+    [[nodiscard]] Kernel::KProcess * ApplicationProcess();
 
     /// Provides a constant pointer to the application process.
-    [[nodiscard]] const Kernel::KProcess* ApplicationProcess() const;
+    [[nodiscard]] const Kernel::KProcess * ApplicationProcess() const;
+
+    ICoreTiming & Timing() override;
 
     /// Provides a reference to the core timing instance.
-    [[nodiscard]] Timing::CoreTiming& CoreTiming();
+    [[nodiscard]] Timing::CoreTiming & CoreTiming();
 
     /// Provides a constant reference to the core timing instance.
-    [[nodiscard]] const Timing::CoreTiming& CoreTiming() const;
+    [[nodiscard]] const Timing::CoreTiming & CoreTiming() const;
 
     /// Provides a reference to the kernel instance.
-    [[nodiscard]] Kernel::KernelCore& Kernel();
+    [[nodiscard]] Kernel::KernelCore & Kernel();
 
     /// Provides a constant reference to the kernel instance.
-    [[nodiscard]] const Kernel::KernelCore& Kernel() const;
+    [[nodiscard]] const Kernel::KernelCore & Kernel() const;
 
     /// Gets a mutable reference to the HID interface.
-    [[nodiscard]] HID::HIDCore& HIDCore();
+    [[nodiscard]] HID::HIDCore & HIDCore();
 
     /// Gets an immutable reference to the HID interface.
-    [[nodiscard]] const HID::HIDCore& HIDCore() const;
+    [[nodiscard]] const HID::HIDCore & HIDCore() const;
 
     /// Provides a reference to the internal PerfStats instance.
-    [[nodiscard]] Core::PerfStats& GetPerfStats();
+    [[nodiscard]] Core::PerfStats & GetPerfStats();
 
     /// Provides a constant reference to the internal PerfStats instance.
-    [[nodiscard]] const Core::PerfStats& GetPerfStats() const;
+    [[nodiscard]] const Core::PerfStats & GetPerfStats() const;
 
     /// Provides a reference to the speed limiter;
-    [[nodiscard]] Core::SpeedLimiter& SpeedLimiter();
+    [[nodiscard]] Core::SpeedLimiter & SpeedLimiter();
 
     /// Provides a constant reference to the speed limiter
-    [[nodiscard]] const Core::SpeedLimiter& SpeedLimiter() const;
+    [[nodiscard]] const Core::SpeedLimiter & SpeedLimiter() const;
 
     std::shared_ptr<InputCommon::InputSubsystem> & InputSubsystem() const;
 
@@ -314,52 +319,50 @@ public:
     /// Gets the name of the current game
     [[nodiscard]] LoaderResultStatus GetGameName(std::string& out) const;
 
-    void SetStatus(SystemResultStatus new_status, const char* details);
+    void SetStatus(SystemResultStatus new_status, const char * details);
 
-    [[nodiscard]] const std::string& GetStatusDetails() const;
+    [[nodiscard]] const std::string & GetStatusDetails() const;
 
     [[nodiscard]] Loader::AppLoader& GetAppLoader();
     [[nodiscard]] const Loader::AppLoader& GetAppLoader() const;
 
-    [[nodiscard]] Service::SM::ServiceManager& ServiceManager();
-    [[nodiscard]] const Service::SM::ServiceManager& ServiceManager() const;
+    [[nodiscard]] Service::SM::ServiceManager & ServiceManager();
+    [[nodiscard]] const Service::SM::ServiceManager & ServiceManager() const;
 
-    void AddGlueRegistrationForProcess(Kernel::KProcess & process, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t* nacpData, uint32_t nacpDataLen);
+    void AddGlueRegistrationForProcess(Kernel::KProcess & process, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t * nacpData, uint32_t nacpDataLen);
 
-    void RegisterCheatList(const std::vector<Memory::CheatEntry>& list,
-                           const std::array<u8, 0x20>& build_id, u64 main_region_begin,
-                           u64 main_region_size);
+    void RegisterCheatList(const std::vector<Memory::CheatEntry> & list, const std::array<u8, 0x20> & build_id, u64 main_region_begin, u64 main_region_size);
 
-    void SetFrontendAppletSet(Service::AM::Frontend::FrontendAppletSet&& set);
+    void SetFrontendAppletSet(Service::AM::Frontend::FrontendAppletSet && set);
 
-    [[nodiscard]] Service::AM::Frontend::FrontendAppletHolder& GetFrontendAppletHolder();
-    [[nodiscard]] const Service::AM::Frontend::FrontendAppletHolder& GetFrontendAppletHolder()
+    [[nodiscard]] Service::AM::Frontend::FrontendAppletHolder & GetFrontendAppletHolder();
+    [[nodiscard]] const Service::AM::Frontend::FrontendAppletHolder & GetFrontendAppletHolder()
         const;
 
-    [[nodiscard]] Service::AM::AppletManager& GetAppletManager();
+    [[nodiscard]] Service::AM::AppletManager & GetAppletManager();
 
     [[nodiscard]] IFileSystemController & GetFileSystemController();
-    [[nodiscard]] const Reporter& GetReporter() const;
+    [[nodiscard]] const Reporter & GetReporter() const;
 
-    [[nodiscard]] Service::Glue::ARPManager& GetARPManager();
-    [[nodiscard]] const Service::Glue::ARPManager& GetARPManager() const;
+    [[nodiscard]] Service::Glue::ARPManager & GetARPManager();
+    [[nodiscard]] const Service::Glue::ARPManager & GetARPManager() const;
 
-    [[nodiscard]] Service::APM::Controller& GetAPMController();
-    [[nodiscard]] const Service::APM::Controller& GetAPMController() const;
+    [[nodiscard]] Service::APM::Controller & GetAPMController();
+    [[nodiscard]] const Service::APM::Controller & GetAPMController() const;
 
-    [[nodiscard]] Service::Account::ProfileManager& GetProfileManager();
-    [[nodiscard]] const Service::Account::ProfileManager& GetProfileManager() const;
+    [[nodiscard]] Service::Account::ProfileManager & GetProfileManager();
+    [[nodiscard]] const Service::Account::ProfileManager & GetProfileManager() const;
 
-    [[nodiscard]] Core::Debugger& GetDebugger();
-    [[nodiscard]] const Core::Debugger& GetDebugger() const;
+    [[nodiscard]] Core::Debugger & GetDebugger();
+    [[nodiscard]] const Core::Debugger & GetDebugger() const;
 
     /// Gets a mutable reference to the Room Network.
-    [[nodiscard]] Network::RoomNetwork& GetRoomNetwork();
+    [[nodiscard]] Network::RoomNetwork & GetRoomNetwork();
 
     /// Gets an immutable reference to the Room Network.
-    [[nodiscard]] const Network::RoomNetwork& GetRoomNetwork() const;
+    [[nodiscard]] const Network::RoomNetwork & GetRoomNetwork() const;
 
-    [[nodiscard]] Tools::RenderdocAPI& GetRenderdocAPI();
+    [[nodiscard]] Tools::RenderdocAPI & GetRenderdocAPI();
 
     void SetExitLocked(bool locked);
     bool GetExitLocked() const;
@@ -367,8 +370,8 @@ public:
     void SetExitRequested(bool requested);
     bool GetExitRequested() const;
 
-    void SetApplicationProcessBuildID(const CurrentBuildProcessID& id);
-    [[nodiscard]] const CurrentBuildProcessID& GetApplicationProcessBuildID() const;
+    void SetApplicationProcessBuildID(const CurrentBuildProcessID & id);
+    [[nodiscard]] const CurrentBuildProcessID & GetApplicationProcessBuildID() const;
 
     /// Register a host thread as an emulated CPU Core.
     void RegisterCoreThread(std::size_t id);
@@ -386,10 +389,10 @@ public:
     [[nodiscard]] bool IsMulticore() const;
 
     /// Tells if the system debugger is enabled.
-    [[nodiscard]] bool DebuggerEnabled() const;
+    [[nodiscard]] bool DebuggerEnabled() const override;
 
     /// Runs a server instance until shutdown.
-    void RunServer(std::unique_ptr<Service::ServerManager>&& server_manager);
+    void RunServer(std::unique_ptr<Service::ServerManager> && server_manager);
 
     /// Type used for the frontend to designate a callback for System to re-launch the application
     /// using a specified program index.
@@ -400,7 +403,7 @@ public:
      * specified program index.
      * @param callback Callback from the frontend to relaunch the application.
      */
-    void RegisterExecuteProgramCallback(ExecuteProgramCallback&& callback);
+    void RegisterExecuteProgramCallback(ExecuteProgramCallback && callback);
 
     /**
      * Instructs the frontend to re-launch the application using the specified program_index.
@@ -412,7 +415,7 @@ public:
      * Gets a reference to the user channel stack.
      * It is used to transfer data between programs.
      */
-    [[nodiscard]] std::deque<std::vector<u8>>& GetUserChannel();
+    [[nodiscard]] std::deque<std::vector<u8>> & GetUserChannel();
 
     /// Type used for the frontend to designate a callback for System to exit the application.
     using ExitCallback = std::function<void()>;
@@ -421,7 +424,7 @@ public:
      * Registers a callback from the frontend for System to exit the application.
      * @param callback Callback from the frontend to exit the application.
      */
-    void RegisterExitCallback(ExitCallback&& callback);
+    void RegisterExitCallback(ExitCallback && callback);
 
     /// Instructs the frontend to exit the application.
     void Exit();

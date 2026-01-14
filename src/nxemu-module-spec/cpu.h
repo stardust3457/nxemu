@@ -71,6 +71,19 @@ struct CpuDebugWatchpoint
     CpuDebugWatchpointType type;
 };
 
+__interface ICoreTiming
+{
+    void AddTicks(uint64_t ticks) = 0;
+    int64_t GetDowncount() const = 0;
+    uint64_t GetClockTicks() const = 0;
+};
+
+__interface ICoreSystem
+{
+    bool DebuggerEnabled() const = 0;
+    ICoreTiming & Timing() = 0;
+};
+
 __interface IMemory
 {
     bool IsValidVirtualAddressRange(uint64_t base, uint64_t size) const = 0;
@@ -93,12 +106,6 @@ __interface IMemory
     bool WriteExclusive32(uint64_t addr, uint32_t value, uint32_t expected) = 0;
     bool WriteExclusive64(uint64_t addr, uint64_t value, uint64_t expected) = 0;
     bool WriteExclusive128(uint64_t addr, uint64_t valueHi, uint64_t valueLow, uint64_t expectedHi, uint64_t expectedLow) = 0;
-};
-
-__interface ICpuInfo
-{
-    uint64_t CpuTicks() = 0;
-    void ServiceCall(uint32_t index) = 0;
 };
 
 __interface IExclusiveMonitor
@@ -158,6 +165,7 @@ static_assert(sizeof(CpuThreadContext) == 0x320);
 __interface ICpuCore
 {
     IArm64Reg & Reg(void) = 0;
+    uint32_t GetSvcNumber() const = 0;
     void GetContext(CpuThreadContext & ctx) const = 0;
     CpuHaltReason Execute(void) = 0;
     void InvalidateCacheRange(uint64_t addr, uint64_t size) = 0;
@@ -171,7 +179,7 @@ __interface ICpu
     bool Initialize(void) = 0;
 
     IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) = 0;
-    ICpuCore * CreateCpuCore(ICpuInfo & info, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex) = 0;
+    ICpuCore * CreateCpuCore(ICoreSystem & system, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex) = 0;
 };
 
 EXPORT ICpu * CALL CreateCpu(ISystemModules & modules);

@@ -13,10 +13,10 @@ class DynarmicCallbacks64 :
     public Dynarmic::A64::UserCallbacks
 {
 public:
-    explicit DynarmicCallbacks64(ArmDynarmic64 & parent, ICpuInfo & cpuInfo, IKernelProcess & process) :
+    explicit DynarmicCallbacks64(ArmDynarmic64 & parent, ICoreSystem & system, IKernelProcess & process) :
         m_parent{parent}, 
         m_memory(process.GetMemory()),
-        m_CpuInfo(cpuInfo),
+        m_system(system),
         m_process(process),
         m_debugger_enabled(false),
         m_check_memory_access{m_debugger_enabled || !Settings::values.cpuopt_ignore_memory_aborts.GetValue()}
@@ -135,9 +135,10 @@ public:
         g_notify->BreakPoint(__FILE__, __LINE__);
     }
 
-    void CallSVC(std::uint32_t swi)
+    void CallSVC(std::uint32_t svc)
     {
-        m_CpuInfo.ServiceCall(swi);
+        m_parent.m_svc = svc;
+        m_parent.HaltExecution(CpuHaltReason::SupervisorCall);
     }
 
     bool IsReadOnlyMemory(std::uint64_t /*vaddr*/)
@@ -174,13 +175,7 @@ public:
 
     std::uint64_t GetCNTPCT()
     {
-        const uint64_t BASE_CLOCK_RATE = 1019215872; // Switch clock speed - 1020MHz
-        const uint64_t COUNT_FREQ = 19200000;
-
-        uint64_t ticks = m_CpuInfo.CpuTicks();
-        uint64_t hi, rem;
-        uint64_t lo = mull128_u64(ticks, COUNT_FREQ, &hi);
-        return div128_to_64(hi, lo, BASE_CLOCK_RATE, &rem);
+        return m_parent.m_system.Timing().GetClockTicks();
     }
 
     bool CheckMemoryAccess(uint64_t /*addr*/, uint64_t /*size*/, CpuDebugWatchpointType /*type*/)
@@ -195,21 +190,22 @@ public:
 
     ArmDynarmic64 & m_parent;
     IMemory & m_memory;
-    ICpuInfo & m_CpuInfo;
+    ICoreSystem & m_system;
     IKernelProcess & m_process;
     u64 m_tpidr_el0{};
     const bool m_debugger_enabled{};
     const bool m_check_memory_access{};
 };
 
-ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, IKernelProcess & process, uint32_t coreIndex) :
+ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICoreSystem & system, IKernelProcess & process, uint32_t coreIndex) :
     m_jit(nullptr),
     m_modules(modules),
-    m_CpuInfo(cpuInfo),
+    m_system(system),
     m_memory(process.GetMemory()),
     m_OperatingSystem(modules.OperatingSystem()),
     m_monitor(monitor),
-    m_cb(std::make_unique<DynarmicCallbacks64>(*this, cpuInfo, process)),
+    m_cb(std::make_unique<DynarmicCallbacks64>(*this, system, process)),
+    m_svc(0),
     m_process(process),
     m_coreIndex(coreIndex)
 {
@@ -219,6 +215,11 @@ ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModule
 
 ArmDynarmic64::~ArmDynarmic64()
 {
+}
+
+uint32_t ArmDynarmic64::GetSvcNumber() const
+{
+    return m_svc;
 }
 
 CpuHaltReason ArmDynarmic64::Execute()

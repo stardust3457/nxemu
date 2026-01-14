@@ -6,7 +6,7 @@
 
 namespace Core
 {
-class CpuModuleCallback : public ICpuInfo
+class CpuModuleCallback 
 {
 public:
     explicit CpuModuleCallback(ICpuCore *& arm64Executor, Core::System & system, Kernel::KProcess * process) :
@@ -28,7 +28,7 @@ public:
         return m_system.CoreTiming().GetClockTicks();
     }
 
-    void ServiceCall(uint32_t index)
+    void CallSVC(uint32_t index)
     {
         m_svn = index;
         m_cpuCore->HaltExecution(CpuHaltReason::SupervisorCall);
@@ -58,7 +58,7 @@ ArmCpuModule::ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClo
 {
     if (is64Bit)
     {
-        m_cpuCore = system.GetSystemModules().Cpu().CreateCpuCore(*m_cb, is64Bit, usesWallClock, *process, coreIndex);
+        m_cpuCore = system.GetSystemModules().Cpu().CreateCpuCore(system, is64Bit, usesWallClock, *process, coreIndex);
     }
 }
 
@@ -203,7 +203,7 @@ void ArmCpuModule::SetSvcArguments(std::span<const uint64_t, 8> args)
 
 u32 ArmCpuModule::GetSvcNumber() const
 {
-    return m_cb->svn();
+    return m_cpuCore->GetSvcNumber();
 }
 
 void ArmCpuModule::SignalInterrupt(Kernel::KThread * thread)
