@@ -31,12 +31,7 @@ public:
     void ServiceCall(uint32_t index)
     {
         m_svn = index;
-        m_cpuCore->HaltExecution(ICpuCore::HaltReason::SupervisorCall);
-    }
-
-    IMemory & Memory() override
-    {
-        return m_memory;
+        m_cpuCore->HaltExecution(CpuHaltReason::SupervisorCall);
     }
 
     bool ReadMemory(uint64_t addr, uint8_t * Buffer, uint32_t Len)
@@ -98,12 +93,12 @@ HaltReason ArmCpuModule::RunThread(Kernel::KThread * thread)
 {
     if (m_cpuCore != nullptr)
     {
-        ICpuCore::HaltReason reason = m_cpuCore->Execute();
+        CpuHaltReason reason = m_cpuCore->Execute();
         switch (reason)
         {
-        case ICpuCore::HaltReason::BreakLoop: return HaltReason::BreakLoop;
-        case ICpuCore::HaltReason::SupervisorCall: return HaltReason::SupervisorCall;
-        case ICpuCore::HaltReason::SupervisorCallBreakLoop: return (HaltReason)(((uint32_t)HaltReason::SupervisorCall | (uint32_t)HaltReason::BreakLoop));
+        case CpuHaltReason::BreakLoop: return HaltReason::BreakLoop;
+        case CpuHaltReason::SupervisorCall: return HaltReason::SupervisorCall;
+        case CpuHaltReason::SupervisorCallBreakLoop: return (HaltReason)(((uint32_t)HaltReason::SupervisorCall | (uint32_t)HaltReason::BreakLoop));
         default:
             UNIMPLEMENTED();
         }
@@ -215,7 +210,7 @@ void ArmCpuModule::SignalInterrupt(Kernel::KThread * thread)
 {
     if (m_cpuCore != nullptr)
     {
-        m_cpuCore->HaltExecution(ICpuCore::HaltReason::BreakLoop);
+        m_cpuCore->HaltExecution(CpuHaltReason::BreakLoop);
     }
     else
     {

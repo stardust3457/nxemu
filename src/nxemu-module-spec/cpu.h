@@ -47,17 +47,28 @@ enum class CpuDebugWatchpointType : uint8_t
     ReadOrWrite = Read | Write,
 };
 
+enum class ProcessorArchitecture
+{
+    AArch64,
+    AArch32,
+};
+
+enum class CpuHaltReason
+{
+    StepThread,
+    DataAbort,
+    BreakLoop,
+    SupervisorCall,
+    SupervisorCallBreakLoop,
+    InstructionBreakpoint,
+    PrefetchAbort,
+};
+
 struct CpuDebugWatchpoint
 {
     uint64_t startAddress;
     uint64_t endAddress;
     CpuDebugWatchpointType type;
-};
-
-enum class ProcessorArchitecture
-{
-    AArch64,
-    AArch32,
 };
 
 __interface IMemory
@@ -70,6 +81,7 @@ __interface IMemory
     uint16_t Read16(uint64_t addr) = 0;
     uint32_t Read32(uint64_t addr) = 0;
     uint64_t Read64(uint64_t addr) = 0;
+    bool ReadBlock(uint64_t src_addr, void * dest_buffer, uint64_t size) = 0;
 
     void Write8(uint64_t addr, uint8_t value) = 0;
     void Write16(uint64_t addr, uint16_t value) = 0;
@@ -87,9 +99,6 @@ __interface ICpuInfo
 {
     uint64_t CpuTicks() = 0;
     void ServiceCall(uint32_t index) = 0;
-    IMemory & Memory() = 0;
-    bool ReadMemory(uint64_t addr, uint8_t * buffer, uint32_t len) = 0;
-    bool WriteMemory(uint64_t addr, const uint8_t * buffer, uint32_t len) = 0;
 };
 
 __interface IExclusiveMonitor
@@ -148,19 +157,11 @@ static_assert(sizeof(CpuThreadContext) == 0x320);
 
 __interface ICpuCore
 {
-    enum class HaltReason
-    {
-        Stopped,
-        SupervisorCall,
-        SupervisorCallBreakLoop,
-        BreakLoop,
-    };
-
     IArm64Reg & Reg(void) = 0;
     void GetContext(CpuThreadContext & ctx) const = 0;
-    HaltReason Execute(void) = 0;
+    CpuHaltReason Execute(void) = 0;
     void InvalidateCacheRange(uint64_t addr, uint64_t size) = 0;
-    void HaltExecution(HaltReason hr) = 0;
+    void HaltExecution(CpuHaltReason hr) = 0;
     
     void Release() = 0;
 };

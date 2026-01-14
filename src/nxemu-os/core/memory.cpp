@@ -1127,7 +1127,7 @@ std::string Memory::ReadCString(Common::ProcessAddress vaddr, std::size_t max_le
     return impl->ReadCString(vaddr, max_length);
 }
 
-bool Memory::ReadBlock(const Common::ProcessAddress src_addr, void* dest_buffer, const std::size_t size)
+bool Memory::ReadBlock(uint64_t src_addr, void * dest_buffer, uint64_t size)
 {
     return impl->ReadBlock(src_addr, dest_buffer, size);
 }

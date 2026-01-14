@@ -349,7 +349,7 @@ public:
      * @post The range [dest_buffer, size) contains the read bytes from the
      *       current process' address space.
      */
-    bool ReadBlock(Common::ProcessAddress src_addr, void* dest_buffer, std::size_t size);
+    bool ReadBlock(uint64_t src_addr, void * dest_buffer, uint64_t size) override;
 
     /**
      * Reads a contiguous block of bytes from the current process' address space.

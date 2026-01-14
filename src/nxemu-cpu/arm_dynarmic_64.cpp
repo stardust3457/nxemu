@@ -13,10 +13,11 @@ class DynarmicCallbacks64 :
     public Dynarmic::A64::UserCallbacks
 {
 public:
-    explicit DynarmicCallbacks64(ArmDynarmic64 & parent, ICpuInfo & cpuInfo) :
+    explicit DynarmicCallbacks64(ArmDynarmic64 & parent, ICpuInfo & cpuInfo, IKernelProcess & process) :
         m_parent{parent}, 
-        m_memory(cpuInfo.Memory()),
+        m_memory(process.GetMemory()),
         m_CpuInfo(cpuInfo),
+        m_process(process),
         m_debugger_enabled(false),
         m_check_memory_access{m_debugger_enabled || !Settings::values.cpuopt_ignore_memory_aborts.GetValue()}
     {
@@ -57,7 +58,7 @@ public:
     Dynarmic::A64::Vector MemoryRead128(uint64_t vaddr)
     {
         Dynarmic::A64::Vector Value;
-        if (m_CpuInfo.ReadMemory(vaddr, (uint8_t *)&Value, sizeof(Value)))
+        if (m_memory.ReadBlock(vaddr, (uint8_t *)&Value, sizeof(Value)))
         {
             return Value;
         }
@@ -96,7 +97,11 @@ public:
     }
     void MemoryWrite128(std::uint64_t vaddr, Dynarmic::A64::Vector value)
     {
-        m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+        if (!m_check_memory_access || CheckMemoryAccess(vaddr, 16, CpuDebugWatchpointType::Write))
+        {
+            m_memory.Write64(vaddr, value[0]);
+            m_memory.Write64(vaddr + 8, value[1]);
+        }
     }
 
     bool MemoryWriteExclusive8(u64 vaddr, std::uint8_t value, std::uint8_t expected) override
@@ -115,9 +120,9 @@ public:
     {
         return CheckMemoryAccess(vaddr, 8, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive64(vaddr, value, expected);
     }
-    bool MemoryWriteExclusive128(std::uint64_t vaddr, Dynarmic::A64::Vector value, Dynarmic::A64::Vector /*expected*/)
+    bool MemoryWriteExclusive128(std::uint64_t vaddr, Dynarmic::A64::Vector value, Dynarmic::A64::Vector expected)
     {
-        return m_CpuInfo.WriteMemory(vaddr, (const uint8_t *)&value, sizeof(value));
+        return CheckMemoryAccess(vaddr, 16, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive128(vaddr, value[1], value[0], expected[1], expected[0]);
     }
 
     void InterpreterFallback(std::uint64_t /*pc*/, size_t /*num_instructions*/)
@@ -178,7 +183,7 @@ public:
         return div128_to_64(hi, lo, BASE_CLOCK_RATE, &rem);
     }
 
-    bool CheckMemoryAccess(u64 addr, u64 size, CpuDebugWatchpointType type)
+    bool CheckMemoryAccess(uint64_t /*addr*/, uint64_t /*size*/, CpuDebugWatchpointType /*type*/)
     {
         if (!m_check_memory_access)
         {
@@ -191,19 +196,21 @@ public:
     ArmDynarmic64 & m_parent;
     IMemory & m_memory;
     ICpuInfo & m_CpuInfo;
+    IKernelProcess & m_process;
     u64 m_tpidr_el0{};
     const bool m_debugger_enabled{};
     const bool m_check_memory_access{};
 };
 
-ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, uint32_t coreIndex) :
+ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICpuInfo & cpuInfo, IKernelProcess & process, uint32_t coreIndex) :
     m_jit(nullptr),
     m_modules(modules),
     m_CpuInfo(cpuInfo),
-    m_memory(cpuInfo.Memory()),
+    m_memory(process.GetMemory()),
     m_OperatingSystem(modules.OperatingSystem()),
     m_monitor(monitor),
-    m_cb(std::make_unique<DynarmicCallbacks64>(*this, cpuInfo)),
+    m_cb(std::make_unique<DynarmicCallbacks64>(*this, cpuInfo, process)),
+    m_process(process),
     m_coreIndex(coreIndex)
 {
     m_jit = MakeJit(monitor);
@@ -214,19 +221,19 @@ ArmDynarmic64::~ArmDynarmic64()
 {
 }
 
-ICpuCore::HaltReason ArmDynarmic64::Execute()
+CpuHaltReason ArmDynarmic64::Execute()
 {
     m_jit->ClearExclusiveState();
     Dynarmic::HaltReason Reason = m_jit->Run(); 
     switch (Reason)
     {
-    case Dynarmic::HaltReason::UserDefined2: return ICpuCore::HaltReason::BreakLoop;
-    case Dynarmic::HaltReason::UserDefined3: return ICpuCore::HaltReason::SupervisorCall;
-    case (Dynarmic::HaltReason::UserDefined2and3): return ICpuCore::HaltReason::SupervisorCallBreakLoop;
+    case Dynarmic::HaltReason::UserDefined2: return CpuHaltReason::BreakLoop;
+    case Dynarmic::HaltReason::UserDefined3: return CpuHaltReason::SupervisorCall;
+    case (Dynarmic::HaltReason::UserDefined2and3): return CpuHaltReason::SupervisorCallBreakLoop;
     }
 
     g_notify->BreakPoint(__FILE__, __LINE__);
-    return HaltReason::Stopped;
+    return CpuHaltReason::BreakLoop;
 }
 
 void ArmDynarmic64::InvalidateCacheRange(uint64_t addr, uint64_t size)
@@ -234,12 +241,12 @@ void ArmDynarmic64::InvalidateCacheRange(uint64_t addr, uint64_t size)
     m_jit->InvalidateCacheRange(addr, size);
 }
 
-void ArmDynarmic64::HaltExecution(HaltReason hr)
+void ArmDynarmic64::HaltExecution(CpuHaltReason hr)
 {
     switch (hr)
     {
-    case HaltReason::BreakLoop: m_jit->HaltExecution(Dynarmic::HaltReason::UserDefined2); break;
-    case HaltReason::SupervisorCall: m_jit->HaltExecution(Dynarmic::HaltReason::UserDefined3); break;
+    case CpuHaltReason::BreakLoop: m_jit->HaltExecution(Dynarmic::HaltReason::UserDefined2); break;
+    case CpuHaltReason::SupervisorCall: m_jit->HaltExecution(Dynarmic::HaltReason::UserDefined3); break;
     default:
         g_notify->BreakPoint(__FILE__, __LINE__);
     }
