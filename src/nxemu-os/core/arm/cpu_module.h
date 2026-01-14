@@ -1,46 +1,73 @@
 #pragma once
 
-#include "core/arm/arm_interface.h"
+#include <nxemu-module-spec/cpu.h>
+#include "core/hardware_properties.h"
 #include <memory>
+#include <span>
 
 __interface ISystemModules;
 __interface IArm64Executor;
+
+namespace Kernel
+{
+class KProcess;
+class KThread;
+}
 
 namespace Core
 {
 class System;
 class CpuModuleCallback;
 
-class ArmCpuModule final : public ArmInterface
+enum class HaltReason : uint64_t
 {
+    StepThread = 0x00000001,
+    DataAbort = 0x00000004,
+    BreakLoop = 0x02000000,
+    SupervisorCall = 0x04000000,
+    InstructionBreakpoint = 0x08000000,
+    PrefetchAbort = 0x20000000,
+};
+
+class ArmCpuModule
+{
+    using WatchpointArray = std::array<CpuDebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS>;
+
 public:
     ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClock, Kernel::KProcess * process, uint32_t coreIndex);
     ~ArmCpuModule();
 
-    ProcessorArchitecture GetArchitecture() const override;
-    HaltReason RunThread(Kernel::KThread * thread) override;
-    HaltReason StepThread(Kernel::KThread * thread) override;
+    void Initialize();
+    void LockThread(Kernel::KThread * thread);
+    void UnlockThread(Kernel::KThread * thread);
+    ProcessorArchitecture GetArchitecture() const;
 
-    void GetContext(CpuThreadContext & ctx) const override;
-    void SetContext(const CpuThreadContext & ctx) override;
-    void SetTpidrroEl0(u64 value) override;
+    HaltReason RunThread(Kernel::KThread * thread);
+    HaltReason StepThread(Kernel::KThread * thread);
 
-    void GetSvcArguments(std::span<uint64_t, 8> args) const override;
-    void SetSvcArguments(std::span<const uint64_t, 8> args) override;
-    u32 GetSvcNumber() const override;
+    void GetContext(CpuThreadContext & ctx) const;
+    void SetContext(const CpuThreadContext & ctx);
+    void SetTpidrroEl0(uint64_t value);
 
-    void SignalInterrupt(Kernel::KThread * thread) override;
-    void ClearInstructionCache() override;
-    void InvalidateCacheRange(u64 addr, std::size_t size) override;
+    void GetSvcArguments(std::span<uint64_t, 8> args) const;
+    void SetSvcArguments(std::span<const uint64_t, 8> args);
+    uint32_t GetSvcNumber() const;
+
+    void SignalInterrupt(Kernel::KThread * thread);
+    void ClearInstructionCache();
+    void InvalidateCacheRange(uint64_t addr, std::uint64_t size);
+
+    void RewindBreakpointInstruction();
+    void SetWatchpointArray(const CpuDebugWatchpoint * watchpoints, uint32_t count);
 
 protected:
-    const CpuDebugWatchpoint * HaltedWatchpoint() const override;
-    void RewindBreakpointInstruction() override;
+    const CpuDebugWatchpoint * HaltedWatchpoint() const;
 
 private:
     friend class CpuModuleCallback;
     Core::System & m_system;
     std::unique_ptr<CpuModuleCallback> m_cb{};
     ICpuCore * m_cpuCore;
+    WatchpointArray m_watchpoints{};
 };
 }

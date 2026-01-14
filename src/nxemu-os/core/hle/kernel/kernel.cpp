@@ -16,8 +16,6 @@
 #include "yuzu_common/scope_exit.h"
 #include "yuzu_common/thread.h"
 #include "yuzu_common/thread_worker.h"
-#include "core/arm/arm_interface.h"
-#include "core/arm/exclusive_monitor.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/cpu_manager.h"

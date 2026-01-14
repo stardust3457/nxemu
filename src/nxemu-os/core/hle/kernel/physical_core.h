@@ -7,8 +7,9 @@
 #include <cstddef>
 #include <memory>
 #include <mutex>
+#include <yuzu_common/common_funcs.h>
 
-#include "core/arm/arm_interface.h"
+#include <nxemu-module-spec/cpu.h>
 
 namespace Kernel {
 class KernelCore;
@@ -17,9 +18,11 @@ class KThread;
 
 namespace Core {
 class System;
+class ArmCpuModule;
 } // namespace Core
 
-namespace Kernel {
+namespace Kernel
+{
 
 class PhysicalCore
 {
@@ -70,7 +73,7 @@ private:
 
     std::mutex m_guard;
     std::condition_variable m_on_interrupt;
-    Core::ArmInterface * m_cpucore{};
+    Core::ArmCpuModule * m_cpucore{};
     KThread * m_current_thread{};
     bool m_is_interrupted{};
     bool m_is_single_core{};

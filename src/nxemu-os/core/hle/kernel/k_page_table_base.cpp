@@ -8,6 +8,7 @@
 #include "core/hle/kernel/k_page_table_base.h"
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
 #include "core/hle/kernel/k_system_resource.h"
+#include "core/arm/cpu_module.h"
 
 namespace Kernel {
 

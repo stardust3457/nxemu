@@ -6,7 +6,6 @@
 #include <map>
 #include <nxemu-module-spec/operating_system.h>
 #include <nxemu-module-spec/cpu.h>
-#include "core/arm/arm_interface.h"
 #include "core/hle/kernel/code_set.h"
 #include "core/hle/kernel/k_address_arbiter.h"
 #include "core/hle/kernel/k_capabilities.h"
@@ -111,7 +110,7 @@ private:
     bool m_is_suspended{};
     bool m_is_immortal{};
     bool m_is_handle_table_initialized{};
-    std::array<std::unique_ptr<Core::ArmInterface>, Core::Hardware::NUM_CPU_CORES> m_cpucore{};
+    std::array<std::unique_ptr<Core::ArmCpuModule>, Core::Hardware::NUM_CPU_CORES> m_cpucore{};
     std::array<KThread *, Core::Hardware::NUM_CPU_CORES> m_running_threads{};
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_idle_counts{};
     std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_switch_counts{};
@@ -554,7 +553,7 @@ public:
     }
 #endif
 
-    Core::ArmInterface * GetCpuCore(int32_t coreIndex) const
+    Core::ArmCpuModule * GetCpuCore(int32_t coreIndex) const
     {
         return m_cpucore[coreIndex].get();
     }

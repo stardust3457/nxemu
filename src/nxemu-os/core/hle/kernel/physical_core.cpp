@@ -10,6 +10,7 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/physical_core.h"
 #include "core/hle/kernel/svc.h"
+#include "core/arm/cpu_module.h"
 
 namespace Kernel {
 
@@ -99,7 +100,7 @@ void PhysicalCore::RunThread(Kernel::KThread * thread)
             {
                 hr = interface->StepThread(thread);
 
-                if (True(hr & Core::HaltReason::StepThread))
+                if (((uint32_t)hr & (uint32_t)Core::HaltReason::StepThread) != 0)
                 {
                     thread->SetStepState(StepState::StepPerformed);
                 }
@@ -113,11 +114,11 @@ void PhysicalCore::RunThread(Kernel::KThread * thread)
         }
 
         // Determine why we stopped.
-        const bool supervisor_call = True(hr & Core::HaltReason::SupervisorCall);
-        const bool prefetch_abort = True(hr & Core::HaltReason::PrefetchAbort);
-        const bool breakpoint = True(hr & Core::HaltReason::InstructionBreakpoint);
-        const bool data_abort = True(hr & Core::HaltReason::DataAbort);
-        const bool interrupt = True(hr & Core::HaltReason::BreakLoop);
+        const bool supervisor_call = ((uint32_t)hr & (uint32_t)Core::HaltReason::SupervisorCall) != 0;
+        const bool prefetch_abort = ((uint32_t)hr & (uint32_t)Core::HaltReason::PrefetchAbort) != 0;
+        const bool breakpoint = ((uint32_t)hr & (uint32_t)Core::HaltReason::InstructionBreakpoint) != 0;
+        const bool data_abort = ((uint32_t)hr & (uint32_t)Core::HaltReason::DataAbort) != 0;
+        const bool interrupt = ((uint32_t)hr & (uint32_t)Core::HaltReason::BreakLoop) != 0;
 
         // Since scheduling may occur here, we cannot use any cached
         // state after returning from calls we make.

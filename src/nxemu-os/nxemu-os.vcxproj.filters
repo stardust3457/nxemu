@@ -1443,9 +1443,6 @@
     <ClInclude Include="core\hle\service\vi\vsync_manager.h">
       <Filter>Header Files\core\hle\service\vi</Filter>
     </ClInclude>
-    <ClInclude Include="core\arm\arm_interface.h">
-      <Filter>Header Files\core\arm</Filter>
-    </ClInclude>
     <ClInclude Include="core\arm\exclusive_monitor.h">
       <Filter>Header Files\core\arm</Filter>
     </ClInclude>

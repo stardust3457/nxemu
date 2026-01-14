@@ -12,12 +12,12 @@
 #include <utility>
 #include <vector>
 
+#include <nxemu-module-spec/cpu.h>
 #include "yuzu_common/intrusive_list.h"
 
 #include "yuzu_common/intrusive_red_black_tree.h"
 #include "yuzu_common/scratch_buffer.h"
 #include "yuzu_common/spin_lock.h"
-#include "core/arm/arm_interface.h"
 #include "core/hle/kernel/k_affinity_mask.h"
 #include "core/hle/kernel/k_light_lock.h"
 #include "core/hle/kernel/k_spin_lock.h"

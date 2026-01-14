@@ -57,7 +57,6 @@ public:
 };
 
 ArmCpuModule::ArmCpuModule(Core::System & system, bool is64Bit, bool usesWallClock, Kernel::KProcess * process, uint32_t coreIndex) :
-    ArmInterface{usesWallClock},
     m_system(system),
     m_cb(std::make_unique<CpuModuleCallback>(m_cpuCore, system, process)),
     m_cpuCore(nullptr)
@@ -77,6 +76,18 @@ ArmCpuModule::~ArmCpuModule()
     }
 }
 
+void ArmCpuModule::Initialize()
+{
+}
+
+void ArmCpuModule::LockThread(Kernel::KThread * /*thread*/)
+{
+}
+
+void ArmCpuModule::UnlockThread(Kernel::KThread * /*thread*/)
+{
+}
+
 ProcessorArchitecture ArmCpuModule::GetArchitecture() const
 {
     UNIMPLEMENTED();
@@ -92,7 +103,7 @@ HaltReason ArmCpuModule::RunThread(Kernel::KThread * thread)
         {
         case ICpuCore::HaltReason::BreakLoop: return HaltReason::BreakLoop;
         case ICpuCore::HaltReason::SupervisorCall: return HaltReason::SupervisorCall;
-        case ICpuCore::HaltReason::SupervisorCallBreakLoop: return (HaltReason::SupervisorCall | HaltReason::BreakLoop);
+        case ICpuCore::HaltReason::SupervisorCallBreakLoop: return (HaltReason)(((uint32_t)HaltReason::SupervisorCall | (uint32_t)HaltReason::BreakLoop));
         default:
             UNIMPLEMENTED();
         }
@@ -238,6 +249,14 @@ const CpuDebugWatchpoint * ArmCpuModule::HaltedWatchpoint() const
 void ArmCpuModule::RewindBreakpointInstruction()
 {
     UNIMPLEMENTED();
+}
+
+void ArmCpuModule::SetWatchpointArray(const CpuDebugWatchpoint * watchpoints, uint32_t count)
+{
+    for (uint32_t i = 0, n = count < (uint32_t)m_watchpoints.size() ? count : (uint32_t)m_watchpoints.size(); i < n; i++)
+    {
+        m_watchpoints[i] = watchpoints[i];
+    }
 }
 
 }
