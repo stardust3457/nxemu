@@ -112,8 +112,8 @@ Result KThread::Initialize(KThreadFunction func, uintptr_t arg, KProcessAddress 
     ASSERT(0 <= virt_core && virt_core < static_cast<s32>(Common::BitSize<u64>()));
 
     // Convert the virtual core to a physical core.
-    const s32 phys_core = Core::Hardware::VirtualToPhysicalCoreMap[virt_core];
-    ASSERT(0 <= phys_core && phys_core < static_cast<s32>(Core::Hardware::NUM_CPU_CORES));
+    const s32 phys_core = Hardware::VirtualToPhysicalCoreMap[virt_core];
+    ASSERT(0 <= phys_core && phys_core < static_cast<s32>(Hardware::NUM_CPU_CORES));
 
     // First, clear the TLS address.
     m_tls_address = {};
@@ -428,7 +428,7 @@ void KThread::StartTermination() {
 void KThread::FinishTermination() {
     // Ensure that the thread is not executing on any core.
     if (m_parent != nullptr) {
-        for (std::size_t i = 0; i < static_cast<std::size_t>(Core::Hardware::NUM_CPU_CORES); ++i) {
+        for (std::size_t i = 0; i < static_cast<std::size_t>(Hardware::NUM_CPU_CORES); ++i) {
             KThread* core_thread{};
             do {
                 core_thread = m_kernel.Scheduler(i).GetSchedulerCurrentThread();
@@ -630,14 +630,14 @@ Result KThread::SetCoreMask(s32 core_id, u64 v_affinity_mask) {
 
         // Translate the virtual core to a physical core.
         if (core_id >= 0) {
-            core_id = Core::Hardware::VirtualToPhysicalCoreMap[core_id];
+            core_id = Hardware::VirtualToPhysicalCoreMap[core_id];
         }
 
         // Translate the virtual affinity mask to a physical one.
         while (v_affinity_mask != 0) {
             const u64 next = std::countr_zero(v_affinity_mask);
             v_affinity_mask &= ~(1ULL << next);
-            p_affinity_mask |= (1ULL << Core::Hardware::VirtualToPhysicalCoreMap[next]);
+            p_affinity_mask |= (1ULL << Hardware::VirtualToPhysicalCoreMap[next]);
         }
 
         // If we haven't disabled migration, perform an affinity change.
@@ -685,7 +685,7 @@ Result KThread::SetCoreMask(s32 core_id, u64 v_affinity_mask) {
             // Check if the thread is currently running.
             bool thread_is_current{};
             s32 thread_core;
-            for (thread_core = 0; thread_core < static_cast<s32>(Core::Hardware::NUM_CPU_CORES);
+            for (thread_core = 0; thread_core < static_cast<s32>(Hardware::NUM_CPU_CORES);
                  ++thread_core) {
                 if (m_kernel.Scheduler(thread_core).GetSchedulerCurrentThread() == this) {
                     thread_is_current = true;
@@ -890,7 +890,7 @@ Result KThread::SetActivity(Svc::ThreadActivity activity) {
             } else {
                 // Check if the thread is currently running.
                 // If it is, we'll need to retry.
-                for (auto i = 0; i < static_cast<s32>(Core::Hardware::NUM_CPU_CORES); ++i) {
+                for (auto i = 0; i < static_cast<s32>(Hardware::NUM_CPU_CORES); ++i) {
                     if (m_kernel.Scheduler(i).GetSchedulerCurrentThread() == this) {
                         thread_is_current = true;
                         break;

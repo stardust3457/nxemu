@@ -23,8 +23,8 @@ Result KCapabilities::InitializeForKip(std::span<const u32> kern_caps,
     m_program_type = 0;
 
     // Initial processes may run on all cores.
-    constexpr u64 VirtMask = Core::Hardware::VirtualCoreMask;
-    constexpr u64 PhysMask = Core::Hardware::ConvertVirtualCoreMaskToPhysical(VirtMask);
+    constexpr u64 VirtMask = Hardware::VirtualCoreMask;
+    constexpr u64 PhysMask = Hardware::ConvertVirtualCoreMaskToPhysical(VirtMask);
 
     m_core_mask = VirtMask;
     m_phys_core_mask = PhysMask;
@@ -75,7 +75,7 @@ Result KCapabilities::SetCorePriorityCapability(const u32 cap) {
 
     R_UNLESS(min_core <= max_core, ResultInvalidCombination);
     R_UNLESS(min_prio <= max_prio, ResultInvalidCombination);
-    R_UNLESS(max_core < Core::Hardware::NumVirtualCores, ResultInvalidCoreId);
+    R_UNLESS(max_core < Hardware::NumVirtualCores, ResultInvalidCoreId);
 
     ASSERT(max_prio < Common::BitSize<u64>());
 
@@ -83,10 +83,10 @@ Result KCapabilities::SetCorePriorityCapability(const u32 cap) {
     for (auto core_id = min_core; core_id <= max_core; core_id++) {
         m_core_mask |= (1ULL << core_id);
     }
-    ASSERT((m_core_mask & Core::Hardware::VirtualCoreMask) == m_core_mask);
+    ASSERT((m_core_mask & Hardware::VirtualCoreMask) == m_core_mask);
 
     // Set physical core mask.
-    m_phys_core_mask = Core::Hardware::ConvertVirtualCoreMaskToPhysical(m_core_mask);
+    m_phys_core_mask = Hardware::ConvertVirtualCoreMaskToPhysical(m_core_mask);
 
     // Set priority mask.
     for (auto prio = min_prio; prio <= max_prio; prio++) {

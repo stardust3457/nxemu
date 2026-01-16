@@ -41,7 +41,7 @@
   <ItemGroup>
     <ClInclude Include="..\nxemu-plugin-spec\Base.h" />
     <ClInclude Include="..\nxemu-plugin-spec\Cpu.h" />
-    <ClInclude Include="arm64_registers.h" />
+    <ClInclude Include="arm_dynarmic.h" />
     <ClInclude Include="arm_dynarmic_64.h" />
     <ClInclude Include="backend\arm64\a32_jitstate.h" />
     <ClInclude Include="backend\arm64\a64_address_space.h" />
@@ -167,7 +167,7 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="arm64_registers.cpp	" />
+    <ClCompile Include="arm_dynarmic.cpp" />
     <ClCompile Include="arm_dynarmic_64.cpp" />
     <ClCompile Include="cpu_manager.cpp" />
     <ClCompile Include="dynarmic\backend\block_range_information.cpp" />

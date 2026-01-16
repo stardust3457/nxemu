@@ -19,15 +19,14 @@ namespace Kernel {
 class KernelCore;
 class SchedulerLock;
 
-using KSchedulerPriorityQueue =
-    KPriorityQueue<KThread, Core::Hardware::NUM_CPU_CORES, Svc::LowestThreadPriority,
-                   Svc::HighestThreadPriority>;
+using KSchedulerPriorityQueue = KPriorityQueue<KThread, Hardware::NUM_CPU_CORES, Svc::LowestThreadPriority, Svc::HighestThreadPriority>;
 
 static constexpr s32 HighestCoreMigrationAllowedPriority = 2;
 static_assert(Svc::LowestThreadPriority >= HighestCoreMigrationAllowedPriority);
 static_assert(Svc::HighestThreadPriority <= HighestCoreMigrationAllowedPriority);
 
-class GlobalSchedulerContext final {
+class GlobalSchedulerContext final
+{
     friend class KScheduler;
 
 public:

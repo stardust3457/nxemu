@@ -10,6 +10,7 @@
 #include "yuzu_common/yuzu_assert.h"
 #include "yuzu_common/atomic_ops.h"
 #include "yuzu_common/common_types.h"
+#include "yuzu_common/hardware_properties.h"
 #include "yuzu_common/heap_tracker.h"
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/page_table.h"
@@ -930,7 +931,7 @@ struct Memory::Impl {
     {
         const auto * p = GetPointerImpl(
             v_address, []() {}, []() {});
-        constexpr size_t sys_core = Core::Hardware::NUM_CPU_CORES - 1;
+        constexpr size_t sys_core = Hardware::NUM_CPU_CORES - 1;
         const size_t core = std::min(system.GetCurrentHostThreadID(),
                                      sys_core); // any other calls threads go to syscore.
 
@@ -967,9 +968,9 @@ struct Memory::Impl {
 
     Core::System& system;
     Common::PageTable* current_page_table = nullptr;
-    std::array<RasterizerDownloadArea, Core::Hardware::NUM_CPU_CORES> rasterizer_read_areas{};
-    std::array<GPUDirtyState, Core::Hardware::NUM_CPU_CORES> rasterizer_write_areas{};
-    std::array<Common::ScratchBuffer<u32>, Core::Hardware::NUM_CPU_CORES> scratch_buffers{};
+    std::array<RasterizerDownloadArea, Hardware::NUM_CPU_CORES> rasterizer_read_areas{};
+    std::array<GPUDirtyState, Hardware::NUM_CPU_CORES> rasterizer_write_areas{};
+    std::array<Common::ScratchBuffer<u32>, Hardware::NUM_CPU_CORES> scratch_buffers{};
     std::span<Core::GPUDirtyMemoryManager> gpu_dirty_managers;
     std::mutex sys_core_guard;
 

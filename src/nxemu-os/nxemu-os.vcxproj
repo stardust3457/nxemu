@@ -44,7 +44,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="core\arm\cpu_module.cpp" />
     <ClCompile Include="core\arm\debug.cpp" />
     <ClCompile Include="core\constants.cpp" />
     <ClCompile Include="core\core.cpp" />
@@ -467,11 +466,7 @@
     <None Include="version.h.in" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="core\arm\cpu_module.h" />
     <ClInclude Include="core\arm\debug.h" />
-    <ClInclude Include="core\arm\dynarmic\arm_dynarmic.h" />
-    <ClInclude Include="core\arm\dynarmic\dynarmic_exclusive_monitor.h" />
-    <ClInclude Include="core\arm\exclusive_monitor.h" />
     <ClInclude Include="core\constants.h" />
     <ClInclude Include="core\core.h" />
     <ClInclude Include="core\core_timing.h" />

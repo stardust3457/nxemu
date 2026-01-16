@@ -12,7 +12,7 @@
 #include "yuzu_common/fiber.h"
 #include "yuzu_common/polyfill_thread.h"
 #include "yuzu_common/thread.h"
-#include "core/hardware_properties.h"
+#include "yuzu_common/hardware_properties.h"
 
 namespace Common {
 class Event;
@@ -92,7 +92,7 @@ private:
     };
 
     std::unique_ptr<Common::Barrier> gpu_barrier{};
-    std::array<CoreData, Core::Hardware::NUM_CPU_CORES> core_data{};
+    std::array<CoreData, Hardware::NUM_CPU_CORES> core_data{};
 
     bool is_async_gpu{};
     bool is_multicore{};

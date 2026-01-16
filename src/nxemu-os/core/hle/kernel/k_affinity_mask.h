@@ -5,7 +5,7 @@
 
 #include "yuzu_common/yuzu_assert.h"
 #include "yuzu_common/common_types.h"
-#include "core/hardware_properties.h"
+#include "yuzu_common/hardware_properties.h"
 
 namespace Kernel {
 
@@ -40,11 +40,11 @@ public:
 
 private:
     static constexpr u64 GetCoreBit(s32 core) {
-        ASSERT(0 <= core && core < static_cast<s32>(Core::Hardware::NUM_CPU_CORES));
+        ASSERT(0 <= core && core < static_cast<s32>(Hardware::NUM_CPU_CORES));
         return (1ULL << core);
     }
 
-    static constexpr u64 AllowedAffinityMask = (1ULL << Core::Hardware::NUM_CPU_CORES) - 1;
+    static constexpr u64 AllowedAffinityMask = (1ULL << Hardware::NUM_CPU_CORES) - 1;
 
     u64 m_mask{};
 };

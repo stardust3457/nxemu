@@ -14,7 +14,7 @@ namespace Kernel::Svc {
 namespace {
 
 constexpr bool IsValidVirtualCoreId(int32_t core_id) {
-    return (0 <= core_id && core_id < static_cast<int32_t>(Core::Hardware::NUM_CPU_CORES));
+    return (0 <= core_id && core_id < static_cast<int32_t>(Hardware::NUM_CPU_CORES));
 }
 
 } // Anonymous namespace

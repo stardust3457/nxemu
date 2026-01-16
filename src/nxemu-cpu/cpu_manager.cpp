@@ -29,8 +29,8 @@ IExclusiveMonitor * CpuInterface::CreateExclusiveMonitor(IMemory & memory)
 #endif
 }
 
-ICpuCore * CpuInterface::CreateCpuCore(ICoreSystem & system, bool /*is64Bit*/, bool /*usesWallClock*/, IKernelProcess & process, uint32_t coreIndex)
+ICpuCore * CpuInterface::CreateCpuCore(ICoreSystem & system, bool /*is64Bit*/, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex)
 {
-    return new ArmDynarmic64(m_monitor, m_modules, system, process, coreIndex);
+    return new ArmDynarmic64(system, usesWallClock, process, m_monitor, coreIndex);
 }   
 

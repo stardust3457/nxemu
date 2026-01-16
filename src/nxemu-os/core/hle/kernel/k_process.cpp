@@ -4,8 +4,6 @@
 #include <random>
 #include "yuzu_common/scope_exit.h"
 #include "yuzu_common/settings.h"
-#include "core/arm/dynarmic/arm_dynarmic.h"
-#include "core/arm/cpu_module.h"
 #include "core/core.h"
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
@@ -213,7 +211,7 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, KResource
     m_is_application = True(params.flags & Svc::CreateProcessFlag::IsApplication);
 
     // Set thread fields.
-    for (size_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++) {
+    for (size_t i = 0; i < Hardware::NUM_CPU_CORES; i++) {
         m_running_threads[i] = nullptr;
         m_pinned_threads[i] = nullptr;
         m_running_thread_idle_counts[i] = 0;
@@ -1145,10 +1143,19 @@ Result KProcess::GetThreadList(s32* out_num_threads, KProcessAddress out_thread_
 
 void KProcess::Switch(KProcess* cur_process, KProcess* next_process) {}
 
-KProcess::KProcess(KernelCore& kernel)
-    : KAutoObjectWithSlabHeapAndContainer(kernel), m_page_table{kernel}, m_state_lock{kernel},
-      m_list_lock{kernel}, m_cond_var{kernel.System()}, m_address_arbiter{kernel.System()},
-      m_handle_table{kernel}, m_exclusive_monitor{}, m_memory{kernel.System()} {}
+KProcess::KProcess(KernelCore& kernel) : 
+    KAutoObjectWithSlabHeapAndContainer(kernel),
+    m_page_table{kernel},
+    m_state_lock{kernel},
+    m_list_lock{kernel},
+    m_cond_var{kernel.System()}, 
+    m_address_arbiter{kernel.System()},
+    m_handle_table{kernel},
+    m_exclusive_monitor{},
+    m_memory{kernel.System()}
+{
+}
+
 KProcess::~KProcess() = default;
 
 Result KProcess::LoadFromMetadata(const IProgramMetadata & metadata, std::size_t code_size,
@@ -1263,9 +1270,9 @@ void KProcess::InitializeInterfaces()
 {
     ICpu & cpu = m_kernel.System().GetSystemModules().Cpu();
     m_exclusive_monitor.reset(cpu.CreateExclusiveMonitor(this->GetCoreMemory()));
-    for (uint32_t i = 0; i < Core::Hardware::NUM_CPU_CORES; i++)
+    for (uint32_t i = 0; i < Hardware::NUM_CPU_CORES; i++)
     {
-        m_cpucore[i] = std::make_unique<Core::ArmCpuModule>(m_kernel.System(), Is64Bit(), m_kernel.IsMulticore(), this, i);
+        m_cpucore[i].reset(cpu.CreateCpuCore(m_kernel.System(), this->Is64Bit(), m_kernel.IsMulticore(), *this, i));
     }
 }
 

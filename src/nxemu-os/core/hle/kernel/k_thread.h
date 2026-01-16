@@ -133,7 +133,8 @@ Core::Memory::Memory & GetCurrentMemory(KernelCore & kernel);
 class KThread final :
     public KAutoObjectWithSlabHeapAndContainer<KThread, KWorkerTask>,
     public Common::IntrusiveListBaseNode<KThread>,
-    public KTimerTask
+    public KTimerTask,
+    public IKernelThread
 {
     KERNEL_AUTOOBJECT_TRAITS(KThread, KSynchronizationObject);
 
@@ -362,6 +363,11 @@ public:
     KProcess * GetOwnerKProcess() const
     {
         return m_parent;
+    }
+
+    IKernelProcess * GetOwnerProcess() const override
+    {
+        return (IKernelProcess *)m_parent;
     }
 
     bool IsUserThread() const
@@ -997,7 +1003,7 @@ private:
     SyncObjectBuffer m_sync_object_buffer{};
     s64 m_schedule_count{};
     s64 m_last_scheduled_tick{};
-    std::array<QueueEntry, Core::Hardware::NUM_CPU_CORES> m_per_core_priority_queue_entry{};
+    std::array<QueueEntry, Hardware::NUM_CPU_CORES> m_per_core_priority_queue_entry{};
     KThreadQueue * m_wait_queue{};
     LockWithPriorityInheritanceInfoList m_held_lock_info_list{};
     LockWithPriorityInheritanceInfo * m_waiting_lock_info{};

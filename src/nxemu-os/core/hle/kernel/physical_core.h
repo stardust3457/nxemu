@@ -18,7 +18,6 @@ class KThread;
 
 namespace Core {
 class System;
-class ArmCpuModule;
 } // namespace Core
 
 namespace Kernel
@@ -73,7 +72,7 @@ private:
 
     std::mutex m_guard;
     std::condition_variable m_on_interrupt;
-    Core::ArmCpuModule * m_cpucore{};
+    ICpuCore * m_cpucore{};
     KThread * m_current_thread{};
     bool m_is_interrupted{};
     bool m_is_single_core{};

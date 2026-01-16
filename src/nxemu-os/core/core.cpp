@@ -6,6 +6,7 @@
 
 #include "yuzu_audio_core/audio_core.h"
 #include "yuzu_common/microprofile.h"
+#include "yuzu_common/hardware_properties.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/cpu_manager.h"
@@ -227,10 +228,10 @@ struct System::Impl {
     ExecuteProgramCallback execute_program_callback;
     std::stop_source stop_event;
 
-    std::array<u64, Core::Hardware::NUM_CPU_CORES> dynarmic_ticks{};
-    std::array<MicroProfileToken, Core::Hardware::NUM_CPU_CORES> microprofile_cpu{};
+    std::array<u64, Hardware::NUM_CPU_CORES> dynarmic_ticks{};
+    std::array<MicroProfileToken, Hardware::NUM_CPU_CORES> microprofile_cpu{};
 
-    std::array<Core::GPUDirtyMemoryManager, Core::Hardware::NUM_CPU_CORES>
+    std::array<Core::GPUDirtyMemoryManager, Hardware::NUM_CPU_CORES>
         gpu_dirty_memory_managers;
 
     std::deque<std::vector<u8>> user_channel;

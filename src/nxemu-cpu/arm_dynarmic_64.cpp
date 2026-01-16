@@ -2,12 +2,19 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <yuzu_common/settings.h>
+#include "arm_dynarmic.h"
 #include "arm_dynarmic_64.h"
 #include "dynarmic/interface/exclusive_monitor.h"
 #include <common/maths.h>
 #include <yuzu_common/settings.h>
+#include <yuzu_common/page_table.h>
+#include <yuzu_common/hardware_properties.h>
+#include "yuzu_common/literals.h"
 
 extern IModuleNotification * g_notify;
+
+using Vector = Dynarmic::A64::Vector;
+using namespace Common::Literals;
 
 class DynarmicCallbacks64 :
     public Dynarmic::A64::UserCallbacks
@@ -18,7 +25,7 @@ public:
         m_memory(process.GetMemory()),
         m_system(system),
         m_process(process),
-        m_debugger_enabled(false),
+        m_debugger_enabled{system.DebuggerEnabled()},
         m_check_memory_access{m_debugger_enabled || !Settings::values.cpuopt_ignore_memory_aborts.GetValue()}
     {
     }
@@ -55,14 +62,13 @@ public:
         }
         return m_memory.Read64(vaddr);
     }
-    Dynarmic::A64::Vector MemoryRead128(uint64_t vaddr)
+    Vector MemoryRead128(uint64_t vaddr) override
     {
-        Dynarmic::A64::Vector Value;
-        if (m_memory.ReadBlock(vaddr, (uint8_t *)&Value, sizeof(Value)))
+        if (m_check_memory_access)
         {
-            return Value;
+            CheckMemoryAccess(vaddr, 16, CpuDebugWatchpointType::Read);
         }
-        return {0, 0};
+        return {m_memory.Read64(vaddr), m_memory.Read64(vaddr + 8)};
     }
 
     void MemoryWrite8(uint64_t vaddr, uint8_t value) override
@@ -95,7 +101,7 @@ public:
             m_memory.Write64(vaddr, value);
         }
     }
-    void MemoryWrite128(std::uint64_t vaddr, Dynarmic::A64::Vector value)
+    void MemoryWrite128(uint64_t vaddr, Vector value) override
     {
         if (!m_check_memory_access || CheckMemoryAccess(vaddr, 16, CpuDebugWatchpointType::Write))
         {
@@ -120,60 +126,44 @@ public:
     {
         return CheckMemoryAccess(vaddr, 8, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive64(vaddr, value, expected);
     }
-    bool MemoryWriteExclusive128(std::uint64_t vaddr, Dynarmic::A64::Vector value, Dynarmic::A64::Vector expected)
+    bool MemoryWriteExclusive128(uint64_t vaddr, Vector value, Vector expected) override
     {
         return CheckMemoryAccess(vaddr, 16, CpuDebugWatchpointType::Write) && m_memory.WriteExclusive128(vaddr, value[1], value[0], expected[1], expected[0]);
     }
 
-    void InterpreterFallback(std::uint64_t /*pc*/, size_t /*num_instructions*/)
+    void InterpreterFallback(uint64_t /*pc*/, uint64_t /*num_instructions*/) override
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
     }
 
-    void ExceptionRaised(std::uint64_t /*pc*/, Dynarmic::A64::Exception /*exception*/)
+    void InstructionCacheOperationRaised(Dynarmic::A64::InstructionCacheOperation /*op*/, uint64_t /*value*/) override
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
     }
 
-    void CallSVC(std::uint32_t svc)
+    void ExceptionRaised(uint64_t /*pc*/, Dynarmic::A64::Exception /*exception*/) override
+    {
+        g_notify->BreakPoint(__FILE__, __LINE__);
+    }
+
+    void CallSVC(uint32_t svc) override
     {
         m_parent.m_svc = svc;
-        m_parent.HaltExecution(CpuHaltReason::SupervisorCall);
+        m_parent.m_jit->HaltExecution(TranslateDynarmicHaltReason(CpuHaltReason::SupervisorCall));
     }
 
-    bool IsReadOnlyMemory(std::uint64_t /*vaddr*/)
-    {
-        g_notify->BreakPoint(__FILE__, __LINE__);
-        return false;
-    }
-
-    void DataCacheOperationRaised(Dynarmic::A64::DataCacheOperation /*op*/, std::uint64_t /*value*/)
+    void AddTicks(uint64_t /*ticks*/) override
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
     }
 
-    void InstructionCacheOperationRaised(Dynarmic::A64::InstructionCacheOperation /*op*/, std::uint64_t /*value*/)
-    {
-        g_notify->BreakPoint(__FILE__, __LINE__);
-    }
-
-    void InstructionSynchronizationBarrierRaised()
-    {
-        g_notify->BreakPoint(__FILE__, __LINE__);
-    }
-
-    void AddTicks(std::uint64_t /*ticks*/)
-    {
-        g_notify->BreakPoint(__FILE__, __LINE__);
-    }
-
-    std::uint64_t GetTicksRemaining()
+    uint64_t GetTicksRemaining() override
     {
         g_notify->BreakPoint(__FILE__, __LINE__);
         return 0;
     }
 
-    std::uint64_t GetCNTPCT()
+    uint64_t GetCNTPCT() override
     {
         return m_parent.m_system.Timing().GetClockTicks();
     }
@@ -192,28 +182,218 @@ public:
     IMemory & m_memory;
     ICoreSystem & m_system;
     IKernelProcess & m_process;
-    u64 m_tpidr_el0{};
+    uint64_t m_tpidrro_el0{};
+    uint64_t m_tpidr_el0{};
     const bool m_debugger_enabled{};
     const bool m_check_memory_access{};
 };
 
-ArmDynarmic64::ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICoreSystem & system, IKernelProcess & process, uint32_t coreIndex) :
+ArmDynarmic64::ArmDynarmic64(ICoreSystem & system, bool uses_wall_clock, IKernelProcess & process, Dynarmic::ExclusiveMonitor & monitor, uint32_t core_index) :
     m_jit(nullptr),
-    m_modules(modules),
     m_system(system),
-    m_memory(process.GetMemory()),
-    m_OperatingSystem(modules.OperatingSystem()),
     m_monitor(monitor),
     m_cb(std::make_unique<DynarmicCallbacks64>(*this, system, process)),
     m_svc(0),
     m_process(process),
-    m_coreIndex(coreIndex)
+    m_coreIndex(core_index),
+    m_uses_wall_clock(uses_wall_clock)
 {
-    m_jit = MakeJit(monitor);
-    m_reg.SetJit(m_jit.get());
+    m_jit = MakeJit(process);
+    ScopedJitExecution::RegisterHandler();
 }
 
 ArmDynarmic64::~ArmDynarmic64()
+{
+}
+
+std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(IKernelProcess & process) const
+{
+    IKProcessPageTable & page_table = process.GetPageTable();
+
+    Dynarmic::A64::UserConfig config;
+
+    // Callbacks
+    config.callbacks = m_cb.get();
+
+    // Memory
+    config.page_table = page_table.PageTable();
+    config.page_table_address_space_bits = page_table.GetAddressSpaceWidth();
+    config.page_table_pointer_mask_bits = Common::PageTable::ATTRIBUTE_BITS;
+    config.silently_mirror_page_table = false;
+    config.absolute_offset_page_table = true;
+    config.detect_misaligned_access_via_page_table = 16 | 32 | 64 | 128;
+    config.only_detect_misalignment_via_page_table_on_page_boundary = true;
+
+    config.fastmem_pointer = page_table.FastmemArena();
+    config.fastmem_pointer = nullptr;
+    config.fastmem_address_space_bits = page_table.GetAddressSpaceWidth();
+    config.silently_mirror_fastmem = false;
+
+    config.fastmem_exclusive_access = config.fastmem_pointer != nullptr;
+    config.recompile_on_exclusive_fastmem_failure = true;
+
+    // Multi-process state
+    config.processor_id = m_coreIndex;
+    config.global_monitor = &m_monitor;
+
+    // System registers
+    config.tpidrro_el0 = &m_cb->m_tpidrro_el0;
+    config.tpidr_el0 = &m_cb->m_tpidr_el0;
+    config.dczid_el0 = 4;
+    config.ctr_el0 = 0x8444c004;
+    config.cntfrq_el0 = Hardware::CNTFREQ;
+
+    // Unpredictable instructions
+    config.define_unpredictable_behaviour = true;
+
+    // Timing
+    config.wall_clock_cntpct = m_uses_wall_clock;
+    config.enable_cycle_counting = !m_uses_wall_clock;
+
+    // Code cache size
+#ifdef ARCHITECTURE_arm64
+    config.code_cache_size = 128_MiB;
+#else
+    config.code_cache_size = 512_MiB;
+#endif
+
+    // Allow memory fault handling to work
+    if (m_system.DebuggerEnabled())
+    {
+        config.check_halt_on_memory_access = true;
+    }
+
+    // Safe optimizations
+    if (Settings::values.cpu_debug_mode)
+    {
+        if (!Settings::values.cpuopt_page_tables)
+        {
+            config.page_table = nullptr;
+        }
+        if (!Settings::values.cpuopt_block_linking)
+        {
+            config.optimizations &= ~Dynarmic::OptimizationFlag::BlockLinking;
+        }
+        if (!Settings::values.cpuopt_return_stack_buffer)
+        {
+            config.optimizations &= ~Dynarmic::OptimizationFlag::ReturnStackBuffer;
+        }
+        if (!Settings::values.cpuopt_fast_dispatcher)
+        {
+            config.optimizations &= ~Dynarmic::OptimizationFlag::FastDispatch;
+        }
+        if (!Settings::values.cpuopt_context_elimination)
+        {
+            config.optimizations &= ~Dynarmic::OptimizationFlag::GetSetElimination;
+        }
+        if (!Settings::values.cpuopt_const_prop)
+        {
+            config.optimizations &= ~Dynarmic::OptimizationFlag::ConstProp;
+        }
+        if (!Settings::values.cpuopt_misc_ir)
+        {
+            config.optimizations &= ~Dynarmic::OptimizationFlag::MiscIROpt;
+        }
+        if (!Settings::values.cpuopt_reduce_misalign_checks)
+        {
+            config.only_detect_misalignment_via_page_table_on_page_boundary = false;
+        }
+        if (!Settings::values.cpuopt_fastmem)
+        {
+            config.fastmem_pointer = nullptr;
+            config.fastmem_exclusive_access = false;
+        }
+        if (!Settings::values.cpuopt_fastmem_exclusives)
+        {
+            config.fastmem_exclusive_access = false;
+        }
+        if (!Settings::values.cpuopt_recompile_exclusives)
+        {
+            config.recompile_on_exclusive_fastmem_failure = false;
+        }
+        if (!Settings::values.cpuopt_ignore_memory_aborts)
+        {
+            config.check_halt_on_memory_access = true;
+        }
+    }
+    else
+    {
+        // Unsafe optimizations
+        if (Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Unsafe)
+        {
+            config.unsafe_optimizations = true;
+            if (Settings::values.cpuopt_unsafe_unfuse_fma)
+            {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
+            }
+            if (Settings::values.cpuopt_unsafe_reduce_fp_error)
+            {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_ReducedErrorFP;
+            }
+            if (Settings::values.cpuopt_unsafe_inaccurate_nan)
+            {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_InaccurateNaN;
+            }
+            if (Settings::values.cpuopt_unsafe_fastmem_check)
+            {
+                config.fastmem_address_space_bits = 64;
+            }
+            if (Settings::values.cpuopt_unsafe_ignore_global_monitor)
+            {
+                config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreGlobalMonitor;
+            }
+        }
+
+        // Curated optimizations
+        if (Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Auto)
+        {
+            config.unsafe_optimizations = true;
+            config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_UnfuseFMA;
+            config.fastmem_address_space_bits = 64;
+            config.optimizations |= Dynarmic::OptimizationFlag::Unsafe_IgnoreGlobalMonitor;
+        }
+
+        // Paranoia mode for debugging optimizations
+        if (Settings::values.cpu_accuracy.GetValue() == Settings::CpuAccuracy::Paranoid)
+        {
+            config.unsafe_optimizations = false;
+            config.optimizations = Dynarmic::no_optimizations;
+        }
+    }
+
+    return std::make_unique<Dynarmic::A64::Jit>(config);
+}
+
+void ArmDynarmic64::Initialize()
+{
+}
+
+ProcessorArchitecture ArmDynarmic64::GetArchitecture() const
+{
+    return ProcessorArchitecture::AArch64;
+}
+
+CpuHaltReason ArmDynarmic64::RunThread(IKernelThread * thread)
+{
+    ScopedJitExecution sj(thread->GetOwnerProcess());
+
+    m_jit->ClearExclusiveState();
+    return TranslateHaltReason(m_jit->Run());
+}
+
+CpuHaltReason ArmDynarmic64::StepThread(IKernelThread * thread)
+{
+    ScopedJitExecution sj(thread->GetOwnerProcess());
+
+    m_jit->ClearExclusiveState();
+    return TranslateHaltReason(m_jit->Step());
+}
+
+void ArmDynarmic64::LockThread(IKernelThread * /*thread*/)
+{
+}
+
+void ArmDynarmic64::UnlockThread(IKernelThread * /*thread*/)
 {
 }
 
@@ -222,40 +402,37 @@ uint32_t ArmDynarmic64::GetSvcNumber() const
     return m_svc;
 }
 
-CpuHaltReason ArmDynarmic64::Execute()
+void ArmDynarmic64::GetSvcArguments(uint64_t (&args)[8]) const
 {
-    m_jit->ClearExclusiveState();
-    Dynarmic::HaltReason Reason = m_jit->Run(); 
-    switch (Reason)
+    Dynarmic::A64::Jit & j = *m_jit;
+    for (size_t i = 0, n = sizeof(args) / sizeof(args[0]); i < n; i++)
     {
-    case Dynarmic::HaltReason::UserDefined2: return CpuHaltReason::BreakLoop;
-    case Dynarmic::HaltReason::UserDefined3: return CpuHaltReason::SupervisorCall;
-    case (Dynarmic::HaltReason::UserDefined2and3): return CpuHaltReason::SupervisorCallBreakLoop;
-    }
-
-    g_notify->BreakPoint(__FILE__, __LINE__);
-    return CpuHaltReason::BreakLoop;
-}
-
-void ArmDynarmic64::InvalidateCacheRange(uint64_t addr, uint64_t size)
-{
-    m_jit->InvalidateCacheRange(addr, size);
-}
-
-void ArmDynarmic64::HaltExecution(CpuHaltReason hr)
-{
-    switch (hr)
-    {
-    case CpuHaltReason::BreakLoop: m_jit->HaltExecution(Dynarmic::HaltReason::UserDefined2); break;
-    case CpuHaltReason::SupervisorCall: m_jit->HaltExecution(Dynarmic::HaltReason::UserDefined3); break;
-    default:
-        g_notify->BreakPoint(__FILE__, __LINE__);
+        args[i] = j.GetRegister(i);
     }
 }
 
-void ArmDynarmic64::Release()
+void ArmDynarmic64::SetSvcArguments(const uint64_t (&args)[8])
 {
-    delete this;
+    Dynarmic::A64::Jit & j = *m_jit;
+    for (size_t i = 0, n = sizeof(args) / sizeof(args[0]); i < n; i++)
+    {
+        j.SetRegister(i, args[i]);
+    }
+}
+
+const CpuDebugWatchpoint * ArmDynarmic64::HaltedWatchpoint() const
+{
+    return m_halted_watchpoint;
+}
+
+void ArmDynarmic64::RewindBreakpointInstruction()
+{
+    this->SetContext(m_breakpoint_context);
+}
+
+void ArmDynarmic64::SetTpidrroEl0(u64 value)
+{
+    m_cb->m_tpidrro_el0 = value;
 }
 
 void ArmDynarmic64::GetContext(CpuThreadContext & ctx) const
@@ -280,43 +457,49 @@ void ArmDynarmic64::GetContext(CpuThreadContext & ctx) const
     ctx.tpidr = m_cb->m_tpidr_el0;
 }
 
-std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(Dynarmic::ExclusiveMonitor & monitor)
+void ArmDynarmic64::SetContext(const CpuThreadContext & ctx)
 {
-    Dynarmic::A64::UserConfig config;
-    config.callbacks = m_cb.get();
-    config.page_table = nullptr; // reinterpret_cast<void **>(page_table->pointers.data());
-    config.page_table_address_space_bits = 27; //address_space_bits;
-    config.page_table_pointer_mask_bits = 2;   // Common::PageTable::ATTRIBUTE_BITS;
-    config.silently_mirror_page_table = false;
-    config.absolute_offset_page_table = true;
-    config.detect_misaligned_access_via_page_table = 16 | 32 | 64 | 128;
-    config.only_detect_misalignment_via_page_table_on_page_boundary = true;
+    Dynarmic::A64::Jit& j = *m_jit;
 
-    config.fastmem_pointer = nullptr; //page_table->fastmem_arena;
-    config.fastmem_address_space_bits = 27; //address_space_bits;
-    config.silently_mirror_fastmem = false;
+    // TODO: this is inconvenient
+    std::array<u64, 31> gpr;
 
-    config.fastmem_exclusive_access = config.fastmem_pointer != nullptr;
-    config.recompile_on_exclusive_fastmem_failure = true;
-    config.processor_id = m_coreIndex;
-    config.global_monitor = &monitor;
+    for (size_t i = 0; i < 29; i++)
+    {
+        gpr[i] = ctx.r[i];
+    }
+    gpr[29] = ctx.fp;
+    gpr[30] = ctx.lr;
 
-    // System registers
-    config.tpidrro_el0 = &m_reg.m_tpidrro_el0;
-    config.tpidr_el0 = &m_reg.m_tpidr_el0;
-    config.dczid_el0 = 4;
-    config.ctr_el0 = 0x8444c004;
-    config.cntfrq_el0 = 0x124f800; //Hardware::CNTFREQ;
-
-    // Unpredictable instructions
-    config.define_unpredictable_behaviour = true;
-
-    // Timing
-    config.wall_clock_cntpct = true; //m_uses_wall_clock;
-    config.enable_cycle_counting = false; //!m_uses_wall_clock;
-
-    // Code cache size
-    config.code_cache_size = 0x20000000;
-    return std::make_unique<Dynarmic::A64::Jit>(config);
+    j.SetRegisters(gpr);
+    j.SetSP(ctx.sp);
+    j.SetPC(ctx.pc);
+    j.SetPstate(ctx.pstate);
+    memcpy(j.GetVectorData(), ctx.v, sizeof(ctx.v));
+    j.SetFpcr(ctx.fpcr);
+    j.SetFpsr(ctx.fpsr);
+    m_cb->m_tpidr_el0 = ctx.tpidr;
 }
 
+void ArmDynarmic64::SetWatchpointArray(const CpuDebugWatchpoint * watchpoints, uint32_t count)
+{
+    for (uint32_t i = 0, n = count < (uint32_t)m_watchpoints.size() ? count : (uint32_t)m_watchpoints.size(); i < n; i++)
+    {
+        m_watchpoints[i] = watchpoints[i];
+    }
+}
+
+void ArmDynarmic64::SignalInterrupt(IKernelThread * /*thread*/)
+{
+    m_jit->HaltExecution(TranslateDynarmicHaltReason(CpuHaltReason::BreakLoop));
+}
+
+void ArmDynarmic64::InvalidateCacheRange(uint64_t addr, uint64_t size)
+{
+    m_jit->InvalidateCacheRange(addr, size);
+}
+
+void ArmDynarmic64::Release()
+{
+    delete this;
+}

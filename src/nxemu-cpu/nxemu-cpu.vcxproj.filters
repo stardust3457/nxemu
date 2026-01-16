@@ -492,16 +492,16 @@
     <ClInclude Include="ir\opt\passes.h">
       <Filter>Header Files\ir\opt</Filter>
     </ClInclude>
-    <ClInclude Include="cpu_manager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="exclusive_monitor_interface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="arm64_registers.h">
+    <ClInclude Include="arm_dynarmic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -510,9 +510,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="nxemu-cpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cpu_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dynarmic\backend\block_range_information.cpp">
@@ -1076,7 +1073,10 @@
     <ClCompile Include="exclusive_monitor_interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="arm64_registers.cpp	">
+    <ClCompile Include="arm_dynarmic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

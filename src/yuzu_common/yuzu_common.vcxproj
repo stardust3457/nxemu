@@ -62,6 +62,7 @@
     <ClInclude Include="fs\fs_types.h" />
     <ClInclude Include="fs\fs_util.h" />
     <ClInclude Include="fs\path_util.h" />
+    <ClInclude Include="hardware_properties.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="heap_tracker.h" />
     <ClInclude Include="hex_util.h" />

@@ -330,6 +330,9 @@
     <ClInclude Include="fixed_point.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hardware_properties.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logging\backend.cpp">

@@ -10,7 +10,6 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/physical_core.h"
 #include "core/hle/kernel/svc.h"
-#include "core/arm/cpu_module.h"
 
 namespace Kernel {
 
@@ -88,7 +87,7 @@ void PhysicalCore::RunThread(Kernel::KThread * thread)
         }
 
         // Otherwise, run the thread.
-        Core::HaltReason hr{};
+        CpuHaltReason hr{};
         {
             // If we were interrupted, exit immediately.
             if (!EnterContext())
@@ -100,7 +99,7 @@ void PhysicalCore::RunThread(Kernel::KThread * thread)
             {
                 hr = interface->StepThread(thread);
 
-                if (((uint32_t)hr & (uint32_t)Core::HaltReason::StepThread) != 0)
+                if (hr == CpuHaltReason::StepThread)
                 {
                     thread->SetStepState(StepState::StepPerformed);
                 }
@@ -114,11 +113,11 @@ void PhysicalCore::RunThread(Kernel::KThread * thread)
         }
 
         // Determine why we stopped.
-        const bool supervisor_call = ((uint32_t)hr & (uint32_t)Core::HaltReason::SupervisorCall) != 0;
-        const bool prefetch_abort = ((uint32_t)hr & (uint32_t)Core::HaltReason::PrefetchAbort) != 0;
-        const bool breakpoint = ((uint32_t)hr & (uint32_t)Core::HaltReason::InstructionBreakpoint) != 0;
-        const bool data_abort = ((uint32_t)hr & (uint32_t)Core::HaltReason::DataAbort) != 0;
-        const bool interrupt = ((uint32_t)hr & (uint32_t)Core::HaltReason::BreakLoop) != 0;
+        const bool supervisor_call = hr == CpuHaltReason::SupervisorCall || hr == CpuHaltReason::SupervisorCallBreakLoop;
+        const bool prefetch_abort = hr == CpuHaltReason::PrefetchAbort;
+        const bool breakpoint = hr == CpuHaltReason::InstructionBreakpoint;
+        const bool data_abort = hr == CpuHaltReason::DataAbort;
+        const bool interrupt = hr == CpuHaltReason::BreakLoop || hr == CpuHaltReason::SupervisorCallBreakLoop;
 
         // Since scheduling may occur here, we cannot use any cached
         // state after returning from calls we make.

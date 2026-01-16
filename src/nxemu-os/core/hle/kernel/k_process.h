@@ -39,6 +39,17 @@ class KProcess final :
 {
     KERNEL_AUTOOBJECT_TRAITS(KProcess, KSynchronizationObject);
 
+    struct CpuCoreReleaser
+    {
+        void operator()(ICpuCore * p) const
+        {
+            if (p)
+            {
+                p->Release();
+            }
+        }
+    };
+
 public:
     enum class State
     {
@@ -110,12 +121,12 @@ private:
     bool m_is_suspended{};
     bool m_is_immortal{};
     bool m_is_handle_table_initialized{};
-    std::array<std::unique_ptr<Core::ArmCpuModule>, Core::Hardware::NUM_CPU_CORES> m_cpucore{};
-    std::array<KThread *, Core::Hardware::NUM_CPU_CORES> m_running_threads{};
-    std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_idle_counts{};
-    std::array<u64, Core::Hardware::NUM_CPU_CORES> m_running_thread_switch_counts{};
-    std::array<KThread *, Core::Hardware::NUM_CPU_CORES> m_pinned_threads{};
-    std::array<CpuDebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS> m_watchpoints{};
+    std::array<std::unique_ptr<ICpuCore, CpuCoreReleaser>, Hardware::NUM_CPU_CORES> m_cpucore{};
+    std::array<KThread *, Hardware::NUM_CPU_CORES> m_running_threads{};
+    std::array<u64, Hardware::NUM_CPU_CORES> m_running_thread_idle_counts{};
+    std::array<u64, Hardware::NUM_CPU_CORES> m_running_thread_switch_counts{};
+    std::array<KThread *, Hardware::NUM_CPU_CORES> m_pinned_threads{};
+    std::array<CpuDebugWatchpoint, Hardware::NUM_WATCHPOINTS> m_watchpoints{};
     std::map<KProcessAddress, u64> m_debug_page_refcounts{};
     std::atomic<s64> m_cpu_time{};
     std::atomic<s64> m_num_process_switches{};
@@ -137,7 +148,7 @@ private:
 
     void PinThread(s32 core_id, KThread * thread)
     {
-        ASSERT(0 <= core_id && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES));
+        ASSERT(0 <= core_id && core_id < static_cast<s32>(Hardware::NUM_CPU_CORES));
         ASSERT(thread != nullptr);
         ASSERT(m_pinned_threads[core_id] == nullptr);
         m_pinned_threads[core_id] = thread;
@@ -145,7 +156,7 @@ private:
 
     void UnpinThread(s32 core_id, KThread * thread)
     {
-        ASSERT(0 <= core_id && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES));
+        ASSERT(0 <= core_id && core_id < static_cast<s32>(Hardware::NUM_CPU_CORES));
         ASSERT(thread != nullptr);
         ASSERT(m_pinned_threads[core_id] == thread);
         m_pinned_threads[core_id] = nullptr;
@@ -308,7 +319,7 @@ public:
 
     KThread * GetPinnedThread(s32 core_id) const
     {
-        ASSERT(0 <= core_id && core_id < static_cast<s32>(Core::Hardware::NUM_CPU_CORES));
+        ASSERT(0 <= core_id && core_id < static_cast<s32>(Hardware::NUM_CPU_CORES));
         return m_pinned_threads[core_id];
     }
 
@@ -553,7 +564,7 @@ public:
     }
 #endif
 
-    Core::ArmCpuModule * GetCpuCore(int32_t coreIndex) const
+    ICpuCore * GetCpuCore(int32_t coreIndex) const
     {
         return m_cpucore[coreIndex].get();
     }
@@ -565,7 +576,7 @@ public:
     // Attempts to remove the watchpoint specified by the given parameters.
     bool RemoveWatchpoint(KProcessAddress addr, u64 size, CpuDebugWatchpointType type);
 
-    const std::array<CpuDebugWatchpoint, Core::Hardware::NUM_WATCHPOINTS> & GetWatchpoints() const
+    const std::array<CpuDebugWatchpoint, Hardware::NUM_WATCHPOINTS> & GetWatchpoints() const
     {
         return m_watchpoints;
     }

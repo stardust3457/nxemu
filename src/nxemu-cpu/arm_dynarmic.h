@@ -1,19 +1,17 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-namespace Kernel
-{
-class KProcess;
-}
+#include "dynarmic/interface/halt_reason.h"
+#include <nxemu-module-spec/cpu.h>
 
-namespace Core
-{
+Dynarmic::HaltReason TranslateDynarmicHaltReason(CpuHaltReason hr);
+CpuHaltReason TranslateHaltReason(Dynarmic::HaltReason hr);
 
 #ifdef __linux__
 
 class ScopedJitExecution {
 public:
-    explicit ScopedJitExecution(Kernel::KProcess* process);
+    explicit ScopedJitExecution(IKernelProcess * process);
     ~ScopedJitExecution();
     static void RegisterHandler();
 };
@@ -22,11 +20,11 @@ public:
 
 class ScopedJitExecution {
 public:
-    explicit ScopedJitExecution(Kernel::KProcess* process) {}
+    explicit ScopedJitExecution(IKernelProcess * /*process*/)
+    {
+    }
     ~ScopedJitExecution() {}
     static void RegisterHandler() {}
 };
 
 #endif
-
-} // namespace Core

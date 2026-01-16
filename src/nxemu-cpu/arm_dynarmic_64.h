@@ -3,8 +3,8 @@
 
 #pragma once
 #include "dynarmic/interface/A64/a64.h"
-#include "arm64_registers.h"
-#include "cpu_manager.h"
+#include <yuzu_common/hardware_properties.h>
+#include <nxemu-module-spec/cpu.h>
 
 class DynarmicCallbacks64;
 
@@ -14,17 +14,28 @@ class ArmDynarmic64 final :
     friend class DynarmicCallbacks64;
 
 public:
-    ArmDynarmic64(Dynarmic::ExclusiveMonitor & monitor, ISystemModules & modules, ICoreSystem & system, IKernelProcess & process, uint32_t coreIndex);
+    ArmDynarmic64(ICoreSystem & system, bool uses_wall_clock, IKernelProcess & process, Dynarmic::ExclusiveMonitor & monitor, uint32_t core_index);
     ~ArmDynarmic64();
 
-    IArm64Reg & Reg(void) { return m_reg; }
-
     // ICpuCore
+    void Initialize() override;
+    ProcessorArchitecture GetArchitecture() const override;
     uint32_t GetSvcNumber() const override;
-    CpuHaltReason Execute(void);
     void GetContext(CpuThreadContext & ctx) const override;
+    void SetContext(const CpuThreadContext & ctx) override;
+    void GetSvcArguments(uint64_t (&args)[8]) const override;
+    void SetSvcArguments(const uint64_t (&args)[8]) override;
+    void SetTpidrroEl0(uint64_t value) override;
+    CpuHaltReason RunThread(IKernelThread * thread) override;
+    CpuHaltReason StepThread(IKernelThread * thread) override;
+    void LockThread(IKernelThread * thread) override;
+    void UnlockThread(IKernelThread * thread) override;
     void InvalidateCacheRange(uint64_t addr, uint64_t size) override;
-    void HaltExecution(CpuHaltReason hr);
+    const CpuDebugWatchpoint * HaltedWatchpoint() const override;
+    void RewindBreakpointInstruction() override;
+    void SetWatchpointArray(const CpuDebugWatchpoint * watchpoints, uint32_t count) override;
+    void SignalInterrupt(IKernelThread * thread) override;
+
     void Release() override;
 
 private:
@@ -32,17 +43,19 @@ private:
     ArmDynarmic64(const ArmDynarmic64 &) = delete;
     ArmDynarmic64 & operator=(const ArmDynarmic64 &) = delete;
 
-    std::unique_ptr<Dynarmic::A64::Jit> MakeJit(Dynarmic::ExclusiveMonitor & monitor);
+    std::unique_ptr<Dynarmic::A64::Jit> MakeJit(IKernelProcess & process) const;
 
     std::unique_ptr<Dynarmic::A64::Jit> m_jit{};
     std::unique_ptr<DynarmicCallbacks64> m_cb{};
-    ISystemModules & m_modules;
+    bool m_uses_wall_clock;
+
+    // Watchpoint info
+    const CpuDebugWatchpoint * m_halted_watchpoint{};
+    CpuThreadContext m_breakpoint_context{};
+    std::array<CpuDebugWatchpoint, Hardware::NUM_WATCHPOINTS> m_watchpoints;
     ICoreSystem & m_system;
-    IMemory & m_memory;
-    IOperatingSystem & m_OperatingSystem;
     Dynarmic::ExclusiveMonitor & m_monitor;
     uint32_t m_svc;
-    A64Registers m_reg;
     IKernelProcess & m_process;
     uint32_t m_coreIndex;
 };

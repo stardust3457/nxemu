@@ -5,6 +5,7 @@
 #include "yuzu_common/microprofile.h"
 #include "yuzu_common/scope_exit.h"
 #include "yuzu_common/thread.h"
+#include "yuzu_common/hardware_properties.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/cpu_manager.h"
@@ -20,7 +21,7 @@ CpuManager::CpuManager(System& system_) : system{system_} {}
 CpuManager::~CpuManager() = default;
 
 void CpuManager::Initialize() {
-    num_cores = is_multicore ? Core::Hardware::NUM_CPU_CORES : 1;
+    num_cores = is_multicore ? Hardware::NUM_CPU_CORES : 1;
     gpu_barrier = std::make_unique<Common::Barrier>(num_cores + 1);
 
     for (std::size_t core = 0; core < num_cores; core++) {
@@ -153,7 +154,7 @@ void CpuManager::PreemptSingleCore(bool from_running_environment) {
         system.CoreTiming().Advance();
         kernel.SetIsPhantomModeForSingleCore(false);
     }
-    current_core.store((current_core + 1) % Core::Hardware::NUM_CPU_CORES);
+    current_core.store((current_core + 1) % Hardware::NUM_CPU_CORES);
     system.CoreTiming().ResetTicks();
     kernel.Scheduler(current_core).PreemptSingleCore();
 

@@ -367,9 +367,6 @@
     <Filter Include="Header Files\core\hle\service\set\setting_formats">
       <UniqueIdentifier>{aa5871f7-e6fa-fbc1-7d9c-0e226b0c71ff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\core\arm\dynarmic">
-      <UniqueIdentifier>{d8b68be0-50e6-1ad9-54f2-0a55d3018e61}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\core\hle\kernel\init">
       <UniqueIdentifier>{0ac23067-9b76-422d-8cde-8e5f283fcb19}</UniqueIdentifier>
     </Filter>
@@ -1443,9 +1440,6 @@
     <ClInclude Include="core\hle\service\vi\vsync_manager.h">
       <Filter>Header Files\core\hle\service\vi</Filter>
     </ClInclude>
-    <ClInclude Include="core\arm\exclusive_monitor.h">
-      <Filter>Header Files\core\arm</Filter>
-    </ClInclude>
     <ClInclude Include="core\debugger\debugger.h">
       <Filter>Header Files\core\debugger</Filter>
     </ClInclude>
@@ -1475,15 +1469,6 @@
     </ClInclude>
     <ClInclude Include="core\hle\kernel\board\nintendo\nx\secure_monitor.h">
       <Filter>Header Files\core\hle\kernel\board\nintendo\nx</Filter>
-    </ClInclude>
-    <ClInclude Include="core\arm\dynarmic\arm_dynarmic.h">
-      <Filter>Header Files\core\arm\dynarmic</Filter>
-    </ClInclude>
-    <ClInclude Include="core\arm\dynarmic\dynarmic_exclusive_monitor.h">
-      <Filter>Header Files\core\arm\dynarmic</Filter>
-    </ClInclude>
-    <ClInclude Include="core\arm\cpu_module.h">
-      <Filter>Header Files\core\arm</Filter>
     </ClInclude>
     <ClInclude Include="os_manager.h">
       <Filter>Header Files</Filter>
@@ -2904,9 +2889,6 @@
     </ClCompile>
     <ClCompile Include="core\hle\service\vi\vsync_manager.cpp">
       <Filter>Source Files\core\hle\service\vi</Filter>
-    </ClCompile>
-    <ClCompile Include="core\arm\cpu_module.cpp">
-      <Filter>Source Files\core\arm</Filter>
     </ClCompile>
     <ClCompile Include="os_manager.cpp">
       <Filter>Source Files</Filter>
