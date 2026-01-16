@@ -504,6 +504,12 @@
     <ClInclude Include="cpu_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="arm_dynarmic_32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dynarmic_cp15.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="arm_dynarmic_64.cpp">
@@ -1077,6 +1083,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cpu_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="arm_dynarmic_32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dynarmic_cp15.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

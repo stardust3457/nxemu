@@ -42,6 +42,7 @@
     <ClInclude Include="..\nxemu-plugin-spec\Base.h" />
     <ClInclude Include="..\nxemu-plugin-spec\Cpu.h" />
     <ClInclude Include="arm_dynarmic.h" />
+    <ClInclude Include="arm_dynarmic_32.h" />
     <ClInclude Include="arm_dynarmic_64.h" />
     <ClInclude Include="backend\arm64\a32_jitstate.h" />
     <ClInclude Include="backend\arm64\a64_address_space.h" />
@@ -119,6 +120,7 @@
     <ClInclude Include="common\variant_util.h" />
     <ClInclude Include="common\x64_disassemble.h" />
     <ClInclude Include="cpu_manager.h" />
+    <ClInclude Include="dynarmic_cp15.h" />
     <ClInclude Include="exclusive_monitor_interface.h" />
     <ClInclude Include="frontend\A32\a32_ir_emitter.h" />
     <ClInclude Include="frontend\A32\a32_location_descriptor.h" />
@@ -168,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="arm_dynarmic.cpp" />
+    <ClCompile Include="arm_dynarmic_32.cpp" />
     <ClCompile Include="arm_dynarmic_64.cpp" />
     <ClCompile Include="cpu_manager.cpp" />
     <ClCompile Include="dynarmic\backend\block_range_information.cpp" />
@@ -356,6 +359,7 @@
     <ClCompile Include="dynarmic\ir\opt\verification_pass.cpp" />
     <ClCompile Include="dynarmic\ir\type.cpp" />
     <ClCompile Include="dynarmic\ir\value.cpp" />
+    <ClCompile Include="dynarmic_cp15.cpp" />
     <ClCompile Include="exclusive_monitor_interface.cpp" />
     <ClCompile Include="nxemu-cpu.cpp" />
   </ItemGroup>

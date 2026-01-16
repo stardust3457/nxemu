@@ -1,5 +1,6 @@
 #include "cpu_manager.h"
 #include "arm_dynarmic_64.h"
+#include "arm_dynarmic_32.h"
 #if defined(ARCHITECTURE_x86_64) || defined(ARCHITECTURE_arm64)
 #include "exclusive_monitor_interface.h"
 #endif
@@ -29,8 +30,22 @@ IExclusiveMonitor * CpuInterface::CreateExclusiveMonitor(IMemory & memory)
 #endif
 }
 
-ICpuCore * CpuInterface::CreateCpuCore(ICoreSystem & system, bool /*is64Bit*/, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex)
+ICpuCore * CpuInterface::CreateCpuCore(ICoreSystem & system, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex)
 {
-    return new ArmDynarmic64(system, usesWallClock, process, m_monitor, coreIndex);
-}   
+#ifdef HAS_NCE
+    if (this->IsApplication() && Settings::IsNceEnabled())
+    {
+        // Register the scoped JIT handler before creating any NCE instances
+        // so that its signal handler will appear first in the signal chain.
+        Core::ScopedJitExecution::RegisterHandler();
 
+        return new Core::ArmNce > (system, true, coreIndex);
+    }
+    else
+#endif
+    if (is64Bit)
+    {
+        return new ArmDynarmic64(system, usesWallClock, process, m_monitor, coreIndex);
+    }
+    return new ArmDynarmic32(system, usesWallClock, process, m_monitor, coreIndex);
+}
