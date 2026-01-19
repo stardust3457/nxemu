@@ -30,18 +30,21 @@
 #endif
 #include "yuzu_common/bounded_threadsafe_queue.h"
 
-namespace Common::Log {
+namespace Common::Log
+{
 
-namespace {
+namespace
+{
 
 /**
  * Interface for logging backends.
  */
-class Backend {
+class Backend
+{
 public:
     virtual ~Backend() = default;
 
-    virtual void Write(const Entry& entry) = 0;
+    virtual void Write(const Entry & entry) = 0;
 
     virtual void EnableForStacktrace() = 0;
 
@@ -51,27 +54,33 @@ public:
 /**
  * Backend that writes to stderr and with color
  */
-class ColorConsoleBackend final : public Backend {
+class ColorConsoleBackend final : public Backend
+{
 public:
     explicit ColorConsoleBackend() = default;
 
     ~ColorConsoleBackend() override = default;
 
-    void Write(const Entry& entry) override {
-        if (enabled.load(std::memory_order_relaxed)) {
+    void Write(const Entry & entry) override
+    {
+        if (enabled.load(std::memory_order_relaxed))
+        {
             PrintColoredMessage(entry);
         }
     }
 
-    void Flush() override {
+    void Flush() override
+    {
         // stderr shouldn't be buffered
     }
 
-    void EnableForStacktrace() override {
+    void EnableForStacktrace() override
+    {
         enabled = true;
     }
 
-    void SetEnabled(bool enabled_) {
+    void SetEnabled(bool enabled_)
+    {
         enabled = enabled_;
     }
 
@@ -82,9 +91,11 @@ private:
 /**
  * Backend that writes to a file passed into the constructor
  */
-class FileBackend final : public Backend {
+class FileBackend final : public Backend
+{
 public:
-    explicit FileBackend(const std::filesystem::path& filename) {
+    explicit FileBackend(const std::filesystem::path & filename)
+    {
         auto old_filename = filename;
         old_filename += ".old.txt";
 
@@ -99,8 +110,10 @@ public:
 
     ~FileBackend() override = default;
 
-    void Write(const Entry& entry) override {
-        if (!enabled) {
+    void Write(const Entry & entry) override
+    {
+        if (!enabled)
+        {
             return;
         }
 
@@ -110,8 +123,10 @@ public:
         // Prevent logs from exceeding a set maximum size in the event that log entries are spammed.
         const auto write_limit = Settings::values.extended_logging.GetValue() ? 1_GiB : 100_MiB;
         const bool write_limit_exceeded = bytes_written > write_limit;
-        if (entry.log_level >= LogLevel::Error || write_limit_exceeded) {
-            if (write_limit_exceeded) {
+        if (entry.log_level >= LogLevel::Error || write_limit_exceeded)
+        {
+            if (write_limit_exceeded)
+            {
                 // Stop writing after the write limit is exceeded.
                 // Don't close the file so we can print a stacktrace if necessary
                 enabled = false;
@@ -120,11 +135,13 @@ public:
         }
     }
 
-    void Flush() override {
+    void Flush() override
+    {
         file->Flush();
     }
 
-    void EnableForStacktrace() override {
+    void EnableForStacktrace() override
+    {
         enabled = true;
         bytes_written = 0;
     }
@@ -138,40 +155,52 @@ private:
 /**
  * Backend that writes to Visual Studio's output window
  */
-class DebuggerBackend final : public Backend {
+class DebuggerBackend final : public Backend
+{
 public:
     explicit DebuggerBackend() = default;
 
     ~DebuggerBackend() override = default;
 
-    void Write(const Entry& entry) override {
+    void Write(const Entry & entry) override
+    {
 #ifdef _WIN32
         ::OutputDebugStringW(UTF8ToUTF16W(FormatLogMessage(entry).append(1, '\n')).c_str());
 #endif
     }
 
-    void Flush() override {}
+    void Flush() override
+    {
+    }
 
-    void EnableForStacktrace() override {}
+    void EnableForStacktrace() override
+    {
+    }
 };
 
 #ifdef ANDROID
 /**
  * Backend that writes to the Android logcat
  */
-class LogcatBackend : public Backend {
+class LogcatBackend : public Backend
+{
 public:
     explicit LogcatBackend() = default;
 
     ~LogcatBackend() override = default;
 
-    void Write(const Entry& entry) override {
+    void Write(const Entry & entry) override
+    {
         PrintMessageToLogcat(entry);
     }
 
-    void Flush() override {}
+    void Flush() override
+    {
+    }
 
-    void EnableForStacktrace() override {}
+    void EnableForStacktrace() override
+    {
+    }
 };
 #endif
 
@@ -181,18 +210,22 @@ bool initialization_in_progress_suppress_logging = true;
  * Static state as a singleton.
  */
 class Impl :
-    public IModuleLogger 
+    public IModuleLogger
 {
 public:
-    static Impl& Instance() {
-        if (!instance) {
+    static Impl & Instance()
+    {
+        if (!instance)
+        {
             throw std::runtime_error("Using Logging instance before its initialization");
         }
         return *instance;
     }
 
-    static void Initialize(IModuleLogger * logger, const char * filterType) {
-        if (instance) {
+    static void Initialize(IModuleLogger * logger, const char * filterType)
+    {
+        if (instance)
+        {
             LOG_WARNING(Log, "Reinitializing logging backend");
             return;
         }
@@ -205,38 +238,42 @@ public:
         else
         {
             using namespace Common::FS;
-            const auto& log_dir = GetYuzuPath(YuzuPath::LogDir);
+            const auto & log_dir = GetYuzuPath(YuzuPath::LogDir);
             void(CreateDir(log_dir));
             instance = std::unique_ptr<Impl, decltype(&Deleter)>(new Impl(log_dir / LOG_FILE, filter),
-                Deleter);
+                                                                 Deleter);
         }
         initialization_in_progress_suppress_logging = false;
     }
 
-    static void Start() {
+    static void Start()
+    {
         instance->StartBackendThread();
     }
 
-    static void Stop() {
+    static void Stop()
+    {
         instance->StopBackendThread();
     }
 
-    Impl(const Impl&) = delete;
-    Impl& operator=(const Impl&) = delete;
+    Impl(const Impl &) = delete;
+    Impl & operator=(const Impl &) = delete;
 
-    Impl(Impl&&) = delete;
-    Impl& operator=(Impl&&) = delete;
+    Impl(Impl &&) = delete;
+    Impl & operator=(Impl &&) = delete;
 
     static void ResetFilter(const char * filterType)
     {
         instance->filter.ParseFilterString(filterType);
     }
 
-    void SetGlobalFilter(const Filter& f) {
+    void SetGlobalFilter(const Filter & f)
+    {
         filter = f;
     }
 
-    void SetColorConsoleBackendEnabled(bool enabled) {
+    void SetColorConsoleBackendEnabled(bool enabled)
+    {
         color_console_backend.SetEnabled(enabled);
     }
 
@@ -246,14 +283,16 @@ public:
         {
             return;
         }
-        if (!filter.CheckMessage(log_class, log_level)) {
+        if (!filter.CheckMessage(log_class, log_level))
+        {
             return;
         }
         message_queue.EmplaceWait(CreateEntry(log_class, log_level, filename, line_num, function, std::string(message)));
     }
 
-    void PushEntry(LogClass log_class, LogLevel log_level, const char* filename, unsigned int line_num,
-        const char* function, std::string&& message) {
+    void PushEntry(LogClass log_class, LogLevel log_level, const char * filename, unsigned int line_num,
+                   const char * function, std::string && message)
+    {
         if (modulelogger != nullptr)
         {
             modulelogger->Log(log_class, log_level, filename, line_num, function, message.c_str());
@@ -269,48 +308,59 @@ public:
     }
 
 private:
-    Impl(const std::filesystem::path& file_backend_filename, const Filter& filter_)
-        : modulelogger(nullptr), filter{filter_}, file_backend{ new FileBackend(file_backend_filename)} {}
+    Impl(const std::filesystem::path & file_backend_filename, const Filter & filter_) :
+        modulelogger(nullptr), filter{filter_}, file_backend{new FileBackend(file_backend_filename)}
+    {
+    }
 
-    Impl(IModuleLogger * logger, const Filter& filter_)
-        : modulelogger{ logger }, filter{ filter_ }, file_backend{nullptr} {
+    Impl(IModuleLogger * logger, const Filter & filter_) :
+        modulelogger{logger}, filter{filter_}, file_backend{nullptr}
+    {
     }
 
     ~Impl() = default;
 
-    void StartBackendThread() {
+    void StartBackendThread()
+    {
         backend_thread = std::jthread([this](std::stop_token stop_token) {
             Common::SetCurrentThreadName("Logger");
             Entry entry;
             const auto write_logs = [this, &entry]() {
-                ForEachBackend([&entry](Backend& backend) { backend.Write(entry); });
+                ForEachBackend([&entry](Backend & backend) { backend.Write(entry); });
             };
-            while (!stop_token.stop_requested()) {
+            while (!stop_token.stop_requested())
+            {
                 message_queue.PopWait(entry, stop_token);
-                if (entry.filename != nullptr) {
-                    write_logs();
+                if (stop_token.stop_requested())
+                {
+                    break;
                 }
+                write_logs();
             }
-            // Drain the logging queue. Only writes out up to MAX_LOGS_TO_WRITE to prevent a
-            // case where a system is repeatedly spamming logs even on close.
+
+            // Drain remaining entries in the queue
             int max_logs_to_write = filter.IsDebug() ? INT_MAX : 100;
-            while (max_logs_to_write-- && message_queue.TryPop(entry)) {
+            while (max_logs_to_write-- && message_queue.TryPop(entry))
+            {
                 write_logs();
             }
         });
     }
 
-    void StopBackendThread() {
+    void StopBackendThread()
+    {
         backend_thread.request_stop();
-        if (backend_thread.joinable()) {
+        if (backend_thread.joinable())
+        {
             backend_thread.join();
         }
 
-        ForEachBackend([](Backend& backend) { backend.Flush(); });
+        ForEachBackend([](Backend & backend) { backend.Flush(); });
     }
 
-    Entry CreateEntry(LogClass log_class, LogLevel log_level, const char* filename, unsigned int line_nr,
-                      const char* function, std::string&& message) const {
+    Entry CreateEntry(LogClass log_class, LogLevel log_level, const char * filename, unsigned int line_nr,
+                      const char * function, std::string && message) const
+    {
         using std::chrono::duration_cast;
         using std::chrono::microseconds;
         using std::chrono::steady_clock;
@@ -326,19 +376,21 @@ private:
         };
     }
 
-    void ForEachBackend(auto lambda) {
-        lambda(static_cast<Backend&>(debugger_backend));
-        lambda(static_cast<Backend&>(color_console_backend));
+    void ForEachBackend(auto lambda)
+    {
+        lambda(static_cast<Backend &>(debugger_backend));
+        lambda(static_cast<Backend &>(color_console_backend));
         if (file_backend != nullptr)
         {
-            lambda(static_cast<Backend&>(*file_backend));
+            lambda(static_cast<Backend &>(*file_backend));
         }
 #ifdef ANDROID
-        lambda(static_cast<Backend&>(lc_backend));
+        lambda(static_cast<Backend &>(lc_backend));
 #endif
     }
 
-    static void Deleter(Impl* ptr) {
+    static void Deleter(Impl * ptr)
+    {
         delete ptr;
     }
 
@@ -359,44 +411,48 @@ private:
 };
 } // namespace
 
-void Initialize(IModuleLogger * logger, const char * filterType) {
+void Initialize(IModuleLogger * logger, const char * filterType)
+{
     Impl::Initialize(logger, filterType);
 }
 
-void Start() {
+void Start()
+{
     Impl::Start();
 }
 
-void Stop() {
+void Stop()
+{
     Impl::Stop();
 }
 
-void ResetFilter(const char * filterType) {
+void ResetFilter(const char * filterType)
+{
     Impl::ResetFilter(filterType);
 }
 
-void DisableLoggingInTests() {
+void DisableLoggingInTests()
+{
     initialization_in_progress_suppress_logging = true;
 }
 
-void SetGlobalFilter(const Filter& filter) {
+void SetGlobalFilter(const Filter & filter)
+{
     Impl::Instance().SetGlobalFilter(filter);
 }
 
-void SetColorConsoleBackendEnabled(bool enabled) {
+void SetColorConsoleBackendEnabled(bool enabled)
+{
     Impl::Instance().SetColorConsoleBackendEnabled(enabled);
 }
 
-void FmtLogMessageImpl(LogClass log_class, LogLevel log_level, const char* filename,
-                       unsigned int line_num, const char* function, const char* format,
-                       const fmt::format_args& args) 
+void FmtLogMessageImpl(LogClass log_class, LogLevel log_level, const char * filename, unsigned int line_num, const char * function, const char * format, const fmt::format_args & args)
 {
-    if (initialization_in_progress_suppress_logging) 
+    if (initialization_in_progress_suppress_logging)
     {
         return;
     }
-    Impl::Instance().PushEntry(log_class, log_level, filename, line_num, function,
-        fmt::vformat(format, args));
+    Impl::Instance().PushEntry(log_class, log_level, filename, line_num, function, fmt::vformat(format, args));
 }
 
 IModuleLogger * ModuleLogger()

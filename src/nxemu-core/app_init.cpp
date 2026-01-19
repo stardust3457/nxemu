@@ -23,5 +23,6 @@ bool AppInit(INotification * notification)
 
 void AppCleanup(void)
 {
+    LoggingShutdown();
     SettingsStore::CleanUp();
 }

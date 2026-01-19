@@ -47,6 +47,7 @@ public:
     void Save(void);
 
     void RegisterCallback(const std::string & setting, SettingChangeCallback callback, void * userData);
+    void UnregisterCallback(const std::string & setting, SettingChangeCallback callback, void * userData);
 
     static SettingsStore& GetInstance();
     static void CleanUp();

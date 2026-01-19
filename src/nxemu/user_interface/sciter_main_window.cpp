@@ -39,6 +39,15 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
 
 SciterMainWindow::~SciterMainWindow()
 {
+    SettingsStore & settings = SettingsStore::GetInstance();
+    m_modules.ShutDown();
+
+    settings.UnregisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
+    settings.UnregisterCallback(NXCoreSetting::GameFile, SciterMainWindow::GameFileChanged, this);
+    settings.UnregisterCallback(NXCoreSetting::GameName, SciterMainWindow::GameNameChanged, this);
+    settings.UnregisterCallback(NXCoreSetting::RomLoading, SciterMainWindow::RomLoadingChanged, this);
+    settings.UnregisterCallback(NXCoreSetting::DisplayedFrames, SciterMainWindow::DisplayedFramesChanged, this);
+    settings.UnregisterCallback(NXOsSetting::AudioVolume, SciterMainWindow::SettingChanged, this);
 }
 
 void SciterMainWindow::ResetMenu()

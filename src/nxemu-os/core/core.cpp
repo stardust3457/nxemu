@@ -55,7 +55,14 @@ struct System::Impl {
         device_memory = std::make_unique<Core::DeviceMemory>();
     }
 
-    void Initialize(System& system) {
+    ~Impl()
+    {
+        hid_core.UnloadInputDevices();
+        input_subsystem->Shutdown();
+    }
+
+    void Initialize(System& system)
+    {
         is_multicore = true; // Settings::values.use_multi_core.GetValue();
 
         core_timing.SetMulticore(is_multicore);
@@ -72,26 +79,29 @@ struct System::Impl {
         input_subsystem->Initialize();
     }
 
-    void ReinitializeIfNecessary(System& system) {
+    void ReinitializeIfNecessary(System & system)
+    {
         const bool must_reinitialize = false;
         //    is_multicore != Settings::values.use_multi_core.GetValue() ||
         //    extended_memory_layout != (Settings::values.memory_layout_mode.GetValue() !=
         //                               Settings::MemoryLayout::Memory_4Gb);
 
-        if (!must_reinitialize) {
+        if (!must_reinitialize)
+        {
             return;
         }
 
         LOG_DEBUG(Kernel, "Re-initializing");
 
-        //is_multicore = Settings::values.use_multi_core.GetValue();
-        //extended_memory_layout =
-        //    Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb;
+        // is_multicore = Settings::values.use_multi_core.GetValue();
+        // extended_memory_layout =
+        //     Settings::values.memory_layout_mode.GetValue() != Settings::MemoryLayout::Memory_4Gb;
 
         Initialize(system);
     }
 
-    void Run() {
+    void Run()
+    {
         std::unique_lock<std::mutex> lk(suspend_guard);
 
         kernel.SuspendEmulation(false);
@@ -99,7 +109,8 @@ struct System::Impl {
         is_paused.store(false, std::memory_order_relaxed);
     }
 
-    void Pause() {
+    void Pause()
+    {
         std::unique_lock<std::mutex> lk(suspend_guard);
 
         core_timing.SyncPause(true);
@@ -107,33 +118,40 @@ struct System::Impl {
         is_paused.store(true, std::memory_order_relaxed);
     }
 
-    bool IsPaused() const {
+    bool IsPaused() const
+    {
         return is_paused.load(std::memory_order_relaxed);
     }
 
-    std::unique_lock<std::mutex> StallApplication() {
+    std::unique_lock<std::mutex> StallApplication()
+    {
         std::unique_lock<std::mutex> lk(suspend_guard);
         kernel.SuspendEmulation(true);
         core_timing.SyncPause(true);
         return lk;
     }
 
-    void UnstallApplication() {
-        if (!IsPaused()) {
+    void UnstallApplication()
+    {
+        if (!IsPaused())
+        {
             core_timing.SyncPause(false);
             kernel.SuspendEmulation(false);
         }
     }
 
-    void SetNVDECActive(bool is_nvdec_active) {
+    void SetNVDECActive(bool is_nvdec_active)
+    {
         nvdec_active = is_nvdec_active;
     }
 
-    bool GetNVDECActive() {
+    bool GetNVDECActive()
+    {
         return nvdec_active;
     }
 
-    void InitializeKernel(System& system, uint64_t titleID) {
+    void InitializeKernel(System & system, uint64_t titleID)
+    {
         LOG_DEBUG(Core, "initialized OK");
 
         // Setting changes may require a full system reinitialization (e.g., disabling multicore).

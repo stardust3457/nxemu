@@ -252,6 +252,27 @@ void SettingsStore::RegisterCallback(const std::string & setting, SettingChangeC
     m_notification[setting].emplace_back(info);
 }
 
+void SettingsStore::UnregisterCallback(const std::string & setting, SettingChangeCallback callback, void * userData)
+{
+    NotificationMap::iterator itr = m_notification.find(setting);
+    if (itr == m_notification.end())
+    {
+        return;
+    }
+    NotificationCallbacks & callbacks = itr->second;
+    for (NotificationCallbacks::iterator callItr = callbacks.begin(); callItr != callbacks.end();)
+    {
+        if (callItr->callback == callback && callItr->userData == userData)
+        {
+            callItr = callbacks.erase(callItr);
+        }
+        else
+        {
+            ++callItr;
+        }
+    }
+}
+
 SettingsStore & SettingsStore::GetInstance()
 {
     if (s_instance == nullptr)
