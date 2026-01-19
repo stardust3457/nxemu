@@ -15,7 +15,7 @@ struct VideoManager::Impl
     {
     }
 
-    bool Initialize(void)
+    bool Initialize()
     {
         m_host1x = std::make_unique<Tegra::Host1x::Host1x>(m_modules.OperatingSystem().DeviceMemory());
         m_emuWindow = std::make_unique<RenderWindow>(m_window);
@@ -54,79 +54,33 @@ VideoManager::VideoManager(IRenderWindow & window, ISystemModules & modules) :
 VideoManager::~VideoManager()
 {
     impl->m_host1x.release();
-    impl->m_gpuCore.release();
+    if (impl->m_gpuCore)
+    {
+        impl->m_gpuCore.release();
+        impl->m_gpuCore.reset();
+    }
     impl->m_emuWindow.release();
 }
 
-void VideoManager::EmulationStarting(void)
+void VideoManager::EmulationStarting()
 {
     impl->EmulationStarting();
 }
 
-bool VideoManager::Initialize(void)
+bool VideoManager::Initialize()
 {
     SetupVideoSetting();
     return impl->Initialize();
 }
 
-void VideoManager::RequestComposite(VideoFramebufferConfig * layers, uint32_t layerCount, VideoNvFence * fences, uint32_t fenceCount)
+void VideoManager::Shutdown()
 {
-    std::vector<Tegra::FramebufferConfig> output_layers;
-    std::vector<Service::Nvidia::NvFence> output_fences;
-    output_layers.reserve(layerCount);
-    output_fences.reserve(fenceCount);
-
-    for (uint32_t i = 0; i < layerCount; i++)
+    impl->m_host1x.reset();
+    if (impl->m_gpuCore != nullptr)
     {
-        output_layers.emplace_back(Tegra::FramebufferConfig{
-            .address = layers[i].address,
-            .offset = layers[i].offset,
-            .width = layers[i].width,
-            .height = layers[i].height,
-            .stride = layers[i].stride,
-            .pixel_format = (Service::android::PixelFormat)layers[i].pixelFormat,
-            .transform_flags = (Service::android::BufferTransformFlags)layers[i].transformFlags,
-            .crop_rect = Common::Rectangle<int>{layers[i].cropLeft, layers[i].cropTop, layers[i].cropRight, layers[i].cropBottom },
-            .blending = (Tegra::BlendMode)layers[i].blending,
-        });
+        impl->m_gpuCore->NotifyShutdown();
     }
-    for (uint32_t i = 0; i < fenceCount; i++)
-    {
-        output_fences.emplace_back(Service::Nvidia::NvFence{
-            .id = fences[i].id,
-            .value = fences[i].value,
-        });
-    }
-    impl->m_gpuCore->RequestComposite(std::move(output_layers), std::move(output_fences));
-}
-
-uint64_t VideoManager::Host1xRegisterProcess(IMemory * memory)
-{
-    Core::Asid asid = impl->m_host1x->MemoryManager().RegisterProcess(memory);
-    return asid.id;
-}
-
-void VideoManager::UpdateFramebufferLayout(uint32_t width, uint32_t height)
-{
-    impl->m_emuWindow->UpdateCurrentFramebufferLayout(width, height);
-}
-
-IChannelState * VideoManager::AllocateChannel()
-{
-    return std::make_unique<IChannelStatePtr>(*impl->m_gpuCore, impl->m_memoryManagerRegistry, std::move(impl->m_gpuCore->AllocateChannel())).release();
-}
-
-void VideoManager::PushGPUEntries(int32_t bindId, const uint64_t * commandList, uint32_t commandListSize, const uint32_t * prefetchCommandlist, uint32_t prefetchCommandlistSize)
-{
-    Tegra::CommandList entries(commandListSize);
-    memcpy(entries.command_lists.data(), commandList, sizeof(uint64_t) * commandListSize);
-    if (prefetchCommandlistSize > 0)
-    {
-        entries.prefetch_command_list.resize(prefetchCommandlistSize);
-        memcpy(entries.prefetch_command_list.data(), prefetchCommandlist, sizeof(uint32_t) * prefetchCommandlistSize);
-    }
-    impl->m_gpuCore->PushGPUEntries(bindId, std::move(entries));
-}
+};
 
 uint32_t VideoManager::AllocAsEx(uint64_t addressSpaceBits, uint64_t splitAddress, uint64_t bigPageBits, uint64_t pageBits)
 {
@@ -174,6 +128,18 @@ uint64_t VideoManager::Host1xMemoryAllocate(uint64_t size)
     return impl->m_host1x->MemoryManager().Allocate(size);
 }
 
+uint32_t VideoManager::Host1xAllocate(uint32_t size)
+{
+    Common::FlatAllocator<u32, 0, 32> & gmmu_allocator = impl->m_host1x->Allocator();
+    return gmmu_allocator.Allocate(static_cast<u32>(size));
+}
+
+void VideoManager::Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size)
+{
+    auto & gmmu = impl->m_host1x->GMMU();
+    gmmu.Map(static_cast<GPUVAddr>(address), virtual_address, size);
+}
+
 void VideoManager::Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track)
 {
     impl->m_host1x->MemoryManager().Map(address, virtualAddress, size, Core::Asid{asid}, track);
@@ -184,9 +150,79 @@ void VideoManager::Host1xMemoryUnmap(uint64_t address, uint64_t size)
     impl->m_host1x->MemoryManager().Unmap(address, size);
 }
 
+void VideoManager::Host1xFree(uint64_t regionStart, uint64_t regionSize)
+{
+    impl->m_host1x->MemoryManager().Free(regionStart, regionSize);
+}
+
 void VideoManager::Host1xMemoryTrackContinuity(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid)
 {
     impl->m_host1x->MemoryManager().TrackContinuity(address, virtualAddress, size, Core::Asid{asid});
+}
+
+uint64_t VideoManager::Host1xRegisterProcess(IMemory * memory)
+{
+    Core::Asid asid = impl->m_host1x->MemoryManager().RegisterProcess(memory);
+    return asid.id;
+}
+
+void VideoManager::Host1xUnregisterProcess(uint64_t asid)
+{
+    Tegra::MaxwellDeviceMemoryManager & smmu = impl->m_host1x->MemoryManager();
+    smmu.UnregisterProcess(Core::Asid{asid});
+}
+
+void VideoManager::RequestComposite(VideoFramebufferConfig * layers, uint32_t layerCount, VideoNvFence * fences, uint32_t fenceCount)
+{
+    std::vector<Tegra::FramebufferConfig> output_layers;
+    std::vector<Service::Nvidia::NvFence> output_fences;
+    output_layers.reserve(layerCount);
+    output_fences.reserve(fenceCount);
+
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        output_layers.emplace_back(Tegra::FramebufferConfig{
+            .address = layers[i].address,
+            .offset = layers[i].offset,
+            .width = layers[i].width,
+            .height = layers[i].height,
+            .stride = layers[i].stride,
+            .pixel_format = (Service::android::PixelFormat)layers[i].pixelFormat,
+            .transform_flags = (Service::android::BufferTransformFlags)layers[i].transformFlags,
+            .crop_rect = Common::Rectangle<int>{layers[i].cropLeft, layers[i].cropTop, layers[i].cropRight, layers[i].cropBottom },
+            .blending = (Tegra::BlendMode)layers[i].blending,
+        });
+    }
+    for (uint32_t i = 0; i < fenceCount; i++)
+    {
+        output_fences.emplace_back(Service::Nvidia::NvFence{
+            .id = fences[i].id,
+            .value = fences[i].value,
+        });
+    }
+    impl->m_gpuCore->RequestComposite(std::move(output_layers), std::move(output_fences));
+}
+
+void VideoManager::UpdateFramebufferLayout(uint32_t width, uint32_t height)
+{
+    impl->m_emuWindow->UpdateCurrentFramebufferLayout(width, height);
+}
+
+IChannelState * VideoManager::AllocateChannel()
+{
+    return std::make_unique<IChannelStatePtr>(*impl->m_gpuCore, impl->m_memoryManagerRegistry, std::move(impl->m_gpuCore->AllocateChannel())).release();
+}
+
+void VideoManager::PushGPUEntries(int32_t bindId, const uint64_t * commandList, uint32_t commandListSize, const uint32_t * prefetchCommandlist, uint32_t prefetchCommandlistSize)
+{
+    Tegra::CommandList entries(commandListSize);
+    memcpy(entries.command_lists.data(), commandList, sizeof(uint64_t) * commandListSize);
+    if (prefetchCommandlistSize > 0)
+    {
+        entries.prefetch_command_list.resize(prefetchCommandlistSize);
+        memcpy(entries.prefetch_command_list.data(), prefetchCommandlist, sizeof(uint32_t) * prefetchCommandlistSize);
+    }
+    impl->m_gpuCore->PushGPUEntries(bindId, std::move(entries));
 }
 
 void VideoManager::ApplyOpOnDeviceMemoryPointer(const uint8_t * pointer, uint32_t * scratchBuffer, size_t scratchBufferSize, DeviceMemoryOperation operation, void * userData)
@@ -231,16 +267,4 @@ uint32_t VideoManager::HostSyncpointRegisterAction(uint32_t fence_id, uint32_t t
 void VideoManager::WaitHost(uint32_t syncpoint_id, uint32_t expected_value)
 {
     impl->m_host1x->GetSyncpointManager().WaitHost(syncpoint_id, expected_value);
-}
-
-uint32_t VideoManager::Host1xAllocate(uint32_t size) 
-{
-    Common::FlatAllocator<u32, 0, 32> & gmmu_allocator = impl->m_host1x->Allocator();
-    return gmmu_allocator.Allocate(static_cast<u32>(size));
-}
-
-void VideoManager::Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size)
-{
-    auto& gmmu = impl->m_host1x->GMMU();
-    gmmu.Map(static_cast<GPUVAddr>(address), virtual_address, size);
 }
