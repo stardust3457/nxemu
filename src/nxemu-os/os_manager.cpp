@@ -108,7 +108,20 @@ OSManager::~OSManager()
 
 void OSManager::EmulationStarting()
 {
-    m_coreSystem.GetCpuManager().OnGpuReady();
+    m_emuThread = std::make_unique<EmuThread>(m_coreSystem, m_process);
+    m_emuThread->Start();
+}
+
+void OSManager::EmulationStopping(bool wait)
+{
+    if (m_emuThread)
+    {
+        m_emuThread->Stop();
+        if (wait)
+        {
+            m_emuThread.reset();
+        }
+    }
 }
 
 bool OSManager::Initialize(void)
@@ -119,13 +132,33 @@ bool OSManager::Initialize(void)
     return true;
 }
 
+void OSManager::ShutDown()
+{
+    m_coreSystem.SetShuttingDown(true);
+    if (m_coreSystem.IsPoweredOn())
+    {
+        m_coreSystem.SetExitRequested(true);
+        m_coreSystem.GetAppletManager().RequestExit();
+    }
+    m_emuThread->SetRunning(true);
+}
+
+bool OSManager::IsShuttingDown() const
+{
+    return m_coreSystem.IsShuttingDown();
+}
+
+void OSManager::ShutdownMainProcess()
+{
+    m_coreSystem.ShutdownMainProcess();
+}
+
 bool OSManager::CreateApplicationProcess(uint64_t codeSize, const IProgramMetadata & metaData, uint64_t & baseAddress, uint64_t & processID, bool is_hbl)
 {
     if (m_process != nullptr)
     {
         return false;
     }
-    m_coreSystem.Run();
     m_coreSystem.InitializeKernel(metaData.GetTitleID());
     Kernel::KernelCore & kernel = m_coreSystem.Kernel();
     m_process = Kernel::KProcess::Create(kernel);
@@ -207,6 +240,11 @@ uint64_t OSManager::GetGPUTicks()
 uint64_t OSManager::GetProgramId()
 {
     return m_coreSystem.ApplicationProcess()->GetProgramId();
+}
+
+bool OSManager::GetExitLocked() const
+{
+    return m_coreSystem.GetExitLocked();
 }
 
 void OSManager::GameFrameEnd()

@@ -16,7 +16,7 @@ class ModuleBase
     typedef int(CALL * tyModuleInitialize)(ModuleInterfaces & interfaces);
     typedef void(CALL * tyModuleCleanup)();
     typedef void(CALL * tyEmulationStarting)();
-    typedef void(CALL * tyEmulationStopping)();
+    typedef void(CALL * tyEmulationStopping)(bool wait);
     typedef void(CALL * tyFlushSettings)();
 
 public:

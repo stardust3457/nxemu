@@ -79,7 +79,7 @@ Purpose: Called when emulation is stopping
 Input: None
 Output: None
 */
-void CALL EmulationStopping()
+void CALL EmulationStopping(bool wait)
 {
 }
 

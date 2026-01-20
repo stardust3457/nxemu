@@ -8,6 +8,8 @@
 #include "notification.h"
 #include "settings/core_settings.h"
 #include <vector>
+#include <nxemu-core/settings/settings.h>
+#include <nxemu-core/settings/identifiers.h>
 
 namespace
 {
@@ -36,32 +38,69 @@ struct SystemModules::Impl :
         operatingsystem(nullptr),
         valid(false)
     {
+        SettingsStore & settings = SettingsStore::GetInstance();
+        settings.RegisterCallback(NXCoreSetting::EmulationRunning, EmulationRunningChanged, this);
     }
 
-    void StartEmulation()
+    ~Impl()
     {
+        SettingsStore & settings = SettingsStore::GetInstance();
+        settings.UnregisterCallback(NXCoreSetting::EmulationRunning, EmulationRunningChanged, this);    
+    }
+    
+    static void EmulationRunningChanged(const char * /*setting*/, void * userData)
+    {
+        SystemModules::Impl & this_ = *((SystemModules::Impl *)userData);
+        SettingsStore & settings = SettingsStore::GetInstance();
+        bool emulationRunning = settings.GetBool(NXCoreSetting::EmulationRunning);
+        if (emulationRunning)
+        {
+            this_.StartEmulation();
+        }
+        else
+        {
+            this_.StopEmulation(false);
+        }
+    }
+
+    void StartEmulation() override
+    {
+        SettingsStore & settings = SettingsStore::GetInstance();
+        settings.SetInt(NXCoreSetting::EmulationState, (int32_t)EmulationState::Starting);
+
         for (BaseModules::iterator itr = baseModules.begin(); itr != baseModules.end(); itr++)
         {
             (*itr)->EmulationStarting();
         }
     }
 
-    ISystemloader & Systemloader()
+    void StopEmulation(bool wait) override
+    {
+        SettingsStore & settings = SettingsStore::GetInstance();
+        settings.SetInt(NXCoreSetting::EmulationState, (int32_t)EmulationState::Stopping);
+
+        for (BaseModules::iterator itr = baseModules.begin(); itr != baseModules.end(); itr++)
+        {
+            (*itr)->EmulationStopping(wait);
+        }
+    }
+
+    ISystemloader & Systemloader() override
     {
         return *systemLoader;
     }
 
-    IOperatingSystem & OperatingSystem()
+    IOperatingSystem & OperatingSystem() override
     {
         return *operatingsystem;
     }
 
-    IVideo & Video()
+    IVideo & Video() override
     {
         return *video;
     }
 
-    ICpu & Cpu()
+    ICpu & Cpu() override
     {
         return *cpu;
     }
@@ -168,6 +207,7 @@ void SystemModules::ShutDown()
     {
         return;
     }
+    impl->StopEmulation(true);
     for (BaseModules::iterator itr = impl->baseModules.begin(); itr != impl->baseModules.end(); itr++)
     {
         (*itr)->ModuleCleanup();

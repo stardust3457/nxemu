@@ -30,9 +30,9 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
 {
     SettingsStore & settings = SettingsStore::GetInstance();
     settings.RegisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
+    settings.RegisterCallback(NXCoreSetting::EmulationState, SciterMainWindow::EmulationStateChanged, this);
     settings.RegisterCallback(NXCoreSetting::GameFile, SciterMainWindow::GameFileChanged, this);
     settings.RegisterCallback(NXCoreSetting::GameName, SciterMainWindow::GameNameChanged, this);
-    settings.RegisterCallback(NXCoreSetting::RomLoading, SciterMainWindow::RomLoadingChanged, this);
     settings.RegisterCallback(NXCoreSetting::DisplayedFrames, SciterMainWindow::DisplayedFramesChanged, this);
     settings.RegisterCallback(NXOsSetting::AudioVolume, SciterMainWindow::SettingChanged, this);
 }
@@ -40,14 +40,15 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
 SciterMainWindow::~SciterMainWindow()
 {
     SettingsStore & settings = SettingsStore::GetInstance();
-    m_modules.ShutDown();
-
     settings.UnregisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
+    settings.UnregisterCallback(NXCoreSetting::EmulationState, SciterMainWindow::EmulationStateChanged, this);
     settings.UnregisterCallback(NXCoreSetting::GameFile, SciterMainWindow::GameFileChanged, this);
     settings.UnregisterCallback(NXCoreSetting::GameName, SciterMainWindow::GameNameChanged, this);
-    settings.UnregisterCallback(NXCoreSetting::RomLoading, SciterMainWindow::RomLoadingChanged, this);
     settings.UnregisterCallback(NXCoreSetting::DisplayedFrames, SciterMainWindow::DisplayedFramesChanged, this);
     settings.UnregisterCallback(NXOsSetting::AudioVolume, SciterMainWindow::SettingChanged, this);
+
+    settings.SetBool(NXCoreSetting::ShuttingDown, true);
+    m_modules.ShutDown();
 }
 
 void SciterMainWindow::ResetMenu()
@@ -78,9 +79,6 @@ void SciterMainWindow::ResetMenu()
     fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit"));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "File", &fileMenu));
 
-    MenuBarItemList emulationMenu;
-    emulationMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
-    emulationMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Configure..."));
 
     MenuBarItemList optionsMenu;
     optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
@@ -103,22 +101,22 @@ bool SciterMainWindow::Show()
     {
         return false;
     }
-    SciterElement rootElement(m_window->GetRootElement());
-    m_sciterUI.AttachHandler(rootElement, IID_IKEYSINK, (IKeySink *)this);
+    m_rootElement = m_window->GetRootElement();
+    m_sciterUI.AttachHandler(m_rootElement, IID_IKEYSINK, (IKeySink *)this);
     m_window->OnDestroySinkAdd(this);
     m_window->CenterWindow();
     SetCaption(m_windowTitle);
 
-    SciterElement menuElement(rootElement.GetElementByID("MainMenu"));
+    SciterElement menuElement(m_rootElement.GetElementByID("MainMenu"));
     std::shared_ptr<void> interfacePtr = menuElement.IsValid() ? m_sciterUI.GetElementInterface(menuElement, IID_IMENUBAR) : nullptr;
     if (interfacePtr)
     {
         m_menuBar = std::static_pointer_cast<IMenuBar>(interfacePtr);
         ResetMenu();
     }
-    m_sciterUI.UpdateWindow(rootElement.GetElementHwnd(true));
+    m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
     SciterElement::RECT rect = {20, 20, 660, 500};
-    SciterElement mainContents(rootElement.GetElementByID("MainContents"));
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
     if (mainContents.IsValid())
     {
         m_sciterUI.AttachHandler(mainContents, IID_IRESIZESINK, (IResizeSink *)this);
@@ -126,16 +124,16 @@ bool SciterMainWindow::Show()
     }
 
     CreateRenderWindow();
-    UpdateStatusbar();
     m_modules.Setup(*this);
+    UpdateStatusbar();
 
-    m_sciterUI.AttachHandler(rootElement, IID_IMOUSEUPDOWNSINK, (IMouseUpDownSink *)this);
-    m_sciterUI.AttachHandler(rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink *)this);
-    m_sciterUI.AttachHandler(rootElement.GetElementByID("volume"), IID_ICLICKSINK, (IClickSink *)this);
-    m_sciterUI.AttachHandler(rootElement.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink *)this);
+    m_sciterUI.AttachHandler(m_rootElement, IID_IMOUSEUPDOWNSINK, (IMouseUpDownSink *)this);
+    m_sciterUI.AttachHandler(m_rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink *)this);
+    m_sciterUI.AttachHandler(m_rootElement.GetElementByID("volume"), IID_ICLICKSINK, (IClickSink *)this);
+    m_sciterUI.AttachHandler(m_rootElement.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink *)this);
 
-    m_sciterUI.AttachHandler(rootElement, IID_ITIMERSINK, (ITimerSink *)this);
-    rootElement.SetTimer(25, (uint32_t *)TIMER_UPDATE_INPUT);
+    m_sciterUI.AttachHandler(m_rootElement, IID_ITIMERSINK, (ITimerSink *)this);
+    m_rootElement.SetTimer(25, (uint32_t *)TIMER_UPDATE_INPUT);
 
     if (!uiSettings.hasBrokenVulkan)
     {
@@ -151,10 +149,15 @@ void SciterMainWindow::ShowConfig(const char * startPage)
     m_systemConfig->Display((void *)m_window->GetHandle(), startPage);
 }
 
+void SciterMainWindow::LoadGame(const char * path)
+{
+    ISystemloader & loader = m_modules.Modules().Systemloader();
+    loader.LoadRom(path);
+}
+
 void SciterMainWindow::ShowLoadingScreen()
 {
-    SciterElement rootElement(m_window->GetRootElement());
-    SciterElement mainContents(rootElement.GetElementByID("MainContents"));
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
     if (mainContents.IsValid())
     {
         m_sciterUI.SetElementHtmlFromResource(mainContents, "loading.html");
@@ -164,15 +167,14 @@ void SciterMainWindow::ShowLoadingScreen()
 void SciterMainWindow::UpdateStatusbar()
 {
     SettingsStore & settings = SettingsStore::GetInstance();
-    SciterElement rootElement(m_window->GetRootElement());
-    SciterElement renderer(rootElement.GetElementByID("renderer"));
+    SciterElement renderer(m_rootElement.GetElementByID("renderer"));
     if (renderer.IsValid())
     {
         stdstr_f text("%s", Settings::CanonicalizeEnum((Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI)).c_str());
         renderer.SetHTML((const uint8_t *)text.c_str(), text.size());
     }
 
-    SciterElement volume(rootElement.GetElementByID("volume"));
+    SciterElement volume(m_rootElement.GetElementByID("volume"));
     if (volume.IsValid())
     {
         stdstr_f text("VOLUME: %d %%", settings.GetInt(NXOsSetting::AudioVolume));
@@ -186,18 +188,17 @@ void SciterMainWindow::DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int3
     {
         return;
     }
-    SciterElement rootElement(m_window->GetRootElement());
-    if (source == rootElement.GetElementByID("volume"))
+    if (source == m_rootElement.GetElementByID("volume"))
     {
         return;
     }
-    SciterElement volumePopup(rootElement.GetElementByID("VolumePopup"));
+    SciterElement volumePopup(m_rootElement.GetElementByID("VolumePopup"));
     SciterElement::RECT rc = volumePopup.GetLocation(SciterElement::ROOT_RELATIVE | SciterElement::BORDER_BOX);
     if (x >= rc.left && y >= rc.top && x <= rc.right && y <= rc.bottom)
     {
         return;
     }
-    m_sciterUI.PopupHide(rootElement.GetElementByID("VolumePopup"));
+    m_sciterUI.PopupHide(m_rootElement.GetElementByID("VolumePopup"));
     m_volumePopup = false;
 }
 
@@ -212,8 +213,7 @@ void SciterMainWindow::UpdateInputDrivers()
 
 void SciterMainWindow::CreateRenderWindow()
 {
-    SciterElement rootElement(m_window->GetRootElement());
-    SciterElement mainContents(rootElement.GetElementByID("MainContents"));
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
     SciterElement::RECT rect = mainContents.GetLocation();
     uint32_t width = rect.right - rect.left;
     uint32_t height = rect.bottom - rect.top;
@@ -230,9 +230,8 @@ void SciterMainWindow::CreateRenderWindow()
 
 void SciterMainWindow::SetCaption(const std::string & caption)
 {
-    SciterElement rootElement(m_window->GetRootElement());
-    rootElement.Eval(stdstr_f("Window.this.caption = \"%s\";", caption.c_str()).c_str());
-    SciterElement captionElement(rootElement.FindFirst("[role='window-caption'] > span"));
+    m_rootElement.Eval(stdstr_f("Window.this.caption = \"%s\";", caption.c_str()).c_str());
+    SciterElement captionElement(m_rootElement.FindFirst("[role='window-caption'] > span"));
     if (captionElement.IsValid())
     {
         captionElement.SetHTML((uint8_t *)caption.data(), caption.size());
@@ -242,7 +241,12 @@ void SciterMainWindow::SetCaption(const std::string & caption)
 void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userData)
 {
     SciterMainWindow * impl = (SciterMainWindow *)userData;
-    impl->m_emulationRunning = SettingsStore::GetInstance().GetBool(NXCoreSetting::EmulationRunning);
+    SettingsStore & settings = SettingsStore::GetInstance();
+    impl->m_emulationRunning = settings.GetBool(NXCoreSetting::EmulationRunning);
+    if (settings.GetBool(NXCoreSetting::ShuttingDown))
+    {
+        return;
+    }
     if (impl->m_emulationRunning)
     {
         if (impl->m_renderWindow != nullptr)
@@ -252,13 +256,23 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
         }
         impl->CreateRenderWindow();
     }
-    SciterElement rootElement(impl->m_window->GetRootElement());
-    SciterElement renderer(rootElement.GetElementByID("renderer"));
+    SciterElement renderer(impl->m_rootElement.GetElementByID("renderer"));
     if (renderer)
     {
         renderer.SetState(impl->m_emulationRunning ? SciterElement::STATE_DISABLED : 0, impl->m_emulationRunning ? 0 : SciterElement::STATE_DISABLED, true);
     }
     impl->ResetMenu();
+}
+
+void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * userData)
+{
+    SciterMainWindow * impl = (SciterMainWindow *)userData;
+    EmulationState state = (EmulationState)SettingsStore::GetInstance().GetInt(NXCoreSetting::EmulationState);
+
+    if (state == EmulationState::LoadingRom)
+    {
+        impl->ShowLoadingScreen();
+    }
 }
 
 void SciterMainWindow::GameFileChanged(const char * /*setting*/, void * userData)
@@ -305,32 +319,11 @@ void SciterMainWindow::GameNameChanged(const char * /*setting*/, void * userData
     }
 }
 
-void SciterMainWindow::RomLoadingChanged(const char * /*setting*/, void * userData)
-{
-    SciterMainWindow * impl = (SciterMainWindow*)userData;
-
-    bool loading = SettingsStore::GetInstance().GetBool(NXCoreSetting::RomLoading);
-    if (loading)
-    {
-        impl->ShowLoadingScreen();
-    }
-    else if (strlen(SettingsStore::GetInstance().GetString(NXCoreSetting::GameFile)) == 0)
-    {
-        SciterElement rootElement(impl->m_window->GetRootElement());
-        SciterElement mainContents(rootElement.GetElementByID("MainContents"));
-        if (mainContents.IsValid())
-        {
-            mainContents.SetHTML((uint8_t*)"", 0, SciterElement::SIH_REPLACE_CONTENT);
-        }
-    }
-}
-
 void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * userData)
 {
     SciterMainWindow * impl = (SciterMainWindow*)userData;
 
-    SciterElement rootElement(impl->m_window->GetRootElement());
-    SciterElement mainContents(rootElement.GetElementByID("MainContents"));
+    SciterElement mainContents(impl->m_rootElement.GetElementByID("MainContents"));
     if (mainContents.IsValid())
     {
         mainContents.SetHTML((uint8_t *)"", 0, SciterElement::SIH_REPLACE_CONTENT);

@@ -10,6 +10,7 @@ namespace
     enum class SettingType
     {
         Boolean,
+        Interger,
         Path,
         String,
     };
@@ -18,6 +19,7 @@ namespace
     {
     public:
         CoreSetting(const char * id, bool defaultValue);
+        CoreSetting(const char * id, int defaultValue);
         CoreSetting(const char * id, const char * section, const char * key, bool * settingValue, bool defaultValue);
         CoreSetting(const char * id, const char * section, const char * key, Path * settingPath, std::string * settingPathValue, const char * defaultValue);
         CoreSetting(const char * id, const char * section, const char * key, std::string * settingStr, const char * defaultValue);
@@ -29,11 +31,13 @@ namespace
         union
         {
             bool boolValue;
+            int intValue;
             const char * strValue;
         } defaults;
         union
         {
             bool * boolValue;
+            int * intValue;
             Path * path;
             std::string * strValue;            
         } value;
@@ -60,9 +64,10 @@ namespace
 #endif
         { NXCoreSetting::ShowLogConsole, "", "ShowLogConsole", &coreSettings.ShowLogConsole, false },
         { NXCoreSetting::LogFilter, "", "LogFilter", &coreSettings.LogFilter, "*:Info" },
-        { NXCoreSetting::RomLoading, false },
         { NXCoreSetting::EmulationRunning, false },
+        { NXCoreSetting::EmulationState, (int)EmulationState::Stopped },
         { NXCoreSetting::DisplayedFrames, false },
+        { NXCoreSetting::ShuttingDown, false},
     };
 
     void CoreSettingChanged(const char* setting, void* /*userData*/);
@@ -87,6 +92,12 @@ void SetupCoreSetting(void)
             if (setting.value.boolValue != nullptr)
             {
                 *setting.value.boolValue = setting.defaults.boolValue;
+            }
+            break;
+        case SettingType::Interger:
+            if (setting.value.intValue != nullptr)
+            {
+                *setting.value.intValue = setting.defaults.intValue;
             }
             break;
         case SettingType::Path:
@@ -149,6 +160,10 @@ void SetupCoreSetting(void)
         case SettingType::Boolean:
             settingsStore.SetDefaultBool(setting.identifier, setting.defaults.boolValue);
             settingsStore.SetBool(setting.identifier, setting.value.boolValue != nullptr ? *setting.value.boolValue : setting.defaults.boolValue);
+            break;
+        case SettingType::Interger:
+            settingsStore.SetDefaultInt(setting.identifier, setting.defaults.intValue);
+            settingsStore.SetInt(setting.identifier, setting.value.intValue != nullptr ? *setting.value.intValue : setting.defaults.intValue);
             break;
         case SettingType::Path:
             settingsStore.SetDefaultString(setting.identifier, setting.defaults.strValue);
@@ -244,6 +259,17 @@ CoreSetting::CoreSetting(const char * id, bool defaultValue) :
     clearValue.strValue = nullptr;
 }
 
+CoreSetting::CoreSetting(const char * id, int defaultValue) :
+    identifier(id),
+    json_section(nullptr),
+    json_key(nullptr),
+    settingType(SettingType::Interger)
+{
+    defaults.intValue = defaultValue;
+    value.intValue = nullptr;
+    clearValue.strValue = nullptr;
+}
+
 CoreSetting::CoreSetting(const char * id, const char * section, const char * key, bool * settingValue, bool defaultValue) :
     identifier(id),
     json_section(section),
@@ -293,6 +319,12 @@ void CoreSettingChanged(const char * setting, void* /*userData*/)
             if (coreSetting.value.boolValue != nullptr)
             {
                 *coreSetting.value.boolValue = settingsStore.GetBool(setting);
+            }
+            break;
+        case SettingType::Interger:
+            if (coreSetting.value.intValue != nullptr)
+            {
+                *coreSetting.value.intValue = settingsStore.GetInt(setting);
             }
             break;
         case SettingType::String:

@@ -10,22 +10,26 @@
 
 namespace Core::HID {
 
-HIDCore::HIDCore()
-    : player_1{std::make_unique<EmulatedController>(NpadIdType::Player1)},
-      player_2{std::make_unique<EmulatedController>(NpadIdType::Player2)},
-      player_3{std::make_unique<EmulatedController>(NpadIdType::Player3)},
-      player_4{std::make_unique<EmulatedController>(NpadIdType::Player4)},
-      player_5{std::make_unique<EmulatedController>(NpadIdType::Player5)},
-      player_6{std::make_unique<EmulatedController>(NpadIdType::Player6)},
-      player_7{std::make_unique<EmulatedController>(NpadIdType::Player7)},
-      player_8{std::make_unique<EmulatedController>(NpadIdType::Player8)},
-      other{std::make_unique<EmulatedController>(NpadIdType::Other)},
-      handheld{std::make_unique<EmulatedController>(NpadIdType::Handheld)},
-      console{std::make_unique<EmulatedConsole>()}, devices{std::make_unique<EmulatedDevices>()} {}
+HIDCore::HIDCore() :
+    player_1{std::make_unique<EmulatedController>(NpadIdType::Player1)},
+    player_2{std::make_unique<EmulatedController>(NpadIdType::Player2)},
+    player_3{std::make_unique<EmulatedController>(NpadIdType::Player3)},
+    player_4{std::make_unique<EmulatedController>(NpadIdType::Player4)},
+    player_5{std::make_unique<EmulatedController>(NpadIdType::Player5)},
+    player_6{std::make_unique<EmulatedController>(NpadIdType::Player6)},
+    player_7{std::make_unique<EmulatedController>(NpadIdType::Player7)},
+    player_8{std::make_unique<EmulatedController>(NpadIdType::Player8)},
+    other{std::make_unique<EmulatedController>(NpadIdType::Other)},
+    handheld{std::make_unique<EmulatedController>(NpadIdType::Handheld)},
+    console{std::make_unique<EmulatedConsole>()}, 
+    devices{std::make_unique<EmulatedDevices>()}
+{
+}
 
 HIDCore::~HIDCore() = default;
 
-EmulatedController* HIDCore::GetEmulatedController(NpadIdType npad_id_type) {
+EmulatedController* HIDCore::GetEmulatedController(NpadIdType npad_id_type)
+{
     switch (npad_id_type) {
     case NpadIdType::Player1:
         return player_1.get();

@@ -16,10 +16,10 @@
 
 enum
 {
-    MODULE_LOADER_SPECS_VERSION = 0x0112,
-    MODULE_VIDEO_SPECS_VERSION = 0x0111,
-    MODULE_CPU_SPECS_VERSION = 0x010B,
-    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x010E,
+    MODULE_LOADER_SPECS_VERSION = 0x0113,
+    MODULE_VIDEO_SPECS_VERSION = 0x0112,
+    MODULE_CPU_SPECS_VERSION = 0x010C,
+    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x010F,
 };
 
 enum MODULE_TYPE : uint16_t
@@ -217,6 +217,7 @@ __interface ISystemloader;
 __interface ISystemModules
 {
     void StartEmulation() = 0;
+    void StopEmulation(bool wait) = 0;
 
     ISystemloader & Systemloader() = 0;
     IOperatingSystem & OperatingSystem() = 0;
@@ -262,7 +263,7 @@ Purpose: Called when emulation is stopping
 Input: None
 Output: None
 */
-EXPORT void CALL EmulationStopping();
+EXPORT void CALL EmulationStopping(bool wait);
 
 /*
 Function: FlushSettings

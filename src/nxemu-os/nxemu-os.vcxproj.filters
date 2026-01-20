@@ -1956,6 +1956,9 @@
     <ClInclude Include="core\hle\service\hid\xcd.h">
       <Filter>Header Files\core\hle\service\hid</Filter>
     </ClInclude>
+    <ClInclude Include="emu_thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="version.h.in">
@@ -3258,6 +3261,9 @@
     </ClCompile>
     <ClCompile Include="core\arm\debug.cpp">
       <Filter>Source Files\core\arm</Filter>
+    </ClCompile>
+    <ClCompile Include="emu_thread.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

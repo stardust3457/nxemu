@@ -389,6 +389,9 @@ __interface IButtonMappingList
 __interface IOperatingSystem
 {
     bool Initialize() = 0;
+    void ShutDown() = 0;
+    bool IsShuttingDown() const = 0;
+    void ShutdownMainProcess() = 0;
     bool CreateApplicationProcess(uint64_t codeSize, const IProgramMetadata & metaData, uint64_t & baseAddress, uint64_t & processID, bool is_hbl) = 0;
     void StartApplicationProcess(int32_t priority, int64_t stackSize, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t * nacpData, uint32_t nacpDataLen) = 0;
     bool LoadModule(const IModuleInfo & module, uint64_t baseAddress) = 0;
@@ -398,6 +401,7 @@ __interface IOperatingSystem
     void GatherGPUDirtyMemory(ICacheInvalidator * invalidator) = 0;
     uint64_t GetGPUTicks() = 0;
     uint64_t GetProgramId() = 0;
+    bool GetExitLocked() const = 0;
     void GameFrameEnd() = 0;
     void AudioGetSyncIDs(uint32_t * ids, uint32_t maxCount, uint32_t * actualCount) = 0;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void * userData) = 0;

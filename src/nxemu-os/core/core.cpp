@@ -184,6 +184,42 @@ struct System::Impl {
         LOG_DEBUG(Core, "Initialized OK");
     }
 
+    void ShutdownMainProcess() 
+    {
+        IVideo & video = modules.Video();
+
+        SetShuttingDown(true);
+
+        is_powered_on = false;
+        exit_locked = false;
+        exit_requested = false;
+
+        stop_event.request_stop();
+        core_timing.SyncPause(false);
+        Network::CancelPendingSocketOperations();
+        kernel.SuspendEmulation(true);
+        kernel.CloseServices();
+        kernel.ShutdownCores();
+        applet_manager.Reset();
+        services.reset();
+        service_manager.reset();
+        core_timing.ClearPendingEvents();
+        audio_core.reset();
+        perf_stats.reset();
+        cpu_manager.Shutdown();
+        kernel.Shutdown();
+        stop_event = {};
+        Network::RestartSocketOperations();
+
+        if (auto room_member = room_network.GetRoomMember().lock())
+        {
+            Network::GameInfo game_info{};
+            room_member->SendGameInfo(game_info);
+        }
+
+        LOG_DEBUG(Core, "Shutdown OK");
+    }
+
     bool IsShuttingDown() const {
         return is_shutting_down;
     }
@@ -301,6 +337,11 @@ bool System::IsShuttingDown() const
 void System::SetShuttingDown(bool shutting_down)
 {
     impl->SetShuttingDown(shutting_down);
+}
+
+void System::ShutdownMainProcess()
+{
+    impl->ShutdownMainProcess();
 }
 
 std::unique_lock<std::mutex> System::StallApplication()

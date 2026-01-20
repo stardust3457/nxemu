@@ -70,6 +70,10 @@ struct Systemloader::Impl {
         m_titleID(0)
     {
     }
+    ~Impl()
+    {
+        app_loader.reset();
+    }
 
     std::unique_ptr<Loader::AppLoader> app_loader;
     Systemloader & m_loader;
@@ -125,13 +129,13 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
 
 bool Systemloader::LoadRom(const char * fileName)
 {
-    g_settings->SetBool(NXCoreSetting::RomLoading, true);
+    g_settings->SetInt(NXCoreSetting::EmulationState, (int32_t)EmulationState::LoadingRom);
     const FileSys::VirtualFile file = Core::GetGameFileFromPath(impl->m_virtualFilesystem, fileName);
     impl->app_loader = Loader::GetLoader(*this, file, 0, 0);
     if (!impl->app_loader)
     {
         g_notify->DisplayError("The file format is not supported.", "Error loading file!");
-        g_settings->SetBool(NXCoreSetting::RomLoading, false);
+        g_settings->SetBool(NXCoreSetting::EmulationState, (int32_t)EmulationState::Stopped);
         return false;
     }
 
@@ -140,7 +144,7 @@ bool Systemloader::LoadRom(const char * fileName)
     if (file_type == LoaderFileType::Unknown || file_type == LoaderFileType::Error) 
     {
         g_notify->DisplayError("The file format is not supported.", "Error loading file!");
-        g_settings->SetBool(NXCoreSetting::RomLoading, false);
+        g_settings->SetBool(NXCoreSetting::EmulationState, (int32_t)EmulationState::Stopped);
         return false;
     }
     uint64_t program_id = 0;
@@ -183,7 +187,7 @@ bool Systemloader::LoadRom(const char * fileName)
     if (load_result != LoaderResultStatus::Success)
     {
         LOG_CRITICAL(Core, "Failed to load ROM (Error {})!", load_result);
-        g_settings->SetBool(NXCoreSetting::RomLoading, false);
+        g_settings->SetBool(NXCoreSetting::EmulationState, (int32_t)EmulationState::Stopped);
         return false;
     }
     std::vector<u8> nacp_data;
@@ -202,8 +206,7 @@ bool Systemloader::LoadRom(const char * fileName)
 
     g_settings->SetString(NXCoreSetting::GameName, title.c_str());
     g_settings->SetString(NXCoreSetting::GameFile, fileName);
-    g_settings->SetBool(NXCoreSetting::RomLoading, false);
-    impl->m_modules.StartEmulation();
+    g_settings->SetBool(NXCoreSetting::EmulationRunning, true);
 
     // TODO(DarkLordZach): When FSController/Game Card Support is added, if
     // current_process_game_card use correct StorageId

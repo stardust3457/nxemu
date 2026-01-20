@@ -1,6 +1,7 @@
 #pragma once
 #include <nxemu-module-spec/operating_system.h>
-#include <nxemu-os/core/core.h>
+#include "core/core.h"
+#include "emu_thread.h"
 
 class OSManager :
     public IOperatingSystem
@@ -10,9 +11,13 @@ public:
     ~OSManager();
 
     void EmulationStarting();
+    void EmulationStopping(bool wait);
 
     // IOperatingSystem
     bool Initialize() override;
+    void ShutDown() override;
+    bool IsShuttingDown() const override;
+    void ShutdownMainProcess() override;
     bool CreateApplicationProcess(uint64_t codeSize, const IProgramMetadata & metaData, uint64_t & baseAddress, uint64_t & processID, bool is_hbl) override;
     void StartApplicationProcess(int32_t priority, int64_t stackSize, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t * nacpData, uint32_t nacpDataLen) override;
     bool LoadModule(const IModuleInfo & module, uint64_t baseAddress) override;
@@ -22,6 +27,7 @@ public:
     void GatherGPUDirtyMemory(ICacheInvalidator * invalidator) override;
     uint64_t GetGPUTicks() override;
     uint64_t GetProgramId() override;
+    bool GetExitLocked() const override;
     void GameFrameEnd() override;
     void AudioGetSyncIDs(uint32_t* ids, uint32_t maxCount, uint32_t* actualCount) override;
     void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void* userData) override;
@@ -47,4 +53,5 @@ private:
     Core::System m_coreSystem;
     ISystemModules & m_modules;
     Kernel::KProcess * m_process;
+    std::unique_ptr<EmuThread> m_emuThread;
 };

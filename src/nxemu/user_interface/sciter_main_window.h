@@ -4,6 +4,7 @@
 #include <nxemu-module-spec/base.h>
 #include <sciter_ui.h>
 #include <sciter_handler.h>
+#include <sciter_element.h>
 #include <widgets/menubar.h>
 #include "startup_checks.h"
 
@@ -48,6 +49,7 @@ public:
     void ResetMenu();
     bool Show();
     void ShowConfig(const char * startPage);
+    void LoadGame(const char * path);
 
     // IRenderWindow
     void * RenderSurface() const override;
@@ -61,9 +63,9 @@ private:
     void CreateRenderWindow();
     void SetCaption(const std::string & caption);
     static void EmulationRunning(const char * setting, void * userData);
+    static void EmulationStateChanged(const char * setting, void * userData);
     static void GameFileChanged(const char * setting, void * userData);
     static void GameNameChanged(const char * setting, void * userData);
-    static void RomLoadingChanged(const char * setting, void * userData);
     static void DisplayedFramesChanged(const char * setting, void * userData);
     void ShowLoadingScreen();
     void UpdateStatusbar();
@@ -107,6 +109,7 @@ private:
 
     ISciterUI & m_sciterUI;
     ISciterWindow * m_window;
+    SciterElement m_rootElement;
     SystemModules m_modules;
     std::vector<VkDeviceRecord> m_vkDeviceRecords;
     std::shared_ptr<IMenuBar> m_menuBar;
