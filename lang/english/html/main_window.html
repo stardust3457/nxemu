@@ -13,11 +13,22 @@
     </window-buttons>
   </header>
   <mainmenu id="MainMenu" />
-  <div id="MainContents" />
+  <div id="MainContents">
+    <div id="LoadingPanel">
+      <div class="loading-text">
+        <span class="text">Loading</span>
+        <div class="dot-pulse-container">
+          <div class="dot-pulse"></div>
+          <div class="dot-pulse"></div>
+          <div class="dot-pulse"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div id="StatusBar" ><span id="renderer" /><span id="volume" /></div>
 </html>
 <popup id="VolumePopup">
     <div>
-        <input type="hslider" id="Volume" min="0" max="200" value="100" id="audioVolume" style="width: 19em" />
+        <input type="hslider" min="0" max="200" value="100" id="audioVolume" style="width: 19em" />
     </div>
 </popup>

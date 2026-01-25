@@ -20,7 +20,8 @@ class SciterMainWindow :
     public IClickSink,
     public IMouseUpDownSink,
     public IStateChangeSink,
-    public ITimerSink
+    public ITimerSink,
+    public IEventSink
 {
     enum MainMenuID
     {
@@ -28,6 +29,9 @@ class SciterMainWindow :
         ID_FILE_LOAD_FILE = 1,
         ID_FILE_EXIT,
 
+        // System Menu
+        ID_SYSTEM_STOP,
+        
         // Emulation Menu
         ID_EMULATION_CONTROLLERS,
         ID_EMULATION_CONFIGURE,
@@ -67,13 +71,15 @@ private:
     static void GameFileChanged(const char * setting, void * userData);
     static void GameNameChanged(const char * setting, void * userData);
     static void DisplayedFramesChanged(const char * setting, void * userData);
-    void ShowLoadingScreen();
     void UpdateStatusbar();
     void DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int32_t y);
     void UpdateInputDrivers();
+    void PreventOSSleep();
+    void AllowOSSleep();
 
     void OnOpenFile();
     void OnFileExit();
+    void OnStopGame();
     void OnSystemConfig();
     void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
@@ -104,6 +110,9 @@ private:
 
     // ITimerSink    
     bool OnTimer(SCITER_ELEMENT Element, uint32_t* TimerId) override;
+
+    // IEventSink
+    bool OnEvent(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t event_code, uint64_t reason);
 
     static void SettingChanged(const char* setting, void* userData);
 

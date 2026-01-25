@@ -20,6 +20,17 @@
 
 #include <Windows.h>
 
+namespace
+{
+enum
+{
+    EVENT_EMULATION_LOADING = 0x2000,
+    EVENT_EMULATION_RUNNING = 0x2001,
+    EVENT_EMULATION_STOPPED = 0x2002,
+    EVENT_EMULATION_FIRST_FRAME = 0x2003,
+};
+}
+
 SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitle) :
     m_sciterUI(sciterUI),
     m_window(nullptr),
@@ -79,6 +90,12 @@ void SciterMainWindow::ResetMenu()
     fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit"));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "File", &fileMenu));
 
+    MenuBarItemList systemMenu;
+    if (m_emulationRunning)
+    {
+        systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "Stop"));
+        mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "System", &systemMenu));    
+    }
 
     MenuBarItemList optionsMenu;
     optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
@@ -103,6 +120,7 @@ bool SciterMainWindow::Show()
     }
     m_rootElement = m_window->GetRootElement();
     m_sciterUI.AttachHandler(m_rootElement, IID_IKEYSINK, (IKeySink *)this);
+    m_sciterUI.AttachHandler(m_rootElement, IID_EVENTSINK, (IEventSink *)this);
     m_window->OnDestroySinkAdd(this);
     m_window->CenterWindow();
     SetCaption(m_windowTitle);
@@ -153,15 +171,6 @@ void SciterMainWindow::LoadGame(const char * path)
 {
     ISystemloader & loader = m_modules.Modules().Systemloader();
     loader.LoadRom(path);
-}
-
-void SciterMainWindow::ShowLoadingScreen()
-{
-    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
-    if (mainContents.IsValid())
-    {
-        m_sciterUI.SetElementHtmlFromResource(mainContents, "loading.html");
-    }
 }
 
 void SciterMainWindow::UpdateStatusbar()
@@ -271,7 +280,15 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
 
     if (state == EmulationState::LoadingRom)
     {
-        impl->ShowLoadingScreen();
+        impl->m_rootElement.PostEvent(EVENT_EMULATION_LOADING);
+    }
+    else if (state == EmulationState::Running)
+    {
+        impl->m_rootElement.PostEvent(EVENT_EMULATION_RUNNING);
+    }
+    else if (state == EmulationState::Stopped)
+    {
+        impl->m_rootElement.PostEvent(EVENT_EMULATION_STOPPED);
     }
 }
 
@@ -322,13 +339,26 @@ void SciterMainWindow::GameNameChanged(const char * /*setting*/, void * userData
 void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * userData)
 {
     SciterMainWindow * impl = (SciterMainWindow*)userData;
-
-    SciterElement mainContents(impl->m_rootElement.GetElementByID("MainContents"));
-    if (mainContents.IsValid())
-    {
-        mainContents.SetHTML((uint8_t *)"", 0, SciterElement::SIH_REPLACE_CONTENT);
-    }
     ShowWindow((HWND)impl->m_renderWindow, SW_SHOW);
+    impl->m_rootElement.PostEvent(EVENT_EMULATION_FIRST_FRAME);
+}
+
+void SciterMainWindow::PreventOSSleep()
+{
+#ifdef _WIN32
+    SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+#elif defined(HAVE_SDL2)
+    SDL_DisableScreenSaver();
+#endif
+}
+
+void SciterMainWindow::AllowOSSleep()
+{
+#ifdef _WIN32
+    SetThreadExecutionState(ES_CONTINUOUS);
+#elif defined(HAVE_SDL2)
+    SDL_EnableScreenSaver();
+#endif
 }
 
 void SciterMainWindow::OnOpenFile()
@@ -343,6 +373,17 @@ void SciterMainWindow::OnOpenFile()
 void SciterMainWindow::OnFileExit()
 {
     m_sciterUI.Stop();
+}
+
+void SciterMainWindow::OnStopGame()
+{
+    if (!m_emulationRunning)
+    {
+        return;
+    }
+    AllowOSSleep();
+    SettingsStore & settings = SettingsStore::GetInstance();
+    settings.SetBool(NXCoreSetting::EmulationRunning, false);
 }
 
 void SciterMainWindow::OnSystemConfig()
@@ -377,6 +418,7 @@ void SciterMainWindow::OnMenuItem(int32_t id, SCITER_ELEMENT /*item*/)
     {
     case ID_FILE_LOAD_FILE: OnOpenFile(); break;
     case ID_FILE_EXIT: OnFileExit(); break;
+    case ID_SYSTEM_STOP: OnStopGame(); break;
     case ID_EMULATION_CONTROLLERS: OnInputConfig(); break;
     case ID_EMULATION_CONFIGURE: OnSystemConfig(); break;
     default:
@@ -526,4 +568,38 @@ bool SciterMainWindow::OnTimer(SCITER_ELEMENT /*element*/, uint32_t * timerId)
         UpdateInputDrivers();
     }
     return true;
+}
+
+bool SciterMainWindow::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*source*/, uint32_t event_code, uint64_t /*reason*/)
+{
+    if (event_code == EVENT_EMULATION_LOADING)
+    {
+        SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
+        if (LoadingPanel.IsValid())
+        {
+            LoadingPanel.SetStyleAttribute("display", "block");
+        }
+    }
+    else if (event_code == EVENT_EMULATION_RUNNING)
+    {
+        PreventOSSleep();
+    }
+    else if (event_code == EVENT_EMULATION_STOPPED)
+    {
+        ShowWindow((HWND)m_renderWindow, SW_HIDE);
+        SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
+        if (LoadingPanel.IsValid())
+        {
+            LoadingPanel.SetStyleAttribute("display", "none");
+        }
+    }
+    else if (event_code == EVENT_EMULATION_FIRST_FRAME)
+    {
+        SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
+        if (LoadingPanel.IsValid())
+        {
+            LoadingPanel.SetStyleAttribute("display", "none");
+        }
+    }
+    return false;
 }

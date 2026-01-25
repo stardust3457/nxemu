@@ -114,6 +114,9 @@ void OSManager::EmulationStarting()
 
 void OSManager::EmulationStopping(bool wait)
 {
+    // Disable unlimited frame rate
+    Settings::values.use_speed_limit.SetValue(true);
+
     if (m_emuThread)
     {
         m_emuThread->Stop();
