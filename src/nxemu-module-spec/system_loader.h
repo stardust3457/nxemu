@@ -270,6 +270,7 @@ __interface ISystemloader
     bool SelectAndLoad(void * parentWindow) = 0;
     bool LoadRom(const char * fileName) = 0;
     IRomInfo * RomInfo(const char * fileName, uint64_t programId, uint64_t programIndex) = 0;
+    IRomInfo * LoadedRomInfo() = 0;
 
     IFileSystemController & FileSystemController() = 0;
     IVirtualFile * SynthesizeSystemArchive(const uint64_t title_id) = 0;

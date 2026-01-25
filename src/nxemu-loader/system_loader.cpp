@@ -72,10 +72,11 @@ struct Systemloader::Impl {
     }
     ~Impl()
     {
-        app_loader.reset();
+        m_appLoader.reset();
     }
 
-    std::unique_ptr<Loader::AppLoader> app_loader;
+    FileSys::VirtualFile m_file;
+    std::shared_ptr<Loader::AppLoader> m_appLoader;
     Systemloader & m_loader;
     ISystemModules & m_modules;
     /// RealVfsFilesystem instance
@@ -130,17 +131,17 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
 bool Systemloader::LoadRom(const char * fileName)
 {
     g_settings->SetInt(NXCoreSetting::EmulationState, (int32_t)EmulationState::LoadingRom);
-    const FileSys::VirtualFile file = Core::GetGameFileFromPath(impl->m_virtualFilesystem, fileName);
-    impl->app_loader = Loader::GetLoader(*this, file, 0, 0);
-    if (!impl->app_loader)
+    impl->m_file = Core::GetGameFileFromPath(impl->m_virtualFilesystem, fileName);
+    impl->m_appLoader = Loader::GetLoader(*this, impl->m_file, 0, 0);
+    if (!impl->m_appLoader)
     {
         g_notify->DisplayError("The file format is not supported.", "Error loading file!");
         g_settings->SetBool(NXCoreSetting::EmulationState, (int32_t)EmulationState::Stopped);
         return false;
     }
 
-    Loader::AppLoader * app_loader = impl->app_loader.get();
-    const LoaderFileType file_type = impl->app_loader->GetFileType();
+    Loader::AppLoader * app_loader = impl->m_appLoader.get();
+    const LoaderFileType file_type = impl->m_appLoader->GetFileType();
     if (file_type == LoaderFileType::Unknown || file_type == LoaderFileType::Error) 
     {
         g_notify->DisplayError("The file format is not supported.", "Error loading file!");
@@ -148,14 +149,14 @@ bool Systemloader::LoadRom(const char * fileName)
         return false;
     }
     uint64_t program_id = 0;
-    const LoaderResultStatus res = impl->app_loader->ReadProgramId(program_id);
+    const LoaderResultStatus res = app_loader->ReadProgramId(program_id);
     if (res == LoaderResultStatus::Success && file_type == LoaderFileType::NCA) 
     {
         UNIMPLEMENTED();
     }
     else if (res == LoaderResultStatus::Success && (file_type == LoaderFileType::XCI || file_type == LoaderFileType::NSP))
     {
-        const auto nsp = file_type == LoaderFileType::NSP ? std::make_shared<FileSys::NSP>(file) : FileSys::XCI{file}.GetSecurePartitionNSP();
+        const auto nsp = file_type == LoaderFileType::NSP ? std::make_shared<FileSys::NSP>(impl->m_file) : FileSys::XCI{impl->m_file}.GetSecurePartitionNSP();
         for (const auto & title : nsp->GetNCAs())
         {
             for (const auto & entry : title.second)
@@ -176,7 +177,7 @@ bool Systemloader::LoadRom(const char * fileName)
     if (result == LoaderResultStatus::Success)
     {
         title.resize(title_size);
-        result = impl->app_loader->ReadTitle(title.data(), &title_size);
+        result = app_loader->ReadTitle(title.data(), &title_size);
     }
     if (result != LoaderResultStatus::Success)
     {
@@ -192,7 +193,7 @@ bool Systemloader::LoadRom(const char * fileName)
     }
     std::vector<u8> nacp_data;
     FileSys::NACP nacp;
-    if (impl->app_loader->ReadControlData(nacp) == LoaderResultStatus::Success)
+    if (app_loader->ReadControlData(nacp) == LoaderResultStatus::Success)
     {
         nacp_data = nacp.GetRawBytes();
     }
@@ -230,12 +231,18 @@ IRomInfo * Systemloader::RomInfo(const char * fileName, uint64_t programId, uint
         return nullptr;
     }
 
-    std::unique_ptr<Loader::AppLoader> loader = Loader::GetLoader(*this, file, programId, programIndex);
+    std::shared_ptr<Loader::AppLoader> loader = Loader::GetLoader(*this, file, programId, programIndex);
     if (!loader)
     {
         return nullptr;
     }
     std::unique_ptr<::RomInfo> info = std::make_unique<::RomInfo>(file, std::move(loader));
+    return info.release();
+}
+
+IRomInfo * Systemloader::LoadedRomInfo()
+{
+    std::unique_ptr<::RomInfo> info = std::make_unique<::RomInfo>(impl->m_file, impl->m_appLoader);
     return info.release();
 }
 

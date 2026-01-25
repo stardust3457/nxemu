@@ -9,7 +9,7 @@ class RomInfo :
     public IRomInfo
 {
 public:
-    explicit RomInfo(FileSys::VirtualFile file, std::unique_ptr<Loader::AppLoader> loader);
+    explicit RomInfo(FileSys::VirtualFile file, std::shared_ptr<Loader::AppLoader> loader);
     ~RomInfo();
 
     // IRomInfo
@@ -27,5 +27,5 @@ private:
     RomInfo & operator=(const RomInfo &) = delete;
 
     FileSys::VirtualFile m_file;
-    std::unique_ptr<Loader::AppLoader> m_loader;
+    std::shared_ptr<Loader::AppLoader> m_loader;
 };

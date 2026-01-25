@@ -92,25 +92,25 @@ AppLoader::~AppLoader() = default;
  * @param file   The file to retrieve the loader for
  * @param type   The file type
  * @param program_index Specifies the index within the container of the program to launch.
- * @return std::unique_ptr<AppLoader> a pointer to a loader object;  nullptr for unsupported type
+ * @return std::shared_ptr<AppLoader> a pointer to a loader object;  nullptr for unsupported type
  */
-static std::unique_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::VirtualFile file, LoaderFileType type, uint64_t program_id, std::size_t program_index)
+static std::shared_ptr<AppLoader> GetFileLoader(Systemloader & loader, FileSys::VirtualFile file, LoaderFileType type, uint64_t program_id, std::size_t program_index)
 {
     switch (type) {
     // NX NRO file format.
     case LoaderFileType::NRO:
-        return std::make_unique<AppLoader_NRO>(std::move(file));
+        return std::make_shared<AppLoader_NRO>(std::move(file));
     // NX XCI (nX Card Image) file format.
     case LoaderFileType::XCI:
-        return std::make_unique<AppLoader_XCI>(std::move(file), loader.GetFileSystemController(), loader.GetContentProvider(), program_id, program_index);
+        return std::make_shared<AppLoader_XCI>(std::move(file), loader.GetFileSystemController(), loader.GetContentProvider(), program_id, program_index);
     // NX NSP (Nintendo Submission Package) file format
     case LoaderFileType::NSP:
-        return std::make_unique<AppLoader_NSP>(std::move(file), loader.GetFileSystemController(), loader.GetContentProvider(), program_id, program_index);
+        return std::make_shared<AppLoader_NSP>(std::move(file), loader.GetFileSystemController(), loader.GetContentProvider(), program_id, program_index);
     }
     return nullptr;
 }
 
-std::unique_ptr<AppLoader> GetLoader(Systemloader& loader, FileSys::VirtualFile file, uint64_t program_id, std::size_t program_index)
+std::shared_ptr<AppLoader> GetLoader(Systemloader & loader, FileSys::VirtualFile file, uint64_t program_id, std::size_t program_index)
 {
     if (!file)
     {

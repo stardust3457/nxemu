@@ -6,7 +6,7 @@
 
 #include "core/loader/loader.h"
 
-RomInfo::RomInfo(FileSys::VirtualFile file, std::unique_ptr<Loader::AppLoader> loader) :
+RomInfo::RomInfo(FileSys::VirtualFile file, std::shared_ptr<Loader::AppLoader> loader) :
     m_file(file),
     m_loader(std::move(loader))
 {
