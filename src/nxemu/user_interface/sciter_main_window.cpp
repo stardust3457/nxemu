@@ -339,7 +339,6 @@ void SciterMainWindow::GameNameChanged(const char * /*setting*/, void * userData
 void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * userData)
 {
     SciterMainWindow * impl = (SciterMainWindow*)userData;
-    ShowWindow((HWND)impl->m_renderWindow, SW_SHOW);
     impl->m_rootElement.PostEvent(EVENT_EMULATION_FIRST_FRAME);
 }
 
@@ -595,10 +594,15 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*sour
     }
     else if (event_code == EVENT_EMULATION_FIRST_FRAME)
     {
-        SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
-        if (LoadingPanel.IsValid())
+        SettingsStore & settings = SettingsStore::GetInstance();
+        if (settings.GetBool(NXCoreSetting::DisplayedFrames))
         {
-            LoadingPanel.SetStyleAttribute("display", "none");
+            ShowWindow((HWND)m_renderWindow, SW_SHOW);        
+            SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
+            if (LoadingPanel.IsValid())
+            {
+                LoadingPanel.SetStyleAttribute("display", "none");
+            }
         }
     }
     return false;

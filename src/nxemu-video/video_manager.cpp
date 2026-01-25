@@ -6,6 +6,9 @@
 #include "yuzu_video_core/host1x/host1x.h"
 #include "yuzu_video_core/video_core.h"
 #include "yuzu_video_core/gpu.h"
+#include <nxemu-core/settings/identifiers.h>
+
+extern IModuleSettings * g_settings;
 
 struct VideoManager::Impl 
 {
@@ -25,6 +28,8 @@ struct VideoManager::Impl
     
     void EmulationStarting(void)
     {
+        g_settings->SetBool(NXCoreSetting::DisplayedFrames, false);
+
         Layout::FramebufferLayout layout;
         if (m_emuWindow)
         {
