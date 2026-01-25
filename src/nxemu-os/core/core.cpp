@@ -49,8 +49,7 @@ struct System::Impl {
         frontend_applets{system_},
         modules(modules_),
         input_subsystem{std::make_shared<InputCommon::InputSubsystem>()},
-        reporter{system_},
-        fs_controller(modules_.Systemloader().FileSystemController())
+        reporter{system_}
     {
         device_memory = std::make_unique<Core::DeviceMemory>();
     }
@@ -238,7 +237,6 @@ struct System::Impl {
 
     Timing::CoreTiming core_timing;
     Kernel::KernelCore kernel;
-    IFileSystemController & fs_controller;
     std::unique_ptr<Core::DeviceMemory> device_memory;
     std::unique_ptr<AudioCore::AudioCore> audio_core;
     Core::HID::HIDCore hid_core;
@@ -559,11 +557,6 @@ const Service::AM::Frontend::FrontendAppletHolder & System::GetFrontendAppletHol
 Service::AM::AppletManager & System::GetAppletManager()
 {
     return impl->applet_manager;
-}
-
-IFileSystemController & System::GetFileSystemController()
-{
-    return impl->fs_controller;
 }
 
 const Reporter & System::GetReporter() const

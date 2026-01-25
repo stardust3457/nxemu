@@ -45,7 +45,7 @@ enum class AccessLogMode : u32 {
 
 class FSP_SRV final : public ServiceFramework<FSP_SRV> {
 public:
-    explicit FSP_SRV(Core::System& system_);
+    explicit FSP_SRV(Core::System & system_);
     ~FSP_SRV() override;
 
 private:

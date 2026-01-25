@@ -341,7 +341,6 @@ public:
 
     [[nodiscard]] Service::AM::AppletManager & GetAppletManager();
 
-    [[nodiscard]] IFileSystemController & GetFileSystemController();
     [[nodiscard]] const Reporter & GetReporter() const;
 
     [[nodiscard]] Service::Glue::ARPManager & GetARPManager();

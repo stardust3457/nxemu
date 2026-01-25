@@ -40,9 +40,9 @@ namespace
 
 namespace Service::FileSystem {
 
-FSP_SRV::FSP_SRV(Core::System& system_) : 
+FSP_SRV::FSP_SRV(Core::System & system_) : 
     ServiceFramework(system_, "fsp-srv"),
-    fsc(system.GetFileSystemController()) 
+    fsc(system_.GetSystemloader().FileSystemController())
 {
     // clang-format off
     static const FunctionInfo functions[] = {

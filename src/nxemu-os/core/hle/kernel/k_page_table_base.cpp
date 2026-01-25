@@ -154,16 +154,21 @@ void KPageTableBase::MemoryRange::Close()
     }
 }
 
-KPageTableBase::KPageTableBase(KernelCore& kernel)
-    : m_kernel(kernel), m_system(kernel.System()), m_general_lock(kernel),
-      m_map_physical_memory_lock(kernel), m_device_map_lock(kernel) {}
+KPageTableBase::KPageTableBase(KernelCore& kernel) : 
+    m_kernel(kernel), 
+    m_system(kernel.System()),
+    m_general_lock(kernel),
+    m_map_physical_memory_lock(kernel), 
+    m_device_map_lock(kernel)
+{
+}
+
 KPageTableBase::~KPageTableBase() = default;
 
-Result KPageTableBase::InitializeForKernel(bool is_64_bit, KVirtualAddress start,
-                                           KVirtualAddress end, Core::Memory::Memory& memory) {
+Result KPageTableBase::InitializeForKernel(bool is_64_bit, KVirtualAddress start, KVirtualAddress end, Core::Memory::Memory& memory)
+{
     // Initialize our members.
-    m_address_space_width =
-        static_cast<u32>(is_64_bit ? Common::BitSize<u64>() : Common::BitSize<u32>());
+    m_address_space_width = static_cast<u32>(is_64_bit ? Common::BitSize<u64>() : Common::BitSize<u32>());
     m_address_space_start = KProcessAddress(GetInteger(start));
     m_address_space_end = KProcessAddress(GetInteger(end));
     m_is_kernel = true;
@@ -189,13 +194,11 @@ Result KPageTableBase::InitializeForKernel(bool is_64_bit, KVirtualAddress start
     m_mapped_insecure_memory = 0;
     m_mapped_ipc_server_memory = 0;
 
-    m_memory_block_slab_manager =
-        m_kernel.GetSystemSystemResource().GetMemoryBlockSlabManagerPointer();
+    m_memory_block_slab_manager = m_kernel.GetSystemSystemResource().GetMemoryBlockSlabManagerPointer();
     m_block_info_manager = m_kernel.GetSystemSystemResource().GetBlockInfoManagerPointer();
     m_resource_limit = m_kernel.GetSystemResourceLimit();
 
-    m_allocate_option = KMemoryManager::EncodeOption(KMemoryManager::Pool::System,
-                                                     KMemoryManager::Direction::FromFront);
+    m_allocate_option = KMemoryManager::EncodeOption(KMemoryManager::Pool::System, KMemoryManager::Direction::FromFront);
     m_heap_fill_value = MemoryFillValue_Zero;
     m_ipc_fill_value = MemoryFillValue_Zero;
     m_stack_fill_value = MemoryFillValue_Zero;
@@ -211,17 +214,11 @@ Result KPageTableBase::InitializeForKernel(bool is_64_bit, KVirtualAddress start
     m_memory = std::addressof(memory);
 
     // Initialize our memory block manager.
-    R_RETURN(m_memory_block_manager.Initialize(m_address_space_start, m_address_space_end,
-                                               m_memory_block_slab_manager));
+    R_RETURN(m_memory_block_manager.Initialize(m_address_space_start, m_address_space_end, m_memory_block_slab_manager));
 }
 
-Result KPageTableBase::InitializeForProcess(Svc::CreateProcessFlag as_type, bool enable_aslr,
-                                            bool enable_das_merge, bool from_back,
-                                            KMemoryManager::Pool pool, KProcessAddress code_address,
-                                            size_t code_size, KSystemResource* system_resource,
-                                            KResourceLimit* resource_limit,
-                                            Core::Memory::Memory& memory,
-                                            KProcessAddress aslr_space_start) {
+Result KPageTableBase::InitializeForProcess(Svc::CreateProcessFlag as_type, bool enable_aslr, bool enable_das_merge, bool from_back, KMemoryManager::Pool pool, KProcessAddress code_address, size_t code_size, KSystemResource* system_resource, KResourceLimit* resource_limit, Core::Memory::Memory& memory, KProcessAddress aslr_space_start)
+{
     // Calculate region extents.
     const size_t as_width = GetAddressSpaceWidth(as_type);
     const KProcessAddress start = 0;
@@ -246,8 +243,8 @@ Result KPageTableBase::InitializeForProcess(Svc::CreateProcessFlag as_type, bool
     size_t heap_region_size = GetSpaceSize(KAddressSpaceInfo::Type::Heap);
 
     // Adjust heap/alias size if we don't have an alias region.
-    if ((as_type & Svc::CreateProcessFlag::AddressSpaceMask) ==
-        Svc::CreateProcessFlag::AddressSpace32BitWithoutAlias) {
+    if ((as_type & Svc::CreateProcessFlag::AddressSpaceMask) == Svc::CreateProcessFlag::AddressSpace32BitWithoutAlias)
+    {
         heap_region_size += alias_region_size;
         alias_region_size = 0;
     }

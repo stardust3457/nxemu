@@ -145,7 +145,8 @@ Result VfsDirectoryServiceWrapper::GetEntryType(FileSys::DirectoryEntryType * ou
     return FileSys::ResultPathNotFound;
 }
 
-void LoopProcess(Core::System& system) {
+void LoopProcess(Core::System & system)
+{
     auto server_manager = std::make_unique<ServerManager>(system);
 
     const auto FileSystemProxyFactory = [&] { return std::make_shared<FSP_SRV>(system); };

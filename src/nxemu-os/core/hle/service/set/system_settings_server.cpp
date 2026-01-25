@@ -32,12 +32,11 @@ struct SettingsHeader {
 };
 } // Anonymous namespace
 
-Result GetFirmwareVersionImpl(FirmwareVersionFormat& out_firmware, Core::System& system,
-                              GetFirmwareVersionType type) {
+Result GetFirmwareVersionImpl(FirmwareVersionFormat& out_firmware, Core::System& system, GetFirmwareVersionType type)
+{
     constexpr u64 FirmwareVersionSystemDataId = 0x0100000000000809;
-    IFileSystemController & fsc = system.GetFileSystemController();
-
     ISystemloader & loader = system.GetSystemloader();
+    IFileSystemController & fsc = loader.FileSystemController();
 
     // Attempt to load version data from disk
     IFileSysRegisteredCache * bis_system = fsc.GetSystemNANDContents();

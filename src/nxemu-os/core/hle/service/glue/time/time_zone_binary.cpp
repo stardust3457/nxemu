@@ -45,7 +45,7 @@ Result MountTimeZoneBinary(Core::System& system)
     ResetTimeZoneBinary();
 
     ISystemloader & loader = system.GetSystemloader();
-    auto& fsc{ system.GetFileSystemController() };
+    auto & fsc{loader.FileSystemController()};
     auto* bis_system = fsc.GetSystemNANDContents();
     R_UNLESS(bis_system, ResultUnknown);
     FileSysNCAPtr nca(bis_system->GetEntry(TimeZoneBinaryId, LoaderContentRecordType::Data));

@@ -149,8 +149,8 @@ IPlatformServiceManager::IPlatformServiceManager(Core::System& system_, const ch
     // clang-format on
     RegisterHandlers(functions);
 
-    IFileSystemController & fsc = system.GetFileSystemController();
     ISystemloader & loader = system.GetSystemloader();
+    IFileSystemController & fsc = loader.FileSystemController();
 
     // Attempt to load shared font data from disk
     const IFileSysRegisteredCache * nand = fsc.GetSystemNANDContents();
