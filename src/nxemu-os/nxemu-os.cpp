@@ -62,6 +62,10 @@ Output: None
 */
 void CALL ModuleCleanup()
 {
+    if (g_osManager)
+    {
+        g_osManager->ShutdownMainProcess();
+    }
 }
 
 /*

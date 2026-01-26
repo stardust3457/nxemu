@@ -178,8 +178,11 @@ struct KernelCore::Impl {
         global_object_list_container->Finalize();
         global_object_list_container.reset();
 
-        hardware_timer->Finalize();
-        hardware_timer.reset();
+        if (hardware_timer)
+        {
+            hardware_timer->Finalize();
+            hardware_timer.reset();        
+        }
     }
 
     void CloseServices() {
@@ -1232,35 +1235,48 @@ void KernelCore::SuspendEmulation(bool suspended) {
     // Wait for process execution to stop.
     // KernelCore::SuspendEmulation must be called from locked context,
     // or we could race another call, interfering with waiting.
-    const auto TryWait = [&]() {
-        KScopedSchedulerLock sl{*this};
+    if (processes.size() > 0)
+    {
+        const auto TryWait = [&]() {
+            KScopedSchedulerLock sl{*this};
 
-        for (auto& process : processes) {
-            for (auto i = 0; i < static_cast<s32>(Hardware::NUM_CPU_CORES); ++i) {
-                if (Scheduler(i).GetSchedulerCurrentThread()->GetOwnerKProcess() ==
-                    process.GetPointerUnsafe()) {
-                    // A thread has not finished running yet.
-                    // Continue waiting.
-                    return false;
+            for (auto & process : processes)
+            {
+                for (auto i = 0; i < static_cast<s32>(Hardware::NUM_CPU_CORES); ++i)
+                {
+                    if (Scheduler(i).GetSchedulerCurrentThread()->GetOwnerKProcess() == process.GetPointerUnsafe())
+                    {
+                        // A thread has not finished running yet.
+                        // Continue waiting.
+                        return false;
+                    }
                 }
             }
+
+            return true;
+        };
+        while (!TryWait())
+        {
+            // ...
         }
-
-        return true;
-    };
-
-    while (!TryWait()) {
-        // ...
     }
 }
 
-void KernelCore::ShutdownCores() {
+void KernelCore::ShutdownCores()
+{
     impl->TerminateAllProcesses();
 
-    KScopedSchedulerLock lk{*this};
+    if (impl->global_scheduler_context != nullptr)
+    {
+        KScopedSchedulerLock lk{*this};
 
-    for (auto* thread : impl->shutdown_threads) {
-        void(thread->Run());
+        for (auto * thread : impl->shutdown_threads)
+        {
+            if (thread)
+            {
+                void(thread->Run());            
+            }
+        }
     }
 }
 

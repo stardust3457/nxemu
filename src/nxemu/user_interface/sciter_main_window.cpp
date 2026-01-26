@@ -169,6 +169,8 @@ void SciterMainWindow::ShowConfig(const char * startPage)
 
 void SciterMainWindow::LoadGame(const char * path)
 {
+    m_modules.Setup(*this);
+
     ISystemloader & loader = m_modules.Modules().Systemloader();
     loader.LoadRom(path);
 }
@@ -364,6 +366,8 @@ void SciterMainWindow::OnOpenFile()
 {
     if (m_modules.IsValid())
     {
+        m_modules.Setup(*this);
+
         ISystemloader & loader = m_modules.Modules().Systemloader();
         loader.SelectAndLoad((void *)m_window->GetHandle());    
     }
@@ -401,8 +405,7 @@ void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
     Stringlist & recentFiles = uiSettings.recentFiles;
     if (m_modules.IsValid() && fileIndex < recentFiles.size())
     {
-        ISystemloader & loader = m_modules.Modules().Systemloader();
-        loader.LoadRom(recentFiles[fileIndex].c_str());
+        LoadGame(recentFiles[fileIndex].c_str());
     }
 }
 

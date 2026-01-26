@@ -289,7 +289,10 @@ struct System::Impl {
     std::deque<std::vector<u8>> user_channel;
 };
 
-System::System(ISystemModules & modules) : impl{std::make_unique<Impl>(*this, modules)} {}
+System::System(ISystemModules & modules) : 
+    impl{std::make_unique<Impl>(*this, modules)} 
+{
+}
 
 System::~System() = default;
 
