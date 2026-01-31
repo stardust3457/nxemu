@@ -1,5 +1,15 @@
 #include "config_setting.h"
 
+
+ConfigSetting::ConfigSetting(TYPE_LIST /*type*/, const char * elementId, bool canChangeWhenRunning, const char * storeSettingId) :
+    m_type(ConfigSettingType::ListBox),
+    m_elementId(elementId),
+    m_canChangeWhenRunning(canChangeWhenRunning),
+    m_settingIndex(0),
+    m_storeSettingId(storeSettingId)
+{
+}
+
 ConfigSetting::ConfigSetting(TYPE_COMBOBOX /*type*/, const char * elementId, bool canChangeWhenRunning, uint32_t settingIndex, const char * storeSettingId) :
     m_type(ConfigSettingType::ComboBox),
     m_elementId(elementId),

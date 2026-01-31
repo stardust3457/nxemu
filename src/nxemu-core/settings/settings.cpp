@@ -193,7 +193,7 @@ void SettingsStore::SetString(const char * setting, const char * value)
     {
         return;
     }
-    m_settingsString[setting] = value;
+    m_settingsString[setting] = value != nullptr ? value : "";
     NotifyChange(setting);
 }
 

@@ -18,6 +18,16 @@ namespace
         StringList,
     };
 
+    std::string SerializeStringList(const Stringlist & list)
+    {
+        JsonValue jsonArray(JsonValueType::Array);
+        for (const std::string & item : list)
+        {
+            jsonArray.Append(JsonValue(item));
+        }
+        return JsonStyledWriter().write(jsonArray);
+    }
+
     class UISetting
     {
     public:
@@ -49,12 +59,13 @@ namespace
     };
 
     static UISetting settings[] = {
-        {nullptr, "RecentFiles", &uiSettings.recentFiles},
-        {nullptr, "GameDirectories", &uiSettings.gameDirectories},
+        {NXUISetting::RecentFiles, "RecentFiles", &uiSettings.recentFiles},
+        {NXUISetting::GameDirectories, "GameDirectories", &uiSettings.gameDirectories},
         {nullptr, "Language\\Directory", &uiSettings.languageDir, &uiSettings.languageDirValue, GetDefaultLanguageDir(), "./lang"},
         {nullptr, "Language\\Base", &uiSettings.languageBase, "english"},
         {nullptr, "Language\\Current", &uiSettings.languageCurrent, "english"},
         {nullptr, "SciterConsole", &uiSettings.sciterConsole, false},
+        {NXUISetting::MyGameIconSize, "GameBrowser\\MyGameIconSize", &uiSettings.gameBrowserMyGameIconSize, 2},
         {nullptr, "PerformVulkanCheck", &uiSettings.performVulkanCheck, true},
         {nullptr, nullptr, &uiSettings.hasBrokenVulkan, false},
         {nullptr, nullptr, &uiSettings.enableAllControllers, false},
@@ -156,6 +167,10 @@ void SetupUISetting(void)
             case SettingType::int32:
                 settingsStore.SetDefaultInt(setting.identifier, setting.default_int32);
                 settingsStore.SetInt(setting.identifier, setting.setting.int32 != nullptr ? *setting.setting.int32 : setting.default_int32);
+                break;
+            case SettingType::StringList:
+                settingsStore.SetDefaultString(setting.identifier, setting.default_string);
+                settingsStore.SetString(setting.identifier, setting.setting.string_list != nullptr ? SerializeStringList(*setting.setting.string_list).c_str() : setting.default_string);
                 break;
             default:
                 g_notify->BreakPoint(__FILE__, __LINE__);
@@ -294,6 +309,29 @@ namespace
                 if (uiSetting.setting.int32 != nullptr)
                 {
                     *uiSetting.setting.int32 = settingsStore.GetInt(setting);
+                }
+                break;
+            case SettingType::StringList:
+                if (uiSetting.setting.string_list != nullptr)
+                {
+                    uiSetting.setting.string_list->clear();
+                    std::string json = settingsStore.GetString(setting);
+                    JsonValue root;
+                    if (!json.empty())
+                    {
+                        JsonReader reader;
+                        if (!reader.Parse(json.data(), json.data() + json.size(), root))
+                        {
+                            return;
+                        }
+                        if (root.isArray())
+                        {
+                            for (uint32_t i = 0, n = root.size(); i < n; i++)
+                            {
+                                uiSetting.setting.string_list->push_back(root[i].asString());
+                            }
+                        }
+                    }
                 }
                 break;
             default:

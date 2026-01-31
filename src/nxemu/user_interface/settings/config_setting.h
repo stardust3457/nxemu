@@ -1,11 +1,15 @@
 #pragma once
 #include <string>
 
-enum class ConfigSettingType { ComboBox, ComboBoxValue, CheckBox, Slider, InputText };
+enum class ConfigSettingType { ListBox, ComboBox, ComboBoxValue, CheckBox, Slider, InputText };
 
 class ConfigSetting
 {
 public:
+    enum TYPE_LIST
+    {
+        ListBox
+    };
     enum TYPE_COMBOBOX
     {
         ComboBox
@@ -27,6 +31,7 @@ public:
         InputText
     };
 
+    ConfigSetting(TYPE_LIST type, const char * elementId, bool canChangeWhenRunning, const char * storeSettingId);
     ConfigSetting(TYPE_COMBOBOX type, const char * elementId, bool canChangeWhenRunning, uint32_t settingIndex, const char * storeSettingId);
     ConfigSetting(TYPE_COMBOBOXVALUE type, const char * elementId, bool canChangeWhenRunning, const char * storeSettingId);
     ConfigSetting(TYPE_CHECKBOX type, const char * elementId, bool canChangeWhenRunning, const char * storeSettingId);

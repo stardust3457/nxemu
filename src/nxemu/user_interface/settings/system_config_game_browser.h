@@ -32,7 +32,6 @@ private:
 
     void SetupGameBrowserPage(SciterElement page);
     void SelectDirectoryItem(const SciterElement & gameDirectoryList, SCITER_ELEMENT source);
-    void AddGameDirectory(const std::string& directory);
     void RemoveSelectedDirectory();
 
     ISciterUI & m_sciterUI;

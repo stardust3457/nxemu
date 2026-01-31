@@ -1,4 +1,5 @@
 ﻿#include "config_setting.h"
+#include "settings/ui_settings.h"
 #include "system_config.h"
 #include "system_config_audio.h"
 #include "system_config_debug.h"
@@ -12,6 +13,7 @@
 #include <sciter_element.h>
 #include <sciter_handler.h>
 #include <widgets/page_nav.h>
+#include <widgets/list_box.h>
 #include <yuzu_common/settings_enums.h>
 #include <nxemu-core/modules/system_modules.h>
 #include <nxemu-core/settings/core_settings.h>
@@ -110,6 +112,38 @@ void SystemConfig::SavePage(SCITER_ELEMENT pageElement, const ConfigSetting* set
                 }
             }
         }
+        else if (setting.Type() == ConfigSettingType::ListBox)
+        {
+            std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(page.GetElementByID(setting.ElementId()), IID_ILISTBOX);
+            if (interfacePtr)
+            {
+                JsonValue jsonArray;
+                std::shared_ptr<IListBox> listBox = std::static_pointer_cast<IListBox>(interfacePtr);
+                for (uint32_t item = 0, n = listBox->GetCount(); item < n; item++)
+                {
+                    SciterElement element = listBox->GetItem(item);
+                    if (element)
+                    {
+                        std::string value = element.GetAttribute("value");
+                        if (!value.empty())
+                        {
+                            jsonArray.Append(value);                        
+                        }
+                    }
+                }
+
+                if (jsonArray.isArray())
+                {
+                    std::string jsonOutput = JsonStyledWriter().write(jsonArray);
+                    settingsStore.SetString(setting.StoreSettingId(), jsonOutput.c_str());
+                }
+                else
+                {
+                    settingsStore.SetString(setting.StoreSettingId(), "");
+                
+                }
+            }
+        }
         else
         {
             g_notify->BreakPoint(__FILE__, __LINE__);
@@ -139,7 +173,30 @@ void SystemConfig::SetupPage(SCITER_ELEMENT pageElement, const ConfigSetting * s
                 }
             }
         }
-        if (setting.Type() == ConfigSettingType::ComboBox)
+        if (setting.Type() == ConfigSettingType::ListBox)
+        {
+            std::string settingValue = settingsStore.GetString(setting.StoreSettingId());
+
+            JsonReader reader;
+            JsonValue value;
+            if (!settingValue.empty() && reader.Parse(settingValue.c_str(), settingValue.c_str() + settingValue.length(), value) && value.isArray())
+            {
+                std::shared_ptr<void> interfacePtr = m_sciterUI.GetElementInterface(page.GetElementByID(setting.ElementId()), IID_ILISTBOX);
+                if (interfacePtr)
+                {
+                    std::shared_ptr<IListBox> listBox = std::static_pointer_cast<IListBox>(interfacePtr);
+                    for (uint32_t strIndex = 0; strIndex < value.size(); strIndex++)
+                    {
+                        if (!value[strIndex].isString())
+                        {
+                            continue;
+                        }
+                        listBox->AddItem(value[strIndex].asString().c_str(), value[strIndex].asString().c_str());
+                    }
+                }
+            }
+        }
+        else if (setting.Type() == ConfigSettingType::ComboBox)
         {
             SetupComboBox(page, setting);
         }
@@ -291,6 +348,7 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
             m_modules.FlushSettings();
         }
         SaveCoreSetting();
+        SaveUISetting();
         m_window->Destroy();
     }
     return true;
