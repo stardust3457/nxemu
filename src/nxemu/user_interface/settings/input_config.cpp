@@ -20,11 +20,6 @@ InputConfig::InputConfig(ISciterUI & SciterUI, SystemModules & modules) :
         {"Player8", {7, NpadIdType::Player8}}, 
     })
 {
-    if (modules.IsValid())
-    {
-        IOperatingSystem & operatingSystem = modules.Modules().OperatingSystem();
-        m_inputDeviceList = operatingSystem.GetInputDevices();
-    }
 }
 
 InputConfig::~InputConfig()
@@ -42,6 +37,10 @@ void InputConfig::Display(void * parentWindow)
     {
         return;
     }
+    m_window->OnDestroySinkAdd((IWindowDestroySink *)this);
+
+    IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
+    m_inputDeviceList = operatingSystem.GetInputDevices();
 
     SciterElement root(m_window->GetRootElement());
     if (root.IsValid())
@@ -129,4 +128,16 @@ bool InputConfig::OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKey
 bool InputConfig::OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState)
 {
     return m_playerCurrent != nullptr ? m_playerCurrent->OnKeyChar(element, item, keyCode, keyboardState) : false;
+}
+
+void InputConfig::OnWindowDestroy(HWINDOW hWnd)
+{
+    if (hWnd == m_window->GetHandle())
+    {
+        if (m_inputDeviceList)
+        {
+            m_inputDeviceList->Release();
+            m_inputDeviceList = nullptr;
+        }
+    }
 }

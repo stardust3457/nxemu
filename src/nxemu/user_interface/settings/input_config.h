@@ -15,7 +15,8 @@ enum class NpadIdType : uint32_t;
 class InputConfig :
     public IPagesSink,
     public IClickSink,
-    public IKeySink
+    public IKeySink,
+    public IWindowDestroySink
 {
     typedef std::unordered_map<std::string, std::pair<size_t, NpadIdType>> PlayerInfo;
 
@@ -40,6 +41,9 @@ public:
     bool OnKeyDown(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
     bool OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
     bool OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT item, SciterKeys keyCode, uint32_t keyboardState) override;
+
+    // IWindowDestroySink
+    void OnWindowDestroy(HWINDOW hWnd) override;
 
 private:
     InputConfig() = delete;
