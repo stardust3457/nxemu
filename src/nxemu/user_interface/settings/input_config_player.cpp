@@ -716,8 +716,11 @@ void InputConfigPlayer::LoadConfiguration()
     UpdateUI();
     UpdateInputDeviceCombobox();
 
-    const int comboBoxIndex = GetIndexFromControllerType(m_emulatedController->GetNpadStyleIndex(true));
-    m_comboControllerType->SelectItem(comboBoxIndex);
+    if (m_comboControllerType != nullptr)
+    {
+        const int comboBoxIndex = GetIndexFromControllerType(m_emulatedController->GetNpadStyleIndex(true));
+        m_comboControllerType->SelectItem(comboBoxIndex);
+    }
 
     m_connectedController = m_page.GetElementByID("ConnectedController");
     if (m_connectedController)
@@ -729,6 +732,11 @@ void InputConfigPlayer::LoadConfiguration()
 
 void InputConfigPlayer::UpdateInputDeviceCombobox(void)
 {
+    if (m_comboDevices == nullptr)
+    {
+        return;
+    }
+
     // Skip input device persistence if "Input Devices" is set to "Any".
     if (m_comboDevices->CurrentIndex() == 0)
     {
@@ -1097,6 +1105,10 @@ NpadStyleIndex InputConfigPlayer::GetControllerTypeFromIndex(int index) const
 
 void InputConfigPlayer::SetConnectableControllers() 
 {
+    if (m_comboControllerType == nullptr)
+    {
+        return;
+    }
     const NpadStyleSet npad_style_set = m_operatingSystem.GetSupportedStyleTag();
     index_controller_type_pairs.clear();
     m_comboControllerType->ClearContents();
@@ -1360,6 +1372,10 @@ void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
 
 void InputConfigPlayer::UpdateControllerAvailableButtons()
 {
+    if (m_comboControllerType == nullptr)
+    {
+        return;
+    }
     NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
     SciterElement proController = m_page.GetElementByID("ProController");
     const std::array<SciterElement, 22> layout_show = {
@@ -1504,6 +1520,10 @@ void InputConfigPlayer::UpdateControllerAvailableButtons()
 
 void InputConfigPlayer::UpdateControllerEnabledButtons() 
 {
+    if (m_comboControllerType == nullptr)
+    {
+        return;
+    }
     NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
 
     // List of all the widgets that will be disabled by any of the following layouts that need
@@ -1555,9 +1575,13 @@ void InputConfigPlayer::UpdateControllerEnabledButtons()
 
 void InputConfigPlayer::UpdateControllerButtonNames() 
 {
+    if (m_comboControllerType == nullptr)
+    {
+        return;
+    }
     NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
     SciterElement el;
-
+        
     switch (layout) {
     case NpadStyleIndex::Fullkey:
     case NpadStyleIndex::JoyconDual:

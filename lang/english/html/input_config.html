@@ -19,11 +19,6 @@ html {
   height: max-content;
 }
 
-body
-{
-  min-width: 65rem;
-}
-
 #MainTabNav
 {
   flow: horizontal;
@@ -88,6 +83,7 @@ div.button-column,
 .controller-config .config-header
 {
   flow: horizontal;
+  width: fit-content;
 }
 
 .controller-config .config-header .group 
@@ -139,6 +135,7 @@ div.center-buttons-grid
 
 #ControllerTypeGroup
 {
+  flow: horizontal;
   min-width: 11rem;
   margin-right: 0.4rem;
 }
@@ -194,6 +191,191 @@ input[type=hslider] > button.slider
 {
   width: 100%%;
 }
+
+#InputContents
+{
+  width: 65em;
+}
+
+@keyframes flash {
+0%, 100% { fill: #2c2c2c; }
+50% { fill: #aa0000; }
+}
+
+#ProController .controller { stroke: black; stroke-opacity: 0.3; stroke-width: 1; }
+#ProController .body { fill: #CCC; }
+#ProController .leftGrip, .rightGrip { fill: #CCC; stroke: black; stroke-opacity: 0.3; stroke-width: 1; }
+#ProController .button .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#ProController .button .label { fill: white; font-family: Arial, sans-serif; font-weight: bold; }
+#ProController .button .symbol { fill: white; }
+#ProController .button[data-pressed="1"] .shape { fill: #aa0000; }
+#ProController .button[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#ProController .home .outer { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#ProController .home .inner { fill: none; stroke: white; stroke-width: 1; }
+#ProController .home .house { fill: white; }
+#ProController .screenshot .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#ProController .screenshot .symbol { fill: white; }
+#ProController .plus .shape, .minus .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#ProController .plus .symbol, .minus .symbol { fill: white; }
+#ProController .cube { stroke: #000; stroke-width: 1.3; stroke-linejoin: miter; }
+#ProController .cube.face.front { fill: url(#frontFaceGradient); fill-opacity: 1; }
+#ProController .cube.face.back { fill: url(#backFaceGradient); fill-opacity: 1; }
+#ProController .cube.edge { stroke:#000; stroke-width:1; fill: none; }
+#ProController .trigger .shape { fill: #232629; stroke: #ccc; stroke-width: 1; }
+#ProController .trigger .label { fill: #ccc; }
+#ProController .trigger.L .shape { stroke-width: 2; }
+#ProController .trigger.R .shape { stroke-width: 2; }
+#ProController .trigger[data-pressed="1"] .shape { fill: #aa0000; }
+#ProController .trigger[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#ProController .trigger[data-pressed="1"] .label { fill: white; }
+#ProController .joystick-range { stroke: #CCC; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#ProController .joystick-deadzone { stroke: #CC0000; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#ProController .joystick-dot-raw { fill: #AAEBFF; stroke: none; }
+#ProController .joystick-dot-calibrated { fill: #3BA55D; stroke: none; }
+#ProController .pro-left-stick .shape { stroke: #979797; stroke-width: 1; }
+#ProController .pro-left-stick .outer { fill: #2c2c2c; }
+#ProController .pro-left-stick .inner { stroke: #979797; stroke-width: 1; fill: #2c2c2c; }
+#ProController .pro-right-stick .shape { stroke: #979797; stroke-width: 1; }
+#ProController .pro-right-stick .outer { fill: #2c2c2c; }
+#ProController .pro-right-stick .inner { stroke: #979797; stroke-width: 1; fill: #2c2c2c; }
+
+#DualJoycons .body { fill: #CCC; }
+#DualJoycons .slider { fill: #676A6D; stroke: #ccc; stroke-width: 0.5; }
+#DualJoycons .slider-line { stroke: #ccc; stroke-width: 0.5; fill: none; }
+#DualJoycons .slider-release { fill: #2c2c2c; stroke: #ccc; stroke-width: 0.5; }
+#DualJoycons .button .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#DualJoycons .button .label { fill: white; font-family: Arial, sans-serif; font-weight: bold; }
+#DualJoycons .button .symbol { fill: white; }
+#DualJoycons .button[data-pressed="1"] .shape { fill: #aa0000; }
+#DualJoycons .button[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#DualJoycons .trigger .shape { fill: #232629; stroke: #ccc; stroke-width: 1; stroke-opacity: 0.4; }
+#DualJoycons .trigger .label { fill: #ccc; }
+#DualJoycons .trigger[data-pressed="1"] .shape { fill: #aa0000; }
+#DualJoycons .trigger[data-pressed="1"] .label { fill: white; }
+#DualJoycons .trigger[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#DualJoycons .joystick-range { stroke: #CCC; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#DualJoycons .joystick-deadzone { stroke: #CC0000; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#DualJoycons .joystick-dot-raw { fill: #AAEBFF; stroke: none; }
+#DualJoycons .joystick-dot-calibrated { fill: #3BA55D; stroke: none; }
+#DualJoycons .left-stick .outline { stroke: #979797; stroke-width: 1; fill: #DDD; }
+#DualJoycons .left-stick-movable .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#DualJoycons .left-stick-movable .line { stroke: #ccc; stroke-width: 1; fill: #1a1b1e; }
+#DualJoycons .left-stick-topview .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#DualJoycons .left-stick-topview .line { stroke: #979797; stroke-width: 1; }
+#DualJoycons .left-joycon-topview .button .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#DualJoycons .left-joycon-topview .button[data-pressed="1"] .shape { fill: #aa0000; }
+#DualJoycons .right-stick .outline { stroke: #979797; stroke-width: 1; fill: #DDD; }
+#DualJoycons .right-stick-movable .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#DualJoycons .right-stick-movable .line { stroke: #ccc; stroke-width: 1; fill: #1a1b1e; }
+#DualJoycons .right-stick-topview .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#DualJoycons .right-stick-topview .line { stroke: #979797; stroke-width: 1; }
+#DualJoycons .right-joycon-topview .bump { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+
+#LeftJoycon .body { fill: #CCC; stroke: #676767; stroke-width: 0.5;}
+#LeftJoycon .slider { fill: #676A6D; stroke: #ccc; stroke-width: 0.5; }
+#LeftJoycon .slider-line { stroke: #ccc; stroke-width: 0.5; fill: none; }
+#LeftJoycon .slider-release { fill: #2c2c2c; stroke: #ccc; stroke-width: 0.5; }
+#LeftJoycon .button .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#LeftJoycon .button .label { fill: white; font-family: Arial, sans-serif; font-weight: bold; }
+#LeftJoycon .button .symbol { fill: white; }
+#LeftJoycon .button[data-pressed="1"] .shape { fill: #aa0000; }
+#LeftJoycon .button[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#LeftJoycon .trigger .shape { fill: #232629; stroke: #ccc; stroke-width: 1; stroke-opacity: 0.4; }
+#LeftJoycon .trigger .label { fill: #ccc; }
+#LeftJoycon .trigger[data-pressed="1"] .shape { fill: #aa0000; }
+#LeftJoycon .trigger[data-pressed="1"] .label { fill: white; }
+#LeftJoycon .trigger[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#LeftJoycon .joystick-range { stroke: #CCC; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#LeftJoycon .joystick-deadzone { stroke: #CC0000; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#LeftJoycon .joystick-dot-raw { fill: #AAEBFF; stroke: none; }
+#LeftJoycon .joystick-dot-calibrated { fill: #3BA55D; stroke: none; }
+#LeftJoycon .left-stick .outline { stroke: #979797; stroke-width: 1; fill: #DDD; }
+#LeftJoycon .left-stick-movable .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#LeftJoycon .left-stick-movable .line { stroke: #ccc; stroke-width: 1; fill: #1a1b1e; }
+#LeftJoycon .left-stick-topview .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#LeftJoycon .left-stick-topview .line { stroke: #979797; stroke-width: 1; }
+#LeftJoycon .left-stick-sideview .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#LeftJoycon .left-stick-sideview .line { stroke: #979797; stroke-width: 1; }
+#LeftJoycon .left-joycon-topview .button .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#LeftJoycon .left-joycon-topview .button[data-pressed="1"] .shape { fill: #aa0000; }
+#LeftJoycon .rail-body { fill: #6a6a6a; stroke: #848484; stroke-width: 0.7; }
+#LeftJoycon .rail-bottom { fill: #1b1b1b; stroke: #949494; stroke-width: 0.7; }
+#LeftJoycon .led:nth-child(1) { fill: #ffd94d; stroke: #a0a0a0; stroke-width: 0.7; }
+#LeftJoycon .led:nth-child(2) { fill: #8ee7ff; stroke: #a0a0a0; stroke-width: 0.7;  }
+#LeftJoycon .led:nth-child(3) { fill: #8ee7ff; stroke: #a0a0a0; stroke-width: 0.7; }
+#LeftJoycon .led:nth-child(4) { fill: #8ee7ff; stroke: #a0a0a0; stroke-width: 0.7; }
+#LeftJoycon .rail-sync { fill: #000000; stroke: #d0d0d0; stroke-width: 0.6; }
+#LeftJoycon .arrow { fill: none; stroke: #ffffff; stroke-width: 0.9; stroke-linejoin: round; }
+#LeftJoycon .joycon-side-buttons .button .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#LeftJoycon .joycon-side-buttons .button[data-pressed="1"] .shape { fill: #aa0000; }
+
+#RightJoycon .body { fill: #CCC; stroke: #676767; stroke-width: 0.5; }
+#RightJoycon .slider { fill: #676A6D; stroke: #ccc; stroke-width: 0.5; }
+#RightJoycon .slider-line { stroke: #ccc; stroke-width: 0.5; fill: none; }
+#RightJoycon .slider-release { fill: #2c2c2c; stroke: #ccc; stroke-width: 0.5; }
+#RightJoycon .button .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#RightJoycon .button .label { fill: white; font-family: Arial, sans-serif; font-weight: bold; }
+#RightJoycon .button .symbol { fill: white; }
+#RightJoycon .button[data-pressed="1"] .shape { fill: #aa0000; }
+#RightJoycon .button[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#RightJoycon .trigger .shape { fill: #232629; stroke: #ccc; stroke-width: 1; stroke-opacity: 0.4; }
+#RightJoycon .trigger .label { fill: #ccc; }
+#RightJoycon .trigger[data-pressed="1"] .shape { fill: #aa0000; }
+#RightJoycon .trigger[data-pressed="1"] .label { fill: white; }
+#RightJoycon .trigger[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+
+#RightJoycon .joystick-range { stroke: #CCC; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#RightJoycon .joystick-deadzone { stroke: #CC0000; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#RightJoycon .joystick-dot-raw { fill: #AAEBFF; stroke: none; }
+#RightJoycon .joystick-dot-calibrated { fill: #3BA55D; stroke: none; }
+
+#RightJoycon .right-stick .outline { stroke: #979797; stroke-width: 1; fill: #DDD; }
+#RightJoycon .right-stick-movable .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#RightJoycon .right-stick-movable .line { stroke: #ccc; stroke-width: 1; fill: #1a1b1e; }
+#RightJoycon .right-stick-topview .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#RightJoycon .right-stick-topview .line { stroke: #979797; stroke-width: 1; }
+
+#RightJoycon .right-joycon-topview .bump { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+
+#RightJoycon .rail-body   { fill: #6a6a6a; stroke: #848484; stroke-width: 0.7; }
+#RightJoycon .rail-bottom { fill: #1b1b1b; stroke: #949494; stroke-width: 0.7; }
+#RightJoycon .led:nth-child(1) { fill: #ffd94d; stroke: #a0a0a0; stroke-width: 0.7; }
+#RightJoycon .led:nth-child(2) { fill: #8ee7ff; stroke: #a0a0a0; stroke-width: 0.7; }
+#RightJoycon .led:nth-child(3) { fill: #8ee7ff; stroke: #a0a0a0; stroke-width: 0.7; }
+#RightJoycon .led:nth-child(4) { fill: #8ee7ff; stroke: #a0a0a0; stroke-width: 0.7; }
+#RightJoycon .rail-sync { fill: #000000; stroke: #d0d0d0; stroke-width: 0.6; }
+
+#RightJoycon .arrow { fill: none; stroke: #ffffff; stroke-width: 0.9; stroke-linejoin: round; }
+
+#RightJoycon .joycon-side-buttons .button .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#RightJoycon .joycon-side-buttons .button[data-pressed="1"] .shape { fill: #aa0000; }
+
+#Handheld .body { fill: #CCCCCC stroke: #696b6e; stroke-width: 1; }
+#Handheld .trigger .shape { fill: #232629; stroke: #ccc; stroke-width: 1; }
+#Handheld .trigger .label { fill: #ccc; }
+
+#GCController .outline { stroke: #000; stroke-width: 1.5; }
+#GCController .primary { fill: #ccc; }
+#GCController .left-handle { fill: #ccc; }
+#GCController .right-handle { fill: #ccc; }
+#GCController .button .label { fill: white; }
+#GCController .button .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#GCController .button[data-pressed="1"] .shape { fill: #aa0000; }
+#GCController .button[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#GCController .trigger.L .shape{ fill: #222629; }
+#GCController .trigger.L[data-pressed="1"] .shape{ fill: #aa0000; }
+#GCController .ZR .shape { fill: #1a1b1e; }
+#GCController .transparent { fill: none; }
+#GCController .highlight { fill: #AA0000; }
+#GCController .joystick-range { stroke: #CCC; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#GCController .joystick-deadzone { stroke: #CC0000; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#GCController .joystick-dot-raw { fill: #AAEBFF; stroke: none; }
+#GCController .joystick-dot-calibrated { fill: #3BA55D; stroke: none; }
+#GCController .left-stick .outline { stroke: #979797; stroke-width: 1; fill: #DDD; }
+#GCController .left-stick-movable .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
+#GCController .right-stick .outline { stroke: #979797; stroke-width: 1; fill: #DDD; }
+#GCController .right-stick .outer-circle { fill: #1a1b1e; }
+#GCController .right-stick .shape { stroke: #979797; stroke-width: 1; }
 
   </style>
 <body>
