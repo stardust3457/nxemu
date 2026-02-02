@@ -12,6 +12,7 @@
 #include <widgets/menubar.h>
 #include <widgets/page_nav.h>
 #include <widgets/tooltip_host.h>
+#include "user_interface/widgets/rom_browser.h"
 #include <windows.h>
 
 void RegisterWidgets(ISciterUI & sciterUI)
@@ -21,6 +22,7 @@ void RegisterWidgets(ISciterUI & sciterUI)
     Register_WidgetMenuBar(sciterUI);
     Register_WidgetPageNav(sciterUI);
     Register_WidgetToolTipHost(sciterUI);
+    Register_WidgetRomBrowser(sciterUI);
 }
 
 extern "C" {

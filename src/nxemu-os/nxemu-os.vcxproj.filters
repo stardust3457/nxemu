@@ -3259,9 +3259,6 @@
     <ClCompile Include="core\reporter.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
-    <ClCompile Include="core\arm\debug.cpp">
-      <Filter>Source Files\core\arm</Filter>
-    </ClCompile>
     <ClCompile Include="emu_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

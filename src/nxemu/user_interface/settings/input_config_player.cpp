@@ -1581,7 +1581,7 @@ void InputConfigPlayer::UpdateControllerButtonNames()
     }
     NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
     SciterElement el;
-        
+
     switch (layout) {
     case NpadStyleIndex::Fullkey:
     case NpadStyleIndex::JoyconDual:

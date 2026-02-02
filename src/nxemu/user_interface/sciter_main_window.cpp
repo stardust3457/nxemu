@@ -59,6 +59,10 @@ SciterMainWindow::~SciterMainWindow()
     settings.UnregisterCallback(NXOsSetting::AudioVolume, SciterMainWindow::SettingChanged, this);
 
     settings.SetBool(NXCoreSetting::ShuttingDown, true);
+    if (m_romBrowser)
+    {
+        m_romBrowser->ClearItems();
+    }
     m_modules.ShutDown();
 }
 
@@ -152,6 +156,21 @@ bool SciterMainWindow::Show()
 
     m_sciterUI.AttachHandler(m_rootElement, IID_ITIMERSINK, (ITimerSink *)this);
     m_rootElement.SetTimer(25, (uint32_t *)TIMER_UPDATE_INPUT);
+
+    SciterElement romBrowserPanel = m_rootElement.GetElementByID("RomBrowserPanel");
+    if (romBrowserPanel.IsValid())
+    {
+        romBrowserPanel.SetStyleAttribute("display", "block");
+    }
+
+    SciterElement rombrowser = m_rootElement.FindFirst("rombrowser");
+    interfacePtr = rombrowser.IsValid() ? m_sciterUI.GetElementInterface(rombrowser, IID_ROMBROWSER) : nullptr;
+    if (interfacePtr)
+    {
+        m_romBrowser = std::static_pointer_cast<IRomBrowser>(interfacePtr);
+        m_romBrowser->SetMainWindow(this, &m_modules.Modules());
+        m_romBrowser->PopulateAsync();
+    }
 
     if (!uiSettings.hasBrokenVulkan)
     {
@@ -565,7 +584,17 @@ void SciterMainWindow::SettingChanged(const char * setting, void * userData)
 
 bool SciterMainWindow::OnTimer(SCITER_ELEMENT /*element*/, uint32_t * timerId)
 {
-    if (timerId == (uint32_t*)TIMER_UPDATE_INPUT)
+    if (timerId == (uint32_t *)TIMER_UPDATE_UI)
+    {
+        SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
+        if (mainContents.IsValid())
+        {
+            mainContents.Update(false);
+            m_sciterUI.UpdateWindow(mainContents.GetElementHwnd(true));
+        }
+        return false;
+    }
+    else if (timerId == (uint32_t *)TIMER_UPDATE_INPUT)
     {
         UpdateInputDrivers();
     }
@@ -576,6 +605,12 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*sour
 {
     if (event_code == EVENT_EMULATION_LOADING)
     {
+        SciterElement romBrowserPanel(m_rootElement.GetElementByID("RomBrowserPanel"));
+        if (romBrowserPanel.IsValid())
+        {
+            romBrowserPanel.SetStyleAttribute("display", "none");
+        }
+
         SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
         if (LoadingPanel.IsValid())
         {
@@ -593,6 +628,12 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*sour
         if (LoadingPanel.IsValid())
         {
             LoadingPanel.SetStyleAttribute("display", "none");
+        }
+
+        SciterElement romBrowserPanel(m_rootElement.GetElementByID("RomBrowserPanel"));
+        if (romBrowserPanel.IsValid())
+        {
+            romBrowserPanel.SetStyleAttribute("display", "block");
         }
     }
     else if (event_code == EVENT_EMULATION_FIRST_FRAME)

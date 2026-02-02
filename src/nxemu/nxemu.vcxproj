@@ -40,6 +40,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="settings\ui_settings.cpp" />
     <ClCompile Include="startup_checks.cpp" />
+    <ClCompile Include="user_interface\game_list_worker.cpp" />
     <ClCompile Include="user_interface\key_mappings.cpp" />
     <ClCompile Include="user_interface\notification.cpp" />
     <ClCompile Include="user_interface\sciter_main_window.cpp" />
@@ -51,12 +52,14 @@
     <ClCompile Include="user_interface\settings\system_config_debug.cpp" />
     <ClCompile Include="user_interface\settings\system_config_game_browser.cpp" />
     <ClCompile Include="user_interface\settings\system_config_graphics.cpp" />
+    <ClCompile Include="user_interface\widgets\rom_browser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings\ui_identifiers.h" />
     <ClInclude Include="settings\ui_settings.h" />
     <ClInclude Include="settings\ui_settings_identifiers.h" />
     <ClInclude Include="startup_checks.h" />
+    <ClInclude Include="user_interface\game_list_worker.h" />
     <ClInclude Include="user_interface\key_mappings.h" />
     <ClInclude Include="user_interface\notification.h" />
     <ClInclude Include="user_interface\resource.h" />
@@ -69,6 +72,7 @@
     <ClInclude Include="user_interface\settings\system_config_debug.h" />
     <ClInclude Include="user_interface\settings\system_config_game_browser.h" />
     <ClInclude Include="user_interface\settings\system_config_graphics.h" />
+    <ClInclude Include="user_interface\widgets\rom_browser.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\external\sciterui\src\sciterui\sciterui.vcxproj">

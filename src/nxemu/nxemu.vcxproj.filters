@@ -31,6 +31,12 @@
     <Filter Include="Source Files\settings">
       <UniqueIdentifier>{3bf11314-5055-4185-95ae-653ebe2f8e8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\user_interface\widgets">
+      <UniqueIdentifier>{465d5a27-da20-4e68-b138-2d8b5b359780}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\user_interface\widgets">
+      <UniqueIdentifier>{a4091b11-2249-4f6f-8fd2-49ae4e48ea92}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -74,6 +80,12 @@
     </ClCompile>
     <ClCompile Include="user_interface\key_mappings.cpp">
       <Filter>Source Files\user_interface</Filter>
+    </ClCompile>
+    <ClCompile Include="user_interface\game_list_worker.cpp">
+      <Filter>Source Files\user_interface</Filter>
+    </ClCompile>
+    <ClCompile Include="user_interface\widgets\rom_browser.cpp">
+      <Filter>Source Files\user_interface\widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +133,12 @@
     </ClInclude>
     <ClInclude Include="user_interface\key_mappings.h">
       <Filter>Header Files\user_interface</Filter>
+    </ClInclude>
+    <ClInclude Include="user_interface\game_list_worker.h">
+      <Filter>Header Files\user_interface</Filter>
+    </ClInclude>
+    <ClInclude Include="user_interface\widgets\rom_browser.h">
+      <Filter>Header Files\user_interface\widgets</Filter>
     </ClInclude>
     <ClInclude Include="settings\ui_identifiers.h">
       <Filter>Header Files\settings</Filter>

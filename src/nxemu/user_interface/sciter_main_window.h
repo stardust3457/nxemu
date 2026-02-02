@@ -7,6 +7,7 @@
 #include <sciter_element.h>
 #include <widgets/menubar.h>
 #include "startup_checks.h"
+#include "user_interface/widgets/rom_browser.h"
 
 class SystemConfig;
 class InputConfig;
@@ -43,7 +44,8 @@ class SciterMainWindow :
 
     enum
     {
-        TIMER_UPDATE_INPUT = 5000,
+        TIMER_UPDATE_UI = 5000,
+        TIMER_UPDATE_INPUT = 5001,
     };
 
 public:
@@ -122,6 +124,7 @@ private:
     SystemModules m_modules;
     std::vector<VkDeviceRecord> m_vkDeviceRecords;
     std::shared_ptr<IMenuBar> m_menuBar;
+    std::shared_ptr<IRomBrowser> m_romBrowser;
     void * m_renderWindow;
     std::string m_windowTitle;
     std::unique_ptr<SystemConfig> m_systemConfig;

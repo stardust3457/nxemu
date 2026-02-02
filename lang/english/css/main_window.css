@@ -37,12 +37,144 @@
   border: 1px solid #434242;
   padding: 1em;
 }
- 
+
+#RomBrowserPanel,
 #LoadingPanel
 {
-  display: none;
   width: 100%%;
   height: 100%%;
+  display: none;
+}
+
+rombrowser
+{
+  display: block;
+  width: 100%%;
+  height: 100%%;
+  padding: 0.5rem 1rem;
+  margin: 0;
+}
+
+rombrowser .games-title
+{
+  flow: horizontal;
+}
+
+rombrowser .buttons-container
+{
+  padding: 0.2rem 0 0;
+}
+
+rombrowser .config-button svg
+{
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+}
+
+rombrowser .config-button .outline
+{
+  fill: #eff0f1;
+}
+
+rombrowser .config-button:hover .outline
+{
+  fill: #232629;
+}
+
+rombrowser .config-button
+{
+  padding: 0.2rem;
+}
+
+rombrowser .config-button:hover
+{
+  background-color: #b3d9f6;
+  border-radius: 4px;
+}
+
+rombrowser .games-title h1
+{
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #eff0f1;
+  padding: 0 0 0.6rem;
+  margin: 0;
+  width:*
+}
+
+rombrowser .games-grid
+{
+  height: 100%%;
+  flow:horizontal-wrap;
+  border-spacing: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+rombrowser .games-grid[data-size="1"]
+{
+  border-spacing: 0.5rem;
+}
+
+rombrowser .rom-icon
+{
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 5px;
+}
+
+rombrowser .rom-card-content
+{
+  width: 100%;
+  height: 100%;
+}
+
+rombrowser .rom-card
+{
+  cursor: pointer;
+  border-radius: 8px;
+  border: 3px solid transparent;
+}
+
+rombrowser .rom-card:visited
+{
+  border: 3px solid #76B9ED;
+  cursor: pointer;
+}
+
+rombrowser .games-grid[data-size="1"] .rom-card
+{
+  width: 6rem;
+  height: 6rem;
+}
+
+rombrowser .games-grid[data-size="2"] .rom-card
+{
+  width: 8rem;
+  height: 8rem;
+}
+
+rombrowser .games-grid[data-size="3"] .rom-card
+{
+  width: 10rem;
+  height: 10rem;
+}
+
+rombrowser .games-grid[data-size="4"] .rom-card
+{
+  width: 13rem;
+  height: 13rem;
+}
+
+#LoadingPanel .loading-container
+{
+  width: 100%%;
+  height: 100%%;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background-color: black;
