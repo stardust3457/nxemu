@@ -44,6 +44,7 @@ public:
     void StopMapping() override;
     IParamPackage * GetNextInput() const override;
     void PumpInputEvents() const override;
+    PerfStatsResults GetAndResetPerfStats() override;
 
 private:
     OSManager() = delete;

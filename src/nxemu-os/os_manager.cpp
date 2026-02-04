@@ -351,3 +351,8 @@ void OSManager::PumpInputEvents() const
     std::shared_ptr<InputCommon::InputSubsystem>& input_subsystem = m_coreSystem.InputSubsystem();
     input_subsystem->PumpEvents();
 }
+
+PerfStatsResults OSManager::GetAndResetPerfStats()
+{
+    return m_coreSystem.GetAndResetPerfStats();
+}

@@ -388,6 +388,11 @@ void System::GatherGPUDirtyMemory(ICacheInvalidator * invalidator)
     }
 }
 
+PerfStatsResults System::GetAndResetPerfStats()
+{
+    return impl->GetAndResetPerfStats();
+}
+
 ISystemModules & System::GetSystemModules()
 {
     return impl->modules;

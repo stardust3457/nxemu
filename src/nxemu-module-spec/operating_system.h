@@ -218,6 +218,18 @@ enum class ControllerTriggerType : uint32_t {
     All,
 };
 
+struct PerfStatsResults
+{
+    /// System FPS (LCD VBlanks) in Hz
+    double system_fps;
+    /// Average game FPS (GPU frame renders) in Hz
+    double average_game_fps;
+    /// Walltime per system frame, in seconds, excluding any waits
+    double frametime;
+    /// Ratio of walltime / emulated time elapsed
+    double emulation_speed;
+};
+
 __interface IProgramMetadata
 {
     bool Is64BitProgram() const = 0;
@@ -418,6 +430,7 @@ __interface IOperatingSystem
     void StopMapping() = 0;
     IParamPackage * GetNextInput() const = 0;
     void PumpInputEvents() const = 0;
+    PerfStatsResults GetAndResetPerfStats() = 0;
 };
 
 EXPORT IOperatingSystem * CALL CreateOperatingSystem(ISystemModules & modules);

@@ -129,8 +129,6 @@ class Reporter;
 class SpeedLimiter;
 class TelemetrySession;
 
-struct PerfStatsResults;
-
 /// Enumeration representing the return values of the System Initialize and Load process.
 enum class SystemResultStatus : u32 {
     Success,             ///< Succeeded

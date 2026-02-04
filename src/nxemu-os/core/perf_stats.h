@@ -12,17 +12,6 @@
 
 namespace Core {
 
-struct PerfStatsResults {
-    /// System FPS (LCD VBlanks) in Hz
-    double system_fps;
-    /// Average game FPS (GPU frame renders) in Hz
-    double average_game_fps;
-    /// Walltime per system frame, in seconds, excluding any waits
-    double frametime;
-    /// Ratio of walltime / emulated time elapsed
-    double emulation_speed;
-};
-
 /**
  * Class to manage and query performance/timing statistics. All public functions of this class are
  * thread-safe unless stated otherwise.
