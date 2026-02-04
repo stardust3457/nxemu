@@ -16,10 +16,10 @@
 
 enum
 {
-    MODULE_LOADER_SPECS_VERSION = 0x0114,
-    MODULE_VIDEO_SPECS_VERSION = 0x0112,
-    MODULE_CPU_SPECS_VERSION = 0x010C,
-    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x010F,
+    MODULE_LOADER_SPECS_VERSION = 0x0115,
+    MODULE_VIDEO_SPECS_VERSION = 0x0113,
+    MODULE_CPU_SPECS_VERSION = 0x010D,
+    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x0110,
 };
 
 enum MODULE_TYPE : uint16_t
@@ -43,12 +43,15 @@ __interface IModuleSettings
     const char * GetString(const char * setting) const = 0;
     bool GetBool(const char * setting) const = 0;
     int32_t GetInt(const char * setting) const = 0;
+    float GetFloat(const char * setting) const = 0;
     void SetString(const char * setting, const char * value) = 0;
     void SetBool(const char * setting, bool value) = 0;
     void SetInt(const char * setting, int32_t value) = 0;
+    void SetFloat(const char * setting, float value) = 0;
 
     void SetDefaultBool(const char * setting, bool value) = 0;
     void SetDefaultInt(const char * setting, int value) = 0;
+    void SetDefaultFloat(const char * setting, float value) = 0;
     void SetDefaultString(const char * setting, const char * value) = 0;
 
     const char * GetSectionSettings(const char * section) const = 0;

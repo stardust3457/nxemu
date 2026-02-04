@@ -122,6 +122,16 @@ int32_t SettingsStore::GetDefaultInt(const char* setting) const
     return itr->second;
 }
 
+float SettingsStore::GetDefaultFloat(const char * setting) const
+{
+    SettingsMapFloat::const_iterator itr = m_settingsDefaultFloat.find(setting);
+    if (itr == m_settingsDefaultFloat.end())
+    {
+        return false;
+    }
+    return itr->second;
+}
+
 const char * SettingsStore::GetString(const char * setting) const
 {
     SettingsMapString::const_iterator itr = m_settingsString.find(setting);
@@ -162,6 +172,16 @@ int32_t SettingsStore::GetInt(const char* setting) const
     return itr->second;
 }
 
+float SettingsStore::GetFloat(const char * setting) const
+{
+    SettingsMapFloat::const_iterator itr = m_settingsFloat.find(setting);
+    if (itr == m_settingsFloat.end())
+    {
+        return GetDefaultFloat(setting);
+    }
+    return itr->second;
+}
+
 void SettingsStore::SetDefaultString(const char * setting, const char * value)
 {
     if (setting == nullptr || value == nullptr)
@@ -179,6 +199,11 @@ void SettingsStore::SetDefaultBool(const char * setting, bool value)
 void SettingsStore::SetDefaultInt(const char * setting, int32_t value)
 {
     m_settingsDefaultInt[setting] = value;
+}
+
+void SettingsStore::SetDefaultFloat(const char * setting, float value)
+{
+    m_settingsDefaultFloat[setting] = value;
 }
 
 void SettingsStore::SetString(const char * setting, const char * value)
@@ -226,6 +251,22 @@ void SettingsStore::SetInt(const char * setting, int32_t value)
         return;
     }
     m_settingsInt[setting] = value;
+    NotifyChange(setting);
+}
+
+void SettingsStore::SetFloat(const char * setting, float value)
+{
+    if (setting == nullptr)
+    {
+        return;
+    }
+
+    SettingsMapFloat::const_iterator it = m_settingsFloat.find(setting);
+    if (it != m_settingsFloat.end() && it->second == value)
+    {
+        return;
+    }
+    m_settingsFloat[setting] = value;
     NotifyChange(setting);
 }
 

@@ -17,6 +17,7 @@ class SettingsStore
     typedef std::unordered_map<std::string, std::string> SettingsMapString;
     typedef std::unordered_map<std::string, bool> SettingsMapBool;
     typedef std::unordered_map<std::string, int32_t> SettingsMapInt;
+    typedef std::unordered_map<std::string, float> SettingsMapFloat;
     typedef std::vector<CallbackInfo> NotificationCallbacks;
     typedef std::unordered_map<std::string, NotificationCallbacks> NotificationMap;
 
@@ -32,16 +33,20 @@ public:
     const char * GetDefaultString(const char * setting) const;
     bool GetDefaultBool(const char * setting) const;
     int GetDefaultInt(const char * setting) const;
+    float GetDefaultFloat(const char * setting) const;
     const char * GetString(const char * setting) const;
     bool GetBool(const char * setting) const;
     bool GetChanged(const char * setting) const;
     int32_t GetInt(const char * setting) const;
+    float GetFloat(const char * setting) const;
     void SetDefaultString(const char * setting, const char * value);
     void SetDefaultBool(const char * setting, bool value);
     void SetDefaultInt(const char * setting, const int32_t value);
+    void SetDefaultFloat(const char * setting, const float value);
     void SetString(const char * setting, const char * value);
     void SetBool(const char * setting, bool value);
     void SetInt(const char * setting, int32_t value);
+    void SetFloat(const char * setting, float value);
     void SetChanged(const char * setting, bool changed);
 
     void Save(void);
@@ -58,9 +63,11 @@ private:
     SettingsMapString m_settingsString;
     SettingsMapBool m_settingsBool;
     SettingsMapInt m_settingsInt;
+    SettingsMapFloat m_settingsFloat;
     SettingsMapString m_settingsDefaultString;
     SettingsMapBool m_settingsDefaultBool;
     SettingsMapInt m_settingsDefaultInt;
+    SettingsMapFloat m_settingsDefaultFloat;
     SettingsMapBool m_settingsChanged;
     NotificationMap m_notification;
 
