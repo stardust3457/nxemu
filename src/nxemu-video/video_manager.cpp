@@ -7,6 +7,7 @@
 #include "yuzu_video_core/video_core.h"
 #include "yuzu_video_core/gpu.h"
 #include <nxemu-core/settings/identifiers.h>
+#include "yuzu_video_core/shader_notify.h"
 
 extern IModuleSettings * g_settings;
 
@@ -272,4 +273,10 @@ uint32_t VideoManager::HostSyncpointRegisterAction(uint32_t fence_id, uint32_t t
 void VideoManager::WaitHost(uint32_t syncpoint_id, uint32_t expected_value)
 {
     impl->m_host1x->GetSyncpointManager().WaitHost(syncpoint_id, expected_value);
+}
+
+uint32_t VideoManager::ShadersBuilding()
+{
+    auto & shader_notify = impl->m_gpuCore->ShaderNotify();
+    return shader_notify.ShadersBuilding();
 }
