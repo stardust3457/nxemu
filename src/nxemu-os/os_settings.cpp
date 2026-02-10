@@ -11,7 +11,21 @@ extern IModuleSettings * g_settings;
 
 namespace
 {
-    enum class SettingType { StringSetting, StringValue, AudioEngine, AudioMode, U8, BooleanSetting, BooleanValue, UnsignedInt, ControllerType };
+    enum class SettingType
+    {
+        StringSetting,
+        StringValue,
+        AudioEngine,
+        AudioMode,
+        U8,
+        U16,
+        BooleanSwitchable,
+        BooleanSetting,
+        BooleanValue,
+        UnsignedInt,
+        Float,
+        ControllerType
+    };
 
     class OsSetting
     {
@@ -20,9 +34,12 @@ namespace
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioEngine> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioMode, true>* val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u8, true> * val);
-        OsSetting(const char * id, const char * path, Settings::Setting<bool, false> * val);
+        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u16, true> * val);
+        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<bool> * val);
+        OsSetting(const char * id, const char * path, Settings::Setting<bool, false> * val);        
         OsSetting(const char * id, const char * path, bool * val, bool defaultValue);
         OsSetting(const char * id, const char * path, int * val, int defaultValue);
+        OsSetting(const char * id, const char * path, float * val, float defaultValue);
         OsSetting(const char * id, const char * path, uint32_t * val, uint32_t defaultValue);
         OsSetting(const char * id, const char * path, std::string * val, const char * defaultValue);
         OsSetting(const char * id, const char * path, InputSettings::ControllerType * val, InputSettings::ControllerType defaultValue);
@@ -36,9 +53,12 @@ namespace
             Settings::SwitchableSetting<Settings::AudioEngine> * audioEngine;
             Settings::SwitchableSetting<Settings::AudioMode, true> * audioMode;
             Settings::SwitchableSetting<u8, true> * u8;
+            Settings::SwitchableSetting<u16, true> * u16;
+            Settings::SwitchableSetting<bool> * booleanSwitchable;
             Settings::Setting<bool, false> * booleanSetting;
             bool * boolValue;
             uint32_t * uint32Value;
+            float * floatValue;
             std::string * stringValue;
             InputSettings::ControllerType * controllerType;
         } setting;
@@ -46,6 +66,7 @@ namespace
         {
             bool boolValue;
             uint32_t uint32Value;
+            float floatValue;
             const char * sringValue;
             InputSettings::ControllerType controllerType;
         } defaultValue;
@@ -422,12 +443,16 @@ namespace
         {nullptr, "controller\\player_9\\ProfileName", &Settings::values.players.GetValue(true)[9].profile_name, ""},
         {nullptr, "controller\\player_9\\Vibration\\UseSystem", &Settings::values.players.GetValue(true)[9].use_system_vibrator, false},
 
-        {NXOsSetting::AudioSinkId, "audio\\sink_id", &Settings::values.sink_id},
+        { NXOsSetting::AudioSinkId, "audio\\sink_id", &Settings::values.sink_id},
         { NXOsSetting::AudioOutputDeviceId, "audio\\output_device_id", &Settings::values.audio_output_device_id },
         { NXOsSetting::AudioInputDeviceId, "audio\\input_device_id", &Settings::values.audio_input_device_id },
         { NXOsSetting::AudioMode, "audio\\mode", &Settings::values.sound_index },
         { NXOsSetting::AudioVolume, "audio\\volume", &Settings::values.volume },
         { NXOsSetting::AudioMuted, "audio\\muted", &Settings::values.audio_muted },
+        { NXOsSetting::ResolutionUpFactor, "resolution\\up_factor", &Settings::values.resolution_info.up_factor, 1.0f },
+        { NXOsSetting::SpeedLimit, "core\\speed_limit", &Settings::values.speed_limit },
+        { NXOsSetting::UseMultiCore, "core\\use_multi_core", &Settings::values.use_multi_core },
+        { NXOsSetting::UseSpeedLimit, "core\\use_speed_limit", &Settings::values.use_speed_limit },
     };
 
     template <typename T>
@@ -544,6 +569,12 @@ void SetupOsSetting(void)
         case SettingType::U8:
             osSetting.setting.u8->SetValue(osSetting.setting.u8->GetDefault());
             break;
+        case SettingType::U16:
+            osSetting.setting.u16->SetValue(osSetting.setting.u16->GetDefault());
+            break;
+        case SettingType::BooleanSwitchable:
+            osSetting.setting.booleanSetting->SetValue(osSetting.setting.booleanSwitchable->GetDefault());
+            break;
         case SettingType::BooleanSetting:
             osSetting.setting.booleanSetting->SetValue(osSetting.setting.booleanSetting->GetDefault());
             break;
@@ -552,6 +583,9 @@ void SetupOsSetting(void)
             break;
         case SettingType::UnsignedInt:
             *osSetting.setting.uint32Value = osSetting.defaultValue.uint32Value;
+            break;
+        case SettingType::Float:
+            *osSetting.setting.floatValue = osSetting.defaultValue.floatValue;
             break;
         case SettingType::StringValue:
             *osSetting.setting.stringValue = osSetting.defaultValue.sringValue;
@@ -660,6 +694,14 @@ void SetupOsSetting(void)
             g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.u8->GetDefault());
             g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.u8->GetValue());
             break;
+        case SettingType::U16:
+            g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.u16->GetDefault());
+            g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.u16->GetValue());
+            break;
+        case SettingType::BooleanSwitchable:
+            g_settings->SetDefaultBool(osSetting.identifier, osSetting.setting.booleanSwitchable->GetDefault() != 0);
+            g_settings->SetBool(osSetting.identifier, osSetting.setting.booleanSwitchable->GetValue() != 0);
+            break;
         case SettingType::BooleanSetting:
             g_settings->SetDefaultBool(osSetting.identifier, osSetting.setting.booleanSetting->GetDefault() != 0);
             g_settings->SetBool(osSetting.identifier, osSetting.setting.booleanSetting->GetValue() != 0);
@@ -667,6 +709,10 @@ void SetupOsSetting(void)
         case SettingType::BooleanValue:
             g_settings->SetDefaultBool(osSetting.identifier, osSetting.defaultValue.boolValue);
             g_settings->SetBool(osSetting.identifier, *osSetting.setting.boolValue);
+            break;
+        case SettingType::Float:
+            g_settings->SetDefaultFloat(osSetting.identifier, osSetting.defaultValue.floatValue);
+            g_settings->SetFloat(osSetting.identifier, *osSetting.setting.floatValue);
             break;
         default:
             UNIMPLEMENTED();
@@ -777,8 +823,24 @@ namespace
     {
         setting.u8 = val;
     }
-    
-    OsSetting::OsSetting(const char* id, const char * path, Settings::Setting<bool, false> * val) :
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u16, true> * val) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::U16)
+    {
+        setting.u16 = val;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<bool> * val) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::BooleanSwitchable)
+    {
+        setting.booleanSwitchable = val;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::Setting<bool, false> * val) :
         identifier(id),
         json_path(path),
         settingType(SettingType::BooleanSetting)
@@ -802,6 +864,15 @@ namespace
     {
         setting.uint32Value = (uint32_t *)val;
         defaultValue.uint32Value = defaultValue_;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, float * val, float defaultValue_) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::Float)
+    {
+        setting.floatValue = val;
+        defaultValue.floatValue = defaultValue_;
     }
 
     OsSetting::OsSetting(const char * id, const char * path, uint32_t * val, uint32_t defaultValue_) :

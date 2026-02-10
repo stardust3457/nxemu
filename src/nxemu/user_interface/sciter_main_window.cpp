@@ -46,6 +46,14 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     settings.RegisterCallback(NXCoreSetting::GameName, SciterMainWindow::GameNameChanged, this);
     settings.RegisterCallback(NXCoreSetting::DisplayedFrames, SciterMainWindow::DisplayedFramesChanged, this);
     settings.RegisterCallback(NXOsSetting::AudioVolume, SciterMainWindow::SettingChanged, this);
+    settings.RegisterCallback(NXOsSetting::ResolutionUpFactor, SciterMainWindow::SettingChanged, this);
+    settings.RegisterCallback(NXOsSetting::SpeedLimit, SciterMainWindow::SettingChanged, this);
+    settings.RegisterCallback(NXOsSetting::UseMultiCore, SciterMainWindow::SettingChanged, this);
+    settings.RegisterCallback(NXOsSetting::UseSpeedLimit, SciterMainWindow::SettingChanged, this);
+
+    m_useMultiCore = settings.GetBool(NXOsSetting::UseMultiCore);
+    m_useSpeedLimit = settings.GetBool(NXOsSetting::UseSpeedLimit);
+    m_speedLimit = settings.GetBool(NXOsSetting::SpeedLimit);
 }
 
 SciterMainWindow::~SciterMainWindow()
@@ -418,7 +426,68 @@ void SciterMainWindow::OnInputConfig()
     m_inputConfig.reset(new InputConfig(m_sciterUI, m_modules));
     m_inputConfig->Display((void*)m_window->GetHandle());
 }
-        
+
+void SciterMainWindow::UpdateStatusBar()
+{
+    SciterElement statusTextEl(m_rootElement.GetElementByID("StatusText"));
+    if (!statusTextEl.IsValid())
+    {
+        return;
+    }
+    if (!m_emulationRunning)
+    {
+        m_rootElement.SetTimer(0, (uint32_t *)TIMER_UPDATE_STATUS);
+        statusTextEl.SetText("");
+        return;
+    }
+
+    if (!m_modules.IsValid())
+    {
+        return;
+    }
+    IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
+    IVideo & video = m_modules.Modules().Video();
+    std::string status;
+
+    const int shaders_building = video.ShadersBuilding();
+
+    if (shaders_building > 0)
+    {
+        status += stdstr_f("Building: %d shader(s)", shaders_building);
+    }
+
+    PerfStatsResults results = operatingSystem.GetAndResetPerfStats();
+
+    if (!status.empty())
+    {
+        status += " | ";
+    }
+    status += stdstr_f("Scale: %.0fx", m_resolutionUpFactor);    
+    if (!m_useMultiCore)
+    {
+        status += " | ";
+        if (m_useSpeedLimit)
+        {
+            if (results.emulation_speed > 0.999 && results.emulation_speed < 1.01)
+            {
+                results.emulation_speed = 100.0;
+            }
+            status += stdstr_f("Speed: %.0f / %d", results.emulation_speed * 100.0, m_speedLimit);
+        }
+        else
+        {
+            status += stdstr_f("Speed: %f", results.emulation_speed * 100.0);
+        }    
+    }
+    if (!status.empty())
+    {
+        status += " | ";
+    }
+    status += stdstr_f("Game: %.0f FPS%s", std::round(results.average_game_fps), m_useSpeedLimit ? "" : " (Unlocked)");
+    status += stdstr_f(" | Frame: %.2f ms", std::isnan(results.frametime) ? 0.0 : (results.frametime * 1000.0));
+    statusTextEl.SetText(status.c_str());
+}
+
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
 {
     Stringlist & recentFiles = uiSettings.recentFiles;
@@ -580,6 +649,22 @@ void SciterMainWindow::SettingChanged(const char * setting, void * userData)
     {
         impl->UpdateStatusbar();
     }
+    else if (strcmp(setting, NXOsSetting::ResolutionUpFactor) == 0)
+    {
+        impl->m_resolutionUpFactor = SettingsStore::GetInstance().GetFloat(NXOsSetting::ResolutionUpFactor);
+    }
+    else if (strcmp(setting, NXOsSetting::UseMultiCore) == 0)
+    {
+        impl->m_useMultiCore = SettingsStore::GetInstance().GetBool(NXOsSetting::UseMultiCore);
+    }
+    else if (strcmp(setting, NXOsSetting::UseSpeedLimit) == 0)
+    {
+        impl->m_useSpeedLimit = SettingsStore::GetInstance().GetBool(NXOsSetting::UseSpeedLimit);
+    }
+    else if (strcmp(setting, NXOsSetting::SpeedLimit) == 0)
+    {
+        impl->m_speedLimit = SettingsStore::GetInstance().GetInt(NXOsSetting::SpeedLimit);
+    }
 }
 
 bool SciterMainWindow::OnTimer(SCITER_ELEMENT /*element*/, uint32_t * timerId)
@@ -597,6 +682,10 @@ bool SciterMainWindow::OnTimer(SCITER_ELEMENT /*element*/, uint32_t * timerId)
     else if (timerId == (uint32_t *)TIMER_UPDATE_INPUT)
     {
         UpdateInputDrivers();
+    }
+    else if (timerId == (uint32_t *)TIMER_UPDATE_STATUS)
+    {
+        UpdateStatusBar();
     }
     return true;
 }
@@ -620,6 +709,7 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*sour
     else if (event_code == EVENT_EMULATION_RUNNING)
     {
         PreventOSSleep();
+        m_rootElement.SetTimer(500, (uint32_t *)TIMER_UPDATE_STATUS);
     }
     else if (event_code == EVENT_EMULATION_STOPPED)
     {

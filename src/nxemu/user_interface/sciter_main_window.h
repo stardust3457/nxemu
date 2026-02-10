@@ -45,7 +45,8 @@ class SciterMainWindow :
     enum
     {
         TIMER_UPDATE_UI = 5000,
-        TIMER_UPDATE_INPUT = 5001,
+        TIMER_UPDATE_INPUT,
+        TIMER_UPDATE_STATUS,
     };
 
 public:
@@ -85,6 +86,7 @@ private:
     void OnSystemConfig();
     void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
+    void UpdateStatusBar();
 
     // IWindowDestroySink
     void OnWindowDestroy(HWINDOW hWnd) override;
@@ -129,6 +131,10 @@ private:
     std::string m_windowTitle;
     std::unique_ptr<SystemConfig> m_systemConfig;
     std::unique_ptr<InputConfig> m_inputConfig;
+    float m_resolutionUpFactor;
     bool m_volumePopup;
+    bool m_useMultiCore;
+    bool m_useSpeedLimit;
+    uint32_t m_speedLimit;
     bool m_emulationRunning;
 };
