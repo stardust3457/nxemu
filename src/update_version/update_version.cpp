@@ -130,7 +130,8 @@ int main()
         if (outFile.IsOpen())
         {
             uint32_t OutFileLen = (uint32_t)outFile.GetLength();
-            std::string data("", OutFileLen);
+            std::string data;
+            data.resize(OutFileLen);
             if (outFile.Read((void *)data.data(), OutFileLen) != 0)
             {
                 destHash = sha256(data.c_str());
