@@ -62,7 +62,6 @@ VideoManager::~VideoManager()
     impl->m_host1x.release();
     if (impl->m_gpuCore)
     {
-        impl->m_gpuCore.release();
         impl->m_gpuCore.reset();
     }
     impl->m_emuWindow.release();
