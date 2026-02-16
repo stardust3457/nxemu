@@ -11,19 +11,28 @@
 #include "core/hle/result.h"
 #include <nxemu-module-spec/system_loader.h>
 
-namespace FileSys::Fsa {
+namespace FileSys::Fsa
+{
 
 class IFile {
 public:
-    explicit IFile(IVirtualFilePtr && backend_) : backend(std::move(backend_)) {}
-    virtual ~IFile() {}
+    explicit IFile(IVirtualFilePtr && backend_) : 
+        backend(std::move(backend_)) 
+    {
+    }
+    
+    virtual ~IFile() 
+    {
+    }
 
-    Result Read(size_t* out, s64 offset, void* buffer, size_t size, const ReadOption& option) {
+    Result Read(size_t* out, s64 offset, void* buffer, size_t size, const ReadOption& option)
+    {
         // Check that we have an output pointer
         R_UNLESS(out != nullptr, ResultNullptrArgument);
 
         // If we have nothing to read, just succeed
-        if (size == 0) {
+        if (size == 0)
+        {
             *out = 0;
             R_SUCCEED();
         }
@@ -37,17 +46,23 @@ public:
         R_RETURN(this->DoRead(out, offset, buffer, size, option));
     }
 
-    Result Read(size_t* out, s64 offset, void* buffer, size_t size) {
+    Result Read(size_t* out, s64 offset, void* buffer, size_t size)
+    {
         R_RETURN(this->Read(out, offset, buffer, size, ReadOption::None));
     }
-    Result Flush() {
+
+    Result Flush()
+    {
         R_RETURN(this->DoFlush());
     }
 
-    Result Write(s64 offset, const void* buffer, size_t size, const WriteOption& option) {
+    Result Write(s64 offset, const void* buffer, size_t size, const WriteOption& option)
+    {
         // Handle the zero-size case
-        if (size == 0) {
-            if (option.HasFlushFlag()) {
+        if (size == 0)
+        {
+            if (option.HasFlushFlag())
+            {
                 R_TRY(this->Flush());
             }
             R_SUCCEED();
@@ -60,33 +75,46 @@ public:
 
         R_RETURN(this->DoWrite(offset, buffer, size, option));
     }
+
+    Result SetSize(s64 size) 
+    {
+        R_UNLESS(size >= 0, ResultOutOfRange);
+        R_RETURN(this->DoSetSize(size));
+    }
 protected:
 
 private:
-    Result DoRead(size_t* out, s64 offset, void* buffer, size_t size, const ReadOption& option) {
-        const auto read_size = backend->ReadBytes(static_cast<u8*>(buffer), size, offset);
+    Result DoRead(size_t * out, s64 offset, void * buffer, size_t size, const ReadOption & option)
+    {
+        const auto read_size = backend->ReadBytes(static_cast<u8 *>(buffer), size, offset);
         *out = read_size;
 
         R_SUCCEED();
     }
 
-    Result DoGetSize(s64* out) {
+    Result DoGetSize(s64 * out)
+    {
         *out = backend->GetSize();
         R_SUCCEED();
     }
 
-    Result DoFlush() {
+    Result DoFlush()
+    {
         // Exists for SDK compatibiltity -- No need to flush file.
         R_SUCCEED();
     }
 
-    Result DoWrite(s64 offset, const void* buffer, size_t size, const WriteOption& option) {
-        const std::size_t written = backend->WriteBytes(static_cast<const u8*>(buffer), size, offset);
+    Result DoWrite(s64 offset, const void * buffer, size_t size, const WriteOption & option)
+    {
+        const std::size_t written = backend->WriteBytes(static_cast<const u8 *>(buffer), size, offset);
 
-        ASSERT_MSG(written == size,
-                   "Could not write all bytes to file (requested={:016X}, actual={:016X}).", size,
-                   written);
+        ASSERT_MSG(written == size, "Could not write all bytes to file (requested={:016X}, actual={:016X}).", size, written);
+        R_SUCCEED();
+    }
 
+    Result DoSetSize(s64 size)
+    {
+        backend->Resize(size);
         R_SUCCEED();
     }
 

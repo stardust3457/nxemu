@@ -7,8 +7,10 @@
 
 namespace Service::FileSystem {
 
-IFile::IFile(Core::System& system_, IVirtualFilePtr && file_)
-    : ServiceFramework{system_, "IFile"}, backend{std::make_unique<FileSys::Fsa::IFile>(std::move(file_))} {
+IFile::IFile(Core::System& system_, IVirtualFilePtr && file_) : 
+    ServiceFramework{system_, "IFile"}, 
+    backend{std::make_unique<FileSys::Fsa::IFile>(std::move(file_))}
+{
     // clang-format off
     static const FunctionInfo functions[] = {
         {0, D<&IFile::Read>, "Read"},
@@ -46,9 +48,7 @@ Result IFile::Flush()
 Result IFile::SetSize(s64 size)
 {
     LOG_DEBUG(Service_FS, "called, size={}", size);
-
-    UNIMPLEMENTED();
-    R_SUCCEED()
+    R_RETURN(backend->SetSize(size));
 }
 
 Result IFile::GetSize(Out<s64> out_size)
