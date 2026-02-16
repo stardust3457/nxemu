@@ -6,10 +6,10 @@
 #include <io.h>
 #include <shlobj_core.h>
 
-const char DRIVE_DELIMITER = ':';
+const char * DRIVE_DELIMITER = ":";
 const char * const DIR_DOUBLEDELIM = "\\\\";
-const char DIRECTORY_DELIMITER = '\\';
-const char DIRECTORY_DELIMITER2 = '/';
+const char * DIRECTORY_DELIMITER = "\\";
+const char * DIRECTORY_DELIMITER2 = "/";
 
 const char EXTENSION_DELIMITER = '.';
 void * Path::m_hInst = nullptr;
@@ -165,7 +165,7 @@ void Path::GetComponents(std::string * drive, std::string * directory, std::stri
     char driveBuff[_MAX_DRIVE + 1] = {0}, dirBuff[_MAX_DIR + 1] = {0}, nameBuff[_MAX_FNAME + 1] = {0}, extBuff[_MAX_EXT + 1] = {0};
 
     const char * basePath = m_path.c_str();
-    const char * driveDir = strrchr(basePath, DRIVE_DELIMITER);
+    const char * driveDir = strrchr(basePath, DRIVE_DELIMITER[0]);
     if (driveDir != nullptr)
     {
         size_t len = sizeof(dirBuff) < (driveDir - basePath) ? sizeof(driveBuff) : driveDir - basePath;
@@ -173,7 +173,7 @@ void Path::GetComponents(std::string * drive, std::string * directory, std::stri
         basePath += len + 1;
     }
 
-    const char * last = strrchr(basePath, DIRECTORY_DELIMITER);
+    const char * last = strrchr(basePath, DIRECTORY_DELIMITER[0]);
     if (last != nullptr)
     {
         size_t len = sizeof(dirBuff) < (last - basePath) ? sizeof(dirBuff) : last - basePath;
@@ -183,7 +183,7 @@ void Path::GetComponents(std::string * drive, std::string * directory, std::stri
         }
         else
         {
-            dirBuff[0] = DIRECTORY_DELIMITER;
+            dirBuff[0] = DIRECTORY_DELIMITER[0];
             dirBuff[1] = '\0';
         }
         strncpy(nameBuff, last + 1, sizeof(nameBuff));
@@ -219,11 +219,11 @@ void Path::GetComponents(std::string * drive, std::string * directory, std::stri
 
 bool Path::IsRelative() const
 {
-    if (m_path.length() > 1 && m_path[1] == DRIVE_DELIMITER)
+    if (m_path.length() > 1 && m_path[1] == DRIVE_DELIMITER[0])
     {
         return false;
     }
-    if (m_path.length() > 2 && m_path[0] == DIRECTORY_DELIMITER && m_path[1] == DIRECTORY_DELIMITER)
+    if (m_path.length() > 2 && m_path[0] == DIRECTORY_DELIMITER[0] && m_path[1] == DIRECTORY_DELIMITER[0])
     {
         return false;
     }
@@ -274,7 +274,7 @@ void Path::SetComponents(const char * drive, const char * directory, const char 
     memset(fullname, 0, sizeof(fullname));
     if (directory == nullptr || strlen(directory) == 0)
     {
-        static char emptyDir[] = {DIRECTORY_DELIMITER, '\0'};
+        static char emptyDir[] = {DIRECTORY_DELIMITER[0], '\0'};
         directory = emptyDir;
     }
 
@@ -437,7 +437,7 @@ bool Path::DirectoryCreate(bool createIntermediates)
     bool bSuccess = ::CreateDirectory(stdstr(path).ToUTF16().c_str(), nullptr) != 0;
     if (!bSuccess && createIntermediates)
     {
-        std::string::size_type delimiter = path.rfind(DIRECTORY_DELIMITER);
+        std::string::size_type delimiter = path.rfind(DIRECTORY_DELIMITER[0]);
         if (delimiter == std::string::npos)
         {
             return false;
@@ -485,7 +485,7 @@ Path & Path::DirectoryNormalize(Path BaseDir)
         directory += GetDirectory();
         changed = true;
     }
-    strvector parts = directory.Tokenize(DIRECTORY_DELIMITER);
+    strvector parts = directory.Tokenize(DIRECTORY_DELIMITER[0]);
     strvector normalizesParts;
     for (strvector::const_iterator itr = parts.begin(); itr != parts.end(); itr++)
     {
@@ -524,7 +524,7 @@ void Path::DirectoryUp(std::string * lastDir)
     {
         return;
     }
-    std::string::size_type delimiter = directory.rfind(DIRECTORY_DELIMITER);
+    std::string::size_type delimiter = directory.rfind(DIRECTORY_DELIMITER[0]);
     if (lastDir != nullptr)
     {
         *lastDir = directory.substr(delimiter);
@@ -686,31 +686,31 @@ void Path::CloseFindHandle()
 
 void Path::CleanPath(std::string & path) const
 {
-    std::string::size_type pos = path.find(DIRECTORY_DELIMITER2);
+    std::string::size_type pos = path.find(DIRECTORY_DELIMITER2[0]);
     while (pos != std::string::npos)
     {
-        path.replace(pos, 1, &DIRECTORY_DELIMITER);
-        pos = path.find(DIRECTORY_DELIMITER2, pos + 1);
+        path.replace(pos, 1, DIRECTORY_DELIMITER);
+        pos = path.find(DIRECTORY_DELIMITER2[0], pos + 1);
     }
 
     bool appendEnd = !_strnicmp(path.c_str(), DIR_DOUBLEDELIM, 2);
     pos = path.find(DIR_DOUBLEDELIM);
     while (pos != std::string::npos)
     {
-        path.replace(pos, 2, &DIRECTORY_DELIMITER);
+        path.replace(pos, 2, DIRECTORY_DELIMITER);
         pos = path.find(DIR_DOUBLEDELIM, pos + 1);
     }
     if (appendEnd)
     {
-        path.insert(0, stdstr_f("%c", DIRECTORY_DELIMITER).c_str());
+        path.insert(0, stdstr_f("%c", DIRECTORY_DELIMITER[0]).c_str());
     }
 }
 
 void Path::EnsureLeadingBackslash(std::string & directory) const
 {
-    if (directory.empty() || (directory[0] != DIRECTORY_DELIMITER))
+    if (directory.empty() || (directory[0] != DIRECTORY_DELIMITER[0]))
     {
-        directory = stdstr_f("%c%s", DIRECTORY_DELIMITER, directory.c_str());
+        directory = stdstr_f("%c%s", DIRECTORY_DELIMITER[0], directory.c_str());
     }
 }
 
@@ -718,7 +718,7 @@ void Path::EnsureTrailingBackslash(std::string & directory) const
 {
     std::string::size_type length = directory.length();
 
-    if (directory.empty() || (directory[length - 1] != DIRECTORY_DELIMITER))
+    if (directory.empty() || (directory[length - 1] != DIRECTORY_DELIMITER[0]))
     {
         directory += DIRECTORY_DELIMITER;
     }
@@ -731,7 +731,7 @@ void Path::StripLeadingBackslash(std::string & directory) const
         return;
     }
 
-    if (directory[0] == DIRECTORY_DELIMITER)
+    if (directory[0] == DIRECTORY_DELIMITER[0])
     {
         directory = directory.substr(1);
     }
@@ -747,7 +747,7 @@ void Path::StripTrailingBackslash(std::string & directory) const
             break;
         }
 
-        if (directory[length - 1] == DIRECTORY_DELIMITER || directory[length - 1] == DIRECTORY_DELIMITER2)
+        if (directory[length - 1] == DIRECTORY_DELIMITER[0] || directory[length - 1] == DIRECTORY_DELIMITER2[0])
         {
             directory.resize(length - 1);
             continue;
