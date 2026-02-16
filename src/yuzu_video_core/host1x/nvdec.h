@@ -23,6 +23,9 @@ public:
     void ProcessMethod(u32 method, u32 argument);
 
 private:
+    /// Invoke codec to decode a frame
+    void Execute();
+
     Host1x& host1x;
     NvdecCommon::NvdecRegisters state;
     std::unique_ptr<Codec> codec;

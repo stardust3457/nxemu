@@ -34,6 +34,9 @@ public:
     /// Sets NVDEC video stream codec
     void SetTargetCodec(Host1x::NvdecCommon::VideoCodec codec);
 
+    /// Call decoders to construct headers, decode AVFrame with ffmpeg
+    void Decode();
+
     /// Returns the value of current_codec
     [[nodiscard]] Host1x::NvdecCommon::VideoCodec GetCurrentCodec() const;
 
@@ -50,6 +53,8 @@ private:
     std::unique_ptr<Decoder::H264> h264_decoder;
     std::unique_ptr<Decoder::VP8> vp8_decoder;
     std::unique_ptr<Decoder::VP9> vp9_decoder;
+
+    std::queue<std::unique_ptr<FFmpeg::Frame>> frames{};
 };
 
 } // namespace Tegra

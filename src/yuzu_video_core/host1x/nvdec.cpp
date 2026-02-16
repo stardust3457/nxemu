@@ -23,7 +23,22 @@ void Nvdec::ProcessMethod(u32 method, u32 argument) {
         codec->SetTargetCodec(static_cast<NvdecCommon::VideoCodec>(argument));
         break;
     case NVDEC_REG_INDEX(execute):
-        UNIMPLEMENTED();
+        Execute();
+        break;
+    }
+}
+
+void Nvdec::Execute()
+{
+    switch (codec->GetCurrentCodec())
+    {
+    case NvdecCommon::VideoCodec::H264:
+    case NvdecCommon::VideoCodec::VP8:
+    case NvdecCommon::VideoCodec::VP9:
+        codec->Decode();
+        break;
+    default:
+        UNIMPLEMENTED_MSG("Codec {}", codec->GetCurrentCodecName());
         break;
     }
 }
