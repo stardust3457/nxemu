@@ -58,3 +58,6 @@
 [submodule "external/cubeb"]
 	path = external/cubeb
 	url = https://github.com/mozilla/cubeb.git
+[submodule "external/ffmpeg"]
+	path = external/ffmpeg
+	url = https://github.com/N3xoX1/ffmpeg.git
