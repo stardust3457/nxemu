@@ -65,6 +65,7 @@ __interface IVideo
     void UpdateFramebufferLayout(uint32_t width, uint32_t height) = 0;
     IChannelState * AllocateChannel() = 0;
     void PushGPUEntries(int32_t bindId, const uint64_t * commandList, uint32_t commandListSize, const uint32_t * prefetchCommandlist, uint32_t prefetchCommandlistSize) = 0;
+    void PushCommandBuffer(int32_t bindId, const uint32_t * commandList, uint32_t commandListSize) = 0;
     void ApplyOpOnDeviceMemoryPointer(const uint8_t * pointer, uint32_t * scratchBuffer, size_t scratchBufferSize, DeviceMemoryOperation operation, void * userData) = 0;
     RasterizerDownloadArea OnCPURead(uint64_t addr, uint64_t size) = 0;
     bool OnCPUWrite(uint64_t addr, uint64_t size) = 0;
@@ -74,6 +75,7 @@ __interface IVideo
     uint32_t HostSyncpointRegisterAction(uint32_t fence_id, uint32_t target_value, HostActionCallback operation, uint32_t slot, void * userData) = 0;
     void WaitHost(uint32_t syncpoint_id, uint32_t expected_value) = 0;
     uint32_t ShadersBuilding() = 0;
+    bool UseNvdec() = 0;
 };
 
 EXPORT IVideo * CALL CreateVideo(IRenderWindow & renderWindow, ISystemModules & modules);

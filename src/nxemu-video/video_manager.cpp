@@ -230,6 +230,13 @@ void VideoManager::PushGPUEntries(int32_t bindId, const uint64_t * commandList, 
     impl->m_gpuCore->PushGPUEntries(bindId, std::move(entries));
 }
 
+void VideoManager::PushCommandBuffer(int32_t bindId, const uint32_t * commandList, uint32_t commandListSize)
+{
+    Tegra::ChCommandHeaderList cmdlist(commandListSize);
+    memcpy(cmdlist.data(), commandList, sizeof(Tegra::ChCommandHeader) * commandListSize);
+    impl->m_gpuCore->PushCommandBuffer(bindId, cmdlist);
+}
+
 void VideoManager::ApplyOpOnDeviceMemoryPointer(const uint8_t * pointer, uint32_t * scratchBuffer, size_t scratchBufferSize, DeviceMemoryOperation operation, void * userData)
 {
     Common::ScratchBuffer<u32> tempBuffer;
@@ -278,4 +285,9 @@ uint32_t VideoManager::ShadersBuilding()
 {
     auto & shader_notify = impl->m_gpuCore->ShaderNotify();
     return shader_notify.ShadersBuilding();
+}
+
+bool VideoManager::UseNvdec()
+{
+    return impl->m_gpuCore->UseNvdec();
 }

@@ -35,7 +35,8 @@ public:
     void RequestComposite(VideoFramebufferConfig * layers, uint32_t layerCount, VideoNvFence * fences, uint32_t fenceCount) override;
     void UpdateFramebufferLayout(uint32_t width, uint32_t height) override;
     IChannelState * AllocateChannel() override;
-    void PushGPUEntries(int32_t bindId, const uint64_t * commandList, uint32_t commandListSize, const uint32_t * prefetchCommandlist, uint32_t prefetchCommandlistSize);
+    void PushGPUEntries(int32_t bindId, const uint64_t * commandList, uint32_t commandListSize, const uint32_t * prefetchCommandlist, uint32_t prefetchCommandlistSize) override;
+    void PushCommandBuffer(int32_t bindId, const uint32_t * commandList, uint32_t commandListSize) override;
     void ApplyOpOnDeviceMemoryPointer(const uint8_t * pointer, uint32_t * scratchBuffer, size_t scratchBufferSize, DeviceMemoryOperation operation, void * userData) override;
     RasterizerDownloadArea OnCPURead(uint64_t addr, uint64_t size) override;
     bool OnCPUWrite(uint64_t addr, uint64_t size) override;
@@ -44,6 +45,7 @@ public:
     uint32_t HostSyncpointRegisterAction(uint32_t fence_id, uint32_t target_value, HostActionCallback operation, uint32_t slot, void * userData) override;
     void WaitHost(uint32_t syncpoint_id, uint32_t expected_value) override;
     uint32_t ShadersBuilding() override;
+    bool UseNvdec() override;
 
 private:
     VideoManager() = delete;

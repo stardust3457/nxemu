@@ -84,7 +84,51 @@ NvResult nvhost_nvdec_common::SetNVMAPfd(IoctlSetNvmapFD& params)
 
 NvResult nvhost_nvdec_common::Submit(IoctlSubmit& params, std::span<u8> data, DeviceFD fd)
 {
-    UNIMPLEMENTED();
+    LOG_DEBUG(Service_NVDRV, "called NVDEC Submit, cmd_buffer_count={}", params.cmd_buffer_count);
+
+    // Instantiate param buffers
+    std::vector<CommandBuffer> command_buffers(params.cmd_buffer_count);
+    std::vector<Reloc> relocs(params.relocation_count);
+    std::vector<u32> reloc_shifts(params.relocation_count);
+    std::vector<SyncptIncr> syncpt_increments(params.syncpoint_count);
+    std::vector<u32> fence_thresholds(params.fence_count);
+
+    // Slice input into their respective buffers
+    std::size_t offset = 0;
+    offset += SliceVectors(data, command_buffers, params.cmd_buffer_count, offset);
+    offset += SliceVectors(data, relocs, params.relocation_count, offset);
+    offset += SliceVectors(data, reloc_shifts, params.relocation_count, offset);
+    offset += SliceVectors(data, syncpt_increments, params.syncpoint_count, offset);
+    offset += SliceVectors(data, fence_thresholds, params.fence_count, offset);
+
+    IVideo & video = system.GetVideo();
+    auto * session = core.GetSession(sessions[fd]);
+
+    if (video.UseNvdec())
+    {
+        for (std::size_t i = 0; i < syncpt_increments.size(); i++)
+        {
+            const SyncptIncr& syncpt_incr = syncpt_increments[i];
+            fence_thresholds[i] = syncpoint_manager.IncrementSyncpointMaxExt(syncpt_incr.id, syncpt_incr.increments);
+        }
+    }
+    for (const auto& cmd_buffer : command_buffers)
+    {
+        const auto object = nvmap.GetHandle(cmd_buffer.memory_id);
+        ASSERT_OR_EXECUTE(object, return NvResult::InvalidState;);
+        std::vector<uint32_t> cmdlist(cmd_buffer.word_count);
+        session->process->GetMemory().ReadBlock(object->address + cmd_buffer.offset, cmdlist.data(), cmdlist.size() * sizeof(uint32_t));
+        video.PushCommandBuffer(core.Host1xDeviceFile().fd_to_id[fd], cmdlist.data(), cmd_buffer.word_count);
+    }
+
+    // Some games expect command_buffers to be written back
+    offset = 0;
+    offset += WriteVectors(data, command_buffers, offset);
+    offset += WriteVectors(data, relocs, offset);
+    offset += WriteVectors(data, reloc_shifts, offset);
+    offset += WriteVectors(data, syncpt_increments, offset);
+    offset += WriteVectors(data, fence_thresholds, offset);
+
     return NvResult::Success;
 }
 
