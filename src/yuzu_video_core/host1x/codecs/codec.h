@@ -37,6 +37,9 @@ public:
     /// Call decoders to construct headers, decode AVFrame with ffmpeg
     void Decode();
 
+    /// Returns next decoded frame
+    [[nodiscard]] std::unique_ptr<FFmpeg::Frame> GetCurrentFrame();
+
     /// Returns the value of current_codec
     [[nodiscard]] Host1x::NvdecCommon::VideoCodec GetCurrentCodec() const;
 

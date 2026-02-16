@@ -39,11 +39,17 @@ public:
 private:
     void Execute();
 
+    void WriteRGBFrame(std::unique_ptr<FFmpeg::Frame> frame, const VicConfig& config);
+
+    void WriteYUVFrame(std::unique_ptr<FFmpeg::Frame> frame, const VicConfig& config);
+
     Host1x& host1x;
     std::shared_ptr<Tegra::Host1x::Nvdec> nvdec_processor;
 
     /// Avoid reallocation of the following buffers every frame, as their
     /// size does not change during a stream
+    using AVMallocPtr = std::unique_ptr<u8, decltype(&av_free)>;
+    AVMallocPtr converted_frame_buffer;
     Common::ScratchBuffer<u8> luma_buffer;
     Common::ScratchBuffer<u8> chroma_buffer;
 

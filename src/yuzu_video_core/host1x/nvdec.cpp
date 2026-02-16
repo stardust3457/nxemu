@@ -28,6 +28,10 @@ void Nvdec::ProcessMethod(u32 method, u32 argument) {
     }
 }
 
+std::unique_ptr<FFmpeg::Frame> Nvdec::GetFrame() {
+    return codec->GetCurrentFrame();
+}
+
 void Nvdec::Execute()
 {
     switch (codec->GetCurrentCodec())

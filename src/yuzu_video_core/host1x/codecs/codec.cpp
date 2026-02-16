@@ -91,6 +91,18 @@ void Codec::Decode()
     }
 }
 
+std::unique_ptr<FFmpeg::Frame> Codec::GetCurrentFrame() {
+    // Sometimes VIC will request more frames than have been decoded.
+    // in this case, return a blank frame and don't overwrite previous data.
+    if (frames.empty()) {
+        return {};
+    }
+
+    auto frame = std::move(frames.front());
+    frames.pop();
+    return frame;
+}
+
 Host1x::NvdecCommon::VideoCodec Codec::GetCurrentCodec() const
 {
     return current_codec;
