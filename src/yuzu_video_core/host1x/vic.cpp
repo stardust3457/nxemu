@@ -48,9 +48,11 @@ union VicConfig {
     BitField<46, 14, u64_le> surface_height_minus1;
 };
 
-Vic::Vic(Host1x& host1x_, std::shared_ptr<Nvdec> nvdec_processor_)
-    : host1x(host1x_),
-      nvdec_processor(std::move(nvdec_processor_)) {}
+Vic::Vic(Host1x& host1x_, std::shared_ptr<Nvdec> nvdec_processor_) :
+    host1x(host1x_),
+    nvdec_processor(std::move(nvdec_processor_))   
+{
+}
 
 Vic::~Vic() = default;
 

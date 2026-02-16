@@ -50,62 +50,74 @@ std::size_t WriteVectors(std::span<u8> dst, const std::vector<T>& src, std::size
 }
 } // Anonymous namespace
 
-nvhost_nvdec_common::nvhost_nvdec_common(Core::System& system_, NvCore::Container& core_,
-                                         NvCore::ChannelType channel_type_)
-    : nvdevice{system_}, core{core_}, syncpoint_manager{core.GetSyncpointManager()},
-      nvmap{core.GetNvMapFile()}, channel_type{channel_type_} {
+nvhost_nvdec_common::nvhost_nvdec_common(Core::System& system_, NvCore::Container& core_, NvCore::ChannelType channel_type_) :
+    nvdevice{system_}, 
+    core{core_}, 
+    syncpoint_manager{core.GetSyncpointManager()},
+    nvmap{core.GetNvMapFile()}, 
+    channel_type{channel_type_}
+{
     auto& syncpts_accumulated = core.Host1xDeviceFile().syncpts_accumulated;
-    if (syncpts_accumulated.empty()) {
+    if (syncpts_accumulated.empty())
+    {
         channel_syncpoint = syncpoint_manager.AllocateSyncpoint(false);
-    } else {
+    }
+    else
+    {
         channel_syncpoint = syncpts_accumulated.front();
         syncpts_accumulated.pop_front();
     }
 }
 
-nvhost_nvdec_common::~nvhost_nvdec_common() {
+nvhost_nvdec_common::~nvhost_nvdec_common()
+{
     core.Host1xDeviceFile().syncpts_accumulated.push_back(channel_syncpoint);
 }
 
-NvResult nvhost_nvdec_common::SetNVMAPfd(IoctlSetNvmapFD& params) {
+NvResult nvhost_nvdec_common::SetNVMAPfd(IoctlSetNvmapFD& params)
+{
     LOG_DEBUG(Service_NVDRV, "called, fd={}", params.nvmap_fd);
 
     nvmap_fd = params.nvmap_fd;
     return NvResult::Success;
 }
 
-NvResult nvhost_nvdec_common::Submit(IoctlSubmit& params, std::span<u8> data, DeviceFD fd) {
+NvResult nvhost_nvdec_common::Submit(IoctlSubmit& params, std::span<u8> data, DeviceFD fd)
+{
     UNIMPLEMENTED();
     return NvResult::Success;
 }
 
-NvResult nvhost_nvdec_common::GetSyncpoint(IoctlGetSyncpoint& params) {
+NvResult nvhost_nvdec_common::GetSyncpoint(IoctlGetSyncpoint& params)
+{
     LOG_DEBUG(Service_NVDRV, "called GetSyncpoint, id={}", params.param);
     params.value = channel_syncpoint;
     return NvResult::Success;
 }
 
-NvResult nvhost_nvdec_common::GetWaitbase(IoctlGetWaitbase& params) {
+NvResult nvhost_nvdec_common::GetWaitbase(IoctlGetWaitbase& params)
+{
     LOG_CRITICAL(Service_NVDRV, "called WAITBASE");
     params.value = 0; // Seems to be hard coded at 0
     return NvResult::Success;
 }
 
-NvResult nvhost_nvdec_common::MapBuffer(IoctlMapBuffer& params, std::span<MapBufferEntry> entries,
-                                        DeviceFD fd) {
+NvResult nvhost_nvdec_common::MapBuffer(IoctlMapBuffer& params, std::span<MapBufferEntry> entries, DeviceFD fd)
+{
     const size_t num_entries = std::min(params.num_entries, static_cast<u32>(entries.size()));
-    for (size_t i = 0; i < num_entries; i++) {
+    for (size_t i = 0; i < num_entries; i++)
+    {
         DAddr pin_address = nvmap.PinHandle(entries[i].map_handle, true);
         entries[i].map_address = static_cast<u32>(pin_address);
     }
-
     return NvResult::Success;
 }
 
-NvResult nvhost_nvdec_common::UnmapBuffer(IoctlMapBuffer& params,
-                                          std::span<MapBufferEntry> entries) {
+NvResult nvhost_nvdec_common::UnmapBuffer(IoctlMapBuffer& params, std::span<MapBufferEntry> entries)
+{
     const size_t num_entries = std::min(params.num_entries, static_cast<u32>(entries.size()));
-    for (size_t i = 0; i < num_entries; i++) {
+    for (size_t i = 0; i < num_entries; i++)
+    {
         nvmap.UnpinHandle(entries[i].map_handle);
         entries[i] = {};
     }
@@ -114,12 +126,14 @@ NvResult nvhost_nvdec_common::UnmapBuffer(IoctlMapBuffer& params,
     return NvResult::Success;
 }
 
-NvResult nvhost_nvdec_common::SetSubmitTimeout(u32 timeout) {
+NvResult nvhost_nvdec_common::SetSubmitTimeout(u32 timeout)
+{
     LOG_WARNING(Service_NVDRV, "(STUBBED) called");
     return NvResult::Success;
 }
 
-Kernel::KEvent* nvhost_nvdec_common::QueryEvent(u32 event_id) {
+Kernel::KEvent* nvhost_nvdec_common::QueryEvent(u32 event_id)
+{
     LOG_CRITICAL(Service_NVDRV, "Unknown HOSTX1 Event {}", event_id);
     return nullptr;
 }

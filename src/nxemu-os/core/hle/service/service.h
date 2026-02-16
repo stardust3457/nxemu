@@ -13,7 +13,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Namespace Service
 
-namespace Core {
+namespace Core
+{
 class System;
 }
 
@@ -75,7 +76,7 @@ protected:
     }
 
     /// System context that the service operates under.
-    Core::System& system;
+    Core::System & system;
 
     /// Identifier string used to connect to the service.
     std::string service_name;
@@ -93,8 +94,7 @@ private:
     using InvokerFn = void(ServiceFrameworkBase* object, HandlerFnP<ServiceFrameworkBase> member,
                            HLERequestContext& ctx);
 
-    explicit ServiceFrameworkBase(Core::System& system_, const char* service_name_,
-                                  u32 max_sessions_, InvokerFn* handler_invoker_);
+    explicit ServiceFrameworkBase(Core::System & system_, const char * service_name_, u32 max_sessions_, InvokerFn* handler_invoker_);
     ~ServiceFrameworkBase() override;
 
     void RegisterHandlersBase(const FunctionInfoBase* functions, std::size_t n);
@@ -163,9 +163,10 @@ protected:
      * @param max_sessions_ Maximum number of sessions that can be connected to this service at the
      * same time.
      */
-    explicit ServiceFramework(Core::System& system_, const char* service_name_,
-                              u32 max_sessions_ = ServerSessionCountMax)
-        : ServiceFrameworkBase(system_, service_name_, max_sessions_, Invoker) {}
+    explicit ServiceFramework(Core::System & system_, const char * service_name_, u32 max_sessions_ = ServerSessionCountMax) : 
+        ServiceFrameworkBase(system_, service_name_, max_sessions_, Invoker) 
+    {
+    }
 
     /// Registers handlers in the service.
     template <typename T = Self, std::size_t N>

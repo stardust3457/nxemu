@@ -12,31 +12,41 @@
 
 namespace Tegra {
 
-Codec::Codec(Host1x::Host1x& host1x_, const Host1x::NvdecCommon::NvdecRegisters& regs)
-    : host1x(host1x_), state{regs}, h264_decoder(std::make_unique<Decoder::H264>(host1x)),
-      vp8_decoder(std::make_unique<Decoder::VP8>(host1x)),
-      vp9_decoder(std::make_unique<Decoder::VP9>(host1x)) {}
+Codec::Codec(Host1x::Host1x& host1x_, const Host1x::NvdecCommon::NvdecRegisters& regs) : 
+    host1x(host1x_),
+    state{regs},
+    h264_decoder(std::make_unique<Decoder::H264>(host1x)),
+    vp8_decoder(std::make_unique<Decoder::VP8>(host1x)),
+    vp9_decoder(std::make_unique<Decoder::VP9>(host1x))
+{
+}
 
 Codec::~Codec() = default;
 
-void Codec::Initialize() {
+void Codec::Initialize()
+{
     UNIMPLEMENTED();
     initialized = false;  // decode_api.Initialize(current_codec);
 }
 
-void Codec::SetTargetCodec(Host1x::NvdecCommon::VideoCodec codec) {
-    if (current_codec != codec) {
+void Codec::SetTargetCodec(Host1x::NvdecCommon::VideoCodec codec)
+{
+    if (current_codec != codec)
+    {
         current_codec = codec;
         LOG_INFO(Service_NVDRV, "NVDEC video codec initialized to {}", GetCurrentCodecName());
     }
 }
 
-Host1x::NvdecCommon::VideoCodec Codec::GetCurrentCodec() const {
+Host1x::NvdecCommon::VideoCodec Codec::GetCurrentCodec() const
+{
     return current_codec;
 }
 
-std::string_view Codec::GetCurrentCodecName() const {
-    switch (current_codec) {
+std::string_view Codec::GetCurrentCodecName() const
+{
+    switch (current_codec)
+    {
     case Host1x::NvdecCommon::VideoCodec::None:
         return "None";
     case Host1x::NvdecCommon::VideoCodec::H264:
