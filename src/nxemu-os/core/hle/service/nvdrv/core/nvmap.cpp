@@ -4,29 +4,33 @@
 
 #include <functional>
 
-#include "yuzu_common/alignment.h"
-#include "yuzu_common/yuzu_assert.h"
-#include "yuzu_common/logging/log.h"
 #include "core/hle/service/nvdrv/core/container.h"
 #include "core/hle/service/nvdrv/core/heap_mapper.h"
 #include "core/hle/service/nvdrv/core/nvmap.h"
 #include "core/memory.h"
+#include "yuzu_common/alignment.h"
+#include "yuzu_common/logging/log.h"
+#include "yuzu_common/yuzu_assert.h"
 #include <nxemu-module-spec/video.h>
 
 using Core::Memory::YUZU_PAGESIZE;
 constexpr size_t BIG_PAGE_SIZE = YUZU_PAGESIZE * 16;
 
-namespace Service::Nvidia::NvCore {
-NvMap::Handle::Handle(u64 size_, Id id_)
-    : size(size_), aligned_size(size), orig_size(size), id(id_) {
+namespace Service::Nvidia::NvCore
+{
+NvMap::Handle::Handle(u64 size_, Id id_) :
+    size(size_), aligned_size(size), orig_size(size), id(id_)
+{
     flags.raw = 0;
 }
 
 NvResult NvMap::Handle::Alloc(Flags pFlags, u32 pAlign, u8 pKind, u64 pAddress,
-                              NvCore::SessionId pSessionId) {
+                              NvCore::SessionId pSessionId)
+{
     std::scoped_lock lock(mutex);
     // Handles cannot be allocated twice
-    if (allocated) {
+    if (allocated)
+    {
         return NvResult::AccessDenied;
     }
 
@@ -36,9 +40,12 @@ NvResult NvMap::Handle::Alloc(Flags pFlags, u32 pAlign, u8 pKind, u64 pAddress,
     session_id = pSessionId;
 
     // This flag is only applicable for handles with an address passed
-    if (pAddress) {
+    if (pAddress)
+    {
         flags.keep_uncached_after_free.Assign(0);
-    } else {
+    }
+    else
+    {
         LOG_CRITICAL(Service_NVDRV,
                      "Mapping nvmap handles without a CPU side address is unimplemented!");
     }
@@ -51,76 +58,101 @@ NvResult NvMap::Handle::Alloc(Flags pFlags, u32 pAlign, u8 pKind, u64 pAddress,
     return NvResult::Success;
 }
 
-NvResult NvMap::Handle::Duplicate(bool internal_session) {
+NvResult NvMap::Handle::Duplicate(bool internal_session)
+{
     std::scoped_lock lock(mutex);
     // Unallocated handles cannot be duplicated as duplication requires memory accounting (in HOS)
-    if (!allocated) [[unlikely]] {
+    if (!allocated) [[unlikely]]
+    {
         return NvResult::BadValue;
     }
 
     // If we internally use FromId the duplication tracking of handles won't work accurately due to
     // us not implementing per-process handle refs.
-    if (internal_session) {
+    if (internal_session)
+    {
         internal_dupes++;
-    } else {
+    }
+    else
+    {
         dupes++;
     }
 
     return NvResult::Success;
 }
 
-NvMap::NvMap(Container& core_, IVideo & video_) : video{video_}, core{core_} {}
+NvMap::NvMap(Container & core_, IVideo & video_) :
+    video{video_},
+    core{core_}
+{
+}
 
-void NvMap::AddHandle(std::shared_ptr<Handle> handle_description) {
+void NvMap::AddHandle(std::shared_ptr<Handle> handle_description)
+{
     std::scoped_lock lock(handles_lock);
 
     handles.emplace(handle_description->id, std::move(handle_description));
 }
 
-void NvMap::UnmapHandle(Handle& handle_description) {
+void NvMap::UnmapHandle(Handle & handle_description)
+{
     // Remove pending unmap queue entry if needed
-    if (handle_description.unmap_queue_entry) {
+    if (handle_description.unmap_queue_entry)
+    {
         unmap_queue.erase(*handle_description.unmap_queue_entry);
         handle_description.unmap_queue_entry.reset();
     }
 
     // Free and unmap the handle from Host1x GMMU
-    if (handle_description.pin_virt_address) {
-        UNIMPLEMENTED();
+    if (handle_description.pin_virt_address)
+    {
+        video.Host1xGMMUUnmap(static_cast<GPUVAddr>(handle_description.pin_virt_address), handle_description.aligned_size);
+        video.Host1xAllocatorFree(handle_description.pin_virt_address, static_cast<u32>(handle_description.aligned_size));
         handle_description.pin_virt_address = 0;
     }
 
     // Free and unmap the handle from the SMMU
     const size_t map_size = handle_description.aligned_size;
-    if (!handle_description.in_heap) {
-        UNIMPLEMENTED();
+    if (!handle_description.in_heap)
+    {
+        size_t aligned_up = Common::AlignUp(map_size, BIG_PAGE_SIZE);
+        video.Host1xMemoryUnmap(handle_description.d_address, map_size);
+        video.Host1xFree(handle_description.d_address, static_cast<size_t>(aligned_up));
+        handle_description.d_address = 0;
         return;
     }
     const VAddr vaddress = handle_description.address;
-    auto* session = core.GetSession(handle_description.session_id);
+    auto * session = core.GetSession(handle_description.session_id);
     session->mapper->Unmap(vaddress, map_size);
     handle_description.d_address = 0;
     handle_description.in_heap = false;
 }
 
-bool NvMap::TryRemoveHandle(const Handle& handle_description) {
+bool NvMap::TryRemoveHandle(const Handle & handle_description)
+{
     // No dupes left, we can remove from handle map
-    if (handle_description.dupes == 0 && handle_description.internal_dupes == 0) {
+    if (handle_description.dupes == 0 && handle_description.internal_dupes == 0)
+    {
         std::scoped_lock lock(handles_lock);
 
         auto it{handles.find(handle_description.id)};
-        if (it != handles.end()) {
+        if (it != handles.end())
+        {
             handles.erase(it);
         }
 
         return true;
-    } else {
+    }
+    else
+    {
         return false;
     }
 }
 
-NvResult NvMap::CreateHandle(u64 size, std::shared_ptr<NvMap::Handle>& result_out) {
-    if (!size) [[unlikely]] {
+NvResult NvMap::CreateHandle(u64 size, std::shared_ptr<NvMap::Handle> & result_out)
+{
+    if (!size) [[unlikely]]
+    {
         return NvResult::BadValue;
     }
 
@@ -132,20 +164,28 @@ NvResult NvMap::CreateHandle(u64 size, std::shared_ptr<NvMap::Handle>& result_ou
     return NvResult::Success;
 }
 
-std::shared_ptr<NvMap::Handle> NvMap::GetHandle(Handle::Id handle) {
+std::shared_ptr<NvMap::Handle> NvMap::GetHandle(Handle::Id handle)
+{
     std::scoped_lock lock(handles_lock);
-    try {
+    try
+    {
         return handles.at(handle);
-    } catch (std::out_of_range&) {
+    }
+    catch (std::out_of_range &)
+    {
         return nullptr;
     }
 }
 
-DAddr NvMap::GetHandleAddress(Handle::Id handle) {
+DAddr NvMap::GetHandleAddress(Handle::Id handle)
+{
     std::scoped_lock lock(handles_lock);
-    try {
+    try
+    {
         return handles.at(handle)->d_address;
-    } catch (std::out_of_range&) {
+    }
+    catch (std::out_of_range &)
+    {
         return 0;
     }
 }
@@ -159,11 +199,11 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin)
     }
 
     std::scoped_lock lock(handle_description->mutex);
-    const auto map_low_area = [&]
-    {
-        if (handle_description->pin_virt_address == 0) {
-            u32 address = video.Host1xAllocate(static_cast<u32>(handle_description->aligned_size));
-            video.Host1xMap(static_cast<GPUVAddr>(address), handle_description->d_address, handle_description->aligned_size);
+    const auto map_low_area = [&] {
+        if (handle_description->pin_virt_address == 0)
+        {
+            u32 address = video.Host1xAllocatorAllocate(static_cast<u32>(handle_description->aligned_size));
+            video.Host1xGMMUMap(static_cast<GPUVAddr>(address), handle_description->d_address, handle_description->aligned_size);
             handle_description->pin_virt_address = address;
         }
     };
@@ -180,7 +220,7 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin)
                 unmap_queue.erase(*handle_description->unmap_queue_entry);
                 handle_description->unmap_queue_entry.reset();
 
-                if (low_area_pin)                
+                if (low_area_pin)
                 {
                     map_low_area();
                     handle_description->pins++;
@@ -194,7 +234,7 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin)
         using namespace std::placeholders;
         // If not then allocate some space and map it
         DAddr address{};
-        auto* session = core.GetSession(handle_description->session_id);
+        auto * session = core.GetSession(handle_description->session_id);
         const VAddr vaddress = handle_description->address;
         const size_t map_size = handle_description->aligned_size;
         if (session->has_preallocated_area && session->mapper->IsInBounds(vaddress, map_size))
@@ -235,7 +275,8 @@ DAddr NvMap::PinHandle(NvMap::Handle::Id handle, bool low_area_pin)
     }
 
     handle_description->pins++;
-    if (low_area_pin) {
+    if (low_area_pin)
+    {
         return static_cast<DAddr>(handle_description->pin_virt_address);
     }
     return handle_description->d_address;
@@ -295,16 +336,20 @@ std::optional<NvMap::FreeInfo> NvMap::FreeHandle(Handle::Id handle, bool interna
         {
             if (--handle_description->internal_dupes < 0)
             {
-                LOG_WARNING(Service_NVDRV, "Internal duplicate count imbalance detected!");            
+                LOG_WARNING(Service_NVDRV, "Internal duplicate count imbalance detected!");
             }
         }
-        else 
+        else
         {
-            if (--handle_description->dupes < 0) {
+            if (--handle_description->dupes < 0)
+            {
                 LOG_WARNING(Service_NVDRV, "User duplicate count imbalance detected!");
-            } else if (handle_description->dupes == 0) {
+            }
+            else if (handle_description->dupes == 0)
+            {
                 // Force unmap the handle
-                if (handle_description->d_address) {
+                if (handle_description->d_address)
+                {
                     std::scoped_lock queueLock(unmap_queue_lock);
                     UnmapHandle(*handle_description);
                 }
@@ -315,9 +360,12 @@ std::optional<NvMap::FreeInfo> NvMap::FreeHandle(Handle::Id handle, bool interna
 
         // Try to remove the shared ptr to the handle from the map, if nothing else is using the
         // handle then it will now be freed when `handle_description` goes out of scope
-        if (TryRemoveHandle(*handle_description)) {
+        if (TryRemoveHandle(*handle_description))
+        {
             LOG_DEBUG(Service_NVDRV, "Removed nvmap handle: {}", handle);
-        } else {
+        }
+        else
+        {
             LOG_DEBUG(Service_NVDRV,
                       "Tried to free nvmap handle: {} but didn't as it still has duplicates",
                       handle);
@@ -329,12 +377,15 @@ std::optional<NvMap::FreeInfo> NvMap::FreeHandle(Handle::Id handle, bool interna
             .was_uncached = handle_description->flags.map_uncached.Value() != 0,
             .can_unlock = true,
         };
-    } else {
+    }
+    else
+    {
         return std::nullopt;
     }
 
     // If the handle hasn't been freed from memory, mark that
-    if (!hWeak.expired()) {
+    if (!hWeak.expired())
+    {
         LOG_DEBUG(Service_NVDRV, "nvmap handle: {} wasn't freed as it is still in use", handle);
         freeInfo.can_unlock = false;
     }
@@ -342,16 +393,19 @@ std::optional<NvMap::FreeInfo> NvMap::FreeHandle(Handle::Id handle, bool interna
     return freeInfo;
 }
 
-void NvMap::UnmapAllHandles(NvCore::SessionId session_id) {
+void NvMap::UnmapAllHandles(NvCore::SessionId session_id)
+{
     auto handles_copy = [&] {
         std::scoped_lock lk{handles_lock};
         return handles;
     }();
 
-    for (auto& [id, handle] : handles_copy) {
+    for (auto & [id, handle] : handles_copy)
+    {
         {
             std::scoped_lock lk{handle->mutex};
-            if (handle->session_id.id != session_id.id || handle->dupes <= 0) {
+            if (handle->session_id.id != session_id.id || handle->dupes <= 0)
+            {
                 continue;
             }
         }
@@ -360,3 +414,4 @@ void NvMap::UnmapAllHandles(NvCore::SessionId session_id) {
 }
 
 } // namespace Service::Nvidia::NvCore
+    

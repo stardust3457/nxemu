@@ -133,16 +133,27 @@ uint64_t VideoManager::Host1xMemoryAllocate(uint64_t size)
     return impl->m_host1x->MemoryManager().Allocate(size);
 }
 
-uint32_t VideoManager::Host1xAllocate(uint32_t size)
+uint32_t VideoManager::Host1xAllocatorAllocate(uint32_t size)
 {
     Common::FlatAllocator<u32, 0, 32> & gmmu_allocator = impl->m_host1x->Allocator();
     return gmmu_allocator.Allocate(static_cast<u32>(size));
 }
 
-void VideoManager::Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size)
+void VideoManager::Host1xAllocatorFree(uint32_t address, uint32_t size)
+{
+    impl->m_host1x->Allocator().Free(address, size);
+}
+
+void VideoManager::Host1xGMMUMap(uint64_t address, uint64_t virtual_address, uint64_t size)
 {
     auto & gmmu = impl->m_host1x->GMMU();
     gmmu.Map(static_cast<GPUVAddr>(address), virtual_address, size);
+}
+
+void VideoManager::Host1xGMMUUnmap(uint64_t address, uint64_t size)
+{
+    auto & gmmu = impl->m_host1x->GMMU();
+    gmmu.Unmap(static_cast<GPUVAddr>(address), size);
 }
 
 void VideoManager::Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track)
@@ -290,4 +301,9 @@ uint32_t VideoManager::ShadersBuilding()
 bool VideoManager::UseNvdec()
 {
     return impl->m_gpuCore->UseNvdec();
+}
+
+void VideoManager::ClearCdmaInstance(uint32_t id)
+{
+    impl->m_gpuCore->ClearCdmaInstance(id);
 }

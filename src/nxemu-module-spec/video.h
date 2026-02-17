@@ -54,8 +54,10 @@ __interface IVideo
     uint64_t MapSparse(uint32_t gmmu, uint64_t gpuAddr, uint64_t size, bool isBigPages) = 0;
     void Unmap(uint32_t gmmu, uint64_t gpuAddr, uint64_t size) = 0;
     uint64_t Host1xMemoryAllocate(uint64_t size) = 0;
-    uint32_t Host1xAllocate(uint32_t size) = 0;
-    void Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size) = 0;
+    uint32_t Host1xAllocatorAllocate(uint32_t size) = 0;
+    void Host1xAllocatorFree(uint32_t address, uint32_t size) = 0;
+    void Host1xGMMUMap(uint64_t address, uint64_t virtual_address, uint64_t size) = 0;
+    void Host1xGMMUUnmap(uint64_t address, uint64_t size) = 0;
     void Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track) = 0;
     void Host1xMemoryUnmap(uint64_t address, uint64_t size) = 0;
     void Host1xFree(uint64_t regionStart, uint64_t regionSize) = 0;
@@ -76,6 +78,7 @@ __interface IVideo
     void WaitHost(uint32_t syncpoint_id, uint32_t expected_value) = 0;
     uint32_t ShadersBuilding() = 0;
     bool UseNvdec() = 0;
+    void ClearCdmaInstance(uint32_t id) = 0;
 };
 
 EXPORT IVideo * CALL CreateVideo(IRenderWindow & renderWindow, ISystemModules & modules);

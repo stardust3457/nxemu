@@ -24,8 +24,10 @@ public:
     uint64_t MapSparse(uint32_t gmmu, uint64_t gpuAddr, uint64_t size, bool isBigPages) override;
     void Unmap(uint32_t gmmu, uint64_t gpuAddr, uint64_t size) override;
     uint64_t Host1xMemoryAllocate(uint64_t size) override;
-    uint32_t Host1xAllocate(uint32_t size) override;
-    void Host1xMap(uint64_t address, uint64_t virtual_address, uint64_t size) override;
+    uint32_t Host1xAllocatorAllocate(uint32_t size) override;
+    void Host1xAllocatorFree(uint32_t address, uint32_t size) override;
+    void Host1xGMMUMap(uint64_t address, uint64_t virtual_address, uint64_t size) override;
+    void Host1xGMMUUnmap(uint64_t address, uint64_t size) override;
     void Host1xMemoryMap(uint64_t address, uint64_t virtualAddress, uint64_t size, uint64_t asid, bool track) override;
     void Host1xMemoryUnmap(uint64_t address, uint64_t size) override;
     void Host1xFree(uint64_t regionStart, uint64_t regionSize) override;
@@ -46,6 +48,7 @@ public:
     void WaitHost(uint32_t syncpoint_id, uint32_t expected_value) override;
     uint32_t ShadersBuilding() override;
     bool UseNvdec() override;
+    void ClearCdmaInstance(uint32_t id) override;
 
 private:
     VideoManager() = delete;
