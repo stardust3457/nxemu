@@ -7,6 +7,7 @@
 #include "yuzu_common/logging/log.h"
 #include "core/file_sys/common_funcs.h"
 #include "core/file_sys/content_archive.h"
+#include "core/file_sys/filesystem.h"
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
@@ -62,31 +63,31 @@ VirtualFile RomFSFactory::Open(uint64_t title_id, StorageId storage, LoaderConte
     return res->RomFS();
 }
 
-std::shared_ptr<NCA> RomFSFactory::GetEntry(uint64_t title_id, StorageId storage,
-                                            LoaderContentRecordType type) const {
+std::shared_ptr<NCA> RomFSFactory::GetEntry(uint64_t title_id, StorageId storage, LoaderContentRecordType type) const 
+{
     UNIMPLEMENTED();
     return nullptr;
 }
 
 } // namespace FileSys
 
-RomFsControllerPtr::RomFsControllerPtr(std::shared_ptr<FileSys::RomFSFactory> factory_, uint64_t programId_) :
+RomFsControllerImpl::RomFsControllerImpl(std::shared_ptr<FileSys::RomFSFactory> factory_, uint64_t programId_) :
     m_factory(factory_),
     m_programId(programId_)
 {
 }
 
-RomFsControllerPtr::~RomFsControllerPtr()
+RomFsControllerImpl::~RomFsControllerImpl()
 {
 }
 
-IVirtualFile * RomFsControllerPtr::OpenRomFSCurrentProcess()
+IVirtualFile * RomFsControllerImpl::OpenRomFSCurrentProcess()
 {
-    FileSys::VirtualFile romfs = m_factory->OpenCurrentProcess(m_programId);
-    return std::make_unique<VirtualFilePtr>(romfs).release();
+    FileSys::VirtualFile fs = m_factory->OpenCurrentProcess(m_programId);
+    return std::make_unique<VirtualFilePtr>(fs).release();
 }
 
-void RomFsControllerPtr::Release()
+void RomFsControllerImpl::Release()
 {
     delete this;
 }

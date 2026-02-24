@@ -77,7 +77,7 @@ bool FileSystemController::OpenProcess(uint64_t * programId, ISaveDataFactory **
 
     *programId = it->second.program_id;
     *saveDataFactory = std::make_unique<SaveDataFactoryImpl>(it->second.save_data_factory).release();
-    *romFsController = std::make_unique<RomFsControllerPtr>(it->second.romfs_factory, it->second.program_id).release();
+    *romFsController = std::make_unique<RomFsControllerImpl>(it->second.romfs_factory, it->second.program_id).release();
     return true;
 }
 
