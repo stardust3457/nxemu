@@ -213,7 +213,7 @@ bool SaveDataFactoryImpl::OpenSaveData(IVirtualDirectory ** out_save_data, SaveD
     {
         return false;
     }
-    *out_save_data = std::make_unique<VirtualDirectoryPtr>(out_dir).release();
+    *out_save_data = std::make_unique<VirtualDirectoryImpl>(out_dir).release();
     return true;
 }
 

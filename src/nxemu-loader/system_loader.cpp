@@ -162,7 +162,7 @@ bool Systemloader::LoadRom(const char * fileName)
             for (const auto & entry : title.second)
             {
                 FileSys::VirtualFile file = entry.second->GetBaseFile();
-                impl->m_manualContentProvider->AddEntry(entry.first.first, entry.first.second, title.first, std::make_unique<VirtualFilePtr>(file).release());
+                impl->m_manualContentProvider->AddEntry(entry.first.first, entry.first.second, title.first, std::make_unique<VirtualFileImpl>(file).release());
             }
         }
     }
@@ -284,7 +284,7 @@ IFileSystemController & Systemloader::FileSystemController()
 IVirtualFile * Systemloader::SynthesizeSystemArchive(const uint64_t title_id)
 {
     FileSys::VirtualFile file = FileSys::SystemArchive::SynthesizeSystemArchive(title_id);
-    return std::make_unique<VirtualFilePtr>(file).release();
+    return std::make_unique<VirtualFileImpl>(file).release();
 }
 
 uint32_t Systemloader::GetContentProviderEntriesCount(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId)

@@ -113,7 +113,7 @@ bool SaveDataControllerPtr::CreateSaveData(IVirtualDirectory ** out_save_data, S
 {
     FileSys::VirtualDir out_dir;
     bool created = m_saveDataController->CreateSaveData(&out_dir, space, attribute);
-    *out_save_data = std::make_unique<VirtualDirectoryPtr>(out_dir).release();
+    *out_save_data = std::make_unique<VirtualDirectoryImpl>(out_dir).release();
     return created;
 }
 

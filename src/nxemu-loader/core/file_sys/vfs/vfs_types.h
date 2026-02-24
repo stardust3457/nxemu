@@ -29,16 +29,16 @@ struct FileTimeStampRaw {
 
 } // namespace FileSys
 
-class VirtualDirectoryPtr :
+class VirtualDirectoryImpl :
     public IVirtualDirectory
 {
 public:
-    VirtualDirectoryPtr();
-    VirtualDirectoryPtr(FileSys::VirtualDir & directory);
-    VirtualDirectoryPtr(VirtualDirectoryPtr && other) noexcept;
-    ~VirtualDirectoryPtr();
+    VirtualDirectoryImpl();
+    VirtualDirectoryImpl(FileSys::VirtualDir & directory);
+    VirtualDirectoryImpl(VirtualDirectoryImpl && other) noexcept;
+    ~VirtualDirectoryImpl();
 
-    VirtualDirectoryPtr& operator=(VirtualDirectoryPtr && other) noexcept;
+    VirtualDirectoryImpl & operator=(VirtualDirectoryImpl && other) noexcept;
 
     FileSys::VfsDirectory * operator->() const;
     FileSys::VfsDirectory & operator*() const;
@@ -56,22 +56,22 @@ public:
     void Release() override;
 
 private:
-    VirtualDirectoryPtr(const VirtualDirectoryPtr &) = delete;
-    VirtualDirectoryPtr & operator=(const VirtualDirectoryPtr &) = delete;
+    VirtualDirectoryImpl(const VirtualDirectoryImpl &) = delete;
+    VirtualDirectoryImpl & operator=(const VirtualDirectoryImpl &) = delete;
 
     FileSys::VirtualDir m_directory;
 };
 
-class VirtualFilePtr :
+class VirtualFileImpl :
     public IVirtualFile
 {
 public:
-    VirtualFilePtr();
-    VirtualFilePtr(FileSys::VirtualFile& file);
-    VirtualFilePtr(VirtualFilePtr&& other) noexcept;
-    ~VirtualFilePtr();
+    VirtualFileImpl();
+    VirtualFileImpl(FileSys::VirtualFile & file);
+    VirtualFileImpl(VirtualFileImpl && other) noexcept;
+    ~VirtualFileImpl();
 
-    VirtualFilePtr& operator=(VirtualFilePtr&& other) noexcept;
+    VirtualFileImpl & operator=(VirtualFileImpl && other) noexcept;
 
     FileSys::VfsFile* operator->() const;
     FileSys::VfsFile& operator*() const;
@@ -87,8 +87,8 @@ public:
     void Release() override;
 
 private:
-    VirtualFilePtr(const VirtualFilePtr&) = delete;
-    VirtualFilePtr& operator=(const VirtualFilePtr&) = delete;
+    VirtualFileImpl(const VirtualFileImpl &) = delete;
+    VirtualFileImpl & operator=(const VirtualFileImpl &) = delete;
 
     FileSys::VirtualFile m_file;
 };

@@ -84,7 +84,7 @@ RomFsControllerImpl::~RomFsControllerImpl()
 IVirtualFile * RomFsControllerImpl::OpenRomFSCurrentProcess()
 {
     FileSys::VirtualFile fs = m_factory->OpenCurrentProcess(m_programId);
-    return std::make_unique<VirtualFilePtr>(fs).release();
+    return std::make_unique<VirtualFileImpl>(fs).release();
 }
 
 void RomFsControllerImpl::Release()

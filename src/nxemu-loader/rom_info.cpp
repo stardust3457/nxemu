@@ -68,7 +68,7 @@ void RomInfo::AddToManualContentProvider(IManualContentProvider & provider)
     {
         u64 program_id = 0;
         ReadProgramId(program_id);
-        provider.AddEntry(LoaderTitleType::Application, FileSys::GetCRTypeFromNCAType(FileSys::NCA{m_file}.GetType()), program_id, std::make_unique<VirtualFilePtr>(m_file).release());
+        provider.AddEntry(LoaderTitleType::Application, FileSys::GetCRTypeFromNCAType(FileSys::NCA{m_file}.GetType()), program_id, std::make_unique<VirtualFileImpl>(m_file).release());
     }
     else if (file_type == LoaderFileType::XCI || file_type == LoaderFileType::NSP)
     {
@@ -78,7 +78,7 @@ void RomInfo::AddToManualContentProvider(IManualContentProvider & provider)
             for (const auto & entry : title.second)
             {
                 FileSys::VirtualFile file = entry.second->GetBaseFile();
-                provider.AddEntry(entry.first.first, entry.first.second, title.first, std::make_unique<VirtualFilePtr>(file).release());
+                provider.AddEntry(entry.first.first, entry.first.second, title.first, std::make_unique<VirtualFileImpl>(file).release());
             }
         }
     }

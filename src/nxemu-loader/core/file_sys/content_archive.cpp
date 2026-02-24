@@ -160,7 +160,7 @@ VirtualDir NCA::GetLogoPartition() const {
 
 IVirtualFile * NCA::GetRomFS()
 {
-    return std::make_unique<VirtualFilePtr>(romfs).release();
+    return std::make_unique<VirtualFileImpl>(romfs).release();
 }
 
 void NCA::Release()

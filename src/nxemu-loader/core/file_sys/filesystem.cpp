@@ -96,7 +96,7 @@ bool FileSystemController::OpenSDMC(IVirtualDirectory ** out_sdmc) const
         return false;
     }
 
-    *out_sdmc = std::make_unique<VirtualDirectoryPtr>(sdmc).release();
+    *out_sdmc = std::make_unique<VirtualDirectoryImpl>(sdmc).release();
     return true;
 }
 

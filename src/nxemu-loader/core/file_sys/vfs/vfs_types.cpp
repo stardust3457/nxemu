@@ -2,16 +2,16 @@
 #include "core/file_sys/romfs.h"
 #include <yuzu_common/yuzu_assert.h>
 
-VirtualDirectoryPtr::VirtualDirectoryPtr(FileSys::VirtualDir & directory) :
+VirtualDirectoryImpl::VirtualDirectoryImpl(FileSys::VirtualDir & directory) :
     m_directory(directory)
 {
 }
 
-VirtualDirectoryPtr::~VirtualDirectoryPtr()
+VirtualDirectoryImpl::~VirtualDirectoryImpl()
 {
 }
 
-IVirtualDirectory * VirtualDirectoryPtr::CreateSubdirectory(const char * path) const
+IVirtualDirectory * VirtualDirectoryImpl::CreateSubdirectory(const char * path) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -22,10 +22,10 @@ IVirtualDirectory * VirtualDirectoryPtr::CreateSubdirectory(const char * path) c
     {
         return nullptr;
     }
-    return std::make_unique<VirtualDirectoryPtr>(dir).release();
+    return std::make_unique<VirtualDirectoryImpl>(dir).release();
 }
 
-IVirtualDirectory * VirtualDirectoryPtr::GetDirectoryRelative(const char * path) const
+IVirtualDirectory * VirtualDirectoryImpl::GetDirectoryRelative(const char * path) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -36,10 +36,10 @@ IVirtualDirectory * VirtualDirectoryPtr::GetDirectoryRelative(const char * path)
     {
         return nullptr;
     }
-    return std::make_unique<VirtualDirectoryPtr>(dir).release();
+    return std::make_unique<VirtualDirectoryImpl>(dir).release();
 }
 
-IVirtualDirectory * VirtualDirectoryPtr::GetSubdirectory(const char * path) const
+IVirtualDirectory * VirtualDirectoryImpl::GetSubdirectory(const char * path) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -50,15 +50,15 @@ IVirtualDirectory * VirtualDirectoryPtr::GetSubdirectory(const char * path) cons
     {
         return nullptr;
     }
-    return std::make_unique<VirtualDirectoryPtr>(dir).release();
+    return std::make_unique<VirtualDirectoryImpl>(dir).release();
 }
 
-IVirtualDirectory* VirtualDirectoryPtr::Duplicate()
+IVirtualDirectory * VirtualDirectoryImpl::Duplicate()
 {
-    return std::make_unique<VirtualDirectoryPtr>(m_directory).release();
+    return std::make_unique<VirtualDirectoryImpl>(m_directory).release();
 }
 
-IVirtualFile * VirtualDirectoryPtr::CreateFile(const char * name) const
+IVirtualFile * VirtualDirectoryImpl::CreateFile(const char * name) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -69,10 +69,10 @@ IVirtualFile * VirtualDirectoryPtr::CreateFile(const char * name) const
     {
         return nullptr;
     }
-    return std::make_unique<VirtualFilePtr>(file).release();
+    return std::make_unique<VirtualFileImpl>(file).release();
 }
 
-IVirtualFile * VirtualDirectoryPtr::GetFile(const char * name) const
+IVirtualFile * VirtualDirectoryImpl::GetFile(const char * name) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -83,10 +83,10 @@ IVirtualFile * VirtualDirectoryPtr::GetFile(const char * name) const
     {
         return nullptr;
     }
-    return std::make_unique<VirtualFilePtr>(file).release();
+    return std::make_unique<VirtualFileImpl>(file).release();
 }
 
-IVirtualFile * VirtualDirectoryPtr::GetFileRelative(const char * name) const
+IVirtualFile * VirtualDirectoryImpl::GetFileRelative(const char * name) const
 {
     if (m_directory.get() == nullptr)
     {
@@ -97,10 +97,10 @@ IVirtualFile * VirtualDirectoryPtr::GetFileRelative(const char * name) const
     {
         return nullptr;
     }
-    return std::make_unique<VirtualFilePtr>(file).release();
+    return std::make_unique<VirtualFileImpl>(file).release();
 }
 
-IVirtualFile * VirtualDirectoryPtr::OpenFile(const char * path, VirtualFileOpenMode perms)
+IVirtualFile * VirtualDirectoryImpl::OpenFile(const char * path, VirtualFileOpenMode perms)
 {
     if (m_directory.get() == nullptr)
     {
@@ -110,21 +110,21 @@ IVirtualFile * VirtualDirectoryPtr::OpenFile(const char * path, VirtualFileOpenM
     return nullptr;
 }
 
-void VirtualDirectoryPtr::Release()
+void VirtualDirectoryImpl::Release()
 {
     delete this;
 }
 
-VirtualFilePtr::VirtualFilePtr(FileSys::VirtualFile & file) :
+VirtualFileImpl::VirtualFileImpl(FileSys::VirtualFile & file) :
     m_file(file)
 {
 }
 
-VirtualFilePtr::~VirtualFilePtr()
+VirtualFileImpl::~VirtualFileImpl()
 {
 }
 
-uint64_t VirtualFilePtr::GetSize() const
+uint64_t VirtualFileImpl::GetSize() const
 {
     if (m_file)
     {
@@ -133,7 +133,7 @@ uint64_t VirtualFilePtr::GetSize() const
     return 0;
 }
 
-bool VirtualFilePtr::Resize(uint64_t size)
+bool VirtualFileImpl::Resize(uint64_t size)
 {
     if (m_file)
     {
@@ -142,7 +142,7 @@ bool VirtualFilePtr::Resize(uint64_t size)
     return 0;
 }
 
-uint64_t VirtualFilePtr::ReadBytes(uint8_t * data, uint64_t datalen, uint64_t offset)
+uint64_t VirtualFileImpl::ReadBytes(uint8_t * data, uint64_t datalen, uint64_t offset)
 {
     if (m_file)
     {
@@ -151,7 +151,7 @@ uint64_t VirtualFilePtr::ReadBytes(uint8_t * data, uint64_t datalen, uint64_t of
     return 0;
 }
 
-uint64_t VirtualFilePtr::WriteBytes(const uint8_t * data, uint64_t datalen, uint64_t offset)
+uint64_t VirtualFileImpl::WriteBytes(const uint8_t * data, uint64_t datalen, uint64_t offset)
 {
     if (m_file)
     {
@@ -160,22 +160,22 @@ uint64_t VirtualFilePtr::WriteBytes(const uint8_t * data, uint64_t datalen, uint
     return 0;
 }
 
-IVirtualDirectory * VirtualFilePtr::ExtractRomFS()
+IVirtualDirectory * VirtualFileImpl::ExtractRomFS()
 {
     FileSys::VirtualDir dir = FileSys::ExtractRomFS(m_file);
     if (dir.get() == nullptr)
     {
         return nullptr;
     }
-    return std::make_unique<VirtualDirectoryPtr>(dir).release();
+    return std::make_unique<VirtualDirectoryImpl>(dir).release();
 }
 
-IVirtualFile * VirtualFilePtr::Duplicate()
+IVirtualFile * VirtualFileImpl::Duplicate()
 {
-    return std::make_unique<VirtualFilePtr>(m_file).release();
+    return std::make_unique<VirtualFileImpl>(m_file).release();
 }
 
-void VirtualFilePtr::Release()
+void VirtualFileImpl::Release()
 {
     delete this;
 }
