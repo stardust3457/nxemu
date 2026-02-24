@@ -153,7 +153,7 @@ IPlatformServiceManager::IPlatformServiceManager(Core::System& system_, const ch
     IFileSystemController & fsc = loader.FileSystemController();
 
     // Attempt to load shared font data from disk
-    const IFileSysRegisteredCache * nand = fsc.GetSystemNANDContents();
+    const IFileSysRegisteredCache & nand = fsc.GetSystemNANDContents();
     std::size_t offset = 0;
     // Rebuild shared fonts from data ncas or synthesize
     impl->shared_font = std::make_shared<Kernel::PhysicalMemory>(SHARED_FONT_MEM_SIZE);
@@ -161,7 +161,7 @@ IPlatformServiceManager::IPlatformServiceManager(Core::System& system_, const ch
     for (auto font : SHARED_FONTS) 
     {
         IVirtualFilePtr romfs;
-        FileSysNCAPtr nca(nand->GetEntry(static_cast<u64>(font.first), LoaderContentRecordType::Data));
+        FileSysNCAPtr nca(nand.GetEntry(static_cast<u64>(font.first), LoaderContentRecordType::Data));
         if (nca) 
         {
             romfs = IVirtualFilePtr(nca->GetRomFS());

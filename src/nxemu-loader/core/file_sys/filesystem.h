@@ -43,7 +43,7 @@ public:
     void CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite = true);
 
     // IFileSystemController
-    IFileSysRegisteredCache * GetSystemNANDContents() const override;
+    IFileSysRegisteredCache & GetSystemNANDContents() const override;
     ISaveDataController * OpenSaveDataController() const override;
     uint64_t GetFreeSpaceSize(StorageId id) const override;
     uint64_t GetTotalSpaceSize(StorageId id) const override;

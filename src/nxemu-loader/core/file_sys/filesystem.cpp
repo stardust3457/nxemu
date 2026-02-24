@@ -47,9 +47,9 @@ ISaveDataController * FileSystemController::OpenSaveDataController() const
     return std::make_unique<SaveDataControllerPtr>(dataController).release();
 }
 
-IFileSysRegisteredCache * FileSystemController::GetSystemNANDContents() const
+IFileSysRegisteredCache & FileSystemController::GetSystemNANDContents() const
 {
-    return SystemNANDContents();
+    return *SystemNANDContents();
 }
 
 uint64_t FileSystemController::GetFreeSpaceSize(StorageId id) const

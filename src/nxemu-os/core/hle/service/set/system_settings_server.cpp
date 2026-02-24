@@ -39,16 +39,12 @@ Result GetFirmwareVersionImpl(FirmwareVersionFormat& out_firmware, Core::System&
     IFileSystemController & fsc = loader.FileSystemController();
 
     // Attempt to load version data from disk
-    IFileSysRegisteredCache * bis_system = fsc.GetSystemNANDContents();
-    FileSysNCAPtr nca;
+    IFileSysRegisteredCache & bis_system = fsc.GetSystemNANDContents();
     IVirtualDirectoryPtr romfs;
 
-    if (bis_system) 
+    FileSysNCAPtr nca = bis_system.GetEntry(FirmwareVersionSystemDataId, LoaderContentRecordType::Data);
+    if (nca)
     {
-        nca = bis_system->GetEntry(FirmwareVersionSystemDataId, LoaderContentRecordType::Data);
-    }
-
-    if (nca) {
         UNIMPLEMENTED();
     }
     if (!romfs) 
@@ -57,10 +53,9 @@ Result GetFirmwareVersionImpl(FirmwareVersionFormat& out_firmware, Core::System&
     }
 
     const auto early_exit_failure = [](std::string_view desc, Result code) {
-        LOG_ERROR(Service_SET, "General failure while attempting to resolve firmware version ({}).",
-            desc);
+        LOG_ERROR(Service_SET, "General failure while attempting to resolve firmware version ({}).", desc);
         return code;
-        };
+    };
 
     IVirtualFilePtr ver_file(romfs->GetFile("file"));
     if (!ver_file) 

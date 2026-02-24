@@ -238,7 +238,7 @@ __interface ISaveDataController
 
 __interface IFileSystemController
 {
-    IFileSysRegisteredCache * GetSystemNANDContents() const = 0;
+    IFileSysRegisteredCache & GetSystemNANDContents() const = 0;
     ISaveDataController * OpenSaveDataController() const = 0;
     bool OpenProcess(uint64_t * programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId) = 0;
     uint64_t GetFreeSpaceSize(StorageId id) const = 0;
