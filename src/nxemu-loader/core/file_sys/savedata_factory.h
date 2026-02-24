@@ -14,7 +14,7 @@ namespace FileSys {
 
 constexpr const char* GetSaveDataSizeFileName() 
 {
-    return ".yuzu_save_size";
+    return ".nxemu_save_size";
 }
 
 using ProgramId = uint64_t;
@@ -48,16 +48,16 @@ private:
 
 } // namespace FileSys
 
-class SaveDataFactoryPtr :
+class SaveDataFactoryImpl :
     public ISaveDataFactory
 {
 public:
-    SaveDataFactoryPtr();
-    SaveDataFactoryPtr(std::shared_ptr<FileSys::SaveDataFactory> saveDataFactory);
-    SaveDataFactoryPtr(SaveDataFactoryPtr && other) noexcept;
-    ~SaveDataFactoryPtr();
+    SaveDataFactoryImpl();
+    SaveDataFactoryImpl(std::shared_ptr<FileSys::SaveDataFactory> saveDataFactory);
+    SaveDataFactoryImpl(SaveDataFactoryImpl && other) noexcept;
+    ~SaveDataFactoryImpl();
 
-    SaveDataFactoryPtr & operator=(SaveDataFactoryPtr && other) noexcept;
+    SaveDataFactoryImpl & operator=(SaveDataFactoryImpl && other) noexcept;
 
     FileSys::SaveDataFactory * operator->() const;
     FileSys::SaveDataFactory & operator*() const;
@@ -68,8 +68,8 @@ public:
     void Release() override;
 
 private:
-    SaveDataFactoryPtr(const SaveDataFactoryPtr &) = delete;
-    SaveDataFactoryPtr & operator=(const SaveDataFactoryPtr &) = delete;
+    SaveDataFactoryImpl(const SaveDataFactoryImpl &) = delete;
+    SaveDataFactoryImpl & operator=(const SaveDataFactoryImpl &) = delete;
 
     std::shared_ptr<FileSys::SaveDataFactory> m_saveDataFactory;
 };

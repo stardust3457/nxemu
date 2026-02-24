@@ -197,16 +197,16 @@ void SaveDataFactory::SetAutoCreate(bool state)
 
 } // namespace FileSys
 
-SaveDataFactoryPtr::SaveDataFactoryPtr(std::shared_ptr<FileSys::SaveDataFactory> saveDataFactory) :
+SaveDataFactoryImpl::SaveDataFactoryImpl(std::shared_ptr<FileSys::SaveDataFactory> saveDataFactory) :
     m_saveDataFactory(saveDataFactory)
 {
 }
 
-SaveDataFactoryPtr::~SaveDataFactoryPtr()
+SaveDataFactoryImpl::~SaveDataFactoryImpl()
 {
 }
 
-bool SaveDataFactoryPtr::OpenSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute)
+bool SaveDataFactoryImpl::OpenSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute)
 {
     FileSys::VirtualDir out_dir = m_saveDataFactory->Open(space, attribute);
     if (out_dir == nullptr) 
@@ -217,7 +217,7 @@ bool SaveDataFactoryPtr::OpenSaveData(IVirtualDirectory ** out_save_data, SaveDa
     return true;
 }
 
-void SaveDataFactoryPtr::Release()
+void SaveDataFactoryImpl::Release()
 {
     delete this;
 }
