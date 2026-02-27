@@ -30,7 +30,7 @@ BISFactory::~BISFactory() = default;
 
 VirtualDir BISFactory::GetSystemNANDContentDirectory() const
 {
-    return GetOrCreateDirectoryRelative(nand_root, "/sysatem/Contents");
+    return GetOrCreateDirectoryRelative(nand_root, "/system/Contents");
 }
 
 VirtualDir BISFactory::GetUserNANDContentDirectory() const
