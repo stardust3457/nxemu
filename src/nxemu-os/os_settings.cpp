@@ -725,7 +725,7 @@ void SaveOsSettings(void)
 {
     JsonValue root;
 
-    for (const OsSetting& osSetting : settings)
+    for (const OsSetting & osSetting : settings)
     {
         switch (osSetting.settingType)
         {
@@ -753,6 +753,18 @@ void SaveOsSettings(void)
                 JsonSetNestedValue(root, osSetting.json_path, (int32_t)osSetting.setting.u8->GetValue());
             }
             break;
+        case SettingType::U16:
+            if (osSetting.setting.u16->GetValue() != osSetting.setting.u16->GetDefault())
+            {
+                JsonSetNestedValue(root, osSetting.json_path, (int32_t)osSetting.setting.u16->GetValue());
+            }
+            break;
+        case SettingType::BooleanSwitchable:
+            if (osSetting.setting.booleanSwitchable->GetValue() != osSetting.setting.booleanSwitchable->GetDefault())
+            {
+                JsonSetNestedValue(root, osSetting.json_path, osSetting.setting.booleanSwitchable->GetValue() != 0);
+            }
+            break;
         case SettingType::BooleanSetting:
             if (osSetting.setting.booleanSetting->GetValue() != osSetting.setting.booleanSetting->GetDefault())
             {
@@ -769,6 +781,12 @@ void SaveOsSettings(void)
             if (*osSetting.setting.uint32Value != osSetting.defaultValue.uint32Value)
             {
                 JsonSetNestedValue(root, osSetting.json_path, *osSetting.setting.uint32Value);
+            }
+            break;
+        case SettingType::Float:
+            if (*osSetting.setting.floatValue != osSetting.defaultValue.floatValue)
+            {
+                JsonSetNestedValue(root, osSetting.json_path, *osSetting.setting.floatValue);
             }
             break;
         case SettingType::StringValue:
