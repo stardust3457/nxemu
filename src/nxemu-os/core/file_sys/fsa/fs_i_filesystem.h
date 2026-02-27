@@ -89,6 +89,14 @@ public:
         R_RETURN(this->DoOpenFile(out_file, path, mode));
     }
 
+    Result OpenDirectory(IVirtualDirectory ** out_dir, const Path & path, OpenDirectoryMode mode)
+    {
+        R_UNLESS(out_dir != nullptr, ResultNullptrArgument);
+        R_UNLESS(static_cast<u64>(mode & OpenDirectoryMode::All) != 0, ResultInvalidOpenMode);
+        R_UNLESS(static_cast<u64>(mode & ~(OpenDirectoryMode::All | OpenDirectoryMode::NotRequireFileSize)) == 0, ResultInvalidOpenMode);
+        R_RETURN(this->DoOpenDirectory(out_dir, path, mode));
+    }
+
     Result Commit()
     {
         R_RETURN(this->DoCommit());
@@ -184,6 +192,11 @@ private:
     Result DoOpenFile(IVirtualFile ** out_file, const Path & path, VirtualFileOpenMode mode)
     {
         R_RETURN(backend.OpenFile(out_file, path.GetString(), mode));
+    }
+
+    Result DoOpenDirectory(IVirtualDirectory ** out_directory, const Path & path, OpenDirectoryMode mode)
+    {
+        R_RETURN(backend.OpenDirectory(out_directory, path.GetString()));
     }
 
     Result DoCommit()

@@ -172,28 +172,48 @@ struct SaveDataSize {
 static_assert(sizeof(SaveDataSize) == 0x10, "SaveDataSize has invalid size.");
 
 __interface IVirtualFile;
+__interface IVirtualDirectoryList;
+__interface IVirtualFileList;
 
 __interface IVirtualDirectory
 {
+    IVirtualDirectoryList * GetSubdirectories() const = 0;
     IVirtualDirectory * CreateSubdirectory(const char * path) const = 0;
     IVirtualDirectory * GetDirectoryRelative(const char * path) const = 0;
     IVirtualDirectory * GetSubdirectory(const char * name) const = 0;
     IVirtualDirectory * Duplicate() = 0;
+    IVirtualFileList * GetFiles() const = 0;
     IVirtualFile * CreateFile(const char * name) const = 0;
     IVirtualFile * GetFile(const char * name) const = 0;
     IVirtualFile * GetFileRelative(const char * relative_path) const = 0;
     IVirtualFile * OpenFile(const char * path, VirtualFileOpenMode perms) = 0;
+    const char * GetName() const = 0;
+    void Release() = 0;
+};
+
+__interface IVirtualDirectoryList
+{
+    uint32_t GetSize() const = 0;
+    IVirtualDirectory * GetItem(uint32_t index) const = 0;
     void Release() = 0;
 };
 
 __interface IVirtualFile
 {
     uint64_t GetSize() const = 0;
+    const char * GetName() const = 0;
     bool Resize(uint64_t size) = 0;
     uint64_t ReadBytes(uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
     uint64_t WriteBytes(const uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
     IVirtualDirectory * ExtractRomFS() = 0;
     IVirtualFile * Duplicate() = 0;
+    void Release() = 0;
+};
+
+__interface IVirtualFileList
+{
+    uint32_t GetSize() const = 0;
+    IVirtualFile * GetItem(uint32_t index) const = 0;
     void Release() = 0;
 };
 

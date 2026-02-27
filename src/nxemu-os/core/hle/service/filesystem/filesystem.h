@@ -115,6 +115,13 @@ public:
     Result OpenFile(IVirtualFile ** out_file, const std::string & path, VirtualFileOpenMode mode) const;
 
     /**
+     * Open a directory specified by its path
+     * @param path Path relative to the archive
+     * @return Opened directory, or error code
+     */
+    Result OpenDirectory(IVirtualDirectory ** out_directory, const std::string & path);
+
+    /**
      * Get the type of the specified path
      * @return The type of the specified path or error code
      */

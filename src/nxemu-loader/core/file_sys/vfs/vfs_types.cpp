@@ -1,6 +1,32 @@
 #include "vfs_types.h"
 #include "core/file_sys/romfs.h"
+#include "core/file_sys/savedata_factory.h"
 #include <yuzu_common/yuzu_assert.h>
+
+VirtualDirectoryListImpl::VirtualDirectoryListImpl(std::vector<FileSys::VirtualDir> && directories) :
+    m_directories(std::move(directories))
+{
+}
+
+VirtualDirectoryListImpl::~VirtualDirectoryListImpl()
+{
+}
+
+uint32_t VirtualDirectoryListImpl::GetSize() const
+{
+    return (uint32_t)m_directories.size();
+}
+
+IVirtualDirectory * VirtualDirectoryListImpl::GetItem(uint32_t index) const
+{
+    FileSys::VirtualDir dir = m_directories[index];
+    return std::make_unique<VirtualDirectoryImpl>(dir).release();
+}
+
+void VirtualDirectoryListImpl::Release()
+{
+    delete this;
+}
 
 VirtualDirectoryImpl::VirtualDirectoryImpl(FileSys::VirtualDir & directory) :
     m_directory(directory)
@@ -9,6 +35,15 @@ VirtualDirectoryImpl::VirtualDirectoryImpl(FileSys::VirtualDir & directory) :
 
 VirtualDirectoryImpl::~VirtualDirectoryImpl()
 {
+}
+
+IVirtualDirectoryList * VirtualDirectoryImpl::GetSubdirectories() const
+{
+    if (m_directory.get() == nullptr)
+    {
+        return nullptr;
+    }
+    return std::make_unique<VirtualDirectoryListImpl>(m_directory->GetSubdirectories()).release();
 }
 
 IVirtualDirectory * VirtualDirectoryImpl::CreateSubdirectory(const char * path) const
@@ -56,6 +91,20 @@ IVirtualDirectory * VirtualDirectoryImpl::GetSubdirectory(const char * path) con
 IVirtualDirectory * VirtualDirectoryImpl::Duplicate()
 {
     return std::make_unique<VirtualDirectoryImpl>(m_directory).release();
+}
+
+IVirtualFileList * VirtualDirectoryImpl::GetFiles() const
+{
+    if (m_directory.get() == nullptr)
+    {
+        return nullptr;
+    }
+    std::vector<FileSys::VirtualFile> files = m_directory->GetFiles();
+    std::erase_if(files, [](const auto & file)
+    {
+        return file->GetName() == FileSys::GetSaveDataSizeFileName();
+    });
+    return std::make_unique<VirtualFileListImpl>(m_directory->GetFiles()).release();
 }
 
 IVirtualFile * VirtualDirectoryImpl::CreateFile(const char * name) const
@@ -110,7 +159,38 @@ IVirtualFile * VirtualDirectoryImpl::OpenFile(const char * path, VirtualFileOpen
     return nullptr;
 }
 
+const char * VirtualDirectoryImpl::GetName() const
+{
+    m_cachedName = m_directory->GetName();
+    return m_cachedName.c_str();
+}
+
 void VirtualDirectoryImpl::Release()
+{
+    delete this;
+}
+
+VirtualFileListImpl::VirtualFileListImpl(std::vector<FileSys::VirtualFile> && files) :
+    m_files(std::move(files))
+{
+}
+
+VirtualFileListImpl::~VirtualFileListImpl()
+{
+}
+
+uint32_t VirtualFileListImpl::GetSize() const
+{
+    return (uint32_t)m_files.size();
+}
+
+IVirtualFile * VirtualFileListImpl::GetItem(uint32_t index) const
+{
+    FileSys::VirtualFile file = m_files[index];
+    return std::make_unique<VirtualFileImpl>(file).release();
+}
+
+void VirtualFileListImpl::Release()
 {
     delete this;
 }
@@ -131,6 +211,12 @@ uint64_t VirtualFileImpl::GetSize() const
         return m_file->GetSize();
     }
     return 0;
+}
+
+const char * VirtualFileImpl::GetName() const
+{
+    m_cachedName = m_file->GetName();
+    return m_cachedName.c_str();
 }
 
 bool VirtualFileImpl::Resize(uint64_t size)

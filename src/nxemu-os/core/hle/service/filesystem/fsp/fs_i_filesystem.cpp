@@ -106,7 +106,10 @@ Result IFileSystem::OpenDirectory(OutInterface<IDirectory> out_interface, const 
 {
     LOG_DEBUG(Service_FS, "called. directory={}, mode={}", path->str, mode);
 
-    UNIMPLEMENTED();
+    IVirtualDirectoryPtr vfs_dir;
+    R_TRY(backend->OpenDirectory(vfs_dir.GetAddressForSet(), FileSys::Path(path->str), static_cast<FileSys::OpenDirectoryMode>(mode)));
+
+    *out_interface = std::make_shared<IDirectory>(system, std::move(vfs_dir), static_cast<FileSys::OpenDirectoryMode>(mode));
     R_SUCCEED();
 }
 

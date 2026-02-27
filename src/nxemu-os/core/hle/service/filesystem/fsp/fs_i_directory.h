@@ -7,19 +7,25 @@
 #include "core/hle/service/cmif_types.h"
 #include "core/hle/service/filesystem/filesystem.h"
 #include "core/hle/service/service.h"
+#include <nxemu-module-spec/system_loader.h>
 
-namespace FileSys {
+namespace FileSys
+{
 struct DirectoryEntry;
 }
 
-namespace Service::FileSystem {
+namespace Service::FileSystem
+{
 
-class IDirectory final : public ServiceFramework<IDirectory> {
+class IDirectory final : public ServiceFramework<IDirectory>
+{
 public:
+    explicit IDirectory(Core::System & system_, IVirtualDirectoryPtr && directory_, FileSys::OpenDirectoryMode mode);
 
 private:
-    Result Read(Out<s64> out_count,
-                const OutArray<FileSys::DirectoryEntry, BufferAttr_HipcMapAlias> out_entries);
+    std::unique_ptr<FileSys::Fsa::IDirectory> backend;
+
+    Result Read(Out<s64> out_count, const OutArray<FileSys::DirectoryEntry, BufferAttr_HipcMapAlias> out_entries);
     Result GetEntryCount(Out<s64> out_count);
 };
 

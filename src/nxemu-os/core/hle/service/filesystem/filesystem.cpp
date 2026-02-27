@@ -112,6 +112,19 @@ Result VfsDirectoryServiceWrapper::OpenFile(IVirtualFile** out_file, const std::
     return ResultSuccess;
 }
 
+Result VfsDirectoryServiceWrapper::OpenDirectory(IVirtualDirectory ** out_directory, const std::string & path_)
+{
+    std::string path(Common::FS::SanitizePath(path_));
+    IVirtualDirectoryPtr dir = GetDirectoryRelativeWrapped(backing, path);
+    if (!dir)
+    {
+        // TODO(DarkLordZach): Find a better error code for this
+        return FileSys::ResultPathNotFound;
+    }
+    *out_directory = dir.Detach();
+    return ResultSuccess;
+}
+
 Result VfsDirectoryServiceWrapper::GetEntryType(FileSys::DirectoryEntryType * out_entry_type, const std::string & path_) const
 {
     std::string path(Common::FS::SanitizePath(path_));
