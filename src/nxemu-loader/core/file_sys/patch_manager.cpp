@@ -28,31 +28,48 @@
 #include "core/hle/service/set/settings_server.h"
 #include "core/loader/loader.h"
 
-namespace FileSys {
-namespace {
+namespace FileSys
+{
+namespace
+{
 
 constexpr u32 SINGLE_BYTE_MODULUS = 0x100;
 
-constexpr std::array<const char*, 14> EXEFS_FILE_NAMES{
-    "main",    "main.npdm", "rtld",    "sdk",     "subsdk0", "subsdk1", "subsdk2",
-    "subsdk3", "subsdk4",   "subsdk5", "subsdk6", "subsdk7", "subsdk8", "subsdk9",
+constexpr std::array<const char *, 14> EXEFS_FILE_NAMES{
+    "main",
+    "main.npdm",
+    "rtld",
+    "sdk",
+    "subsdk0",
+    "subsdk1",
+    "subsdk2",
+    "subsdk3",
+    "subsdk4",
+    "subsdk5",
+    "subsdk6",
+    "subsdk7",
+    "subsdk8",
+    "subsdk9",
 };
 
-enum class TitleVersionFormat : u8 {
+enum class TitleVersionFormat : u8
+{
     ThreeElements, ///< vX.Y.Z
     FourElements,  ///< vX.Y.Z.W
 };
 
-std::string FormatTitleVersion(u32 version,
-                               TitleVersionFormat format = TitleVersionFormat::ThreeElements) {
+std::string FormatTitleVersion(u32 version, TitleVersionFormat format = TitleVersionFormat::ThreeElements)
+{
     std::array<u8, sizeof(u32)> bytes{};
     bytes[0] = static_cast<u8>(version % SINGLE_BYTE_MODULUS);
-    for (std::size_t i = 1; i < bytes.size(); ++i) {
+    for (std::size_t i = 1; i < bytes.size(); ++i)
+    {
         version /= SINGLE_BYTE_MODULUS;
         bytes[i] = static_cast<u8>(version % SINGLE_BYTE_MODULUS);
     }
 
-    if (format == TitleVersionFormat::FourElements) {
+    if (format == TitleVersionFormat::FourElements)
+    {
         return fmt::format("v{}.{}.{}.{}", bytes[3], bytes[2], bytes[1], bytes[0]);
     }
     return fmt::format("v{}.{}.{}", bytes[3], bytes[2], bytes[1]);
@@ -60,14 +77,17 @@ std::string FormatTitleVersion(u32 version,
 
 // Returns a directory with name matching name case-insensitive. Returns nullptr if directory
 // doesn't have a directory with name.
-VirtualDir FindSubdirectoryCaseless(const VirtualDir dir, std::string_view name) {
+VirtualDir FindSubdirectoryCaseless(const VirtualDir dir, std::string_view name)
+{
 #ifdef _WIN32
     return dir->GetSubdirectory(name);
 #else
     const auto subdirs = dir->GetSubdirectories();
-    for (const auto& subdir : subdirs) {
+    for (const auto & subdir : subdirs)
+    {
         std::string dir_name = Common::ToLower(subdir->GetName());
-        if (dir_name == name) {
+        if (dir_name == name)
+        {
             return subdir;
         }
     }
@@ -76,48 +96,58 @@ VirtualDir FindSubdirectoryCaseless(const VirtualDir dir, std::string_view name)
 #endif
 }
 
-void AppendCommaIfNotEmpty(std::string& to, std::string_view with) {
-    if (to.empty()) {
+void AppendCommaIfNotEmpty(std::string & to, std::string_view with)
+{
+    if (to.empty())
+    {
         to += with;
-    } else {
+    }
+    else
+    {
         to += ", ";
         to += with;
     }
 }
 
-bool IsDirValidAndNonEmpty(const VirtualDir& dir) {
+bool IsDirValidAndNonEmpty(const VirtualDir & dir)
+{
     return dir != nullptr && (!dir->GetFiles().empty() || !dir->GetSubdirectories().empty());
 }
 } // Anonymous namespace
 
-PatchManager::PatchManager(uint64_t title_id_,
-                           const FileSystemController& fs_controller_,
-                           const ContentProvider& content_provider_)
-    : title_id{title_id_}, fs_controller{fs_controller_}, content_provider{content_provider_} {}
+PatchManager::PatchManager(uint64_t title_id_, const FileSystemController & fs_controller_, const ContentProvider & content_provider_) :
+    title_id{title_id_},
+    fs_controller{fs_controller_},
+    content_provider{content_provider_}
+{
+}
 
 PatchManager::~PatchManager() = default;
 
-uint64_t PatchManager::GetTitleID() const {
+uint64_t PatchManager::GetTitleID() const
+{
     return title_id;
 }
 
-VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
+VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const
+{
     LOG_INFO(Loader, "Patching ExeFS for title_id={:016X}", title_id);
 
     if (exefs == nullptr)
-        return exefs;
+    {
+        return exefs;    
+    }
 
-    const auto& disabled = Settings::values.disabled_addons[title_id];
-    const auto update_disabled =
-        std::find(disabled.cbegin(), disabled.cend(), "Update") != disabled.cend();
+    const auto & disabled = Settings::values.disabled_addons[title_id];
+    const auto update_disabled = std::find(disabled.cbegin(), disabled.cend(), "Update") != disabled.cend();
 
     // Game Updates
     const auto update_tid = GetUpdateTitleID(title_id);
     const auto update = content_provider.GetEntryNCA(update_tid, LoaderContentRecordType::Program);
 
-    if (!update_disabled && update != nullptr && update->GetExeFS() != nullptr) {
-        LOG_INFO(Loader, "    ExeFS: Update ({}) applied successfully",
-                 FormatTitleVersion(content_provider.GetEntryVersion(update_tid).value_or(0)));
+    if (!update_disabled && update != nullptr && update->GetExeFS() != nullptr)
+    {
+        LOG_INFO(Loader, "    ExeFS: Update ({}) applied successfully", FormatTitleVersion(content_provider.GetEntryVersion(update_tid).value_or(0)));
         exefs = update->GetExeFS();
     }
 
@@ -126,36 +156,45 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
     const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
 
     std::vector<VirtualDir> patch_dirs = {sdmc_load_dir};
-    if (load_dir != nullptr) {
+    if (load_dir != nullptr)
+    {
         const auto load_patch_dirs = load_dir->GetSubdirectories();
         patch_dirs.insert(patch_dirs.end(), load_patch_dirs.begin(), load_patch_dirs.end());
     }
 
     std::sort(patch_dirs.begin(), patch_dirs.end(),
-              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+              [](const VirtualDir & l, const VirtualDir & r) { return l->GetName() < r->GetName(); });
 
     std::vector<VirtualDir> layers;
     layers.reserve(patch_dirs.size() + 1);
-    for (const auto& subdir : patch_dirs) {
+    for (const auto & subdir : patch_dirs)
+    {
         if (std::find(disabled.begin(), disabled.end(), subdir->GetName()) != disabled.end())
+        {
             continue;
+        }
 
         auto exefs_dir = FindSubdirectoryCaseless(subdir, "exefs");
         if (exefs_dir != nullptr)
+        {
             layers.push_back(std::move(exefs_dir));
+        }
     }
     layers.push_back(exefs);
 
     auto layered = LayeredVfsDirectory::MakeLayeredDirectory(std::move(layers));
-    if (layered != nullptr) {
+    if (layered != nullptr)
+    {
         LOG_INFO(Loader, "    ExeFS: LayeredExeFS patches applied successfully");
         exefs = std::move(layered);
     }
 
-    if (Settings::values.dump_exefs) {
+    if (Settings::values.dump_exefs)
+    {
         LOG_INFO(Loader, "Dumping ExeFS for title_id={:016X}", title_id);
         const auto dump_dir = fs_controller.GetModificationDumpRoot(title_id);
-        if (dump_dir != nullptr) {
+        if (dump_dir != nullptr)
+        {
             const auto exefs_dir = GetOrCreateDirectoryRelative(dump_dir, "/exefs");
             VfsRawCopyD(exefs, exefs_dir);
         }
@@ -164,35 +203,47 @@ VirtualDir PatchManager::PatchExeFS(VirtualDir exefs) const {
     return exefs;
 }
 
-std::vector<VirtualFile> PatchManager::CollectPatches(const std::vector<VirtualDir>& patch_dirs,
-                                                      const std::string& build_id) const {
-    const auto& disabled = Settings::values.disabled_addons[title_id];
+std::vector<VirtualFile> PatchManager::CollectPatches(const std::vector<VirtualDir> & patch_dirs, const std::string & build_id) const
+{
+    const auto & disabled = Settings::values.disabled_addons[title_id];
     const auto nso_build_id = fmt::format("{:0<64}", build_id);
 
     std::vector<VirtualFile> out;
     out.reserve(patch_dirs.size());
-    for (const auto& subdir : patch_dirs) {
+    for (const auto & subdir : patch_dirs)
+    {
         if (std::find(disabled.cbegin(), disabled.cend(), subdir->GetName()) != disabled.cend())
+        {
             continue;
+        }
 
         auto exefs_dir = FindSubdirectoryCaseless(subdir, "exefs");
-        if (exefs_dir != nullptr) {
-            for (const auto& file : exefs_dir->GetFiles()) {
-                if (file->GetExtension() == "ips") {
+        if (exefs_dir != nullptr)
+        {
+            for (const auto & file : exefs_dir->GetFiles())
+            {
+                if (file->GetExtension() == "ips")
+                {
                     auto name = file->GetName();
 
-                    const auto this_build_id =
-                        fmt::format("{:0<64}", name.substr(0, name.find('.')));
+                    const auto this_build_id = fmt::format("{:0<64}", name.substr(0, name.find('.')));
                     if (nso_build_id == this_build_id)
+                    {
                         out.push_back(file);
-                } else if (file->GetExtension() == "pchtxt") {
+                    }
+                }
+                else if (file->GetExtension() == "pchtxt")
+                {
                     IPSwitchCompiler compiler{file};
                     if (!compiler.IsValid())
+                    {
                         continue;
-
+                    }
                     const auto this_build_id = Common::HexToString(compiler.GetBuildID());
                     if (nso_build_id == this_build_id)
+                    {
                         out.push_back(file);
+                    }
                 }
             }
         }
@@ -201,93 +252,111 @@ std::vector<VirtualFile> PatchManager::CollectPatches(const std::vector<VirtualD
     return out;
 }
 
-std::vector<u8> PatchManager::PatchNSO(const std::vector<u8>& nso, const std::string& name) const {
+std::vector<u8> PatchManager::PatchNSO(const std::vector<u8> & nso, const std::string & name) const
+{
     UNIMPLEMENTED();
     return {};
 }
 
-bool PatchManager::HasNSOPatch(const BuildID& build_id_, std::string_view name) const {
+bool PatchManager::HasNSOPatch(const BuildID & build_id_, std::string_view name) const
+{
     const auto build_id_raw = Common::HexToString(build_id_);
     const auto build_id = build_id_raw.substr(0, build_id_raw.find_last_not_of('0') + 1);
 
     LOG_INFO(Loader, "Querying NSO patch existence for build_id={}, name={}", build_id, name);
 
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
-    if (load_dir == nullptr) {
+    if (load_dir == nullptr)
+    {
         LOG_ERROR(Loader, "Cannot load mods for invalid title_id={:016X}", title_id);
         return false;
     }
 
     auto patch_dirs = load_dir->GetSubdirectories();
     std::sort(patch_dirs.begin(), patch_dirs.end(),
-              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+              [](const VirtualDir & l, const VirtualDir & r) { return l->GetName() < r->GetName(); });
 
     return !CollectPatches(patch_dirs, build_id).empty();
 }
 
-static void ApplyLayeredFS(VirtualFile& romfs, uint64_t title_id, LoaderContentRecordType type,
-                           const FileSystemController& fs_controller) {
+static void ApplyLayeredFS(VirtualFile & romfs, uint64_t title_id, LoaderContentRecordType type, const FileSystemController & fs_controller)
+{
     const auto load_dir = fs_controller.GetModificationLoadRoot(title_id);
     const auto sdmc_load_dir = fs_controller.GetSDMCModificationLoadRoot(title_id);
     if ((type != LoaderContentRecordType::Program && type != LoaderContentRecordType::Data &&
          type != LoaderContentRecordType::HtmlDocument) ||
-        (load_dir == nullptr && sdmc_load_dir == nullptr)) {
+        (load_dir == nullptr && sdmc_load_dir == nullptr))
+    {
         return;
     }
 
-    const auto& disabled = Settings::values.disabled_addons[title_id];
+    const auto & disabled = Settings::values.disabled_addons[title_id];
     std::vector<VirtualDir> patch_dirs = load_dir->GetSubdirectories();
-    if (std::find(disabled.cbegin(), disabled.cend(), "SDMC") == disabled.cend()) {
+    if (std::find(disabled.cbegin(), disabled.cend(), "SDMC") == disabled.cend())
+    {
         patch_dirs.push_back(sdmc_load_dir);
     }
     std::sort(patch_dirs.begin(), patch_dirs.end(),
-              [](const VirtualDir& l, const VirtualDir& r) { return l->GetName() < r->GetName(); });
+              [](const VirtualDir & l, const VirtualDir & r) { return l->GetName() < r->GetName(); });
 
     std::vector<VirtualDir> layers;
     std::vector<VirtualDir> layers_ext;
     layers.reserve(patch_dirs.size() + 1);
     layers_ext.reserve(patch_dirs.size() + 1);
-    for (const auto& subdir : patch_dirs) {
-        if (std::find(disabled.cbegin(), disabled.cend(), subdir->GetName()) != disabled.cend()) {
+    for (const auto & subdir : patch_dirs)
+    {
+        if (std::find(disabled.cbegin(), disabled.cend(), subdir->GetName()) != disabled.cend())
+        {
             continue;
         }
 
         auto romfs_dir = FindSubdirectoryCaseless(subdir, "romfs");
         if (romfs_dir != nullptr)
+        {
             layers.emplace_back(std::make_shared<CachedVfsDirectory>(std::move(romfs_dir)));
+        }
 
         auto ext_dir = FindSubdirectoryCaseless(subdir, "romfs_ext");
         if (ext_dir != nullptr)
+        {
             layers_ext.emplace_back(std::make_shared<CachedVfsDirectory>(std::move(ext_dir)));
+        }
 
-        if (type == LoaderContentRecordType::HtmlDocument) {
+        if (type == LoaderContentRecordType::HtmlDocument)
+        {
             auto manual_dir = FindSubdirectoryCaseless(subdir, "manual_html");
             if (manual_dir != nullptr)
+            {
                 layers.emplace_back(std::make_shared<CachedVfsDirectory>(std::move(manual_dir)));
+            }
         }
     }
 
     // When there are no layers to apply, return early as there is no need to rebuild the RomFS
-    if (layers.empty() && layers_ext.empty()) {
+    if (layers.empty() && layers_ext.empty())
+    {
         return;
     }
 
     auto extracted = ExtractRomFS(romfs);
-    if (extracted == nullptr) {
+    if (extracted == nullptr)
+    {
         return;
     }
 
     layers.emplace_back(std::move(extracted));
 
     auto layered = LayeredVfsDirectory::MakeLayeredDirectory(std::move(layers));
-    if (layered == nullptr) {
+    if (layered == nullptr)
+    {
         return;
     }
 
     auto layered_ext = LayeredVfsDirectory::MakeLayeredDirectory(std::move(layers_ext));
 
     auto packed = CreateRomFS(std::move(layered), std::move(layered_ext));
-    if (packed == nullptr) {
+    if (packed == nullptr)
+    {
         return;
     }
 
@@ -295,126 +364,141 @@ static void ApplyLayeredFS(VirtualFile& romfs, uint64_t title_id, LoaderContentR
     romfs = std::move(packed);
 }
 
-VirtualFile PatchManager::PatchRomFS(const NCA* base_nca, VirtualFile base_romfs,
-                                     LoaderContentRecordType type, VirtualFile packed_update_raw,
-                                     bool apply_layeredfs) const {
-    const auto log_string = fmt::format("Patching RomFS for title_id={:016X}, type={:02X}",
-                                        title_id, static_cast<u8>(type));
-    if (type == LoaderContentRecordType::Program || type == LoaderContentRecordType::Data) {
+VirtualFile PatchManager::PatchRomFS(const NCA * base_nca, VirtualFile base_romfs, LoaderContentRecordType type, VirtualFile packed_update_raw, bool apply_layeredfs) const
+{
+    const auto log_string = fmt::format("Patching RomFS for title_id={:016X}, type={:02X}", title_id, static_cast<u8>(type));
+    if (type == LoaderContentRecordType::Program || type == LoaderContentRecordType::Data)
+    {
         LOG_INFO(Loader, "{}", log_string);
-    } else {
+    }
+    else
+    {
         LOG_DEBUG(Loader, "{}", log_string);
     }
 
-    auto romfs = base_romfs;
+    VirtualFile romfs = base_romfs;
 
     // Game Updates
-    const auto update_tid = GetUpdateTitleID(title_id);
-    const auto update_raw = content_provider.GetEntryRaw(update_tid, type);
+    const uint64_t update_tid = GetUpdateTitleID(title_id);
+    const VirtualFile update_raw = content_provider.GetEntryRaw(update_tid, type);
 
-    const auto& disabled = Settings::values.disabled_addons[title_id];
-    const auto update_disabled =
-        std::find(disabled.cbegin(), disabled.cend(), "Update") != disabled.cend();
+    const std::vector<std::string> & disabled = Settings::values.disabled_addons[title_id];
+    const bool update_disabled = std::find(disabled.cbegin(), disabled.cend(), "Update") != disabled.cend();
 
-    if (!update_disabled && update_raw != nullptr && base_nca != nullptr) {
+    if (!update_disabled && update_raw != nullptr && base_nca != nullptr)
+    {
         const auto new_nca = std::make_shared<NCA>(update_raw, base_nca);
         if (new_nca->GetStatus() == LoaderResultStatus::Success &&
-            new_nca->RomFS() != nullptr) {
-            LOG_INFO(Loader, "    RomFS: Update ({}) applied successfully",
-                     FormatTitleVersion(content_provider.GetEntryVersion(update_tid).value_or(0)));
+            new_nca->RomFS() != nullptr)
+        {
+            LOG_INFO(Loader, "    RomFS: Update ({}) applied successfully", FormatTitleVersion(content_provider.GetEntryVersion(update_tid).value_or(0)));
             romfs = new_nca->RomFS();
-            const auto version =
-                FormatTitleVersion(content_provider.GetEntryVersion(update_tid).value_or(0));
+            const auto version = FormatTitleVersion(content_provider.GetEntryVersion(update_tid).value_or(0));
         }
-    } else if (!update_disabled && packed_update_raw != nullptr && base_nca != nullptr) {
+    }
+    else if (!update_disabled && packed_update_raw != nullptr && base_nca != nullptr)
+    {
         const auto new_nca = std::make_shared<NCA>(packed_update_raw, base_nca);
         if (new_nca->GetStatus() == LoaderResultStatus::Success &&
-            new_nca->RomFS() != nullptr) {
+            new_nca->RomFS() != nullptr)
+        {
             LOG_INFO(Loader, "    RomFS: Update (PACKED) applied successfully");
             romfs = new_nca->RomFS();
         }
     }
 
     // LayeredFS
-    if (apply_layeredfs) {
+    if (apply_layeredfs)
+    {
         ApplyLayeredFS(romfs, title_id, type, fs_controller);
     }
 
     return romfs;
 }
 
-std::vector<Patch> PatchManager::GetPatches(VirtualFile update_raw) const {
+std::vector<Patch> PatchManager::GetPatches(VirtualFile update_raw) const
+{
     UNIMPLEMENTED();
     return {};
 }
 
-std::optional<u32> PatchManager::GetGameVersion() const {
+std::optional<u32> PatchManager::GetGameVersion() const
+{
     const auto update_tid = GetUpdateTitleID(title_id);
-    if (content_provider.HasEntry(update_tid, LoaderContentRecordType::Program)) {
+    if (content_provider.HasEntry(update_tid, LoaderContentRecordType::Program))
+    {
         return content_provider.GetEntryVersion(update_tid);
     }
 
     return content_provider.GetEntryVersion(title_id);
 }
 
-PatchManager::Metadata PatchManager::GetControlMetadata() const {
+PatchManager::Metadata PatchManager::GetControlMetadata() const
+{
     const auto raw = content_provider.GetEntryRaw(title_id, LoaderContentRecordType::Control);
     if (raw == nullptr)
     {
         return {};
     }
     const auto base_control_nca = std::make_unique<NCA>(raw);
-    if (base_control_nca == nullptr) {
+    if (base_control_nca == nullptr)
+    {
         return {};
     }
     return ParseControlNCA(*base_control_nca);
 }
 
-PatchManager::Metadata PatchManager::ParseControlNCA(const NCA& nca) const {
+PatchManager::Metadata PatchManager::ParseControlNCA(const NCA & nca) const
+{
     const auto base_romfs = nca.RomFS();
-    if (base_romfs == nullptr) {
+    if (base_romfs == nullptr)
+    {
         return {};
     }
 
     const auto romfs = PatchRomFS(&nca, base_romfs, LoaderContentRecordType::Control);
-    if (romfs == nullptr) {
+    if (romfs == nullptr)
+    {
         return {};
     }
 
     const auto extracted = ExtractRomFS(romfs);
-    if (extracted == nullptr) {
+    if (extracted == nullptr)
+    {
         return {};
     }
 
     auto nacp_file = extracted->GetFile("control.nacp");
-    if (nacp_file == nullptr) {
+    if (nacp_file == nullptr)
+    {
         nacp_file = extracted->GetFile("Control.nacp");
     }
 
     auto nacp = nacp_file == nullptr ? nullptr : std::make_unique<NACP>(nacp_file);
 
     // Get language code from settings
-    const auto language_code = Service::Set::GetLanguageCodeFromIndex(
-        static_cast<u32>(Settings::values.language_index.GetValue()));
+    const auto language_code = Service::Set::GetLanguageCodeFromIndex(static_cast<u32>(Settings::values.language_index.GetValue()));
 
     // Convert to application language and get priority list
-    const auto application_language =
-        Service::NS::ConvertToApplicationLanguage(language_code)
-            .value_or(Service::NS::ApplicationLanguage::AmericanEnglish);
-    const auto language_priority_list =
-        Service::NS::GetApplicationLanguagePriorityList(application_language);
+    const auto application_language = Service::NS::ConvertToApplicationLanguage(language_code).value_or(Service::NS::ApplicationLanguage::AmericanEnglish);
+    const auto language_priority_list = Service::NS::GetApplicationLanguagePriorityList(application_language);
 
     // Convert to language names
     auto priority_language_names = FileSys::LANGUAGE_NAMES; // Copy
-    if (language_priority_list) {
-        for (size_t i = 0; i < priority_language_names.size(); ++i) {
+    if (language_priority_list)
+    {
+        for (size_t i = 0; i < priority_language_names.size(); ++i)
+        {
             // Relies on FileSys::LANGUAGE_NAMES being in the same order as
             // Service::NS::ApplicationLanguage
             const auto language_index = static_cast<u8>(language_priority_list->at(i));
 
-            if (language_index < FileSys::LANGUAGE_NAMES.size()) {
+            if (language_index < FileSys::LANGUAGE_NAMES.size())
+            {
                 priority_language_names[i] = FileSys::LANGUAGE_NAMES[language_index];
-            } else {
+            }
+            else
+            {
                 // Not a catastrophe, unlikely to happen
                 LOG_WARNING(Loader, "Invalid language index {}", language_index);
             }
@@ -423,13 +507,15 @@ PatchManager::Metadata PatchManager::ParseControlNCA(const NCA& nca) const {
 
     // Get first matching icon
     VirtualFile icon_file;
-    for (const auto& language : priority_language_names) {
+    for (const auto & language : priority_language_names)
+    {
         icon_file = extracted->GetFile(std::string("icon_").append(language).append(".dat"));
-        if (icon_file != nullptr) {
+        if (icon_file != nullptr)
+        {
             break;
         }
     }
-
+        
     return {std::move(nacp), icon_file};
 }
 } // namespace FileSys
