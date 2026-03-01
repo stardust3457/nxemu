@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "core/file_sys/fssystem/fssystem_nca_file_system_driver.h"
 #include "core/file_sys/fssystem/fssystem_aes_ctr_counter_extended_storage.h"
 #include "core/file_sys/fssystem/fssystem_alignment_matching_storage.h"
 #include "core/file_sys/fssystem/fssystem_compressed_storage.h"
@@ -9,15 +10,16 @@
 #include "core/file_sys/fssystem/fssystem_indirect_storage.h"
 #include "core/file_sys/fssystem/fssystem_integrity_romfs_storage.h"
 #include "core/file_sys/fssystem/fssystem_memory_resource_buffer_hold_storage.h"
-#include "core/file_sys/fssystem/fssystem_nca_file_system_driver.h"
 #include "core/file_sys/fssystem/fssystem_sparse_storage.h"
 #include "core/file_sys/fssystem/fssystem_switch_storage.h"
 #include "core/file_sys/vfs/vfs_offset.h"
 #include "core/file_sys/vfs/vfs_vector.h"
 
-namespace FileSys {
+namespace FileSys
+{
 
-namespace {
+namespace
+{
 
 constexpr inline s32 IntegrityDataCacheCount = 24;
 constexpr inline s32 IntegrityHashCacheCount = 8;
@@ -25,7 +27,8 @@ constexpr inline s32 IntegrityHashCacheCount = 8;
 constexpr inline s32 IntegrityDataCacheCountForMeta = 16;
 constexpr inline s32 IntegrityHashCacheCountForMeta = 2;
 
-class SharedNcaBodyStorage : public IReadOnlyStorage {
+class SharedNcaBodyStorage : public IReadOnlyStorage
+{
     YUZU_NON_COPYABLE(SharedNcaBodyStorage);
     YUZU_NON_MOVEABLE(SharedNcaBodyStorage);
 
@@ -34,10 +37,14 @@ private:
     std::shared_ptr<NcaReader> m_nca_reader;
 
 public:
-    SharedNcaBodyStorage(VirtualFile s, std::shared_ptr<NcaReader> r)
-        : m_storage(std::move(s)), m_nca_reader(std::move(r)) {}
+    SharedNcaBodyStorage(VirtualFile s, std::shared_ptr<NcaReader> r) :
+        m_storage(std::move(s)),
+        m_nca_reader(std::move(r))
+    {
+    }
 
-    virtual size_t Read(u8* buffer, size_t size, size_t offset) const override {
+    virtual size_t Read(u8 * buffer, size_t size, size_t offset) const override
+    {
         // Validate pre-conditions.
         ASSERT(m_storage != nullptr);
 
@@ -45,7 +52,8 @@ public:
         return m_storage->Read(buffer, size, offset);
     }
 
-    virtual size_t GetSize() const override {
+    virtual size_t GetSize() const override
+    {
         // Validate pre-conditions.
         ASSERT(m_storage != nullptr);
 
@@ -53,11 +61,13 @@ public:
     }
 };
 
-inline s64 GetFsOffset(const NcaReader& reader, s32 fs_index) {
+inline s64 GetFsOffset(const NcaReader & reader, s32 fs_index)
+{
     return static_cast<s64>(reader.GetFsOffset(fs_index));
 }
 
-inline s64 GetFsEndOffset(const NcaReader& reader, s32 fs_index) {
+inline s64 GetFsEndOffset(const NcaReader & reader, s32 fs_index)
+{
     return static_cast<s64>(reader.GetFsEndOffset(fs_index));
 }
 
@@ -67,15 +77,14 @@ using IntegrityDataInfo = IntegrityLevelInfo::HierarchicalIntegrityVerificationL
 
 } // namespace
 
-Result NcaFileSystemDriver::OpenStorageWithContext(VirtualFile* out,
-                                                   NcaFsHeaderReader* out_header_reader,
-                                                   s32 fs_index, StorageContext* ctx) {
+Result NcaFileSystemDriver::OpenStorageWithContext(VirtualFile * out, NcaFsHeaderReader * out_header_reader, s32 fs_index, StorageContext * ctx)
+{
     // Open storage.
     R_RETURN(this->OpenStorageImpl(out, out_header_reader, fs_index, ctx));
 }
 
-Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader* out_header_reader,
-                                            s32 fs_index, StorageContext* ctx) {
+Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile * out, NcaFsHeaderReader * out_header_reader, s32 fs_index, StorageContext * ctx)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
     ASSERT(out_header_reader != nullptr);
@@ -92,12 +101,14 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
 
     // Process sparse layer.
     s64 fs_data_offset = 0;
-    if (out_header_reader->ExistsSparseLayer()) {
+    if (out_header_reader->ExistsSparseLayer())
+    {
         // Get the sparse info.
-        const auto& sparse_info = out_header_reader->GetSparseInfo();
+        const auto & sparse_info = out_header_reader->GetSparseInfo();
 
         // Create based on whether we have a meta hash layer.
-        if (out_header_reader->ExistsSparseMetaHashLayer()) {
+        if (out_header_reader->ExistsSparseMetaHashLayer())
+        {
             // Create the sparse storage with verification.
             R_TRY(this->CreateSparseStorageWithVerification(
                 std::addressof(storage), std::addressof(fs_data_offset),
@@ -107,7 +118,9 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
                 out_header_reader->GetAesCtrUpperIv(), sparse_info,
                 out_header_reader->GetSparseMetaDataHashDataInfo(),
                 out_header_reader->GetSparseMetaHashType()));
-        } else {
+        }
+        else
+        {
             // Create the sparse storage.
             R_TRY(this->CreateSparseStorage(
                 std::addressof(storage), std::addressof(fs_data_offset),
@@ -115,7 +128,9 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
                 ctx != nullptr ? std::addressof(ctx->sparse_storage_meta_storage) : nullptr,
                 fs_index, out_header_reader->GetAesCtrUpperIv(), sparse_info));
         }
-    } else {
+    }
+    else
+    {
         // Get the data offsets.
         fs_data_offset = GetFsOffset(*m_reader, fs_index);
         const auto fs_end_offset = GetFsEndOffset(*m_reader, fs_index);
@@ -128,16 +143,18 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
         R_TRY(this->CreateBodySubStorage(std::addressof(storage), fs_data_offset, data_size));
 
         // Potentially save the body substorage to our context.
-        if (ctx != nullptr) {
+        if (ctx != nullptr)
+        {
             ctx->body_substorage = storage;
         }
     }
 
     // Process patch layer.
-    const auto& patch_info = out_header_reader->GetPatchInfo();
+    const auto & patch_info = out_header_reader->GetPatchInfo();
     VirtualFile patch_meta_aes_ctr_ex_meta_storage;
     VirtualFile patch_meta_indirect_meta_storage;
-    if (out_header_reader->ExistsPatchMetaHashLayer()) {
+    if (out_header_reader->ExistsPatchMetaHashLayer())
+    {
         // Check the meta hash type.
         R_UNLESS(out_header_reader->GetPatchMetaHashType() ==
                      NcaFsHeader::MetaDataHashType::HierarchicalIntegrity,
@@ -152,13 +169,15 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
             out_header_reader->GetPatchMetaDataHashDataInfo()));
     }
 
-    if (patch_info.HasAesCtrExTable()) {
+    if (patch_info.HasAesCtrExTable())
+    {
         // Check the encryption type.
         ASSERT(out_header_reader->GetEncryptionType() == NcaFsHeader::EncryptionType::None);
 
         // Create the ex meta storage.
         VirtualFile aes_ctr_ex_storage_meta_storage = patch_meta_aes_ctr_ex_meta_storage;
-        if (aes_ctr_ex_storage_meta_storage == nullptr) {
+        if (aes_ctr_ex_storage_meta_storage == nullptr)
+        {
             // If we don't have a meta storage, we must not have a patch meta hash layer.
             ASSERT(!out_header_reader->ExistsPatchMetaHashLayer());
 
@@ -170,38 +189,40 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
 
         // Create the ex storage.
         VirtualFile aes_ctr_ex_storage;
-        R_TRY(this->CreateAesCtrExStorage(
-            std::addressof(aes_ctr_ex_storage),
-            ctx != nullptr ? std::addressof(ctx->aes_ctr_ex_storage) : nullptr, std::move(storage),
-            aes_ctr_ex_storage_meta_storage, fs_data_offset, out_header_reader->GetAesCtrUpperIv(),
-            patch_info));
+        R_TRY(this->CreateAesCtrExStorage(std::addressof(aes_ctr_ex_storage), ctx != nullptr ? std::addressof(ctx->aes_ctr_ex_storage) : nullptr, std::move(storage), aes_ctr_ex_storage_meta_storage, fs_data_offset, out_header_reader->GetAesCtrUpperIv(), patch_info));
 
         // Set the base storage as the ex storage.
         storage = std::move(aes_ctr_ex_storage);
 
         // Potentially save storages to our context.
-        if (ctx != nullptr) {
+        if (ctx != nullptr)
+        {
             ctx->aes_ctr_ex_storage_meta_storage = aes_ctr_ex_storage_meta_storage;
             ctx->aes_ctr_ex_storage_data_storage = storage;
             ctx->fs_data_storage = storage;
         }
-    } else {
+    }
+    else
+    {
         if (out_header_reader->GetEncryptionType() != NcaFsHeader::EncryptionType::None)
         {
             R_THROW(ResultInvalidNcaFsHeaderEncryptionType);
         }
 
         // Potentially save storages to our context.
-        if (ctx != nullptr) {
+        if (ctx != nullptr)
+        {
             ctx->fs_data_storage = storage;
         }
     }
 
     // Process indirect layer.
-    if (patch_info.HasIndirectTable()) {
+    if (patch_info.HasIndirectTable())
+    {
         // Create the indirect meta storage.
         VirtualFile indirect_storage_meta_storage = patch_meta_indirect_meta_storage;
-        if (indirect_storage_meta_storage == nullptr) {
+        if (indirect_storage_meta_storage == nullptr)
+        {
             // If we don't have a meta storage, we must not have a patch meta hash layer.
             ASSERT(!out_header_reader->ExistsPatchMetaHashLayer());
 
@@ -210,13 +231,15 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
         }
 
         // Potentially save the indirect meta storage to our context.
-        if (ctx != nullptr) {
+        if (ctx != nullptr)
+        {
             ctx->indirect_storage_meta_storage = indirect_storage_meta_storage;
         }
 
         // Get the original indirectable storage.
         VirtualFile original_indirectable_storage;
-        if (m_original_reader != nullptr && m_original_reader->HasFsInfo(fs_index)) {
+        if (m_original_reader != nullptr && m_original_reader->HasFsInfo(fs_index))
+        {
             // Create a driver for the original.
             NcaFileSystemDriver original_driver(m_original_reader);
 
@@ -228,10 +251,14 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
             R_TRY(original_driver.OpenIndirectableStorageAsOriginal(
                 std::addressof(original_indirectable_storage),
                 std::addressof(original_header_reader), ctx));
-        } else if (ctx != nullptr && ctx->external_original_storage != nullptr) {
+        }
+        else if (ctx != nullptr && ctx->external_original_storage != nullptr)
+        {
             // Use the external original storage.
             original_indirectable_storage = ctx->external_original_storage;
-        } else {
+        }
+        else
+        {
             // Allocate a dummy memory storage as original storage.
             original_indirectable_storage = std::make_shared<VectorVfsFile>();
             R_UNLESS(original_indirectable_storage != nullptr,
@@ -251,7 +278,8 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
     }
 
     // Check if we're sparse or requested to skip the integrity layer.
-    if (out_header_reader->ExistsSparseLayer() || (ctx != nullptr && ctx->open_raw_storage)) {
+    if (out_header_reader->ExistsSparseLayer() || (ctx != nullptr && ctx->open_raw_storage))
+    {
         *out = std::move(storage);
         R_SUCCEED();
     }
@@ -260,18 +288,16 @@ Result NcaFileSystemDriver::OpenStorageImpl(VirtualFile* out, NcaFsHeaderReader*
     R_RETURN(this->CreateStorageByRawStorage(out, out_header_reader, std::move(storage), ctx));
 }
 
-Result NcaFileSystemDriver::CreateStorageByRawStorage(VirtualFile* out,
-                                                      const NcaFsHeaderReader* header_reader,
-                                                      VirtualFile raw_storage,
-                                                      StorageContext* ctx) {
+Result NcaFileSystemDriver::CreateStorageByRawStorage(VirtualFile * out, const NcaFsHeaderReader * header_reader, VirtualFile raw_storage, StorageContext * ctx)
+{
     // Initialize storage as raw storage.
     VirtualFile storage = std::move(raw_storage);
 
     // Process hash/integrity layer.
-    switch (header_reader->GetHashType()) {
+    switch (header_reader->GetHashType())
+    {
     case NcaFsHeader::HashType::HierarchicalSha256Hash:
-        R_TRY(this->CreateSha256Storage(std::addressof(storage), std::move(storage),
-                                        header_reader->GetHashData().hierarchical_sha256_data));
+        R_TRY(this->CreateSha256Storage(std::addressof(storage), std::move(storage), header_reader->GetHashData().hierarchical_sha256_data));
         break;
     case NcaFsHeader::HashType::HierarchicalIntegrityHash:
         R_TRY(this->CreateIntegrityVerificationStorage(
@@ -283,7 +309,8 @@ Result NcaFileSystemDriver::CreateStorageByRawStorage(VirtualFile* out,
     }
 
     // Process compression layer.
-    if (header_reader->ExistsCompressionLayer()) {
+    if (header_reader->ExistsCompressionLayer())
+    {
         R_TRY(this->CreateCompressedStorage(
             std::addressof(storage),
             ctx != nullptr ? std::addressof(ctx->compressed_storage) : nullptr,
@@ -297,7 +324,8 @@ Result NcaFileSystemDriver::CreateStorageByRawStorage(VirtualFile* out,
 }
 
 Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
-    VirtualFile* out, const NcaFsHeaderReader* header_reader, StorageContext* ctx) {
+    VirtualFile * out, const NcaFsHeaderReader * header_reader, StorageContext * ctx)
+{
     // Get the fs index.
     const auto fs_index = header_reader->GetFsIndex();
 
@@ -306,12 +334,14 @@ Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
 
     // Process sparse layer.
     s64 fs_data_offset = 0;
-    if (header_reader->ExistsSparseLayer()) {
+    if (header_reader->ExistsSparseLayer())
+    {
         // Get the sparse info.
-        const auto& sparse_info = header_reader->GetSparseInfo();
+        const auto & sparse_info = header_reader->GetSparseInfo();
 
         // Create based on whether we have a meta hash layer.
-        if (header_reader->ExistsSparseMetaHashLayer()) {
+        if (header_reader->ExistsSparseMetaHashLayer())
+        {
             // Create the sparse storage with verification.
             R_TRY(this->CreateSparseStorageWithVerification(
                 std::addressof(storage), std::addressof(fs_data_offset),
@@ -321,7 +351,9 @@ Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
                 header_reader->GetAesCtrUpperIv(), sparse_info,
                 header_reader->GetSparseMetaDataHashDataInfo(),
                 header_reader->GetSparseMetaHashType()));
-        } else {
+        }
+        else
+        {
             // Create the sparse storage.
             R_TRY(this->CreateSparseStorage(
                 std::addressof(storage), std::addressof(fs_data_offset),
@@ -329,7 +361,9 @@ Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
                 ctx != nullptr ? std::addressof(ctx->sparse_storage_meta_storage) : nullptr,
                 fs_index, header_reader->GetAesCtrUpperIv(), sparse_info));
         }
-    } else {
+    }
+    else
+    {
         // Get the data offsets.
         fs_data_offset = GetFsOffset(*m_reader, fs_index);
         const auto fs_end_offset = GetFsEndOffset(*m_reader, fs_index);
@@ -343,7 +377,8 @@ Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
     }
 
     // Create the appropriate storage for the encryption type.
-    switch (header_reader->GetEncryptionType()) {
+    switch (header_reader->GetEncryptionType())
+    {
     case NcaFsHeader::EncryptionType::None:
         // If there's no encryption, use the base storage we made previously.
         break;
@@ -356,7 +391,8 @@ Result NcaFileSystemDriver::OpenIndirectableStorageAsOriginal(
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateBodySubStorage(VirtualFile* out, s64 offset, s64 size) {
+Result NcaFileSystemDriver::CreateBodySubStorage(VirtualFile * out, s64 offset, s64 size)
+{
     // Create the body storage.
     auto body_storage =
         std::make_shared<SharedNcaBodyStorage>(m_reader->GetSharedBodyStorage(), m_reader);
@@ -377,46 +413,51 @@ Result NcaFileSystemDriver::CreateBodySubStorage(VirtualFile* out, s64 offset, s
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateSparseStorageMetaStorage(VirtualFile* out,
+Result NcaFileSystemDriver::CreateSparseStorageMetaStorage(VirtualFile * out,
                                                            VirtualFile base_storage, s64 offset,
-                                                           const NcaAesCtrUpperIv& upper_iv,
-                                                           const NcaSparseInfo& sparse_info) {
+                                                           const NcaAesCtrUpperIv & upper_iv,
+                                                           const NcaSparseInfo & sparse_info)
+{
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateSparseStorageCore(std::shared_ptr<SparseStorage>* out,
+Result NcaFileSystemDriver::CreateSparseStorageCore(std::shared_ptr<SparseStorage> * out,
                                                     VirtualFile base_storage, s64 base_size,
                                                     VirtualFile meta_storage,
-                                                    const NcaSparseInfo& sparse_info,
-                                                    bool external_info) {
+                                                    const NcaSparseInfo & sparse_info,
+                                                    bool external_info)
+{
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateSparseStorage(VirtualFile* out, s64* out_fs_data_offset,
-                                                std::shared_ptr<SparseStorage>* out_sparse_storage,
-                                                VirtualFile* out_meta_storage, s32 index,
-                                                const NcaAesCtrUpperIv& upper_iv,
-                                                const NcaSparseInfo& sparse_info) {
+Result NcaFileSystemDriver::CreateSparseStorage(VirtualFile * out, s64 * out_fs_data_offset,
+                                                std::shared_ptr<SparseStorage> * out_sparse_storage,
+                                                VirtualFile * out_meta_storage, s32 index,
+                                                const NcaAesCtrUpperIv & upper_iv,
+                                                const NcaSparseInfo & sparse_info)
+{
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
 Result NcaFileSystemDriver::CreateSparseStorageMetaStorageWithVerification(
-    VirtualFile* out, VirtualFile* out_layer_info_storage, VirtualFile base_storage, s64 offset,
-    const NcaAesCtrUpperIv& upper_iv, const NcaSparseInfo& sparse_info,
-    const NcaMetaDataHashDataInfo& meta_data_hash_data_info) {
+    VirtualFile * out, VirtualFile * out_layer_info_storage, VirtualFile base_storage, s64 offset,
+    const NcaAesCtrUpperIv & upper_iv, const NcaSparseInfo & sparse_info,
+    const NcaMetaDataHashDataInfo & meta_data_hash_data_info)
+{
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
 Result NcaFileSystemDriver::CreateSparseStorageWithVerification(
-    VirtualFile* out, s64* out_fs_data_offset, std::shared_ptr<SparseStorage>* out_sparse_storage,
-    VirtualFile* out_meta_storage, VirtualFile* out_layer_info_storage, s32 index,
-    const NcaAesCtrUpperIv& upper_iv, const NcaSparseInfo& sparse_info,
-    const NcaMetaDataHashDataInfo& meta_data_hash_data_info,
-    NcaFsHeader::MetaDataHashType meta_data_hash_type) {
+    VirtualFile * out, s64 * out_fs_data_offset, std::shared_ptr<SparseStorage> * out_sparse_storage,
+    VirtualFile * out_meta_storage, VirtualFile * out_layer_info_storage, s32 index,
+    const NcaAesCtrUpperIv & upper_iv, const NcaSparseInfo & sparse_info,
+    const NcaMetaDataHashDataInfo & meta_data_hash_data_info,
+    NcaFsHeader::MetaDataHashType meta_data_hash_type)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
     ASSERT(out_fs_data_offset != nullptr);
@@ -436,7 +477,8 @@ Result NcaFileSystemDriver::CreateSparseStorageWithVerification(
 
     // Create the sparse storage.
     std::shared_ptr<SparseStorage> sparse_storage;
-    if (header.entry_count != 0) {
+    if (header.entry_count != 0)
+    {
         // Create the body substorage.
         VirtualFile body_substorage;
         R_TRY(this->CreateBodySubStorage(
@@ -456,7 +498,8 @@ Result NcaFileSystemDriver::CreateSparseStorageWithVerification(
             sparse_info.physical_offset, upper_iv, sparse_info, meta_data_hash_data_info));
 
         // Potentially set the output meta storage.
-        if (out_meta_storage != nullptr) {
+        if (out_meta_storage != nullptr)
+        {
             *out_meta_storage = meta_storage;
         }
 
@@ -464,7 +507,9 @@ Result NcaFileSystemDriver::CreateSparseStorageWithVerification(
         R_TRY(this->CreateSparseStorageCore(std::addressof(sparse_storage), body_substorage,
                                             sparse_info.GetPhysicalSize(), std::move(meta_storage),
                                             sparse_info, false));
-    } else {
+    }
+    else
+    {
         // If there are no entries, there's nothing to actually do.
         sparse_storage = std::make_shared<SparseStorage>();
         R_UNLESS(sparse_storage != nullptr, ResultAllocationMemoryFailedAllocateShared);
@@ -473,7 +518,8 @@ Result NcaFileSystemDriver::CreateSparseStorageWithVerification(
     }
 
     // Potentially set the output sparse storage.
-    if (out_sparse_storage != nullptr) {
+    if (out_sparse_storage != nullptr)
+    {
         *out_sparse_storage = sparse_storage;
     }
 
@@ -486,9 +532,10 @@ Result NcaFileSystemDriver::CreateSparseStorageWithVerification(
 }
 
 Result NcaFileSystemDriver::CreateAesCtrExStorageMetaStorage(
-    VirtualFile* out, VirtualFile base_storage, s64 offset,
-    NcaFsHeader::EncryptionType encryption_type, const NcaAesCtrUpperIv& upper_iv,
-    const NcaPatchInfo& patch_info) {
+    VirtualFile * out, VirtualFile base_storage, s64 offset,
+    NcaFsHeader::EncryptionType encryption_type, const NcaAesCtrUpperIv & upper_iv,
+    const NcaPatchInfo & patch_info)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
@@ -537,9 +584,10 @@ Result NcaFileSystemDriver::CreateAesCtrExStorageMetaStorage(
 }
 
 Result NcaFileSystemDriver::CreateAesCtrExStorage(
-    VirtualFile* out, std::shared_ptr<AesCtrCounterExtendedStorage>* out_ext,
+    VirtualFile * out, std::shared_ptr<AesCtrCounterExtendedStorage> * out_ext,
     VirtualFile base_storage, VirtualFile meta_storage, s64 counter_offset,
-    const NcaAesCtrUpperIv& upper_iv, const NcaPatchInfo& patch_info) {
+    const NcaAesCtrUpperIv & upper_iv, const NcaPatchInfo & patch_info)
+{
     // Validate pre-conditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
@@ -581,11 +629,12 @@ Result NcaFileSystemDriver::CreateAesCtrExStorage(
 
     // Initialize the software storage.
     R_TRY(sw_storage->Initialize(nullptr, 0, secure_value, counter_offset,
-                                    data_storage, node_storage, entry_storage, entry_count,
-                                    std::move(sw_decryptor)));
+                                 data_storage, node_storage, entry_storage, entry_count,
+                                 std::move(sw_decryptor)));
 
     // Potentially set the output implementation storage.
-    if (out_ext != nullptr) {
+    if (out_ext != nullptr)
+    {
         *out_ext = sw_storage;
     }
 
@@ -602,9 +651,10 @@ Result NcaFileSystemDriver::CreateAesCtrExStorage(
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateIndirectStorageMetaStorage(VirtualFile* out,
+Result NcaFileSystemDriver::CreateIndirectStorageMetaStorage(VirtualFile * out,
                                                              VirtualFile base_storage,
-                                                             const NcaPatchInfo& patch_info) {
+                                                             const NcaPatchInfo & patch_info)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
@@ -635,8 +685,9 @@ Result NcaFileSystemDriver::CreateIndirectStorageMetaStorage(VirtualFile* out,
 }
 
 Result NcaFileSystemDriver::CreateIndirectStorage(
-    VirtualFile* out, std::shared_ptr<IndirectStorage>* out_ind, VirtualFile base_storage,
-    VirtualFile original_data_storage, VirtualFile meta_storage, const NcaPatchInfo& patch_info) {
+    VirtualFile * out, std::shared_ptr<IndirectStorage> * out_ind, VirtualFile base_storage,
+    VirtualFile original_data_storage, VirtualFile meta_storage, const NcaPatchInfo & patch_info)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
@@ -682,7 +733,8 @@ Result NcaFileSystemDriver::CreateIndirectStorage(
         1, std::make_shared<OffsetVfsFile>(indirect_data_storage, indirect_data_size, 0));
 
     // If necessary, set the output indirect storage.
-    if (out_ind != nullptr) {
+    if (out_ind != nullptr)
+    {
         *out_ind = indirect_storage;
     }
 
@@ -692,17 +744,17 @@ Result NcaFileSystemDriver::CreateIndirectStorage(
 }
 
 Result NcaFileSystemDriver::CreatePatchMetaStorage(
-    VirtualFile* out_aes_ctr_ex_meta, VirtualFile* out_indirect_meta,
-    VirtualFile* out_layer_info_storage, VirtualFile base_storage, s64 offset,
-    const NcaAesCtrUpperIv& upper_iv, const NcaPatchInfo& patch_info,
-    const NcaMetaDataHashDataInfo& meta_data_hash_data_info) {
+    VirtualFile * out_aes_ctr_ex_meta, VirtualFile * out_indirect_meta,
+    VirtualFile * out_layer_info_storage, VirtualFile base_storage, s64 offset,
+    const NcaAesCtrUpperIv & upper_iv, const NcaPatchInfo & patch_info,
+    const NcaMetaDataHashDataInfo & meta_data_hash_data_info)
+{
     UNIMPLEMENTED();
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateSha256Storage(
-    VirtualFile* out, VirtualFile base_storage,
-    const NcaFsHeader::HashData::HierarchicalSha256Data& hash_data) {
+Result NcaFileSystemDriver::CreateSha256Storage(VirtualFile * out, VirtualFile base_storage, const NcaFsHeader::HashData::HierarchicalSha256Data & hash_data)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
@@ -717,8 +769,8 @@ Result NcaFileSystemDriver::CreateSha256Storage(
              ResultInvalidHierarchicalSha256LayerCount);
 
     // Get the regions.
-    const auto& hash_region = hash_data.hash_layer_region[0];
-    const auto& data_region = hash_data.hash_layer_region[1];
+    const auto & hash_region = hash_data.hash_layer_region[0];
+    const auto & data_region = hash_data.hash_layer_region[1];
 
     // Determine buffer sizes.
     constexpr s32 CacheBlockCount = 2;
@@ -765,8 +817,9 @@ Result NcaFileSystemDriver::CreateSha256Storage(
 }
 
 Result NcaFileSystemDriver::CreateIntegrityVerificationStorage(
-    VirtualFile* out, VirtualFile base_storage,
-    const NcaFsHeader::HashData::IntegrityMetaInfo& meta_info) {
+    VirtualFile * out, VirtualFile base_storage,
+    const NcaFsHeader::HashData::IntegrityMetaInfo & meta_info)
+{
     R_RETURN(this->CreateIntegrityVerificationStorageImpl(
         out, base_storage, meta_info, 0, IntegrityDataCacheCount, IntegrityHashCacheCount,
         HierarchicalIntegrityVerificationStorage::GetDefaultDataCacheBufferLevel(
@@ -774,8 +827,9 @@ Result NcaFileSystemDriver::CreateIntegrityVerificationStorage(
 }
 
 Result NcaFileSystemDriver::CreateIntegrityVerificationStorageForMeta(
-    VirtualFile* out, VirtualFile* out_layer_info_storage, VirtualFile base_storage, s64 offset,
-    const NcaMetaDataHashDataInfo& meta_data_hash_data_info) {
+    VirtualFile * out, VirtualFile * out_layer_info_storage, VirtualFile base_storage, s64 offset,
+    const NcaMetaDataHashDataInfo & meta_data_hash_data_info)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
 
@@ -789,7 +843,8 @@ Result NcaFileSystemDriver::CreateIntegrityVerificationStorageForMeta(
                              meta_data_hash_data_info.offset - offset);
 
     // Set the out layer info storage, if necessary.
-    if (out_layer_info_storage != nullptr) {
+    if (out_layer_info_storage != nullptr)
+    {
         auto layer_info_storage = std::make_shared<OffsetVfsFile>(
             base_storage,
             meta_data_hash_data_info.offset + meta_data_hash_data_info.size -
@@ -813,9 +868,10 @@ Result NcaFileSystemDriver::CreateIntegrityVerificationStorageForMeta(
 }
 
 Result NcaFileSystemDriver::CreateIntegrityVerificationStorageImpl(
-    VirtualFile* out, VirtualFile base_storage,
-    const NcaFsHeader::HashData::IntegrityMetaInfo& meta_info, s64 layer_info_offset,
-    int max_data_cache_entries, int max_hash_cache_entries, s8 buffer_level) {
+    VirtualFile * out, VirtualFile base_storage,
+    const NcaFsHeader::HashData::IntegrityMetaInfo & meta_info, s64 layer_info_offset,
+    int max_data_cache_entries, int max_hash_cache_entries, s8 buffer_level)
+{
     // Validate preconditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
@@ -840,8 +896,9 @@ Result NcaFileSystemDriver::CreateIntegrityVerificationStorageImpl(
 
     // Create storage info.
     StorageInfo storage_info;
-    for (s32 i = 0; i < static_cast<s32>(level_hash_info.max_layers - 2); ++i) {
-        const auto& layer_info = level_hash_info.info[i];
+    for (s32 i = 0; i < static_cast<s32>(level_hash_info.max_layers - 2); ++i)
+    {
+        const auto & layer_info = level_hash_info.info[i];
         R_UNLESS(layer_info_offset + layer_info.offset + layer_info.size <= base_storage_size,
                  ResultNcaBaseStorageOutOfRangeD);
 
@@ -850,11 +907,12 @@ Result NcaFileSystemDriver::CreateIntegrityVerificationStorageImpl(
     }
 
     // Set the last layer info.
-    const auto& layer_info = level_hash_info.info[level_hash_info.max_layers - 2];
+    const auto & layer_info = level_hash_info.info[level_hash_info.max_layers - 2];
     const s64 last_layer_info_offset = layer_info_offset > 0 ? 0LL : layer_info.offset.Get();
     R_UNLESS(last_layer_info_offset + layer_info.size <= base_storage_size,
              ResultNcaBaseStorageOutOfRangeD);
-    if (layer_info_offset > 0) {
+    if (layer_info_offset > 0)
+    {
         R_UNLESS(last_layer_info_offset + layer_info.size <= layer_info_offset,
                  ResultRomNcaInvalidIntegrityLayerInfoOffset);
     }
@@ -875,10 +933,8 @@ Result NcaFileSystemDriver::CreateIntegrityVerificationStorageImpl(
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateRegionSwitchStorage(VirtualFile* out,
-                                                      const NcaFsHeaderReader* header_reader,
-                                                      VirtualFile inside_storage,
-                                                      VirtualFile outside_storage) {
+Result NcaFileSystemDriver::CreateRegionSwitchStorage(VirtualFile * out, const NcaFsHeaderReader * header_reader, VirtualFile inside_storage, VirtualFile outside_storage)
+{
     // Check pre-conditions.
     ASSERT(header_reader->GetHashType() == NcaFsHeader::HashType::HierarchicalIntegrityHash);
 
@@ -887,8 +943,7 @@ Result NcaFileSystemDriver::CreateRegionSwitchStorage(VirtualFile* out,
     R_TRY(header_reader->GetHashTargetOffset(std::addressof(region.size)));
 
     // Create the region switch storage.
-    auto region_switch_storage = std::make_shared<RegionSwitchStorage>(
-        std::move(inside_storage), std::move(outside_storage), region);
+    auto region_switch_storage = std::make_shared<RegionSwitchStorage>(std::move(inside_storage), std::move(outside_storage), region);
     R_UNLESS(region_switch_storage != nullptr, ResultAllocationMemoryFailedAllocateShared);
 
     // Set the output.
@@ -896,19 +951,13 @@ Result NcaFileSystemDriver::CreateRegionSwitchStorage(VirtualFile* out,
     R_SUCCEED();
 }
 
-Result NcaFileSystemDriver::CreateCompressedStorage(VirtualFile* out,
-                                                    std::shared_ptr<CompressedStorage>* out_cmp,
-                                                    VirtualFile* out_meta, VirtualFile base_storage,
-                                                    const NcaCompressionInfo& compression_info) {
-    R_RETURN(this->CreateCompressedStorage(out, out_cmp, out_meta, std::move(base_storage),
-                                           compression_info, m_reader->GetDecompressor()));
+Result NcaFileSystemDriver::CreateCompressedStorage(VirtualFile * out, std::shared_ptr<CompressedStorage> * out_cmp, VirtualFile * out_meta, VirtualFile base_storage, const NcaCompressionInfo & compression_info)
+{
+    R_RETURN(this->CreateCompressedStorage(out, out_cmp, out_meta, std::move(base_storage), compression_info, m_reader->GetDecompressor()));
 }
 
-Result NcaFileSystemDriver::CreateCompressedStorage(VirtualFile* out,
-                                                    std::shared_ptr<CompressedStorage>* out_cmp,
-                                                    VirtualFile* out_meta, VirtualFile base_storage,
-                                                    const NcaCompressionInfo& compression_info,
-                                                    GetDecompressorFunction get_decompressor) {
+Result NcaFileSystemDriver::CreateCompressedStorage(VirtualFile * out, std::shared_ptr<CompressedStorage> * out_cmp, VirtualFile * out_meta, VirtualFile base_storage, const NcaCompressionInfo & compression_info, GetDecompressorFunction get_decompressor)
+{
     // Check pre-conditions.
     ASSERT(out != nullptr);
     ASSERT(base_storage != nullptr);
@@ -927,7 +976,8 @@ Result NcaFileSystemDriver::CreateCompressedStorage(VirtualFile* out,
     R_UNLESS(node_size + entry_size <= table_size, ResultInvalidCompressedStorageSize);
 
     // If we should, set the output meta storage.
-    if (out_meta != nullptr) {
+    if (out_meta != nullptr)
+    {
         auto meta_storage = std::make_shared<OffsetVfsFile>(base_storage, table_size, table_offset);
         R_UNLESS(meta_storage != nullptr, ResultAllocationMemoryFailedAllocateShared);
 
@@ -946,7 +996,8 @@ Result NcaFileSystemDriver::CreateCompressedStorage(VirtualFile* out,
         header.entry_count, 64_KiB, 640_KiB, get_decompressor, 16_KiB, 16_KiB, 32));
 
     // Potentially set the output compressed storage.
-    if (out_cmp) {
+    if (out_cmp)
+    {
         *out_cmp = compressed_storage;
     }
 

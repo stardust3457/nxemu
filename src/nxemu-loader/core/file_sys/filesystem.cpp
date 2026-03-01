@@ -14,7 +14,10 @@
 #include <yuzu_common/logging/log.h>
 #include <yuzu_common/fs/path_util.h>
 
-FileSystemController::FileSystemController(Systemloader & loader_) : loader{ loader_ } {}
+FileSystemController::FileSystemController(Systemloader & loader_) :
+    loader(loader_)
+{
+}
 
 FileSystemController::~FileSystemController() = default;
 
@@ -91,7 +94,7 @@ bool FileSystemController::OpenSDMC(IVirtualDirectory ** out_sdmc) const
     }
 
     FileSys::VirtualDir sdmc = sdmc_factory->Open();
-    if (sdmc == nullptr) 
+    if (sdmc == nullptr)
     {
         return false;
     }
@@ -130,7 +133,6 @@ FileSys::VirtualDir FileSystemController::GetSDMCModificationLoadRoot(uint64_t t
     {
         return nullptr;
     }
-
     return sdmc_factory->GetSDMCModificationLoadRoot(title_id);
 }
 

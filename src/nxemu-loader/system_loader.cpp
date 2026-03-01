@@ -1,20 +1,20 @@
 #include "system_loader.h"
-#include <fmt/core.h>
-#include <common/path.h>
-#include <nxemu-core/settings/identifiers.h>
 #include "core/core.h"
 #include "core/file_sys/card_image.h"
 #include "core/file_sys/content_archive.h"
+#include "core/file_sys/filesystem.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
-#include "core/file_sys/filesystem.h"
 #include "core/file_sys/romfs_factory.h"
 #include "core/file_sys/submission_package.h"
+#include "core/file_sys/system_archive/system_archive.h"
 #include "core/file_sys/vfs/vfs_real.h"
 #include "core/file_sys/vfs/vfs_types.h"
-#include "core/file_sys/system_archive/system_archive.h"
 #include "core/loader/loader.h"
 #include "rom_info.h"
+#include <common/path.h>
+#include <fmt/core.h>
+#include <nxemu-core/settings/identifiers.h>
 
 extern IModuleSettings * g_settings;
 extern IModuleNotification * g_notify;

@@ -65,7 +65,6 @@ public:
     explicit NCA(VirtualFile file, const NCA* base_nca = nullptr);
     ~NCA() override;
 
-    LoaderResultStatus GetStatus() const;
 
     std::vector<VirtualFile> GetFiles() const override;
     std::vector<VirtualDir> GetSubdirectories() const override;
@@ -87,6 +86,7 @@ public:
     VirtualDir GetLogoPartition() const;
 
     //IFileSysNCA
+    LoaderResultStatus GetStatus() const override;
     IVirtualFile * GetRomFS() override;
     void Release() override;
 
