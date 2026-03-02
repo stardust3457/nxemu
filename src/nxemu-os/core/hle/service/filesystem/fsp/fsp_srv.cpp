@@ -366,7 +366,15 @@ Result FSP_SRV::OpenDataStorageByCurrentProcess(OutInterface<IStorage> out_inter
 Result FSP_SRV::OpenDataStorageByDataId(OutInterface<IStorage> out_interface, StorageId storage_id, u32 unknown, u64 title_id)
 {
     LOG_DEBUG(Service_FS, "called with storage_id={:02X}, unknown={:08X}, title_id={:016X}", storage_id, unknown, title_id);
-    UNIMPLEMENTED();
+    IVirtualFilePtr data(romfs_controller->OpenRomFS(title_id, storage_id, LoaderContentRecordType::Data));
+    if (!data)
+    {
+        UNIMPLEMENTED();
+        R_RETURN(ResultUnknown);
+    }
+    IVirtualFilePtr patched_file(romfs_controller->PatchBaseNca(title_id, storage_id, LoaderContentRecordType::Data, *data));
+    auto storage = std::make_shared<IStorage>(system, std::move(patched_file));
+    *out_interface = std::move(storage);
     R_SUCCEED();
 }
 

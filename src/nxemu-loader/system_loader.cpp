@@ -303,7 +303,7 @@ uint32_t Systemloader::GetContentProviderEntries(bool useTitleType, LoaderTitleT
     {
         return 0;
     }
-    const FileSys::ContentProviderUnion& rcu = *impl->m_contentProvider;
+    const FileSys::ContentProviderUnion & rcu = *impl->m_contentProvider;
     std::optional<LoaderTitleType> title = useTitleType ? std::optional<LoaderTitleType>((LoaderTitleType)titleType) : std::nullopt;
     std::optional<LoaderContentRecordType> record = useContentRecordType ? std::optional<LoaderContentRecordType>((LoaderContentRecordType)contentRecordType) : std::nullopt;
     std::optional<uint64_t> id = useTitleId ? std::optional<uint64_t>(titleId) : std::nullopt;

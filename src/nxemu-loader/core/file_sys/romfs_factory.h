@@ -9,7 +9,10 @@
 #include "core/file_sys/vfs/vfs_types.h"
 #include "core/hle/result.h"
 
-namespace Loader {
+class Systemloader;
+
+namespace Loader
+{
 class AppLoader;
 } // namespace Loader
 
@@ -51,21 +54,23 @@ class RomFsControllerImpl :
     public IRomFsController
 {
 public:
-    RomFsControllerImpl();
-    RomFsControllerImpl(std::shared_ptr<FileSys::RomFSFactory> factory_, uint64_t programId_);
+    RomFsControllerImpl(Systemloader & loader, std::shared_ptr<FileSys::RomFSFactory> factory_, uint64_t programId_);
     RomFsControllerImpl(RomFsControllerImpl && other) noexcept;
     ~RomFsControllerImpl();
 
     RomFsControllerImpl & operator=(RomFsControllerImpl && other) noexcept;
 
     // IRomFsController
+    IVirtualFile * OpenRomFS(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type) override;
     IVirtualFile * OpenRomFSCurrentProcess() override;
+    IVirtualFile * PatchBaseNca(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type, IVirtualFile & base_romfs) override;
     void Release() override;
 
 private:
     RomFsControllerImpl(const RomFsControllerImpl &) = delete;
     RomFsControllerImpl & operator=(const RomFsControllerImpl &) = delete;
 
+    Systemloader & m_loader;
     const std::shared_ptr<FileSys::RomFSFactory> m_factory;
     const uint64_t m_programId;
 };

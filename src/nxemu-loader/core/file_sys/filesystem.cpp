@@ -80,7 +80,7 @@ bool FileSystemController::OpenProcess(uint64_t * programId, ISaveDataFactory **
 
     *programId = it->second.program_id;
     *saveDataFactory = std::make_unique<SaveDataFactoryImpl>(it->second.save_data_factory).release();
-    *romFsController = std::make_unique<RomFsControllerImpl>(it->second.romfs_factory, it->second.program_id).release();
+    *romFsController = std::make_unique<RomFsControllerImpl>(loader, it->second.romfs_factory, it->second.program_id).release();
     return true;
 }
 
@@ -112,6 +112,29 @@ FileSys::RegisteredCache * FileSystemController::SystemNANDContents() const
         return nullptr;
     }
     return bis_factory->GetSystemNANDContents();
+}
+
+FileSys::RegisteredCache * FileSystemController::UserNANDContents() const
+{
+    LOG_TRACE(Service_FS, "Opening User NAND Contents");
+
+    if (bis_factory == nullptr)
+    {
+        return nullptr;
+    }
+
+    return bis_factory->GetUserNANDContents();
+}
+
+FileSys::RegisteredCache * FileSystemController::SDMCContents() const
+{
+    LOG_TRACE(Service_FS, "Opening SDMC Contents");
+
+    if (sdmc_factory == nullptr)
+    {
+        return nullptr;
+    }
+    return sdmc_factory->GetSDMCContents();
 }
 
 FileSys::VirtualDir FileSystemController::GetModificationLoadRoot(uint64_t title_id) const

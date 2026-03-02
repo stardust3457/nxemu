@@ -35,6 +35,9 @@ public:
     void SetPackedUpdate(FileSys::ProcessId process_id, FileSys::VirtualFile update_raw);
 
     FileSys::RegisteredCache * SystemNANDContents() const;
+    FileSys::RegisteredCache * UserNANDContents() const;
+    FileSys::RegisteredCache * SDMCContents() const;
+    FileSys::RegisteredCache * GameCardContents() const;
 
     FileSys::VirtualDir GetSDMCModificationLoadRoot(uint64_t title_id) const;
     FileSys::VirtualDir GetModificationLoadRoot(uint64_t title_id) const;

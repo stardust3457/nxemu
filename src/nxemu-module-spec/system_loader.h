@@ -225,7 +225,9 @@ __interface ISaveDataFactory
 
 __interface IRomFsController
 {
+    IVirtualFile * OpenRomFS(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type) = 0;
     IVirtualFile * OpenRomFSCurrentProcess() = 0;
+    IVirtualFile * PatchBaseNca(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type, IVirtualFile & romfs) = 0;
     void Release() = 0;
 };
 
