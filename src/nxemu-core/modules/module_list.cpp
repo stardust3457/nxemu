@@ -1,6 +1,7 @@
 #include "module_list.h"
 #include "settings/core_settings.h"
 #include <common/dynamic_library.h>
+#include <common/path_finder.h>
 #include <common/std_string.h>
 
 ModuleList::ModuleList(bool autoFill) :
@@ -20,18 +21,19 @@ void ModuleList::LoadList()
 
 void ModuleList::AddModuleFromDir(const Path & dir)
 {
-    Path searchDir(dir.GetDriveDirectory().c_str(), "*");
-    if (searchDir.FindFirst(Path::FIND_ATTRIBUTE_SUBDIR))
+    PathFinder dirFinder(Path(dir.GetDriveDirectory().c_str(), "*"));
+    Path foundDir;
+    if (dirFinder.FindFirst(foundDir, PathFinder::FIND_ATTRIBUTE_SUBDIR))
     {
         do
         {
-            AddModuleFromDir(searchDir);
-        } while (searchDir.FindNext());
-        searchDir.DirectoryUp();
+            AddModuleFromDir(foundDir);
+        } while (dirFinder.FindNext(foundDir));
     }
 
-    searchDir.SetNameExtension("*.dll");
-    if (searchDir.FindFirst())
+    PathFinder fileFinder(Path(dir.GetDriveDirectory().c_str(), "*.dll"));
+    Path foundFile;
+    if (fileFinder.FindFirst(foundFile))
     {
         DynLibHandle hLib = nullptr;
         do
@@ -42,7 +44,7 @@ void ModuleList::AddModuleFromDir(const Path & dir)
                 hLib = nullptr;
             }
 
-            hLib = DynamicLibraryOpen(searchDir);
+            hLib = DynamicLibraryOpen(foundFile);
             if (hLib == nullptr)
             {
                 continue;
@@ -60,10 +62,10 @@ void ModuleList::AddModuleFromDir(const Path & dir)
             {
                 continue;
             }
-            module->path = searchDir;
-            module->file = stdstr((const char *)searchDir).substr(strlen(m_moduleDir));
+            module->path = foundFile;
+            module->file = stdstr((const char *)foundFile).substr(strlen(m_moduleDir));
             m_modules.push_back(std::move(module));
-        } while (searchDir.FindNext());
+        } while (fileFinder.FindNext(foundFile));
 
         if (hLib != nullptr)
         {

@@ -1,22 +1,24 @@
+#include <common/path.h>
+#include <common/path_finder.h>
+#include <common/std_string.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <common/path.h>
-#include <common/std_string.h>
 
 bool processTimezoneFiles(const Path & zonePath, const std::string & headerName, const Path & outputDir, const Path & templatePath)
 {
     std::vector<Path> fileList;
-    Path zoneFiles(zonePath, "*");
-    if (zoneFiles.FindFirst(Path::FIND_ATTRIBUTE_FILES))
+    PathFinder dirFinder(Path(zonePath, "*"));
+    Path foundFile;
+    if (dirFinder.FindFirst(foundFile, PathFinder::FIND_ATTRIBUTE_FILES))
     {
         do
         {
-            fileList.push_back(zoneFiles);
-        } while (zoneFiles.FindNext());
+            fileList.push_back(foundFile);
+        } while (dirFinder.FindNext(foundFile));
     }
 
     if (fileList.empty())
