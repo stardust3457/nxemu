@@ -38,7 +38,7 @@ private:
 #ifdef WIN32
     void * m_findHandle;
 #else
-    DIR * m_findDir = nullptr;
+    void * m_findDir = nullptr;
     std::string m_findPattern;
 #endif
     uint32_t m_findAttributes;

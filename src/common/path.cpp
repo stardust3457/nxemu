@@ -1,15 +1,28 @@
 #include "path.h"
 #include "std_string.h"
+
+#ifdef _WIN32
 #include <Windows.h>
-
 #include <CommDlg.h>
-#include <io.h>
 #include <shlobj_core.h>
+#include <io.h>
+#else
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
+#ifdef _WIN32
 const char * DRIVE_DELIMITER = ":";
 const char * const DIR_DOUBLEDELIM = "\\\\";
 const char * DIRECTORY_DELIMITER = "\\";
 const char * DIRECTORY_DELIMITER2 = "/";
+#else
+const char * DRIVE_DELIMITER = "";
+const char * const DIR_DOUBLEDELIM = "//";
+const char * DIRECTORY_DELIMITER = "/";
+const char * DIRECTORY_DELIMITER2 = "\\";
+#endif
 
 const char EXTENSION_DELIMITER = '.';
 void * Path::m_hInst = nullptr;
@@ -99,12 +112,16 @@ void Path::GetDriveDirectory(std::string & driveDirectory) const
 {
     std::string drive, directory;
     GetComponents(&drive, &directory);
+#ifdef _WIN32
     driveDirectory = drive;
     if (!drive.empty())
     {
         driveDirectory += DRIVE_DELIMITER;
     }
     driveDirectory += directory;
+#else
+    driveDirectory = directory;
+#endif
 }
 
 std::string Path::GetDriveDirectory(void) const
@@ -161,7 +178,7 @@ void Path::GetComponents(std::string * drive, std::string * directory, std::stri
 {
     std::string drivePart, dirPart, namePart, extPart;
     const char * basePath = m_path.c_str();
-#ifdef WIN32
+#ifdef _WIN32
     const char * driveDelim = strrchr(basePath, DRIVE_DELIMITER[0]);
     if (driveDelim != nullptr)
     {
@@ -215,6 +232,7 @@ void Path::GetComponents(std::string * drive, std::string * directory, std::stri
 
 bool Path::IsRelative() const
 {
+#ifdef _WIN32
     if (m_path.length() > 1 && m_path[1] == DRIVE_DELIMITER[0])
     {
         return false;
@@ -223,6 +241,12 @@ bool Path::IsRelative() const
     {
         return false;
     }
+#else
+    if (!m_path.empty() && m_path[0] == DIRECTORY_DELIMITER[0])
+    {
+        return false;
+    }
+#endif
     return true;
 }
 
@@ -231,7 +255,7 @@ void Path::SetDriveDirectory(const char * driveDirectory)
     std::string driveDirectoryStr = driveDirectory;
     if (driveDirectoryStr.length() > 0)
     {
-        EnsureTrailingBackslash(driveDirectoryStr);
+        EnsureTrailingSeparator(driveDirectoryStr);
         CleanPath(driveDirectoryStr);
     }
 
@@ -245,11 +269,11 @@ void Path::SetDirectory(const char * directory, bool ensureAbsolute)
     std::string newDirectory = directory;
     if (ensureAbsolute)
     {
-        EnsureLeadingBackslash(newDirectory);
+        EnsureLeadingSeparator(newDirectory);
     }
     if (newDirectory.length() > 0)
     {
-        EnsureTrailingBackslash(newDirectory);
+        EnsureTrailingSeparator(newDirectory);
     }
     std::string drive, name, extension;
     GetComponents(&drive, nullptr, &name, &extension);
@@ -272,7 +296,6 @@ void Path::SetComponents(const char * drive, const char * directory, const char 
     }
 
     std::string result;
-
 #ifdef _WIN32
     if (drive != nullptr && strlen(drive) > 0)
     {
@@ -280,7 +303,6 @@ void Path::SetComponents(const char * drive, const char * directory, const char 
         result += DRIVE_DELIMITER;
     }
 #endif
-
     result += directory;
     if (!result.empty() && result.back() != DIRECTORY_DELIMITER[0])
     {
@@ -288,19 +310,13 @@ void Path::SetComponents(const char * drive, const char * directory, const char 
     }
     if (name != nullptr && strlen(name) > 0)
     {
-        if (!result.empty() && result.back() != DIRECTORY_DELIMITER[0])
-        {
-            result += DIRECTORY_DELIMITER;
-        }
         result += name;
-
         if (extension != nullptr && strlen(extension) > 0)
         {
             result += EXTENSION_DELIMITER;
             result += extension;
         }
     }
-
     m_path = result;
 }
 
@@ -312,18 +328,19 @@ void Path::AppendDirectory(const char * subDirectory)
         return;
     }
 
-    StripLeadingBackslash(newSubDirectory);
-    EnsureTrailingBackslash(newSubDirectory);
+    StripLeadingSeparator(newSubDirectory);
+    EnsureTrailingSeparator(newSubDirectory);
 
     std::string drive, directory, name, extension;
     GetComponents(&drive, &directory, &name, &extension);
-    EnsureTrailingBackslash(directory);
+    EnsureTrailingSeparator(directory);
     directory += newSubDirectory;
     SetComponents(drive.c_str(), directory.c_str(), name.c_str(), extension.c_str());
 }
 
 bool Path::FileDelete(bool evenIfReadOnly) const
 {
+#ifdef _WIN32
     std::wstring filePath = stdstr(m_path).ToUTF16();
     uint32_t attributes = ::GetFileAttributes(filePath.c_str());
     if (attributes == (uint32_t)-1)
@@ -338,10 +355,32 @@ bool Path::FileDelete(bool evenIfReadOnly) const
 
     SetFileAttributes(filePath.c_str(), FILE_ATTRIBUTE_NORMAL);
     return DeleteFile(filePath.c_str()) != 0;
+#else
+    struct stat st;
+    if (stat(m_path.c_str(), &st) != 0)
+    {
+        return false;
+    }
+
+    // Check write permission if evenIfReadOnly is false
+    if (!evenIfReadOnly && access(m_path.c_str(), W_OK) != 0)
+    {
+        return false;
+    }
+
+    // If read-only, add write permission before deleting
+    if (evenIfReadOnly && access(m_path.c_str(), W_OK) != 0)
+    {
+        chmod(m_path.c_str(), st.st_mode | S_IWUSR);
+    }
+
+    return unlink(m_path.c_str()) == 0;
+#endif 
 }
 
 bool Path::FileExists() const
 {
+#ifdef _WIN32
     WIN32_FIND_DATA FindData;
     HANDLE hFindFile = FindFirstFile(stdstr(m_path).ToUTF16().c_str(), &FindData);
     bool bSuccess = (hFindFile != INVALID_HANDLE_VALUE);
@@ -352,8 +391,13 @@ bool Path::FileExists() const
     }
 
     return bSuccess;
+#else
+    struct stat st;
+    return stat(m_path.c_str(), &st) == 0;
+#endif 
 }
 
+#ifdef _WIN32
 bool Path::FileSelect(void * hwndOwner, const char * initialDir, const char * fileFilter, bool fileMustExist)
 {
     size_t filterLen = 0;
@@ -438,6 +482,7 @@ Path & Path::BrowseForDirectory(void * parentWindow, const char * title)
     }
     return *this;
 }
+#endif
 
 bool Path::IsDirectory() const
 {
@@ -455,8 +500,12 @@ bool Path::DirectoryCreate(bool createIntermediates)
 
     std::string path;
     GetDriveDirectory(path);
-    StripTrailingBackslash(path);
+    StripTrailingSeparator(path);
+#ifdef _WIN32
     bool bSuccess = ::CreateDirectory(stdstr(path).ToUTF16().c_str(), nullptr) != 0;
+#else
+    bool bSuccess = mkdir(path.c_str(), 0755) == 0;
+#endif
     if (!bSuccess && createIntermediates)
     {
         std::string::size_type delimiter = path.rfind(DIRECTORY_DELIMITER[0]);
@@ -476,11 +525,16 @@ bool Path::DirectoryChange() const
     std::string driveDirectory;
     GetDriveDirectory(driveDirectory);
 
+#ifdef _WIN32
     return SetCurrentDirectory(stdstr(driveDirectory).ToUTF16().c_str()) != 0;
+#else
+    return chdir(driveDirectory.c_str()) == 0;
+#endif
 }
 
 bool Path::DirectoryExists() const
 {
+#ifdef _WIN32
     Path path(m_path.c_str());
 
     std::string directory;
@@ -495,6 +549,22 @@ bool Path::DirectoryExists() const
         FindClose(findFile);
     }
     return res;
+#else
+    std::string dirPath;
+    GetDriveDirectory(dirPath);
+    StripTrailingSeparator(dirPath);
+    if (dirPath.empty())
+    {
+        dirPath = ".";
+    }
+
+    struct stat st;
+    if (stat(dirPath.c_str(), &st) != 0)
+    {
+        return false;
+    }
+    return S_ISDIR(st.st_mode);
+#endif 
 }
 
 Path & Path::DirectoryNormalize(Path BaseDir)
@@ -503,7 +573,7 @@ Path & Path::DirectoryNormalize(Path BaseDir)
     bool changed = false;
     if (IsRelative())
     {
-        EnsureTrailingBackslash(directory);
+        EnsureTrailingSeparator(directory);
         directory += GetDirectory();
         changed = true;
     }
@@ -541,7 +611,7 @@ void Path::DirectoryUp(std::string * lastDir)
 {
     std::string directory;
     GetDirectory(directory);
-    StripTrailingBackslash(directory);
+    StripTrailingSeparator(directory);
     if (directory.empty())
     {
         return;
@@ -550,7 +620,7 @@ void Path::DirectoryUp(std::string * lastDir)
     if (lastDir != nullptr)
     {
         *lastDir = directory.substr(delimiter);
-        StripLeadingBackslash(*lastDir);
+        StripLeadingSeparator(*lastDir);
     }
 
     if (delimiter != std::string::npos)
@@ -562,6 +632,7 @@ void Path::DirectoryUp(std::string * lastDir)
 
 void Path::SetToCurrentDirectory()
 {
+#ifdef _WIN32
     DWORD required = ::GetCurrentDirectory(0, nullptr);
     if (required == 0)
     {
@@ -576,10 +647,22 @@ void Path::SetToCurrentDirectory()
         return;
     }
     SetDriveDirectory(stdstr().FromUTF16(path.data()).c_str());
+#else
+    char buf[PATH_MAX];
+    if (getcwd(buf, sizeof(buf)) != nullptr)
+    {
+        SetDriveDirectory(buf);
+    }
+    else
+    {
+        m_path = "";
+    }
+#endif 
 }
 
 void Path::SetToModuleDirectory()
 {
+#ifdef _WIN32
     DWORD bufferSize = MAX_PATH;
     std::vector<wchar_t> buffPath(bufferSize);
 
@@ -603,6 +686,20 @@ void Path::SetToModuleDirectory()
         bufferSize *= 2;
         buffPath.resize(bufferSize);
     }
+#else
+    char buf[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+    if (len != -1)
+    {
+        buf[len] = '\0';
+        m_path = buf;
+        SetNameExtension("");
+    }
+    else
+    {
+        m_path = "";
+    }
+#endif 
 }
 
 void Path::CleanPath(std::string & path) const
@@ -614,20 +711,26 @@ void Path::CleanPath(std::string & path) const
         pos = path.find(DIRECTORY_DELIMITER2[0], pos + 1);
     }
 
+#ifdef _WIN32
     bool appendEnd = !_strnicmp(path.c_str(), DIR_DOUBLEDELIM, 2);
+#else
+    bool appendEnd = false;
+#endif
     pos = path.find(DIR_DOUBLEDELIM);
     while (pos != std::string::npos)
     {
         path.replace(pos, 2, DIRECTORY_DELIMITER);
         pos = path.find(DIR_DOUBLEDELIM, pos + 1);
     }
+#ifdef _WIN32
     if (appendEnd)
     {
         path.insert(0, stdstr_f("%c", DIRECTORY_DELIMITER[0]).c_str());
     }
+#endif
 }
 
-void Path::EnsureLeadingBackslash(std::string & directory) const
+void Path::EnsureLeadingSeparator(std::string & directory) const
 {
     if (directory.empty() || (directory[0] != DIRECTORY_DELIMITER[0]))
     {
@@ -635,7 +738,7 @@ void Path::EnsureLeadingBackslash(std::string & directory) const
     }
 }
 
-void Path::EnsureTrailingBackslash(std::string & directory) const
+void Path::EnsureTrailingSeparator(std::string & directory) const
 {
     std::string::size_type length = directory.length();
 
@@ -645,7 +748,7 @@ void Path::EnsureTrailingBackslash(std::string & directory) const
     }
 }
 
-void Path::StripLeadingBackslash(std::string & directory) const
+void Path::StripLeadingSeparator(std::string & directory) const
 {
     if (directory.length() <= 1)
     {
@@ -658,7 +761,7 @@ void Path::StripLeadingBackslash(std::string & directory) const
     }
 }
 
-void Path::StripTrailingBackslash(std::string & directory) const
+void Path::StripTrailingSeparator(std::string & directory) const
 {
     for (;;)
     {

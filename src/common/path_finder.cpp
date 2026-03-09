@@ -165,7 +165,7 @@ bool PathFinder::MatchNext(Path & result)
     bool bWantSubdirectory = (FIND_ATTRIBUTE_SUBDIR & m_findAttributes) != 0;
     struct dirent * entry;
 
-    while ((entry = readdir(m_findDir)) != nullptr)
+    while ((entry = readdir((DIR *)m_findDir)) != nullptr)
     {
         // Skip . and ..
         if (entry->d_name[0] == '.')
@@ -247,7 +247,7 @@ void PathFinder::CloseFindHandle()
 #else
     if (m_findDir != nullptr)
     {
-        closedir(m_findDir);
+        closedir((DIR *)m_findDir);
         m_findDir = nullptr;
     }
 #endif 

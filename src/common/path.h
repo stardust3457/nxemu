@@ -50,9 +50,13 @@ public:
 
     bool FileDelete(bool evenIfReadOnly = true) const;
     bool FileExists() const;
+
+#ifdef _WIN32
     bool FileSelect(void * hwndOwner, const char * initialDir, const char * fileFilter, bool fileMustExist);
 
     Path & BrowseForDirectory(void * parentWindow, const char * title);
+#endif
+    
     bool IsDirectory() const;
     bool DirectoryCreate(bool createIntermediates = true);
     bool DirectoryChange() const;
@@ -65,10 +69,10 @@ private:
     void SetToModuleDirectory();
 
     void CleanPath(std::string & path) const;
-    void EnsureLeadingBackslash(std::string & directory) const;
-    void EnsureTrailingBackslash(std::string & directory) const;
-    void StripLeadingBackslash(std::string & path) const;
-    void StripTrailingBackslash(std::string & rDirectory) const;
+    void EnsureLeadingSeparator(std::string & directory) const;
+    void EnsureTrailingSeparator(std::string & directory) const;
+    void StripLeadingSeparator(std::string & path) const;
+    void StripTrailingSeparator(std::string & rDirectory) const;
 
     static void * m_hInst;
     std::string m_path;
