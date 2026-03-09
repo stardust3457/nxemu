@@ -585,7 +585,7 @@ Path & Path::DirectoryNormalize(Path BaseDir)
         {
             changed = true;
         }
-        else if (*itr == "..")
+        else if (*itr == ".." && !normalizesParts.empty())
         {
             normalizesParts.pop_back();
             changed = true;
