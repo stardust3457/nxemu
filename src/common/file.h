@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-class IFile
+struct IFile
 {
 public:
     enum OpenFlags
@@ -69,6 +69,6 @@ private:
     File(const File &) = delete;
     File & operator=(const File &) = delete;
 
-    bool m_closeOnDestroy;
     void * m_file;
+    bool m_closeOnDestroy;
 };
