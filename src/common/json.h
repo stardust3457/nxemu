@@ -47,6 +47,8 @@ private:
 };
 
 typedef std::vector<std::string> JsonMembers;
+class JsonValueIterator;
+class JsonValueConstIterator;
 
 class JsonValue
 {

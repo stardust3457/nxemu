@@ -1030,7 +1030,9 @@ bool JsonReader::ReadValue()
     }
     break;
     default:
+#ifdef WIN32
         __debugbreak();
+#endif
         return false;
     }
     return successful;
@@ -1185,7 +1187,9 @@ bool JsonReader::ReadToken(JsonToken & token)
         token.type = JsonToken_MemberSeparator;
         break;
     default:
+#ifdef WIN32
         __debugbreak();
+#endif
         ok = false;
         break;
     }
