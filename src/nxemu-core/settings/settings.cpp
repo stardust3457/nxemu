@@ -7,13 +7,12 @@ std::unique_ptr<SettingsStore> SettingsStore::s_instance;
 
 SettingsStore::SettingsStore()
 {
-    Path congFilePath(Path::MODULE_DIRECTORY, "NxEmu.config");
-    congFilePath.AppendDirectory("config");
-    m_configPath = (const char *)congFilePath;
 }
 
-bool SettingsStore::Initialize()
+bool SettingsStore::Initialize(const char * configPath)
 {
+    m_configPath = configPath;
+
     m_details = JsonValue();
     for (size_t i = 0; i < 100; i++)
     {

@@ -2,5 +2,5 @@
 
 __interface INotification;
 
-bool AppInit(INotification * notification);
+bool AppInit(INotification * notification, const char * configPath);
 void AppCleanup();

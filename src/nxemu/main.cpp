@@ -32,7 +32,12 @@ extern "C" {
 
 int WINAPI WinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPSTR /*lpszArgs*/, _In_ int /*nWinMode*/)
 {
-    bool Res = AppInit(&Notification::GetInstance());
+    bool Res;
+    {
+        Path congFilePath(Path::MODULE_DIRECTORY, "NxEmu.config");
+        congFilePath.AppendDirectory("config");
+        Res = AppInit(&Notification::GetInstance(), congFilePath);    
+    }
 
     if (uiSettings.performVulkanCheck)
     {

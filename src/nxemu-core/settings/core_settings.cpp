@@ -47,8 +47,6 @@ namespace
         } clearValue;
     };
 
-    Path defaultModuleDirValue;
-
     static CoreSetting settings[] = {
         { NXCoreSetting::ModuleDirectory, "", "ModuleDirectory-x64", &coreSettings.moduleDir, &coreSettings.moduleDirValue, "./modules" },
 #ifdef _DEBUG
@@ -76,11 +74,8 @@ namespace
 
 CoreSettings coreSettings = {};
 
-void SetupCoreSetting(void)
+void SetupCoreSetting()
 {
-    defaultModuleDirValue = Path(Path::MODULE_DIRECTORY);
-    defaultModuleDirValue.AppendDirectory("modules");
-
     SettingsStore & settingsStore = SettingsStore::GetInstance();
     JsonValue jsonSettings = settingsStore.GetSettings("Core");
 

@@ -4,10 +4,10 @@
 #include "settings/core_settings.h"
 #include "settings/settings.h"
 
-bool AppInit(INotification * notification)
+bool AppInit(INotification * notification, const char * configPath)
 {
     g_notify = notification;
-    if (!SettingsStore::GetInstance().Initialize())
+    if (!SettingsStore::GetInstance().Initialize(configPath))
     {
         return false;
     }

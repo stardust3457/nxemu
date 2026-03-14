@@ -1,6 +1,9 @@
 #include "std_string.h"
+#include "platform.h"
 #include <algorithm>
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 stdstr::stdstr()
 {
