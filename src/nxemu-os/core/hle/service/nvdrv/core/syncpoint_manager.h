@@ -11,8 +11,9 @@
 #include "yuzu_common/common_types.h"
 #include "yuzu_common/fence.h"
 #include "yuzu_common/nvdata.h"
+#include <nxemu-module-spec/base.h>
 
-__interface IVideo;
+nxinterface IVideo;
 
 namespace Tegra::Host1x {
 class Host1x;

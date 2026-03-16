@@ -1,9 +1,10 @@
 #pragma once
 #include "core/file_sys/vfs/vfs_types.h"
-#include <nxemu-loader/core/loader/loader.h>
 #include <memory>
+#include <nxemu-loader/core/loader/loader.h>
+#include <nxemu-module-spec/base.h>
 
-__interface IManualContentProvider;
+nxinterface IManualContentProvider;
 
 class RomInfo :
     public IRomInfo

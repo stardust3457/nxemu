@@ -15,7 +15,7 @@
 #endif
 
 #ifdef ANDROID
-#include <common/fs/fs_android.h>
+#include <yuzu_common/fs/fs_android.h>
 #endif
 
 namespace Common {

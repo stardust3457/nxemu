@@ -1,7 +1,8 @@
 #pragma once
+#include <nxemu-module-spec/base.h>
 
 __interface ISciterUI;
-__interface ISystemModules;
+nxinterface ISystemModules;
 class SciterMainWindow;
 class SystemModules;
 

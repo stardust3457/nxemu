@@ -9,6 +9,7 @@
 #include "yuzu_common/fs/fs_android.h"
 #endif
 #include "yuzu_common/logging/log.h"
+#include "yuzu_common/yuzu_assert.h"
 
 #ifdef _WIN32
 #include <io.h>

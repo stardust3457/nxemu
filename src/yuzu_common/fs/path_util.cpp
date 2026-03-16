@@ -12,6 +12,7 @@
 #include "yuzu_common/fs/fs_paths.h"
 #include "yuzu_common/fs/path_util.h"
 #include "yuzu_common/logging/log.h"
+#include "yuzu_common/yuzu_assert.h"
 
 #ifdef _WIN32
 #include <shlobj.h> // Used in GetExeDirectory()

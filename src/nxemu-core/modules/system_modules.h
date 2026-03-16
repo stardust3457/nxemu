@@ -1,8 +1,9 @@
 #pragma once
 #include <memory>
+#include <nxemu-module-spec/base.h>
 
-__interface ISystemModules;
-__interface IRenderWindow;
+nxinterface ISystemModules;
+nxinterface IRenderWindow;
 
 class SystemModules
 {

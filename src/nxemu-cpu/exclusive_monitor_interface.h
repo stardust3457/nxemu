@@ -2,7 +2,7 @@
 #include <nxemu-module-spec/cpu.h>
 #include "dynarmic/interface/exclusive_monitor.h"
 
-__interface IMemory;
+nxinterface IMemory;
 
 class ExclusiveMonitor :
     public IExclusiveMonitor

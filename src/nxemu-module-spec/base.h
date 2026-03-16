@@ -14,6 +14,12 @@
 #define CALL
 #endif
 
+#ifdef _MSC_VER
+#define nxinterface __interface
+#else
+#define nxinterface struct
+#endif
+
 enum
 {
     MODULE_LOADER_SPECS_VERSION = 0x0118,
@@ -30,35 +36,35 @@ enum MODULE_TYPE : uint16_t
     MODULE_TYPE_OPERATING_SYSTEM = 4,
 };
 
-__interface IModuleNotification
+nxinterface IModuleNotification
 {
-    void DisplayError(const char * message, const char * title) = 0;
-    void BreakPoint(const char * fileName, uint32_t lineNumber) = 0;
+    virtual void DisplayError(const char * message, const char * title) = 0;
+    virtual void BreakPoint(const char * fileName, uint32_t lineNumber) = 0;
 };
 
 typedef void (*SettingChangeCallback)(const char * setting, void * userData);
 
-__interface IModuleSettings
+nxinterface IModuleSettings
 {
-    const char * GetString(const char * setting) const = 0;
-    bool GetBool(const char * setting) const = 0;
-    int32_t GetInt(const char * setting) const = 0;
-    float GetFloat(const char * setting) const = 0;
-    void SetString(const char * setting, const char * value) = 0;
-    void SetBool(const char * setting, bool value) = 0;
-    void SetInt(const char * setting, int32_t value) = 0;
-    void SetFloat(const char * setting, float value) = 0;
+    virtual const char * GetString(const char * setting) const = 0;
+    virtual bool GetBool(const char * setting) const = 0;
+    virtual int32_t GetInt(const char * setting) const = 0;
+    virtual float GetFloat(const char * setting) const = 0;
+    virtual void SetString(const char * setting, const char * value) = 0;
+    virtual void SetBool(const char * setting, bool value) = 0;
+    virtual void SetInt(const char * setting, int32_t value) = 0;
+    virtual void SetFloat(const char * setting, float value) = 0;
 
-    void SetDefaultBool(const char * setting, bool value) = 0;
-    void SetDefaultInt(const char * setting, int value) = 0;
-    void SetDefaultFloat(const char * setting, float value) = 0;
-    void SetDefaultString(const char * setting, const char * value) = 0;
+    virtual void SetDefaultBool(const char * setting, bool value) = 0;
+    virtual void SetDefaultInt(const char * setting, int value) = 0;
+    virtual void SetDefaultFloat(const char * setting, float value) = 0;
+    virtual void SetDefaultString(const char * setting, const char * value) = 0;
 
-    const char * GetSectionSettings(const char * section) const = 0;
-    void SetSectionSettings(const char * section, const std::string & json) = 0;
+    virtual const char * GetSectionSettings(const char * section) const = 0;
+    virtual void SetSectionSettings(const char * section, const std::string & json) = 0;
 
-    void RegisterCallback(const char * setting, SettingChangeCallback callback, void * userData) = 0;
-    void UnregisterCallback(const char * setting, SettingChangeCallback callback, void * userData) = 0;
+    virtual void RegisterCallback(const char * setting, SettingChangeCallback callback, void * userData) = 0;
+    virtual void UnregisterCallback(const char * setting, SettingChangeCallback callback, void * userData) = 0;
 };
 
 /// Specifies the severity or level of detail of the log message.
@@ -187,9 +193,9 @@ enum class LogClass : uint8_t
     Count               ///< Total number of logging classes
 };
 
-__interface IModuleLogger
+nxinterface IModuleLogger
 {
-    void Log(LogClass log_class, LogLevel log_level, const char * filename, unsigned int line_num, const char * function, const char * message) = 0;
+    virtual void Log(LogClass log_class, LogLevel log_level, const char * filename, unsigned int line_num, const char * function, const char * message) = 0;
 };
 
 typedef struct
@@ -206,26 +212,26 @@ typedef struct
     char name[200];   // Name of the DLL
 } MODULE_INFO;
 
-__interface IRenderWindow
+nxinterface IRenderWindow
 {
-    void * RenderSurface(void) const;
-    float PixelRatio(void) const;
+    virtual void * RenderSurface(void) const = 0;
+    virtual float PixelRatio(void) const = 0;
 };
 
-__interface IOperatingSystem;
-__interface IVideo;
-__interface ICpu;
-__interface ISystemloader;
+nxinterface IOperatingSystem;
+nxinterface IVideo;
+nxinterface ICpu;
+nxinterface ISystemloader;
 
-__interface ISystemModules
+nxinterface ISystemModules
 {
-    void StartEmulation() = 0;
-    void StopEmulation(bool wait) = 0;
+    virtual void StartEmulation() = 0;
+    virtual void StopEmulation(bool wait) = 0;
 
-    ISystemloader & Systemloader() = 0;
-    IOperatingSystem & OperatingSystem() = 0;
-    IVideo & Video() = 0;
-    ICpu & Cpu() = 0;
+    virtual ISystemloader & Systemloader() = 0;
+    virtual IOperatingSystem & OperatingSystem() = 0;
+    virtual IVideo & Video() = 0;
+    virtual ICpu & Cpu() = 0;
 };
 
 /*

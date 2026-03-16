@@ -230,67 +230,67 @@ struct PerfStatsResults
     double emulation_speed;
 };
 
-__interface IProgramMetadata
+nxinterface IProgramMetadata
 {
-    bool Is64BitProgram() const = 0;
-    ProgramAddressSpaceType GetAddressSpaceType() const = 0;
-    uint8_t GetMainThreadPriority() const = 0;
-    uint8_t GetMainThreadCore() const = 0;
-    uint32_t GetMainThreadStackSize() const = 0;
-    uint64_t GetTitleID() const = 0;
-    uint64_t GetFilesystemPermissions() const = 0;
-    uint32_t GetSystemResourceSize() const = 0;
-    PoolPartition GetPoolPartition() const = 0;
-    const uint32_t * GetKernelCapabilities() const = 0;
-    uint32_t GetKernelCapabilitiesSize() const = 0;
-    const char * GetName() const;
+    virtual bool Is64BitProgram() const = 0;
+    virtual ProgramAddressSpaceType GetAddressSpaceType() const = 0;
+    virtual uint8_t GetMainThreadPriority() const = 0;
+    virtual uint8_t GetMainThreadCore() const = 0;
+    virtual uint32_t GetMainThreadStackSize() const = 0;
+    virtual uint64_t GetTitleID() const = 0;
+    virtual uint64_t GetFilesystemPermissions() const = 0;
+    virtual uint32_t GetSystemResourceSize() const = 0;
+    virtual PoolPartition GetPoolPartition() const = 0;
+    virtual const uint32_t * GetKernelCapabilities() const = 0;
+    virtual uint32_t GetKernelCapabilitiesSize() const = 0;
+    virtual const char * GetName() const = 0;
 };
 
-__interface IModuleInfo
+nxinterface IModuleInfo
 {
-    const uint8_t * Data(void) const = 0;
-    uint32_t DataSize(void) const = 0;
-    uint64_t CodeSegmentAddr(void) const = 0;
-    uint64_t CodeSegmentOffset(void) const = 0;
-    uint64_t CodeSegmentSize(void) const = 0;
-    uint64_t RODataSegmentAddr(void) const = 0;
-    uint64_t RODataSegmentOffset(void) const = 0;
-    uint64_t RODataSegmentSize(void) const = 0;
-    uint64_t DataSegmentAddr(void) const = 0;
-    uint64_t DataSegmentOffset(void) const = 0;
-    uint64_t DataSegmentSize(void) const = 0;
+    virtual const uint8_t * Data(void) const = 0;
+    virtual uint32_t DataSize(void) const = 0;
+    virtual uint64_t CodeSegmentAddr(void) const = 0;
+    virtual uint64_t CodeSegmentOffset(void) const = 0;
+    virtual uint64_t CodeSegmentSize(void) const = 0;
+    virtual uint64_t RODataSegmentAddr(void) const = 0;
+    virtual uint64_t RODataSegmentOffset(void) const = 0;
+    virtual uint64_t RODataSegmentSize(void) const = 0;
+    virtual uint64_t DataSegmentAddr(void) const = 0;
+    virtual uint64_t DataSegmentOffset(void) const = 0;
+    virtual uint64_t DataSegmentSize(void) const = 0;
 };
 
-__interface IDeviceMemory
+nxinterface IDeviceMemory
 {
-    const uint8_t * BackingBasePointer() const = 0;
+    virtual const uint8_t * BackingBasePointer() const = 0;
 };
 
-__interface ICacheInvalidator 
+nxinterface ICacheInvalidator
 {
     virtual void OnCacheInvalidation(uint64_t address, uint32_t size) = 0;
 };
 
 typedef void (*DeviceEnumCallback)(const char * device, void * userData);
 
-__interface IParamPackage
+nxinterface IParamPackage
 {
-    bool Has(const char * key) const = 0;
-    bool GetBool(const char * key, bool default_value) const = 0;
-    int32_t GetInt(const char * key, int32_t default_value) const = 0;
-    float GetFloat(const char * key, float default_value) const = 0;
-    const char * GetString(const char * key, const char * default_value) const = 0;
-    void SetFloat(const char * key, float value) = 0;
-    const char * Serialize() const = 0;
+    virtual bool Has(const char * key) const = 0;
+    virtual bool GetBool(const char * key, bool default_value) const = 0;
+    virtual int32_t GetInt(const char * key, int32_t default_value) const = 0;
+    virtual float GetFloat(const char * key, float default_value) const = 0;
+    virtual const char * GetString(const char * key, const char * default_value) const = 0;
+    virtual void SetFloat(const char * key, float value) = 0;
+    virtual const char * Serialize() const = 0;
 
-    void Release() = 0;
+    virtual void Release() = 0;
 };
 
-__interface IParamPackageList
+nxinterface IParamPackageList
 {
-    uint32_t GetCount() const = 0;
-    IParamPackage & GetParamPackage(uint32_t index) const = 0;
-    void Release() = 0;
+    virtual uint32_t GetCount() const = 0;
+    virtual IParamPackage & GetParamPackage(uint32_t index) const = 0;
+    virtual void Release() = 0;
 };
 
 struct vec3f_t
@@ -368,69 +368,69 @@ typedef struct {
 
 typedef void (CALL* ControllerEventCallback)(ControllerTriggerType type, void * user);
 
-__interface IEmulatedController
+nxinterface IEmulatedController
 {
-    void Connect(bool use_temporary_value = false) = 0;
-    void Disconnect() = 0;
-    bool IsConnected(bool get_temporary_value = false) const = 0;
-    void SaveCurrentConfig() = 0;
-    void ReloadFromSettings() = 0;
-    IParamPackageList * GetMappedDevicesPtr() const = 0;
-    IParamPackage * GetButtonParamPtr(uint32_t index) const = 0;
-    IParamPackage * GetMotionParamPtr(uint32_t index) const = 0;
-    IParamPackage * GetStickParamPtr(uint32_t index) const = 0;
-    NpadStyleIndex GetNpadStyleIndex(bool getTemporaryValue = false) const = 0;
-    void SetButtonParam(uint32_t index, const IParamPackage & param) = 0;
-    void SetStickParam(uint32_t index, const IParamPackage & param) = 0;
-    void SetMotionParam(uint32_t index, const IParamPackage & param) = 0;
-    void SetControllerEventCallback(ControllerEventCallback cb, void * user) = 0;
-    void GetButtonsStatus(button_status_t * buttons, size_t num_buttons) const = 0;
-    void SetNpadStyleIndex(NpadStyleIndex npad_type) = 0;
-    MotionState GetMotions() const = 0;
-    SticksValues GetSticksValues() const = 0;
+    virtual void Connect(bool use_temporary_value = false) = 0;
+    virtual void Disconnect() = 0;
+    virtual bool IsConnected(bool get_temporary_value = false) const = 0;
+    virtual void SaveCurrentConfig() = 0;
+    virtual void ReloadFromSettings() = 0;
+    virtual IParamPackageList * GetMappedDevicesPtr() const = 0;
+    virtual IParamPackage * GetButtonParamPtr(uint32_t index) const = 0;
+    virtual IParamPackage * GetMotionParamPtr(uint32_t index) const = 0;
+    virtual IParamPackage * GetStickParamPtr(uint32_t index) const = 0;
+    virtual NpadStyleIndex GetNpadStyleIndex(bool getTemporaryValue = false) const = 0;
+    virtual void SetButtonParam(uint32_t index, const IParamPackage & param) = 0;
+    virtual void SetStickParam(uint32_t index, const IParamPackage & param) = 0;
+    virtual void SetMotionParam(uint32_t index, const IParamPackage & param) = 0;
+    virtual void SetControllerEventCallback(ControllerEventCallback cb, void * user) = 0;
+    virtual void GetButtonsStatus(button_status_t * buttons, size_t num_buttons) const = 0;
+    virtual void SetNpadStyleIndex(NpadStyleIndex npad_type) = 0;
+    virtual MotionState GetMotions() const = 0;
+    virtual SticksValues GetSticksValues() const = 0;
 };
 
-__interface IButtonMappingList
+nxinterface IButtonMappingList
 {
-    uint32_t GetCount() const = 0;
-    uint32_t GetIndex(uint32_t position) const = 0;
-    IParamPackage& GetParamPackage(uint32_t position) const = 0;
-    void Release() = 0;
+    virtual uint32_t GetCount() const = 0;
+    virtual uint32_t GetIndex(uint32_t position) const = 0;
+    virtual IParamPackage& GetParamPackage(uint32_t position) const = 0;
+    virtual void Release() = 0;
 };
 
-__interface IOperatingSystem
+nxinterface IOperatingSystem
 {
-    bool Initialize() = 0;
-    void ShutDown() = 0;
-    bool IsShuttingDown() const = 0;
-    void ShutdownMainProcess() = 0;
-    bool CreateApplicationProcess(uint64_t codeSize, const IProgramMetadata & metaData, uint64_t & baseAddress, uint64_t & processID, bool is_hbl) = 0;
-    void StartApplicationProcess(int32_t priority, int64_t stackSize, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t * nacpData, uint32_t nacpDataLen) = 0;
-    bool LoadModule(const IModuleInfo & module, uint64_t baseAddress) = 0;
-    IDeviceMemory & DeviceMemory() = 0;
-    void KeyboardKeyPress(int modifier, int keyIndex, int keyCode) = 0;
-    void KeyboardKeyRelease(int modifier, int keyIndex, int keyCode) = 0;
-    void GatherGPUDirtyMemory(ICacheInvalidator * invalidator) = 0;
-    uint64_t GetGPUTicks() = 0;
-    uint64_t GetProgramId() = 0;
-    bool GetExitLocked() const = 0;
-    void GameFrameEnd() = 0;
-    void AudioGetSyncIDs(uint32_t * ids, uint32_t maxCount, uint32_t * actualCount) = 0;
-    void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void * userData) = 0;
-    void RegisterHostThread() = 0;
-    IParamPackageList * GetInputDevices() const = 0;
-    IEmulatedController & GetEmulatedController(NpadIdType index) = 0;
-    ButtonNames GetButtonName(const IParamPackage & param)  const = 0;
-    bool IsController(const IParamPackage & params)  const = 0;
-    NpadStyleSet GetSupportedStyleTag() const = 0;
-    IButtonMappingList * GetButtonMappingForDevice(const IParamPackage & param) const = 0;
-    IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage & param) const = 0;
-    IButtonMappingList * GetMotionMappingForDevice(const IParamPackage & param) const = 0;
-    void BeginMapping(PollingInputType type) = 0;
-    void StopMapping() = 0;
-    IParamPackage * GetNextInput() const = 0;
-    void PumpInputEvents() const = 0;
-    PerfStatsResults GetAndResetPerfStats() = 0;
+    virtual bool Initialize() = 0;
+    virtual void ShutDown() = 0;
+    virtual bool IsShuttingDown() const = 0;
+    virtual void ShutdownMainProcess() = 0;
+    virtual bool CreateApplicationProcess(uint64_t codeSize, const IProgramMetadata & metaData, uint64_t & baseAddress, uint64_t & processID, bool is_hbl) = 0;
+    virtual void StartApplicationProcess(int32_t priority, int64_t stackSize, uint32_t version, StorageId baseGameStorageId, StorageId updateStorageId, uint8_t * nacpData, uint32_t nacpDataLen) = 0;
+    virtual bool LoadModule(const IModuleInfo & module, uint64_t baseAddress) = 0;
+    virtual IDeviceMemory & DeviceMemory() = 0;
+    virtual void KeyboardKeyPress(int modifier, int keyIndex, int keyCode) = 0;
+    virtual void KeyboardKeyRelease(int modifier, int keyIndex, int keyCode) = 0;
+    virtual void GatherGPUDirtyMemory(ICacheInvalidator * invalidator) = 0;
+    virtual uint64_t GetGPUTicks() = 0;
+    virtual uint64_t GetProgramId() = 0;
+    virtual bool GetExitLocked() const = 0;
+    virtual void GameFrameEnd() = 0;
+    virtual void AudioGetSyncIDs(uint32_t * ids, uint32_t maxCount, uint32_t * actualCount) = 0;
+    virtual void AudioGetDeviceListForSink(uint32_t sinkId, bool capture, DeviceEnumCallback callback, void * userData) = 0;
+    virtual void RegisterHostThread() = 0;
+    virtual IParamPackageList * GetInputDevices() const = 0;
+    virtual IEmulatedController & GetEmulatedController(NpadIdType index) = 0;
+    virtual ButtonNames GetButtonName(const IParamPackage & param)  const = 0;
+    virtual bool IsController(const IParamPackage & params)  const = 0;
+    virtual NpadStyleSet GetSupportedStyleTag() const = 0;
+    virtual IButtonMappingList * GetButtonMappingForDevice(const IParamPackage & param) const = 0;
+    virtual IButtonMappingList * GetAnalogMappingForDevice(const IParamPackage & param) const = 0;
+    virtual IButtonMappingList * GetMotionMappingForDevice(const IParamPackage & param) const = 0;
+    virtual void BeginMapping(PollingInputType type) = 0;
+    virtual void StopMapping() = 0;
+    virtual IParamPackage * GetNextInput() const = 0;
+    virtual void PumpInputEvents() const = 0;
+    virtual PerfStatsResults GetAndResetPerfStats() = 0;
 };
 
 EXPORT IOperatingSystem * CALL CreateOperatingSystem(ISystemModules & modules);

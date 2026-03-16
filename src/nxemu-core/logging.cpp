@@ -4,13 +4,16 @@
 #include "settings/settings.h"
 #include <yuzu_common/logging/backend.h>
 
+#ifdef WIN32
 extern "C" __declspec(dllimport) int __stdcall AllocConsole(void);
 extern "C" __declspec(dllimport) void * __stdcall GetConsoleWindow(void);
 extern "C" __declspec(dllimport) int __stdcall ShowWindow(void*, int);
+#endif
 
 void UpdateLogConsole()
 {
     Common::Log::SetColorConsoleBackendEnabled(coreSettings.ShowLogConsole);
+#ifdef WIN32
     void * consoleWindow = GetConsoleWindow();
     if (coreSettings.ShowLogConsole)
     {
@@ -30,6 +33,7 @@ void UpdateLogConsole()
     {
         ShowWindow(consoleWindow, 0);
     }
+#endif
 }
 
 void LoggingSettingChanged(const char * setting, void * /*userData*/)

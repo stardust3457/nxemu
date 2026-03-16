@@ -3,10 +3,11 @@
 #include <widgets/page_nav.h>
 #include <memory>
 #include <unordered_map>
+#include <nxemu-module-spec/base.h>
 
 __interface ISciterUI;
 __interface ISciterWindow;
-__interface IParamPackageList;
+nxinterface IParamPackageList;
 class InputConfigPlayer;
 class SystemModules;
 
@@ -28,7 +29,7 @@ public:
 
     const IParamPackageList & InputDeviceList() const;
 
-    //__interface IPagesSink
+    // IPagesSink
     bool PageNavChangeFrom(const std::string & pageName, SCITER_ELEMENT pageNav) override;
     bool PageNavChangeTo(const std::string & pageName, SCITER_ELEMENT pageNav) override;
     void PageNavCreatedPage(const std::string & pageName, SCITER_ELEMENT page) override;

@@ -1,7 +1,7 @@
 #pragma once
 #include "base.h"
 
-__interface ICpuCore;
+nxinterface ICpuCore;
 
 enum class CpuDebugWatchpointType : uint8_t
 {
@@ -35,79 +35,79 @@ struct CpuDebugWatchpoint
     CpuDebugWatchpointType type;
 };
 
-__interface ICoreTiming
+nxinterface ICoreTiming
 {
-    void AddTicks(uint64_t ticks) = 0;
-    int64_t GetDowncount() const = 0;
-    uint64_t GetClockTicks() const = 0;
+    virtual void AddTicks(uint64_t ticks) = 0;
+    virtual int64_t GetDowncount() const = 0;
+    virtual uint64_t GetClockTicks() const = 0;
 };
 
-__interface ICoreSystem
+nxinterface ICoreSystem
 {
-    bool DebuggerEnabled() const = 0;
-    ICoreTiming & Timing() = 0;
+    virtual bool DebuggerEnabled() const = 0;
+    virtual ICoreTiming & Timing() = 0;
 };
 
-__interface IMemory
+nxinterface IMemory
 {
-    bool IsValidVirtualAddressRange(uint64_t base, uint64_t size) const = 0;
-    void RasterizerMarkRegionCached(uint64_t vaddr, uint64_t size, bool cached) = 0;
-    uint8_t * GetPointerSilent(uint64_t vaddr) = 0;
+    virtual bool IsValidVirtualAddressRange(uint64_t base, uint64_t size) const = 0;
+    virtual void RasterizerMarkRegionCached(uint64_t vaddr, uint64_t size, bool cached) = 0;
+    virtual uint8_t * GetPointerSilent(uint64_t vaddr) = 0;
 
-    uint8_t Read8(uint64_t addr) = 0;
-    uint16_t Read16(uint64_t addr) = 0;
-    uint32_t Read32(uint64_t addr) = 0;
-    uint64_t Read64(uint64_t addr) = 0;
-    bool ReadBlock(uint64_t src_addr, void * dest_buffer, uint64_t size) = 0;
+    virtual uint8_t Read8(uint64_t addr) = 0;
+    virtual uint16_t Read16(uint64_t addr) = 0;
+    virtual uint32_t Read32(uint64_t addr) = 0;
+    virtual uint64_t Read64(uint64_t addr) = 0;
+    virtual bool ReadBlock(uint64_t src_addr, void * dest_buffer, uint64_t size) = 0;
 
-    void Write8(uint64_t addr, uint8_t value) = 0;
-    void Write16(uint64_t addr, uint16_t value) = 0;
-    void Write32(uint64_t addr, uint32_t value) = 0;
-    void Write64(uint64_t addr, uint64_t value) = 0;
+    virtual void Write8(uint64_t addr, uint8_t value) = 0;
+    virtual void Write16(uint64_t addr, uint16_t value) = 0;
+    virtual void Write32(uint64_t addr, uint32_t value) = 0;
+    virtual void Write64(uint64_t addr, uint64_t value) = 0;
 
-    bool WriteExclusive8(uint64_t addr, uint8_t value, uint8_t expected) = 0;
-    bool WriteExclusive16(uint64_t addr, uint16_t value, uint16_t expected) = 0;
-    bool WriteExclusive32(uint64_t addr, uint32_t value, uint32_t expected) = 0;
-    bool WriteExclusive64(uint64_t addr, uint64_t value, uint64_t expected) = 0;
-    bool WriteExclusive128(uint64_t addr, uint64_t valueHi, uint64_t valueLow, uint64_t expectedHi, uint64_t expectedLow) = 0;
+    virtual bool WriteExclusive8(uint64_t addr, uint8_t value, uint8_t expected) = 0;
+    virtual bool WriteExclusive16(uint64_t addr, uint16_t value, uint16_t expected) = 0;
+    virtual bool WriteExclusive32(uint64_t addr, uint32_t value, uint32_t expected) = 0;
+    virtual bool WriteExclusive64(uint64_t addr, uint64_t value, uint64_t expected) = 0;
+    virtual bool WriteExclusive128(uint64_t addr, uint64_t valueHi, uint64_t valueLow, uint64_t expectedHi, uint64_t expectedLow) = 0;
 };
 
-__interface IExclusiveMonitor
+nxinterface IExclusiveMonitor
 {
-    uint8_t ExclusiveRead8(uint32_t coreIndex, uint64_t addr) = 0;
-    uint16_t ExclusiveRead16(uint32_t coreIndex, uint64_t addr) = 0;
-    uint32_t ExclusiveRead32(uint32_t coreIndex, uint64_t addr) = 0;
-    uint64_t ExclusiveRead64(uint32_t coreIndex, uint64_t addr) = 0;
-    void ExclusiveRead128(uint32_t coreIndex, uint64_t addr, uint64_t & outHigh, uint64_t & outLow) = 0;
-    void ClearExclusive(uint32_t coreIndex) = 0;
+    virtual uint8_t ExclusiveRead8(uint32_t coreIndex, uint64_t addr) = 0;
+    virtual uint16_t ExclusiveRead16(uint32_t coreIndex, uint64_t addr) = 0;
+    virtual uint32_t ExclusiveRead32(uint32_t coreIndex, uint64_t addr) = 0;
+    virtual uint64_t ExclusiveRead64(uint32_t coreIndex, uint64_t addr) = 0;
+    virtual void ExclusiveRead128(uint32_t coreIndex, uint64_t addr, uint64_t & outHigh, uint64_t & outLow) = 0;
+    virtual void ClearExclusive(uint32_t coreIndex) = 0;
 
-    bool ExclusiveWrite8(uint32_t coreIndex, uint64_t addr, uint8_t value) = 0;
-    bool ExclusiveWrite16(uint32_t coreIndex, uint64_t addr, uint16_t value) = 0;
-    bool ExclusiveWrite32(uint32_t coreIndex, uint64_t addr, uint32_t value) = 0;
-    bool ExclusiveWrite64(uint32_t coreIndex, uint64_t addr, uint64_t value) = 0;
-    bool ExclusiveWrite128(uint32_t coreIndex, uint64_t addr, uint64_t valueHigh, uint64_t valueLow) = 0;
+    virtual bool ExclusiveWrite8(uint32_t coreIndex, uint64_t addr, uint8_t value) = 0;
+    virtual bool ExclusiveWrite16(uint32_t coreIndex, uint64_t addr, uint16_t value) = 0;
+    virtual bool ExclusiveWrite32(uint32_t coreIndex, uint64_t addr, uint32_t value) = 0;
+    virtual bool ExclusiveWrite64(uint32_t coreIndex, uint64_t addr, uint64_t value) = 0;
+    virtual bool ExclusiveWrite128(uint32_t coreIndex, uint64_t addr, uint64_t valueHigh, uint64_t valueLow) = 0;
 
-    void Release() = 0;
+    virtual void Release() = 0;
 };
 
-__interface IKProcessPageTable
+nxinterface IKProcessPageTable
 {
-    uint32_t GetAddressSpaceWidth() const = 0;
-    uint8_t * FastmemArena() const = 0;
-    void ** PageTable() const = 0;
+    virtual uint32_t GetAddressSpaceWidth() const = 0;
+    virtual uint8_t * FastmemArena() const = 0;
+    virtual void ** PageTable() const = 0;
 };
 
-__interface IKernelProcess
+nxinterface IKernelProcess
 {
-    IKProcessPageTable & GetPageTable() = 0;
-    IMemory & GetMemory() = 0;
-    bool Is64Bit() const = 0;
-    void LogBacktrace(ICpuCore & cpuCore) = 0;
+    virtual IKProcessPageTable & GetPageTable() = 0;
+    virtual IMemory & GetMemory() = 0;
+    virtual bool Is64Bit() const = 0;
+    virtual void LogBacktrace(ICpuCore & cpuCore) = 0;
 };
 
-__interface IKernelThread
+nxinterface IKernelThread
 {
-    IKernelProcess * GetOwnerProcess() const = 0;
+    virtual IKernelProcess * GetOwnerProcess() const = 0;
 };
 
 struct CpuThreadContext
@@ -126,35 +126,35 @@ struct CpuThreadContext
 };
 static_assert(sizeof(CpuThreadContext) == 0x320);
 
-__interface ICpuCore
+nxinterface ICpuCore
 {
-    void Initialize() = 0;
-    ProcessorArchitecture GetArchitecture() const = 0;
-    uint32_t GetSvcNumber() const = 0;
-    void GetContext(CpuThreadContext & ctx) const = 0;
-    void SetContext(const CpuThreadContext & ctx) = 0;
-    void GetSvcArguments(uint64_t(&args)[8]) const = 0;
-    void SetSvcArguments(const uint64_t(&args)[8]) = 0;
-    void SetTpidrroEl0(uint64_t value) = 0;
-    CpuHaltReason RunThread(IKernelThread * thread) = 0;
-    CpuHaltReason StepThread(IKernelThread * thread) = 0;
-    void LockThread(IKernelThread * thread) = 0;
-    void UnlockThread(IKernelThread * thread) = 0;
-    void InvalidateCacheRange(uint64_t addr, uint64_t size) = 0;
-    const CpuDebugWatchpoint * HaltedWatchpoint() const = 0;
-    void RewindBreakpointInstruction() = 0;
-    void SetWatchpointArray(const CpuDebugWatchpoint * watchpoints, uint32_t count) = 0;
-    void SignalInterrupt(IKernelThread * thread) = 0;
+    virtual void Initialize() = 0;
+    virtual ProcessorArchitecture GetArchitecture() const = 0;
+    virtual uint32_t GetSvcNumber() const = 0;
+    virtual void GetContext(CpuThreadContext & ctx) const = 0;
+    virtual void SetContext(const CpuThreadContext & ctx) = 0;
+    virtual void GetSvcArguments(uint64_t (&args)[8]) const = 0;
+    virtual void SetSvcArguments(const uint64_t (&args)[8]) = 0;
+    virtual void SetTpidrroEl0(uint64_t value) = 0;
+    virtual CpuHaltReason RunThread(IKernelThread * thread) = 0;
+    virtual CpuHaltReason StepThread(IKernelThread * thread) = 0;
+    virtual void LockThread(IKernelThread * thread) = 0;
+    virtual void UnlockThread(IKernelThread * thread) = 0;
+    virtual void InvalidateCacheRange(uint64_t addr, uint64_t size) = 0;
+    virtual const CpuDebugWatchpoint * HaltedWatchpoint() const = 0;
+    virtual void RewindBreakpointInstruction() = 0;
+    virtual void SetWatchpointArray(const CpuDebugWatchpoint * watchpoints, uint32_t count) = 0;
+    virtual void SignalInterrupt(IKernelThread * thread) = 0;
     
-    void Release() = 0;
+    virtual void Release() = 0;
 };
 
-__interface ICpu
+nxinterface ICpu
 {
-    bool Initialize(void) = 0;
+    virtual bool Initialize(void) = 0;
 
-    IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) = 0;
-    ICpuCore * CreateCpuCore(ICoreSystem & system, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex) = 0;
+    virtual IExclusiveMonitor * CreateExclusiveMonitor(IMemory & memory) = 0;
+    virtual ICpuCore * CreateCpuCore(ICoreSystem & system, bool is64Bit, bool usesWallClock, IKernelProcess & process, uint32_t coreIndex) = 0;
 };
 
 EXPORT ICpu * CALL CreateCpu(ISystemModules & modules);

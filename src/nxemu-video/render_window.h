@@ -1,8 +1,9 @@
 #pragma once
 
 #include "yuzu_video_core/frontend/emu_window.h"
+#include <nxemu-module-spec/base.h>
 
-__interface IRenderWindow;
+nxinterface IRenderWindow;
 
 class RenderWindow :
     public Core::Frontend::EmuWindow

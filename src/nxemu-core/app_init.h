@@ -1,6 +1,7 @@
 #pragma once
+#include <nxemu-module-spec/base.h>
 
-__interface INotification;
+nxinterface INotification;
 
 bool AppInit(INotification * notification, const char * configPath);
 void AppCleanup();

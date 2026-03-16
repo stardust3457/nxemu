@@ -1,9 +1,10 @@
 #pragma once
-#include <thread>
+#include <nxemu-module-spec/base.h>
 #include <string>
+#include <thread>
 
 class SystemModules;
-__interface IManualContentProvider;
+nxinterface IManualContentProvider;
 
 class GameListWorker
 {

@@ -3,12 +3,13 @@
 
 #pragma once
 
-#include <nxemu-module-spec/cpu.h>
-#include <dynarmic/interface/A32/a32.h>
 #include "nxemu-os/core/hardware_properties.h"
+#include <dynarmic/interface/A32/a32.h>
+#include <nxemu-module-spec/base.h>
+#include <nxemu-module-spec/cpu.h>
 #include <yuzu_common/hardware_properties.h>
 
-__interface IExclusiveMonitor;
+nxinterface IExclusiveMonitor;
 class DynarmicCallbacks32;
 namespace Core
 {

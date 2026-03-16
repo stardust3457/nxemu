@@ -171,136 +171,136 @@ struct SaveDataSize {
 };
 static_assert(sizeof(SaveDataSize) == 0x10, "SaveDataSize has invalid size.");
 
-__interface IVirtualFile;
-__interface IVirtualDirectoryList;
-__interface IVirtualFileList;
+nxinterface IVirtualFile;
+nxinterface IVirtualDirectoryList;
+nxinterface IVirtualFileList;
 
-__interface IVirtualDirectory
+nxinterface IVirtualDirectory
 {
-    IVirtualDirectoryList * GetSubdirectories() const = 0;
-    IVirtualDirectory * CreateSubdirectory(const char * path) const = 0;
-    IVirtualDirectory * GetDirectoryRelative(const char * path) const = 0;
-    IVirtualDirectory * GetSubdirectory(const char * name) const = 0;
-    IVirtualDirectory * Duplicate() = 0;
-    IVirtualFileList * GetFiles() const = 0;
-    IVirtualFile * CreateFile(const char * name) const = 0;
-    IVirtualFile * GetFile(const char * name) const = 0;
-    IVirtualFile * GetFileRelative(const char * relative_path) const = 0;
-    IVirtualFile * OpenFile(const char * path, VirtualFileOpenMode perms) = 0;
-    const char * GetName() const = 0;
-    void Release() = 0;
+    virtual IVirtualDirectoryList * GetSubdirectories() const = 0;
+    virtual IVirtualDirectory * CreateSubdirectory(const char * path) const = 0;
+    virtual IVirtualDirectory * GetDirectoryRelative(const char * path) const = 0;
+    virtual IVirtualDirectory * GetSubdirectory(const char * name) const = 0;
+    virtual IVirtualDirectory * Duplicate() = 0;
+    virtual IVirtualFileList * GetFiles() const = 0;
+    virtual IVirtualFile * CreateFile(const char * name) const = 0;
+    virtual IVirtualFile * GetFile(const char * name) const = 0;
+    virtual IVirtualFile * GetFileRelative(const char * relative_path) const = 0;
+    virtual IVirtualFile * OpenFile(const char * path, VirtualFileOpenMode perms) = 0;
+    virtual const char * GetName() const = 0;
+    virtual void Release() = 0;
 };
 
-__interface IVirtualDirectoryList
+nxinterface IVirtualDirectoryList
 {
-    uint32_t GetSize() const = 0;
-    IVirtualDirectory * GetItem(uint32_t index) const = 0;
-    void Release() = 0;
+    virtual uint32_t GetSize() const = 0;
+    virtual IVirtualDirectory * GetItem(uint32_t index) const = 0;
+    virtual void Release() = 0;
 };
 
-__interface IVirtualFile
+nxinterface IVirtualFile
 {
-    uint64_t GetSize() const = 0;
-    const char * GetName() const = 0;
-    bool Resize(uint64_t size) = 0;
-    uint64_t ReadBytes(uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
-    uint64_t WriteBytes(const uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
-    IVirtualDirectory * ExtractRomFS() = 0;
-    IVirtualFile * Duplicate() = 0;
-    void Release() = 0;
+    virtual uint64_t GetSize() const = 0;
+    virtual const char * GetName() const = 0;
+    virtual bool Resize(uint64_t size) = 0;
+    virtual uint64_t ReadBytes(uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
+    virtual uint64_t WriteBytes(const uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
+    virtual IVirtualDirectory * ExtractRomFS() = 0;
+    virtual IVirtualFile * Duplicate() = 0;
+    virtual void Release() = 0;
 };
 
-__interface IVirtualFileList
+nxinterface IVirtualFileList
 {
-    uint32_t GetSize() const = 0;
-    IVirtualFile * GetItem(uint32_t index) const = 0;
-    void Release() = 0;
+    virtual uint32_t GetSize() const = 0;
+    virtual IVirtualFile * GetItem(uint32_t index) const = 0;
+    virtual void Release() = 0;
 };
 
-__interface ISaveDataFactory
+nxinterface ISaveDataFactory
 {
-    bool OpenSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) = 0;
-    void Release() = 0;
+    virtual bool OpenSaveData(IVirtualDirectory ** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) = 0;
+    virtual void Release() = 0;
 };
 
-__interface IRomFsController
+nxinterface IRomFsController
 {
-    IVirtualFile * OpenRomFS(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type) = 0;
-    IVirtualFile * OpenRomFSCurrentProcess() = 0;
-    IVirtualFile * PatchBaseNca(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type, IVirtualFile & romfs) = 0;
-    void Release() = 0;
+    virtual IVirtualFile * OpenRomFS(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type) = 0;
+    virtual IVirtualFile * OpenRomFSCurrentProcess() = 0;
+    virtual IVirtualFile * PatchBaseNca(uint64_t title_id, StorageId storage_id, LoaderContentRecordType type, IVirtualFile & romfs) = 0;
+    virtual void Release() = 0;
 };
 
-__interface IFileSysNACP
+nxinterface IFileSysNACP
 {
-    uint32_t GetSupportedLanguages() const = 0;
-    uint32_t GetParentalControlFlag() const = 0;
-    bool GetRatingAge(uint8_t * buffer, uint32_t bufferSize) const = 0;
-    const char * GetVersionString() const = 0;
-    void Release() = 0;
+    virtual uint32_t GetSupportedLanguages() const = 0;
+    virtual uint32_t GetParentalControlFlag() const = 0;
+    virtual bool GetRatingAge(uint8_t * buffer, uint32_t bufferSize) const = 0;
+    virtual const char * GetVersionString() const = 0;
+    virtual void Release() = 0;
 };
 
-__interface IFileSysNCA
+nxinterface IFileSysNCA
 {
-    LoaderResultStatus GetStatus() const = 0;
-    IVirtualFile * GetRomFS() = 0;
-    void Release() = 0;
+    virtual LoaderResultStatus GetStatus() const = 0;
+    virtual IVirtualFile * GetRomFS() = 0;
+    virtual void Release() = 0;
 };
 
-__interface IFileSysRegisteredCache
+nxinterface IFileSysRegisteredCache
 {
-    IFileSysNCA * GetEntry(uint64_t title_id, LoaderContentRecordType type) const = 0;
+    virtual IFileSysNCA * GetEntry(uint64_t title_id, LoaderContentRecordType type) const = 0;
 };
 
-__interface ISaveDataController
+nxinterface ISaveDataController
 {
-    bool CreateSaveData(IVirtualDirectory** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) = 0;
-    void Release() = 0;
+    virtual bool CreateSaveData(IVirtualDirectory** out_save_data, SaveDataSpaceId space, const SaveDataAttribute & attribute) = 0;
+    virtual void Release() = 0;
 };
 
-__interface IFileSystemController
+nxinterface IFileSystemController
 {
-    IFileSysRegisteredCache & GetSystemNANDContents() const = 0;
-    ISaveDataController * OpenSaveDataController() const = 0;
-    bool OpenProcess(uint64_t * programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId) = 0;
-    uint64_t GetFreeSpaceSize(StorageId id) const = 0;
-    uint64_t GetTotalSpaceSize(StorageId id) const = 0;
+    virtual IFileSysRegisteredCache & GetSystemNANDContents() const = 0;
+    virtual ISaveDataController * OpenSaveDataController() const = 0;
+    virtual bool OpenProcess(uint64_t * programId, ISaveDataFactory ** saveDataFactory, IRomFsController ** romFsController, uint64_t processId) = 0;
+    virtual uint64_t GetFreeSpaceSize(StorageId id) const = 0;
+    virtual uint64_t GetTotalSpaceSize(StorageId id) const = 0;
 
     bool OpenSDMC(IVirtualDirectory** out_sdmc) const = 0;
 };
 
-__interface IManualContentProvider
+nxinterface IManualContentProvider
 {
-    void AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, uint64_t title_id, IVirtualFile * file) = 0;
-    void ClearAllEntries() = 0;
+    virtual void AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, uint64_t title_id, IVirtualFile * file) = 0;
+    virtual void ClearAllEntries() = 0;
 };
 
-__interface IRomInfo
+nxinterface IRomInfo
 {
-    LoaderFileType GetFileType() const = 0;
-    LoaderResultStatus ReadProgramId(uint64_t & out_program_id) = 0;
-    LoaderResultStatus ReadTitle(char * buffer, uint32_t * bufferSize) = 0;
-    LoaderResultStatus ReadIcon(uint8_t * buffer, uint32_t * bufferSize) = 0;
-    LoaderResultStatus ReadProgramIds(uint64_t * buffer, uint32_t * count) = 0;
-    void AddToManualContentProvider(IManualContentProvider & provider) = 0;
-    void Release() = 0;
+    virtual LoaderFileType GetFileType() const = 0;
+    virtual LoaderResultStatus ReadProgramId(uint64_t & out_program_id) = 0;
+    virtual LoaderResultStatus ReadTitle(char * buffer, uint32_t * bufferSize) = 0;
+    virtual LoaderResultStatus ReadIcon(uint8_t * buffer, uint32_t * bufferSize) = 0;
+    virtual LoaderResultStatus ReadProgramIds(uint64_t * buffer, uint32_t * count) = 0;
+    virtual void AddToManualContentProvider(IManualContentProvider & provider) = 0;
+    virtual void Release() = 0;
 };
 
-__interface ISystemloader
+nxinterface ISystemloader
 {
-    bool Initialize() = 0;
-    bool SelectAndLoad(void * parentWindow) = 0;
-    bool LoadRom(const char * fileName) = 0;
-    IRomInfo * RomInfo(const char * fileName, uint64_t programId, uint64_t programIndex) = 0;
-    IRomInfo * LoadedRomInfo() = 0;
+    virtual bool Initialize() = 0;
+    virtual bool SelectAndLoad(void * parentWindow) = 0;
+    virtual bool LoadRom(const char * fileName) = 0;
+    virtual IRomInfo * RomInfo(const char * fileName, uint64_t programId, uint64_t programIndex) = 0;
+    virtual IRomInfo * LoadedRomInfo() = 0;
 
-    IFileSystemController & FileSystemController() = 0;
-    IVirtualFile * SynthesizeSystemArchive(const uint64_t title_id) = 0;
-    uint32_t GetContentProviderEntriesCount(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId) = 0;
-    uint32_t GetContentProviderEntries(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId, ContentProviderEntry* entries, uint32_t entryCount) = 0;
-    IFileSysNCA * GetContentProviderEntry(uint64_t title_id, LoaderContentRecordType type) = 0;
-    IFileSysNACP * GetPMControlMetadata(uint64_t programID) = 0;
-    IManualContentProvider & ManualContentProvider() = 0;
+    virtual IFileSystemController & FileSystemController() = 0;
+    virtual IVirtualFile * SynthesizeSystemArchive(const uint64_t title_id) = 0;
+    virtual uint32_t GetContentProviderEntriesCount(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId) = 0;
+    virtual uint32_t GetContentProviderEntries(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId, ContentProviderEntry * entries, uint32_t entryCount) = 0;
+    virtual IFileSysNCA * GetContentProviderEntry(uint64_t title_id, LoaderContentRecordType type) = 0;
+    virtual IFileSysNACP * GetPMControlMetadata(uint64_t programID) = 0;
+    virtual IManualContentProvider & ManualContentProvider() = 0;
 };
 
 EXPORT ISystemloader * CALL CreateSystemLoader(ISystemModules & modules);

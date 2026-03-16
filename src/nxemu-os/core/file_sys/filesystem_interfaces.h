@@ -1,16 +1,17 @@
 #pragma once
-#include <vector>
 #include "yuzu_common/interface_pointer.h"
+#include <nxemu-module-spec/base.h>
+#include <vector>
 
-__interface IVirtualDirectoryList;
-__interface IVirtualDirectory;
-__interface IVirtualFileList;
-__interface IVirtualFile;
-__interface IFileSysNCA;
-__interface ISaveDataFactory;
-__interface IRomFsController;
-__interface ISaveDataController;
-__interface IFileSysNACP;
+nxinterface IVirtualDirectoryList;
+nxinterface IVirtualDirectory;
+nxinterface IVirtualFileList;
+nxinterface IVirtualFile;
+nxinterface IFileSysNCA;
+nxinterface ISaveDataFactory;
+nxinterface IRomFsController;
+nxinterface ISaveDataController;
+nxinterface IFileSysNACP;
 
 using IVirtualDirectoryListPtr = InterfacePtr<IVirtualDirectoryList>;
 using IVirtualDirectoryPtr = InterfacePtr<IVirtualDirectory>;

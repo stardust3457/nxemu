@@ -18,10 +18,10 @@
 
 enum class StorageId : uint8_t;
 
-__interface ISystemModules;
-__interface IVideo;
-__interface ISystemloader;
-__interface IFileSystemController;
+nxinterface ISystemModules;
+nxinterface IVideo;
+nxinterface ISystemloader;
+nxinterface IFileSystemController;
 
 namespace Core::Frontend {
 class EmuWindow;
