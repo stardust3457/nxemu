@@ -202,7 +202,7 @@ public:
     static constexpr u64 MinimumRunCycles = 10000U;
 };
 
-std::unique_ptr<Dynarmic::A32::Jit> ArmDynarmic32::MakeJit(IKernelProcess & process) const
+std::shared_ptr<Dynarmic::A32::Jit> ArmDynarmic32::MakeJit(IKernelProcess & process) const
 {
     IKProcessPageTable & page_table = process.GetPageTable();
 
@@ -418,7 +418,7 @@ void ArmDynarmic32::GetSvcArguments(uint64_t (&args)[8]) const
     Dynarmic::A32::Jit & j = *m_jit;
     auto & gpr = j.Regs();
 
-    for (size_t i = 0, n = sizeof(args) / sizeof(args[0]); i < 8; i++)
+    for (size_t i = 0, n = sizeof(args) / sizeof(args[0]); i < n; i++)
     {
         args[i] = gpr[i];
     }
@@ -429,7 +429,7 @@ void ArmDynarmic32::SetSvcArguments(const uint64_t (&args)[8])
     Dynarmic::A32::Jit & j = *m_jit;
     auto & gpr = j.Regs();
 
-    for (size_t i = 0, n = sizeof(args) / sizeof(args[0]); i < 8; i++)
+    for (size_t i = 0, n = sizeof(args) / sizeof(args[0]); i < n; i++)
     {
         gpr[i] = static_cast<u32>(args[i]);
     }

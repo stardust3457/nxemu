@@ -76,9 +76,9 @@ static void* EmitExclusiveReadCallTrampoline(oaknut::CodeGenerator& code, const 
 
     oaknut::Label l_addr, l_this;
 
-    auto fn = [](const A64::UserConfig& conf, A64::VAddr vaddr) -> T {
-        return conf.global_monitor->ReadAndMark<T>(conf.processor_id, vaddr, [&]() -> T {
-            return (conf.callbacks->*callback)(vaddr);
+    auto fn = [](const A64::UserConfig& sconf, A64::VAddr svaddr) -> T {
+        return sconf.global_monitor->ReadAndMark<T>(sconf.processor_id, svaddr, [&]() -> T {
+            return (sconf.callbacks->*callback)(svaddr);
         });
     };
 
@@ -131,10 +131,10 @@ static void* EmitExclusiveWriteCallTrampoline(oaknut::CodeGenerator& code, const
 
     oaknut::Label l_addr, l_this;
 
-    auto fn = [](const A64::UserConfig& conf, A64::VAddr vaddr, T value) -> u32 {
-        return conf.global_monitor->DoExclusiveOperation<T>(conf.processor_id, vaddr,
+    auto fn = [](const A64::UserConfig& sconf, A64::VAddr vaddr, T value) -> u32 {
+        return sconf.global_monitor->DoExclusiveOperation<T>(sconf.processor_id, vaddr,
                                                             [&](T expected) -> bool {
-                                                                return (conf.callbacks->*callback)(vaddr, value, expected);
+                                                                return (sconf.callbacks->*callback)(vaddr, value, expected);
                                                             })
                  ? 0
                  : 1;
@@ -214,9 +214,9 @@ static void* EmitExclusiveRead128CallTrampoline(oaknut::CodeGenerator& code, con
 
     oaknut::Label l_addr, l_this;
 
-    auto fn = [](const A64::UserConfig& conf, A64::VAddr vaddr) -> Vector {
-        return conf.global_monitor->ReadAndMark<Vector>(conf.processor_id, vaddr, [&]() -> Vector {
-            return conf.callbacks->MemoryRead128(vaddr);
+    auto fn = [](const A64::UserConfig& sconf, A64::VAddr svaddr) -> Vector {
+        return sconf.global_monitor->ReadAndMark<Vector>(sconf.processor_id, svaddr, [&]() -> Vector {
+            return sconf.callbacks->MemoryRead128(svaddr);
         });
     };
 
@@ -296,10 +296,10 @@ static void* EmitExclusiveWrite128CallTrampoline(oaknut::CodeGenerator& code, co
 
     oaknut::Label l_addr, l_this;
 
-    auto fn = [](const A64::UserConfig& conf, A64::VAddr vaddr, Vector value) -> u32 {
-        return conf.global_monitor->DoExclusiveOperation<Vector>(conf.processor_id, vaddr,
+    auto fn = [](const A64::UserConfig& sconf, A64::VAddr vaddr, Vector value) -> u32 {
+        return sconf.global_monitor->DoExclusiveOperation<Vector>(sconf.processor_id, vaddr,
                                                                  [&](Vector expected) -> bool {
-                                                                     return conf.callbacks->MemoryWriteExclusive128(vaddr, value, expected);
+                                                                     return sconf.callbacks->MemoryWriteExclusive128(vaddr, value, expected);
                                                                  })
                  ? 0
                  : 1;

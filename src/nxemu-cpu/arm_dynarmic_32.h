@@ -56,14 +56,14 @@ private:
     friend class DynarmicCallbacks32;
     friend class Core::DynarmicCP15;
         
-    std::unique_ptr<Dynarmic::A32::Jit> MakeJit(IKernelProcess & process) const;
+    std::shared_ptr<Dynarmic::A32::Jit> MakeJit(IKernelProcess & process) const;
 
     std::unique_ptr<DynarmicCallbacks32> m_cb{};
     std::shared_ptr<Core::DynarmicCP15> m_cp15{};
     uint32_t m_core_index{};
     bool m_uses_wall_clock;
 
-    std::unique_ptr<Dynarmic::A32::Jit> m_jit{};
+    std::shared_ptr<Dynarmic::A32::Jit> m_jit{};
 
     // SVC callback
     u32 m_svc_swi{};

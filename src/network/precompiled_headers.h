@@ -3,4 +3,4 @@
 
 #pragma once
 
-#include "common/common_precompiled_headers.h"
+#include "yuzu_common/common_precompiled_headers.h"

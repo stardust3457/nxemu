@@ -190,13 +190,13 @@ public:
 
 ArmDynarmic64::ArmDynarmic64(ICoreSystem & system, bool uses_wall_clock, IKernelProcess & process, Dynarmic::ExclusiveMonitor & monitor, uint32_t core_index) :
     m_jit(nullptr),
+    m_cb(std::make_unique<DynarmicCallbacks64>(*this, system, process)),
+    m_uses_wall_clock(uses_wall_clock),
     m_system(system),
     m_monitor(monitor),
-    m_cb(std::make_unique<DynarmicCallbacks64>(*this, system, process)),
     m_svc(0),
     m_process(process),
-    m_coreIndex(core_index),
-    m_uses_wall_clock(uses_wall_clock)
+    m_coreIndex(core_index)
 {
     m_jit = MakeJit(process);
     ScopedJitExecution::RegisterHandler();
@@ -206,7 +206,7 @@ ArmDynarmic64::~ArmDynarmic64()
 {
 }
 
-std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(IKernelProcess & process) const
+std::shared_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(IKernelProcess & process) const
 {
     IKProcessPageTable & page_table = process.GetPageTable();
 
@@ -225,7 +225,6 @@ std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(IKernelProcess & proc
     config.only_detect_misalignment_via_page_table_on_page_boundary = true;
 
     config.fastmem_pointer = page_table.FastmemArena();
-    config.fastmem_pointer = nullptr;
     config.fastmem_address_space_bits = page_table.GetAddressSpaceWidth();
     config.silently_mirror_fastmem = false;
 
@@ -361,7 +360,7 @@ std::unique_ptr<Dynarmic::A64::Jit> ArmDynarmic64::MakeJit(IKernelProcess & proc
         }
     }
 
-    return std::make_unique<Dynarmic::A64::Jit>(config);
+    return std::make_shared<Dynarmic::A64::Jit>(config);
 }
 
 void ArmDynarmic64::Initialize()

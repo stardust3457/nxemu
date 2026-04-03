@@ -78,8 +78,8 @@ bool TranslatorVisitor::EmitVfpVectorOperation(bool sz, ExtReg d, ExtReg n, ExtR
 
 template<typename FnT>
 bool TranslatorVisitor::EmitVfpVectorOperation(bool sz, ExtReg d, ExtReg m, const FnT& fn) {
-    return EmitVfpVectorOperation(sz, d, ExtReg::S0, m, [fn](ExtReg d, ExtReg, ExtReg m) {
-        fn(d, m);
+    return EmitVfpVectorOperation(sz, d, ExtReg::S0, m, [fn](ExtReg sd, ExtReg, ExtReg sm) {
+        fn(sd, sm);
     });
 }
 
@@ -94,11 +94,11 @@ bool TranslatorVisitor::vfp_VADD(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPAdd(reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -113,11 +113,11 @@ bool TranslatorVisitor::vfp_VSUB(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPSub(reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -132,11 +132,11 @@ bool TranslatorVisitor::vfp_VMUL(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPMul(reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -151,12 +151,12 @@ bool TranslatorVisitor::vfp_VMLA(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPAdd(reg_d, ir.FPMul(reg_n, reg_m));
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -171,12 +171,12 @@ bool TranslatorVisitor::vfp_VMLS(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPAdd(reg_d, ir.FPNeg(ir.FPMul(reg_n, reg_m)));
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -191,11 +191,11 @@ bool TranslatorVisitor::vfp_VNMUL(Cond cond, bool D, size_t Vn, size_t Vd, bool 
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPNeg(ir.FPMul(reg_n, reg_m));
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -210,12 +210,12 @@ bool TranslatorVisitor::vfp_VNMLA(Cond cond, bool D, size_t Vn, size_t Vd, bool 
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPAdd(ir.FPNeg(reg_d), ir.FPNeg(ir.FPMul(reg_n, reg_m)));
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -230,12 +230,12 @@ bool TranslatorVisitor::vfp_VNMLS(Cond cond, bool D, size_t Vn, size_t Vd, bool 
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPAdd(ir.FPNeg(reg_d), ir.FPMul(reg_n, reg_m));
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -250,11 +250,11 @@ bool TranslatorVisitor::vfp_VDIV(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPDiv(reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -269,12 +269,12 @@ bool TranslatorVisitor::vfp_VFNMS(Cond cond, bool D, size_t Vn, size_t Vd, bool 
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPMulAdd(ir.FPNeg(reg_d), reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -289,12 +289,12 @@ bool TranslatorVisitor::vfp_VFNMA(Cond cond, bool D, size_t Vn, size_t Vd, bool 
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPMulSub(ir.FPNeg(reg_d), reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -309,12 +309,12 @@ bool TranslatorVisitor::vfp_VFMA(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPMulAdd(reg_d, reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -329,12 +329,12 @@ bool TranslatorVisitor::vfp_VFMS(Cond cond, bool D, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
-        const auto reg_d = ir.GetExtendedRegister(d);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
+        const auto reg_d = ir.GetExtendedRegister(sd);
         const auto result = ir.FPMulSub(reg_d, reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -347,11 +347,11 @@ bool TranslatorVisitor::vfp_VSEL(bool D, Imm<2> cc, size_t Vn, size_t Vd, bool s
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this, cond](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this, cond](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.ConditionalSelect(cond, reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -362,11 +362,11 @@ bool TranslatorVisitor::vfp_VMAXNM(bool D, size_t Vn, size_t Vd, bool sz, bool N
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPMaxNumeric(reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -377,11 +377,11 @@ bool TranslatorVisitor::vfp_VMINNM(bool D, size_t Vn, size_t Vd, bool sz, bool N
     const auto n = ToExtReg(sz, Vn, N);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg d, ExtReg n, ExtReg m) {
-        const auto reg_n = ir.GetExtendedRegister(n);
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, n, m, [this](ExtReg sd, ExtReg sn, ExtReg sm) {
+        const auto reg_n = ir.GetExtendedRegister(sn);
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPMinNumeric(reg_n, reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -722,8 +722,8 @@ bool TranslatorVisitor::vfp_VMOV_reg(Cond cond, bool D, size_t Vd, bool sz, bool
     const auto d = ToExtReg(sz, Vd, D);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg d, ExtReg m) {
-        ir.SetExtendedRegister(d, ir.GetExtendedRegister(m));
+    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg sd, ExtReg sm) {
+        ir.SetExtendedRegister(sd, ir.GetExtendedRegister(sm));
     });
 }
 
@@ -737,10 +737,10 @@ bool TranslatorVisitor::vfp_VABS(Cond cond, bool D, size_t Vd, bool sz, bool M, 
     const auto d = ToExtReg(sz, Vd, D);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg d, ExtReg m) {
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg sd, ExtReg sm) {
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPAbs(reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -754,10 +754,10 @@ bool TranslatorVisitor::vfp_VNEG(Cond cond, bool D, size_t Vd, bool sz, bool M, 
     const auto d = ToExtReg(sz, Vd, D);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg d, ExtReg m) {
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg sd, ExtReg sm) {
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPNeg(reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -771,10 +771,10 @@ bool TranslatorVisitor::vfp_VSQRT(Cond cond, bool D, size_t Vd, bool sz, bool M,
     const auto d = ToExtReg(sz, Vd, D);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg d, ExtReg m) {
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, m, [this](ExtReg sd, ExtReg sm) {
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPSqrt(reg_m);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -793,19 +793,19 @@ bool TranslatorVisitor::vfp_VCVTB(Cond cond, bool D, bool op, size_t Vd, bool sz
         const auto d = ToExtReg(sz, Vd, D);
         const auto m = ToExtReg(false, Vm, M);
 
-        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg d, ExtReg m) {
-            const auto reg_m = ir.LeastSignificantHalf(ir.GetExtendedRegister(m));
+        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg sd, ExtReg sm) {
+            const auto reg_m = ir.LeastSignificantHalf(ir.GetExtendedRegister(sm));
             const auto result = sz ? IR::U32U64{ir.FPHalfToDouble(reg_m, rounding_mode)} : IR::U32U64{ir.FPHalfToSingle(reg_m, rounding_mode)};
-            ir.SetExtendedRegister(d, result);
+            ir.SetExtendedRegister(sd, result);
         });
     } else {
         const auto d = ToExtReg(false, Vd, D);
         const auto m = ToExtReg(sz, Vm, M);
 
-        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg d, ExtReg m) {
-            const auto reg_m = ir.GetExtendedRegister(m);
+        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg sd, ExtReg sm) {
+            const auto reg_m = ir.GetExtendedRegister(sm);
             const auto result = sz ? ir.FPDoubleToHalf(reg_m, rounding_mode) : ir.FPSingleToHalf(reg_m, rounding_mode);
-            ir.SetExtendedRegister(d, ir.Or(ir.And(ir.GetExtendedRegister(d), ir.Imm32(0xFFFF0000)), ir.ZeroExtendToWord(result)));
+            ir.SetExtendedRegister(sd, ir.Or(ir.And(ir.GetExtendedRegister(sd), ir.Imm32(0xFFFF0000)), ir.ZeroExtendToWord(result)));
         });
     }
 }
@@ -825,19 +825,19 @@ bool TranslatorVisitor::vfp_VCVTT(Cond cond, bool D, bool op, size_t Vd, bool sz
         const auto d = ToExtReg(sz, Vd, D);
         const auto m = ToExtReg(false, Vm, M);
 
-        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg d, ExtReg m) {
-            const auto reg_m = ir.LeastSignificantHalf(ir.LogicalShiftRight(ir.GetExtendedRegister(m), ir.Imm8(16)));
+        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg sd, ExtReg sm) {
+            const auto reg_m = ir.LeastSignificantHalf(ir.LogicalShiftRight(ir.GetExtendedRegister(sm), ir.Imm8(16)));
             const auto result = sz ? IR::U32U64{ir.FPHalfToDouble(reg_m, rounding_mode)} : IR::U32U64{ir.FPHalfToSingle(reg_m, rounding_mode)};
-            ir.SetExtendedRegister(d, result);
+            ir.SetExtendedRegister(sd, result);
         });
     } else {
         const auto d = ToExtReg(false, Vd, D);
         const auto m = ToExtReg(sz, Vm, M);
 
-        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg d, ExtReg m) {
-            const auto reg_m = ir.GetExtendedRegister(m);
+        return EmitVfpVectorOperation(sz, d, m, [this, sz, rounding_mode](ExtReg sd, ExtReg sm) {
+            const auto reg_m = ir.GetExtendedRegister(sm);
             const auto result = sz ? ir.FPDoubleToHalf(reg_m, rounding_mode) : ir.FPSingleToHalf(reg_m, rounding_mode);
-            ir.SetExtendedRegister(d, ir.Or(ir.And(ir.GetExtendedRegister(d), ir.Imm32(0x0000FFFF)), ir.LogicalShiftLeft(ir.ZeroExtendToWord(result), ir.Imm8(16))));
+            ir.SetExtendedRegister(sd, ir.Or(ir.And(ir.GetExtendedRegister(sd), ir.Imm32(0x0000FFFF)), ir.LogicalShiftLeft(ir.ZeroExtendToWord(result), ir.Imm8(16))));
         });
     }
 }
@@ -1097,10 +1097,10 @@ bool TranslatorVisitor::vfp_VRINT_rm(bool D, size_t rm, size_t Vd, bool sz, bool
     const auto d = ToExtReg(sz, Vd, D);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, m, [this, rounding_mode](ExtReg d, ExtReg m) {
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, m, [this, rounding_mode](ExtReg sd, ExtReg sm) {
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = ir.FPRoundInt(reg_m, rounding_mode, false);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 
@@ -1119,10 +1119,10 @@ bool TranslatorVisitor::vfp_VCVT_rm(bool D, size_t rm, size_t Vd, bool sz, bool 
     const auto d = ToExtReg(false, Vd, D);
     const auto m = ToExtReg(sz, Vm, M);
 
-    return EmitVfpVectorOperation(sz, d, m, [this, rounding_mode, unsigned_](ExtReg d, ExtReg m) {
-        const auto reg_m = ir.GetExtendedRegister(m);
+    return EmitVfpVectorOperation(sz, d, m, [this, rounding_mode, unsigned_](ExtReg sd, ExtReg sm) {
+        const auto reg_m = ir.GetExtendedRegister(sm);
         const auto result = unsigned_ ? ir.FPToFixedU32(reg_m, 0, rounding_mode) : ir.FPToFixedS32(reg_m, 0, rounding_mode);
-        ir.SetExtendedRegister(d, result);
+        ir.SetExtendedRegister(sd, result);
     });
 }
 

@@ -7,6 +7,10 @@ ExclusiveMonitor::ExclusiveMonitor(IMemory & memory, Dynarmic::ExclusiveMonitor 
 {
 }
 
+ExclusiveMonitor::~ExclusiveMonitor()
+{
+}
+
 uint8_t ExclusiveMonitor::ExclusiveRead8(uint32_t coreIndex, uint64_t addr)
 {
     return m_monitor.ReadAndMark<uint8_t>(coreIndex, addr, [&]() -> uint8_t { return m_memory.Read8(addr); });
@@ -30,10 +34,10 @@ uint64_t ExclusiveMonitor::ExclusiveRead64(uint32_t coreIndex, uint64_t addr)
 void ExclusiveMonitor::ExclusiveRead128(uint32_t coreIndex, uint64_t addr, uint64_t & outHigh, uint64_t & outLow)
 {
     u128 result = m_monitor.ReadAndMark<u128>(coreIndex, addr, [&]() -> u128 {
-        u128 result;
-        result[0] = m_memory.Read64(addr);
-        result[1] = m_memory.Read64(addr + 8);
-        return result;
+        u128 sresult;
+        sresult[0] = m_memory.Read64(addr);
+        sresult[1] = m_memory.Read64(addr + 8);
+        return sresult;
     });
     outLow = result[0];
     outHigh = result[1];

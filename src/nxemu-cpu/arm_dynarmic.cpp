@@ -30,6 +30,7 @@ CpuHaltReason TranslateHaltReason(Dynarmic::HaltReason hr)
     case (Dynarmic::HaltReason::UserDefined3 | Dynarmic::HaltReason::UserDefined2): return CpuHaltReason::SupervisorCallBreakLoop;
     case Dynarmic::HaltReason::UserDefined4: return CpuHaltReason::InstructionBreakpoint;
     case Dynarmic::HaltReason::UserDefined6: return CpuHaltReason::PrefetchAbort;
+    default: break;
     }
     UNIMPLEMENTED();
     return CpuHaltReason::StepThread;

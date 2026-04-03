@@ -17,6 +17,10 @@ ExclusiveMonitor::ExclusiveMonitor(size_t processor_count) :
 {
 }
 
+ExclusiveMonitor::~ExclusiveMonitor()
+{
+}
+
 size_t ExclusiveMonitor::GetProcessorCount() const
 {
     return exclusive_addresses.size();

@@ -43,9 +43,9 @@ private:
     ArmDynarmic64(const ArmDynarmic64 &) = delete;
     ArmDynarmic64 & operator=(const ArmDynarmic64 &) = delete;
 
-    std::unique_ptr<Dynarmic::A64::Jit> MakeJit(IKernelProcess & process) const;
+    std::shared_ptr<Dynarmic::A64::Jit> MakeJit(IKernelProcess & process) const;
 
-    std::unique_ptr<Dynarmic::A64::Jit> m_jit{};
+    std::shared_ptr<Dynarmic::A64::Jit> m_jit{};
     std::unique_ptr<DynarmicCallbacks64> m_cb{};
     bool m_uses_wall_clock;
 

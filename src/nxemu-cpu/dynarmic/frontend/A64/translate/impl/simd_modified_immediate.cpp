@@ -114,11 +114,11 @@ bool TranslatorVisitor::FMOV_3(bool Q, Imm<1> a, Imm<1> b, Imm<1> c, Imm<1> d, I
 
     const Imm<8> imm8 = concatenate(a, b, c, d, e, f, g, h);
     const u16 imm16 = [&imm8] {
-        u16 imm16 = 0;
-        imm16 |= imm8.Bit<7>() ? 0x8000 : 0;
-        imm16 |= imm8.Bit<6>() ? 0x3000 : 0x4000;
-        imm16 |= imm8.Bits<0, 5, u16>() << 6;
-        return imm16;
+        u16 simm16 = 0;
+        simm16 |= imm8.Bit<7>() ? 0x8000 : 0;
+        simm16 |= imm8.Bit<6>() ? 0x3000 : 0x4000;
+        simm16 |= imm8.Bits<0, 5, u16>() << 6;
+        return simm16;
     }();
     const u64 imm64 = mcl::bit::replicate_element<u16, u64>(imm16);
 

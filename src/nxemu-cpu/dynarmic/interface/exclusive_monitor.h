@@ -25,6 +25,7 @@ public:
     ///                        exclusive monitor. Each processor must have a
     ///                        unique id.
     explicit ExclusiveMonitor(size_t processor_count);
+    virtual ~ExclusiveMonitor();
 
     size_t GetProcessorCount() const;
 

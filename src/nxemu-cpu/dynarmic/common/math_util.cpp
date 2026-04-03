@@ -16,10 +16,10 @@ u8 RecipEstimate(u64 a) {
     static const LUT lut = [] {
         LUT result{};
         for (u64 i = 0; i < result.size(); i++) {
-            u64 a = i + lut_offset;
+            u64 val = i + lut_offset;
 
-            a = a * 2 + 1;
-            u64 b = (1u << 19) / a;
+            val = val * 2 + 1;
+            u64 b = (1u << 19) / val;
             result[i] = static_cast<u8>((b + 1) / 2);
         }
         return result;
@@ -37,22 +37,22 @@ u8 RecipSqrtEstimate(u64 a) {
     static const LUT lut = [] {
         LUT result{};
         for (u64 i = 128; i < result.size(); i++) {
-            u64 a = i;
+            u64 val = i;
 
             // Convert to u.10 (with 8 significant bits), force to odd
-            if (a < 256) {
+            if (val < 256) {
                 // [0.25, 0.5)
-                a = a * 2 + 1;
+                val = val * 2 + 1;
             } else {
                 // [0.5, 1.0)
-                a = (a | 1) * 2;
+                val = (val | 1) * 2;
             }
 
             // Calculate largest b which for which b < 1.0 / sqrt(a).
             // Start from b = 1.0 (in u.9) since b cannot be smaller.
             u64 b = 512;
             // u.10 * u.9 * u.9 -> u.28
-            while (a * (b + 1) * (b + 1) < (1u << 28)) {
+            while (val * (b + 1) * (b + 1) < (1u << 28)) {
                 b++;
             }
 

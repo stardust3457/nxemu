@@ -77,9 +77,9 @@ static void* EmitExclusiveReadCallTrampoline(oaknut::CodeGenerator& code, const 
 
     oaknut::Label l_addr, l_this;
 
-    auto fn = [](const A32::UserConfig& conf, A32::VAddr vaddr) -> T {
-        return conf.global_monitor->ReadAndMark<T>(conf.processor_id, vaddr, [&]() -> T {
-            return (conf.callbacks->*callback)(vaddr);
+    auto fn = [](const A32::UserConfig& sconf, A32::VAddr svaddr) -> T {
+        return sconf.global_monitor->ReadAndMark<T>(sconf.processor_id, svaddr, [&]() -> T {
+            return (sconf.callbacks->*callback)(svaddr);
         });
     };
 
@@ -132,10 +132,10 @@ static void* EmitExclusiveWriteCallTrampoline(oaknut::CodeGenerator& code, const
 
     oaknut::Label l_addr, l_this;
 
-    auto fn = [](const A32::UserConfig& conf, A32::VAddr vaddr, T value) -> u32 {
-        return conf.global_monitor->DoExclusiveOperation<T>(conf.processor_id, vaddr,
+    auto fn = [](const A32::UserConfig& sconf, A32::VAddr vaddr, T value) -> u32 {
+        return sconf.global_monitor->DoExclusiveOperation<T>(sconf.processor_id, vaddr,
                                                             [&](T expected) -> bool {
-                                                                return (conf.callbacks->*callback)(vaddr, value, expected);
+                                                                return (sconf.callbacks->*callback)(vaddr, value, expected);
                                                             })
                  ? 0
                  : 1;

@@ -116,6 +116,11 @@ struct Jit::Impl final {
         return current_state.vec;
     }
 
+    uint64_t * GetVectorData()
+    {
+        return current_state.vec.data();
+    }
+
     std::uint32_t Fpcr() const {
         return current_state.fpcr;
     }
@@ -278,6 +283,11 @@ std::array<Vector, 32> Jit::GetVectors() const {
 
 void Jit::SetVectors(const std::array<Vector, 32>& value) {
     std::memcpy(impl->VecRegs().data(), value.data(), sizeof(value));
+}
+
+uint64_t * Jit::GetVectorData()
+{
+    return impl->GetVectorData();
 }
 
 std::uint32_t Jit::GetFpcr() const {

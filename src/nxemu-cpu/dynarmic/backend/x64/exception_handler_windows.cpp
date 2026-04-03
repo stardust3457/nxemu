@@ -185,7 +185,7 @@ struct ExceptionHandler::Impl final {
         code.cmp(code.rax, static_cast<u32>(code.GetTotalCodeSize()));
         code.ja(exception_handler_without_cb);
 
-        code.sub(code.rsp, 8);
+        code.sub(code.rsp, 8 + ABI_SHADOW_SPACE);
         code.mov(code.ABI_PARAM1, mcl::bit_cast<u64>(&cb));
         code.mov(code.ABI_PARAM2, code.ABI_PARAM3);
         code.CallLambda(
@@ -196,7 +196,7 @@ struct ExceptionHandler::Impl final {
                 *mcl::bit_cast<u64*>(ctx->Rsp) = fc.ret_rip;
                 ctx->Rip = fc.call_rip;
             });
-        code.add(code.rsp, 8);
+        code.add(code.rsp, 8 + ABI_SHADOW_SPACE);
         code.mov(code.eax, static_cast<u32>(ExceptionContinueExecution));
         code.ret();
 
