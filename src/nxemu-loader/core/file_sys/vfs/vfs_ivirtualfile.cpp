@@ -1,4 +1,7 @@
 #include "vfs_ivirtualfile.h"
+#include "vfs_ivirtualdirectory.h"
+#include "yuzu_common/yuzu_assert.h"
+#include <memory>
 
 VfsVirtualFile::VfsVirtualFile(IVirtualFile * file) :
     m_file(file)
@@ -15,13 +18,13 @@ VfsVirtualFile::~VfsVirtualFile()
 
 std::string VfsVirtualFile::GetName() const
 {
-    __debugbreak();
+    UNIMPLEMENTED();
     return "";
 }
 
 std::string VfsVirtualFile::GetExtension() const
 {
-    __debugbreak();
+    UNIMPLEMENTED();
     return "";
 }
 
@@ -32,25 +35,29 @@ std::size_t VfsVirtualFile::GetSize() const
 
 bool VfsVirtualFile::Resize(std::size_t new_size)
 {
-    __debugbreak();
+    UNIMPLEMENTED();
     return false;
 }
 
 FileSys::VirtualDir VfsVirtualFile::GetContainingDirectory() const
 {
-    //__debugbreak();
-    return {};
+    IVirtualDirectory * const dir = m_file->GetContainingDirectory();
+    if (dir == nullptr)
+    {
+        return {};
+    }
+    return std::make_shared<VfsVirtualDirectory>(dir);
 }
 
 bool VfsVirtualFile::IsWritable() const
 {
-    __debugbreak();
+    UNIMPLEMENTED();
     return false;
 }
 
 bool VfsVirtualFile::IsReadable() const
 {
-    __debugbreak();
+    UNIMPLEMENTED();
     return false;
 }
 
@@ -61,12 +68,12 @@ std::size_t VfsVirtualFile::Read(u8 * data, std::size_t length, std::size_t offs
 
 std::size_t VfsVirtualFile::Write(const u8 * data, std::size_t length, std::size_t offset)
 {
-    __debugbreak();
+    UNIMPLEMENTED();
     return 0;
 }
 
 bool VfsVirtualFile::Rename(std::string_view name)
 {
-    __debugbreak();
+    UNIMPLEMENTED();
     return false;
 }

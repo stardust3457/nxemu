@@ -291,6 +291,9 @@
     <ClCompile Include="rom_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\file_sys\vfs\vfs_ivirtualdirectory.cpp">
+      <Filter>Source Files\core\file_sys\vfs</Filter>
+    </ClCompile>
     <ClCompile Include="core\file_sys\vfs\vfs_ivirtualfile.cpp">
       <Filter>Source Files\core\file_sys\vfs</Filter>
     </ClCompile>
@@ -553,6 +556,9 @@
     </ClInclude>
     <ClInclude Include="rom_info.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\file_sys\vfs\vfs_ivirtualdirectory.h">
+      <Filter>Header Files\core\file_sys\vfs</Filter>
     </ClInclude>
     <ClInclude Include="core\file_sys\vfs\vfs_ivirtualfile.h">
       <Filter>Header Files\core\file_sys\vfs</Filter>

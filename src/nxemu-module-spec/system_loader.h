@@ -206,6 +206,7 @@ nxinterface IVirtualFile
     virtual uint64_t ReadBytes(uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
     virtual uint64_t WriteBytes(const uint8_t * data, uint64_t datalen, uint64_t offset) = 0;
     virtual IVirtualDirectory * ExtractRomFS() = 0;
+    virtual IVirtualDirectory * GetContainingDirectory() const = 0;
     virtual IVirtualFile * Duplicate() = 0;
     virtual void Release() = 0;
 };
@@ -266,7 +267,7 @@ nxinterface IFileSystemController
     virtual uint64_t GetFreeSpaceSize(StorageId id) const = 0;
     virtual uint64_t GetTotalSpaceSize(StorageId id) const = 0;
 
-    bool OpenSDMC(IVirtualDirectory** out_sdmc) const = 0;
+    virtual bool OpenSDMC(IVirtualDirectory** out_sdmc) const = 0;
 };
 
 nxinterface IManualContentProvider
