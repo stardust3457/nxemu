@@ -74,6 +74,7 @@ private:
     static void GameFileChanged(const char * setting, void * userData);
     static void GameNameChanged(const char * setting, void * userData);
     static void DisplayedFramesChanged(const char * setting, void * userData);
+    static void HotKeysChanged(const char * setting, void * userData);
     void UpdateStatusbar();
     void DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int32_t y);
     void UpdateInputDrivers();
@@ -87,6 +88,9 @@ private:
     void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
     void UpdateStatusBar();
+    const MenuBarAccelerator * HotkeyAccelerator(const char * name);
+    const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);
+    bool ProcessMenuBarAccelerator(const char * hotkeyId);
 
     // IWindowDestroySink
     void OnWindowDestroy(HWINDOW hWnd) override;

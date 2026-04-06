@@ -21,35 +21,16 @@ SystemConfigGameBrowser::SystemConfigGameBrowser(ISciterUI & sciterUI, SystemCon
     m_window(window),
     m_page(page)
 {
-    SciterElement pageNav = page.GetElementByID("GameBrowserTabNav");
-    std::shared_ptr<void> interfacePtr = pageNav.IsValid() ? m_sciterUI.GetElementInterface(pageNav, IID_IPAGENAV) : nullptr;
-    if (interfacePtr)
+    m_config.SetupPage(page, gameBrowserSettings, sizeof(gameBrowserSettings) / sizeof(gameBrowserSettings[0]));
+
+    SciterElement root(m_window.GetRootElement());
+    if (root.IsValid())
     {
-        m_pageNav = std::static_pointer_cast<IPageNav>(interfacePtr);
-        m_pageNav->AddSink(this);
+        SciterElement addButton = root.GetElementByID("gameDirectoryAdd");
+        m_sciterUI.AttachHandler(addButton, IID_ICLICKSINK, (IClickSink *)this);
+        SciterElement removeButton = root.GetElementByID("gameDirectoryRemove");
+        m_sciterUI.AttachHandler(removeButton, IID_ICLICKSINK, (IClickSink *)this);
     }
-}
-
-bool SystemConfigGameBrowser::PageNavChangeFrom(const std::string& /*pageName*/, SCITER_ELEMENT /*pageNav*/)
-{
-    return true;
-}
-
-bool SystemConfigGameBrowser::PageNavChangeTo(const std::string& /*pageName*/, SCITER_ELEMENT /*pageNav*/)
-{
-    return true;
-}
-
-void SystemConfigGameBrowser::PageNavCreatedPage(const std::string & pageName, SCITER_ELEMENT page)
-{
-    if (pageName == "GameBrowser")
-    {
-        SetupGameBrowserPage(page);
-    }
-}
-
-void SystemConfigGameBrowser::PageNavPageChanged(const std::string& /*pageName*/, SCITER_ELEMENT /*pageNav*/)
-{
 }
 
 bool SystemConfigGameBrowser::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, uint32_t /*reason*/)
@@ -74,21 +55,6 @@ bool SystemConfigGameBrowser::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*s
         RemoveSelectedDirectory();
     }
     return true;
-}
-
-void SystemConfigGameBrowser::SetupGameBrowserPage(SciterElement page)
-{
-    m_gameBrowserPage = page;
-    m_config.SetupPage(page, gameBrowserSettings, sizeof(gameBrowserSettings) / sizeof(gameBrowserSettings[0]));
-
-    SciterElement root(m_window.GetRootElement());
-    if (root.IsValid())
-    {        
-        SciterElement addButton = root.GetElementByID("gameDirectoryAdd");
-        m_sciterUI.AttachHandler(addButton, IID_ICLICKSINK, (IClickSink*)this);
-        SciterElement removeButton = root.GetElementByID("gameDirectoryRemove");
-        m_sciterUI.AttachHandler(removeButton, IID_ICLICKSINK, (IClickSink*)this);
-    }
 }
 
 void SystemConfigGameBrowser::SelectDirectoryItem(const SciterElement & gameDirectoryList, SCITER_ELEMENT source)
@@ -137,8 +103,5 @@ void SystemConfigGameBrowser::RemoveSelectedDirectory()
 
 void SystemConfigGameBrowser::SaveSetting(void)
 {
-    if (m_gameBrowserPage != nullptr)
-    {
-        m_config.SavePage(m_gameBrowserPage, gameBrowserSettings, sizeof(gameBrowserSettings) / sizeof(gameBrowserSettings[0]));
-    }
+    m_config.SavePage(m_page, gameBrowserSettings, sizeof(gameBrowserSettings) / sizeof(gameBrowserSettings[0]));
 }
