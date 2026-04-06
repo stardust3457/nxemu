@@ -18,7 +18,6 @@ namespace
         ConfigSetting(ConfigSetting::ComboBox, "AstcDecodeMode", false, Settings::EnumMetadata<Settings::AstcDecodeMode>::Index(), NXVideoSetting::AstcDecodeMode),
         ConfigSetting(ConfigSetting::ComboBox, "VSyncMode", true, Settings::EnumMetadata<Settings::VSyncMode>::Index(), NXVideoSetting::VSyncMode),
         ConfigSetting(ConfigSetting::ComboBox, "NvdecEmulation", false, Settings::EnumMetadata<Settings::NvdecEmulation>::Index(), NXVideoSetting::NvdecEmulation),
-        ConfigSetting(ConfigSetting::ComboBox, "FullscreenMode", true, Settings::EnumMetadata<Settings::FullscreenMode>::Index(), NXVideoSetting::FullscreenMode),
         ConfigSetting(ConfigSetting::ComboBox, "AspectRatio", true, Settings::EnumMetadata<Settings::AspectRatio>::Index(), NXVideoSetting::AspectRatio),
         ConfigSetting(ConfigSetting::ComboBox, "ResolutionSetup", false, Settings::EnumMetadata<Settings::ResolutionSetup>::Index(), NXVideoSetting::ResolutionSetup),
         ConfigSetting(ConfigSetting::ComboBox, "ScalingFilter", true, Settings::EnumMetadata<Settings::ScalingFilter>::Index(), NXVideoSetting::ScalingFilter),
