@@ -19,6 +19,16 @@
 
 #include <Windows.h>
 
+#ifdef _WIN32
+struct Win32FullscreenState
+{
+    bool active = false;
+    WINDOWPLACEMENT placement{};
+    LONG_PTR savedStyle = 0;
+    LONG_PTR savedExStyle = 0;
+};
+#endif
+
 namespace
 {
 enum
@@ -57,6 +67,9 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_windowTitle(windowTitle),
     m_volumePopup(false),
     m_emulationRunning(false)
+#ifdef _WIN32
+    , m_win32Fullscreen(std::make_unique<Win32FullscreenState>())
+#endif
 {
     SettingsStore & settings = SettingsStore::GetInstance();
     settings.RegisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
@@ -137,6 +150,10 @@ void SciterMainWindow::ResetMenu()
         systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "Stop"));
         mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "System", &systemMenu));    
     }
+
+    MenuBarItemList viewMenu;
+    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "Fullscreen"));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "View", &viewMenu));
 
     MenuBarItemList optionsMenu;
     optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
@@ -587,6 +604,11 @@ void SciterMainWindow::OnMenuItem(int32_t id, SCITER_ELEMENT /*item*/)
     case ID_SYSTEM_STOP: OnStopGame(); break;
     case ID_EMULATION_CONTROLLERS: OnInputConfig(); break;
     case ID_EMULATION_CONFIGURE: OnSystemConfig(); break;
+    case ID_VIEW_FULLSCREEN:
+#ifdef _WIN32
+        ToggleFullscreen();
+#endif
+        break;
     default:
         if (id >= ID_RECENT_FILE_START && id <= ID_RECENT_FILE_END)
         {
@@ -607,6 +629,13 @@ float SciterMainWindow::PixelRatio() const
 
 bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
+#ifdef _WIN32
+    if (m_win32Fullscreen && m_win32Fullscreen->active && keyCode == SCITER_KEY_ESCAPE)
+    {
+        ExitFullscreen();
+        return true;
+    }
+#endif
     if (ProcessMenuBarAccelerator(IsMenuBarAccelerator((uint32_t)keyCode, keyboardState)))
     {
         return true;
@@ -651,18 +680,147 @@ bool SciterMainWindow::OnSizeChanged(SCITER_ELEMENT elem)
     SciterElement rootElement(m_window->GetRootElement());
     if (elem == rootElement.GetElementByID("MainContents"))
     {
-        SciterElement::RECT rect = SciterElement(elem).GetLocation();
-        uint32_t width = rect.right - rect.left;
-        uint32_t height = rect.bottom - rect.top;
-        MoveWindow((HWND)m_renderWindow, rect.left, rect.top, width, height, false);
-        if (m_modules.IsValid())
-        {
-            IVideo & video = m_modules.Modules().Video();
-            video.UpdateFramebufferLayout(width, height);
-        }
+        LayoutRenderWindow();
     }
     return false;
 }
+
+void SciterMainWindow::LayoutRenderWindow()
+{
+    if (m_renderWindow == nullptr)
+    {
+        return;
+    }
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
+    if (!mainContents.IsValid())
+    {
+        return;
+    }
+    SciterElement::RECT rect = mainContents.GetLocation();
+    uint32_t width = rect.right - rect.left;
+    uint32_t height = rect.bottom - rect.top;
+    MoveWindow((HWND)m_renderWindow, rect.left, rect.top, width, height, false);
+    if (m_modules.IsValid())
+    {
+        IVideo & video = m_modules.Modules().Video();
+        video.UpdateFramebufferLayout(width, height);
+    }
+}
+
+#ifdef _WIN32
+void SciterMainWindow::ToggleFullscreen()
+{
+    if (!m_win32Fullscreen)
+    {
+        return;
+    }
+    if (m_win32Fullscreen->active)
+    {
+        ExitFullscreen();
+    }
+    else
+    {
+        EnterFullscreen();
+    }
+}
+
+void SciterMainWindow::EnterFullscreen()
+{
+    if (m_window == nullptr || !m_win32Fullscreen || m_win32Fullscreen->active)
+    {
+        return;
+    }
+    HWND hwnd = (HWND)m_window->GetHandle();
+    Win32FullscreenState & fs = *m_win32Fullscreen;
+    fs.placement.length = sizeof(WINDOWPLACEMENT);
+    if (!GetWindowPlacement(hwnd, &fs.placement))
+    {
+        return;
+    }
+    fs.savedStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
+    fs.savedExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+
+    HMONITOR hMon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi = { sizeof(MONITORINFO) };
+    if (!GetMonitorInfo(hMon, &mi))
+    {
+        return;
+    }
+
+    const int w = mi.rcMonitor.right - mi.rcMonitor.left;
+    const int h = mi.rcMonitor.bottom - mi.rcMonitor.top;
+
+    LONG_PTR style = fs.savedStyle;
+    style &= ~(WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_BORDER);
+    SetWindowLongPtr(hwnd, GWL_STYLE, style);
+
+    SetWindowPos(hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, w, h, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+    SciterElement hdr(m_rootElement.FindFirst("header"));
+    if (hdr.IsValid())
+    {
+        hdr.AddClassName("nx-fullscreen-hide");
+    }
+    SciterElement mm(m_rootElement.GetElementByID("MainMenu"));
+    if (mm.IsValid())
+    {
+        mm.AddClassName("nx-fullscreen-hide");
+    }
+    SciterElement sb(m_rootElement.GetElementByID("StatusBar"));
+    if (sb.IsValid())
+    {
+        sb.AddClassName("nx-fullscreen-hide");
+    }
+
+    fs.active = true;
+    m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
+    if (mainContents.IsValid())
+    {
+        mainContents.Update(true);
+    }
+    LayoutRenderWindow();
+}
+
+void SciterMainWindow::ExitFullscreen()
+{
+    if (m_window == nullptr || !m_win32Fullscreen || !m_win32Fullscreen->active)
+    {
+        return;
+    }
+    HWND hwnd = (HWND)m_window->GetHandle();
+    Win32FullscreenState & fs = *m_win32Fullscreen;
+
+    SciterElement hdr(m_rootElement.FindFirst("header"));
+    if (hdr.IsValid())
+    {
+        hdr.RemoveClassName("nx-fullscreen-hide");
+    }
+    SciterElement mm(m_rootElement.GetElementByID("MainMenu"));
+    if (mm.IsValid())
+    {
+        mm.RemoveClassName("nx-fullscreen-hide");
+    }
+    SciterElement statusEl(m_rootElement.GetElementByID("StatusBar"));
+    if (statusEl.IsValid())
+    {
+        statusEl.RemoveClassName("nx-fullscreen-hide");
+    }
+
+    SetWindowLongPtr(hwnd, GWL_STYLE, fs.savedStyle);
+    SetWindowLongPtr(hwnd, GWL_EXSTYLE, fs.savedExStyle);
+    SetWindowPlacement(hwnd, &fs.placement);
+
+    fs.active = false;
+    m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
+    if (mainContents.IsValid())
+    {
+        mainContents.Update(true);
+    }
+    LayoutRenderWindow();
+}
+#endif
 
 bool SciterMainWindow::OnClick(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t /*reason*/)
 {

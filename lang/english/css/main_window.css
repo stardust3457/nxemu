@@ -235,3 +235,8 @@ rombrowser .games-grid[data-size="4"] .rom-card
     transform: scale(1.25);
   }
 }
+
+.nx-fullscreen-hide
+{
+  display: none !important;
+}

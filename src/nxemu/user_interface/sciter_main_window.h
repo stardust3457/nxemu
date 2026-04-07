@@ -9,6 +9,10 @@
 #include "startup_checks.h"
 #include "user_interface/widgets/rom_browser.h"
 
+#ifdef _WIN32
+struct Win32FullscreenState;
+#endif
+
 class SystemConfig;
 class InputConfig;
 
@@ -36,6 +40,9 @@ class SciterMainWindow :
         // Emulation Menu
         ID_EMULATION_CONTROLLERS,
         ID_EMULATION_CONFIGURE,
+
+        // View Menu
+        ID_VIEW_FULLSCREEN,
 
         // Recent files
         ID_RECENT_FILE_START,
@@ -92,6 +99,13 @@ private:
     const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);
     bool ProcessMenuBarAccelerator(const char * hotkeyId);
 
+#ifdef _WIN32
+    void ToggleFullscreen();
+    void EnterFullscreen();
+    void ExitFullscreen();
+#endif
+    void LayoutRenderWindow();
+
     // IWindowDestroySink
     void OnWindowDestroy(HWINDOW hWnd) override;
 
@@ -141,4 +155,7 @@ private:
     bool m_useSpeedLimit;
     uint32_t m_speedLimit;
     bool m_emulationRunning;
+#ifdef _WIN32
+    std::unique_ptr<Win32FullscreenState> m_win32Fullscreen;
+#endif
 };
