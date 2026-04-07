@@ -367,9 +367,16 @@ Result FSP_SRV::OpenDataStorageByDataId(OutInterface<IStorage> out_interface, St
 {
     LOG_DEBUG(Service_FS, "called with storage_id={:02X}, unknown={:08X}, title_id={:016X}", storage_id, unknown, title_id);
     IVirtualFilePtr data(romfs_controller->OpenRomFS(title_id, storage_id, LoaderContentRecordType::Data));
-    if (!data)
+    if (!data) 
     {
-        UNIMPLEMENTED();
+        ISystemloader & loader = system.GetSystemloader();
+        IVirtualFile * archive = loader.SynthesizeSystemArchive(title_id);
+        if (archive != nullptr) 
+        {
+            *out_interface = std::make_shared<IStorage>(system, IVirtualFilePtr(archive));
+            R_SUCCEED();
+        }
+        LOG_ERROR(Service_FS, "Could not open data storage with title_id={:016X}, storage_id={:02X}", title_id, storage_id);
         R_RETURN(ResultUnknown);
     }
     IVirtualFilePtr patched_file(romfs_controller->PatchBaseNca(title_id, storage_id, LoaderContentRecordType::Data, *data));

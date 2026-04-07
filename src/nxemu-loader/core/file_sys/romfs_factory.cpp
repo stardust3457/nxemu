@@ -115,6 +115,10 @@ IVirtualFile * RomFsControllerImpl::PatchBaseNca(uint64_t title_id, StorageId st
 IVirtualFile * RomFsControllerImpl::OpenRomFS(u64 title_id, StorageId storage_id, LoaderContentRecordType type)
 {
     FileSys::VirtualFile fs = m_factory->Open(title_id, storage_id, type);
+    if (fs == nullptr)
+    {
+        return nullptr;
+    }
     return std::make_unique<VirtualFileImpl>(fs).release();
 }
 

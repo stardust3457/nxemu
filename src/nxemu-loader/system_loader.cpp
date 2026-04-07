@@ -284,7 +284,11 @@ IFileSystemController & Systemloader::FileSystemController()
 IVirtualFile * Systemloader::SynthesizeSystemArchive(const uint64_t title_id)
 {
     FileSys::VirtualFile file = FileSys::SystemArchive::SynthesizeSystemArchive(title_id);
-    return std::make_unique<VirtualFileImpl>(file).release();
+    if (file)
+    {
+        return std::make_unique<VirtualFileImpl>(file).release();
+    }
+    return nullptr;
 }
 
 uint32_t Systemloader::GetContentProviderEntriesCount(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId)

@@ -21,9 +21,8 @@ IStorage::IStorage(Core::System& system_, IVirtualFilePtr && backend_)
     RegisterHandlers(functions);
 }
 
-Result IStorage::Read(
-    OutBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure> out_bytes,
-    s64 offset, s64 length) {
+Result IStorage::Read(OutBuffer<BufferAttr_HipcMapAlias | BufferAttr_HipcMapTransferAllowsNonSecure> out_bytes, s64 offset, s64 length)
+{
     LOG_DEBUG(Service_FS, "called, offset=0x{:X}, length={}", offset, length);
 
     R_UNLESS(length >= 0, FileSys::ResultInvalidSize);
