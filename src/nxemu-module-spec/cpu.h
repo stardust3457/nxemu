@@ -26,6 +26,7 @@ enum class CpuHaltReason
     SupervisorCallBreakLoop,
     InstructionBreakpoint,
     PrefetchAbort,
+    PrefetchAbortBreakLoop,
 };
 
 struct CpuDebugWatchpoint

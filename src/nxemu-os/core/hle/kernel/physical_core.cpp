@@ -114,10 +114,10 @@ void PhysicalCore::RunThread(Kernel::KThread * thread)
 
         // Determine why we stopped.
         const bool supervisor_call = hr == CpuHaltReason::SupervisorCall || hr == CpuHaltReason::SupervisorCallBreakLoop;
-        const bool prefetch_abort = hr == CpuHaltReason::PrefetchAbort;
+        const bool prefetch_abort = hr == CpuHaltReason::PrefetchAbort || hr == CpuHaltReason::PrefetchAbortBreakLoop;
         const bool breakpoint = hr == CpuHaltReason::InstructionBreakpoint;
         const bool data_abort = hr == CpuHaltReason::DataAbort;
-        const bool interrupt = hr == CpuHaltReason::BreakLoop || hr == CpuHaltReason::SupervisorCallBreakLoop;
+        const bool interrupt = hr == CpuHaltReason::BreakLoop || hr == CpuHaltReason::SupervisorCallBreakLoop || hr == CpuHaltReason::PrefetchAbortBreakLoop;
 
         // Since scheduling may occur here, we cannot use any cached
         // state after returning from calls we make.
