@@ -28,6 +28,7 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(SolutionDir)external\opus;$(SolutionDir)external\opus\celt;$(SolutionDir)external\opus\include;$(SolutionDir)external\opus\silk;$(SolutionDir)external\opus\silk\float;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OPUS_BUILD;ENABLE_HARDENING;DISABLE_DEBUG_FLOAT;USE_ALLOCA;OPUS_HAVE_RTCD;OPUS_X86_MAY_HAVE_SSE;OPUS_X86_PRESUME_SSE;OPUS_X86_MAY_HAVE_SSE2;OPUS_X86_PRESUME_SSE2;OPUS_X86_MAY_HAVE_SSE4_1;OPUS_X86_MAY_HAVE_AVX2;HAVE_LRINT;HAVE_LRINTF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
