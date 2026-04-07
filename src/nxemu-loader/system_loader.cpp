@@ -114,6 +114,7 @@ bool Systemloader::Initialize()
 
 bool Systemloader::SelectAndLoad(void * parentWindow)
 {
+#ifndef __ANDROID__
     Path fileToOpen;
     std::string fileName;
     const char * filter = "Switch Files (*.dxci, *.dnsp, *.nro)\0*.dxci;*.dnsp;*.nro;\0All files (*.*)\0*.*\0";
@@ -126,6 +127,9 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
         return false;
     }
     return LoadRom(fileName.c_str());
+#else
+    return false;
+#endif
 }
 
 bool Systemloader::LoadRom(const char * fileName)

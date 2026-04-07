@@ -367,7 +367,7 @@ Result FSP_SRV::OpenDataStorageByDataId(OutInterface<IStorage> out_interface, St
 {
     LOG_DEBUG(Service_FS, "called with storage_id={:02X}, unknown={:08X}, title_id={:016X}", storage_id, unknown, title_id);
     IVirtualFilePtr data(romfs_controller->OpenRomFS(title_id, storage_id, LoaderContentRecordType::Data));
-    if (!data) 
+    if (!data)
     {
         ISystemloader & loader = system.GetSystemloader();
         IVirtualFile * archive = loader.SynthesizeSystemArchive(title_id);

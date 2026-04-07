@@ -114,7 +114,9 @@ void CALL DestroySystemLoader(ISystemloader * systemloader)
     g_loaderManager = nullptr;
 }
 
+#ifdef _WIN32
 extern "C" int __stdcall DllMain(void * /*hinst*/, unsigned long /*fdwReason*/, void * /*lpReserved*/)
 {
     return true;
 }
+#endif

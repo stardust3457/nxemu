@@ -1,13 +1,17 @@
 #include "render_window.h"
 #include "yuzu_video_core/frontend/graphics_context.h"
 #include "yuzu_common/settings.h"
+#if defined(_WIN32)
 #include <Windows.h>
 #include <glad/glad.h>
 #include <glad/glad_wgl.h>
+#endif
 #include <nxemu-module-spec/video.h>
 #include <nxemu-core/settings/identifiers.h>
 
 extern IModuleSettings * g_settings;
+
+#if defined(_WIN32)
 
 class OpenGLSharedContext : public Core::Frontend::GraphicsContext
 {
@@ -215,6 +219,8 @@ private:
 
 bool OpenGLSharedContext::m_openglLoaded = false;
 
+#endif // defined(_WIN32)
+
 class DummyContext : public Core::Frontend::GraphicsContext
 {
 };
@@ -223,8 +229,12 @@ RenderWindow::RenderWindow(IRenderWindow & renderWindow) :
     m_renderWindow(renderWindow),
     m_firstFrame(false)
 {
-#ifdef WIN32
+#if defined(_WIN32)
     window_info.type = Core::Frontend::WindowSystemType::Windows;
+#elif defined(__ANDROID__)
+    window_info.type = Core::Frontend::WindowSystemType::Android;
+#else
+    window_info.type = Core::Frontend::WindowSystemType::Headless;
 #endif
     window_info.render_surface = renderWindow.RenderSurface();
     NotifyClientAreaSizeChanged({ 0,0 });
@@ -242,10 +252,12 @@ void RenderWindow::OnFrameDisplayed()
 
 std::unique_ptr<Core::Frontend::GraphicsContext> RenderWindow::CreateSharedContext() const
 {
+#if defined(_WIN32)
     if (Settings::values.renderer_backend.GetValue() == Settings::RendererBackend::OpenGL)
     {
         return std::make_unique<OpenGLSharedContext>(m_renderWindow);
     }
+#endif
     return std::make_unique<DummyContext>();
 }
 
