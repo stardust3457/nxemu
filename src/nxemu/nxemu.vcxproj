@@ -41,6 +41,7 @@
     <ClCompile Include="settings\ui_settings.cpp" />
     <ClCompile Include="startup_checks.cpp" />
     <ClCompile Include="user_interface\game_list_worker.cpp" />
+    <ClCompile Include="user_interface\hotkey_map.cpp" />
     <ClCompile Include="user_interface\key_mappings.cpp" />
     <ClCompile Include="user_interface\notification.cpp" />
     <ClCompile Include="user_interface\sciter_main_window.cpp" />
@@ -49,9 +50,11 @@
     <ClCompile Include="user_interface\settings\system_config.cpp" />
     <ClCompile Include="user_interface\settings\input_config.cpp" />
     <ClCompile Include="user_interface\settings\system_config_audio.cpp" />
-    <ClCompile Include="user_interface\settings\system_config_debug.cpp" />
     <ClCompile Include="user_interface\settings\system_config_game_browser.cpp" />
+    <ClCompile Include="user_interface\settings\system_config_general.cpp" />
     <ClCompile Include="user_interface\settings\system_config_graphics.cpp" />
+    <ClCompile Include="user_interface\settings\system_config_hotkeys.cpp" />
+    <ClCompile Include="user_interface\settings\system_config_logging.cpp" />
     <ClCompile Include="user_interface\widgets\rom_browser.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -60,6 +63,7 @@
     <ClInclude Include="settings\ui_settings_identifiers.h" />
     <ClInclude Include="startup_checks.h" />
     <ClInclude Include="user_interface\game_list_worker.h" />
+    <ClInclude Include="user_interface\hotkey_map.h" />
     <ClInclude Include="user_interface\key_mappings.h" />
     <ClInclude Include="user_interface\notification.h" />
     <ClInclude Include="user_interface\resource.h" />
@@ -71,7 +75,10 @@
     <ClInclude Include="user_interface\settings\system_config_audio.h" />
     <ClInclude Include="user_interface\settings\system_config_debug.h" />
     <ClInclude Include="user_interface\settings\system_config_game_browser.h" />
+    <ClInclude Include="user_interface\settings\system_config_general.h" />
     <ClInclude Include="user_interface\settings\system_config_graphics.h" />
+    <ClInclude Include="user_interface\settings\system_config_hotkeys.h" />
+    <ClInclude Include="user_interface\settings\system_config_logging.h" />
     <ClInclude Include="user_interface\widgets\rom_browser.h" />
   </ItemGroup>
   <ItemGroup>

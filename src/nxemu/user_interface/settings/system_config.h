@@ -10,8 +10,7 @@ __interface ISciterWindow;
 class SciterElement;
 class SystemConfigAudio;
 class SystemConfigGraphics;
-class SystemConfigDebug;
-class SystemConfigGameBrowser;
+class SystemConfigGeneral;
 class ConfigSetting;
 class SystemModules;
 
@@ -62,6 +61,5 @@ private:
     std::shared_ptr<IPageNav> m_pageNav;
     std::unique_ptr<SystemConfigGraphics> m_systemConfigGraphics;
     std::unique_ptr<SystemConfigAudio> m_systemConfigAudio;
-    std::unique_ptr<SystemConfigDebug> m_systemConfigDebug;
-    std::unique_ptr<SystemConfigGameBrowser> m_systemConfigGameBrowser;
+    std::unique_ptr<SystemConfigGeneral> m_systemConfigGeneral;
 };

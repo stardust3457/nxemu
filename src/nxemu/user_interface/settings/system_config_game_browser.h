@@ -7,7 +7,6 @@
 class SystemConfig;
 
 class SystemConfigGameBrowser :
-    public IPagesSink,
     public IClickSink
 {
 public:
@@ -15,12 +14,6 @@ public:
     ~SystemConfigGameBrowser() = default;
 
     void SaveSetting(void);
-
-    // IPagesSink
-    bool PageNavChangeFrom(const std::string& pageName, SCITER_ELEMENT pageNav) override;
-    bool PageNavChangeTo(const std::string& pageName, SCITER_ELEMENT pageNav) override;
-    void PageNavCreatedPage(const std::string& pageName, SCITER_ELEMENT page) override;
-    void PageNavPageChanged(const std::string& pageName, SCITER_ELEMENT pageNav) override;
 
     // IClickSink
     bool OnClick(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t reason) override;
@@ -38,6 +31,4 @@ private:
     SystemConfig & m_config;
     ISciterWindow & m_window;
     SciterElement m_page;
-    std::shared_ptr<IPageNav> m_pageNav;
-    SciterElement m_gameBrowserPage;
 };

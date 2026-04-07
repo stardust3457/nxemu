@@ -11,6 +11,11 @@
   --color-menubar-background-active: #2c2c2c;
   --color-menuitem-background: #2c2c2c;
   --color-menuitem-background-hover: #383838;
+  --color-menu-popup-background: #252526;
+  --color-menu-popup-border: #454545;
+  --color-menu-popup-shadow: rgba(0, 0, 0, 0.45);
+  --color-menu-shortcut-text: #b8b8b8;
+  --color-menu-separator: #3d3d3d;
   --color-window-border: #353535;
 }
 
@@ -144,7 +149,7 @@ ul#menu-bar
 
 ul#menu-bar > li
 {
-  padding: 0.15em 0.45em;
+  padding: 0.28em 0.55em;
   margin: 0;
   white-space: nowrap;
   width: max-content;
@@ -170,12 +175,14 @@ menu
   flow: vertical;
   display:none;
   margin:0;
-  padding: 0.2em;
+  padding: 0.35em 0;
+  min-width: 14em;
   max-width:max-content;
-  background: var(--color-menuitem-background);
-  color: #eff0f1;
-  border: 1px solid #141414;
+  background: var(--color-menu-popup-background);
+  color: #f0f0f0;
+  border: 1px solid var(--color-menu-popup-border);
   border-top: none;
+  box-shadow: 0 0.25em 0.75em var(--color-menu-popup-shadow);
 }
 
 @media (menu-animation-supported) {
@@ -197,14 +204,36 @@ menu li
   vertical-align:middle;
   foreground-repeat: no-repeat;
   foreground-position: left 2px top 50%;
-  padding: 0.2em 1.8em 0.2em 1.3em;
+  padding: 0.4em 1.75em 0.4em 1.1em;
   margin: 0;
+}
+
+menu li .menu-item-label
+{
+  width: *;
+  text-align: left;
+}
+
+menu li .menu-accelerator
+{
+  width: max-content;
+  margin-left: 2.5em;
+  white-space: nowrap;
+  text-align: right;
+  color: var(--color-menu-shortcut-text);
+}
+
+menu li .menu-accelerator:empty
+{
+  display: none;
+  margin: 0;
+  width: 0;
 }
 
 menu li:hover
 {
   background: var(--color-menuitem-background-hover);
-  border-radius: 5px;
+  border-radius: 2px;
 }
 
 menu li:disabled 
@@ -231,4 +260,13 @@ hr
 {
   padding: 0;
   margin: 0.2em 0;
+}
+
+menu hr
+{
+  display: block;
+  height: 1px;
+  margin: 0.4em 0.65em;
+  border: none;
+  background: var(--color-menu-separator);
 }
