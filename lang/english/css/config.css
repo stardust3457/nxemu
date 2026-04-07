@@ -269,3 +269,62 @@ label:disabled {
   color: #666666 !important;
   opacity: 0.6;
 }
+
+.hotkeys-page
+{
+  width: 100%%;
+  min-height: 12em;
+}
+
+.hotkeys-hint
+{
+  color: #bdc3c7;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.hotkeys-table
+{
+  width: 100%%;
+  min-width: 28em;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.hotkeys-table thead tr
+{
+  background: #2b2f32;
+}
+
+.hotkeys-table th,
+.hotkeys-table td
+{
+  border: 1px solid var(--color-config-page-border);
+  padding: 0.35rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.hotkeys-table th:last-child,
+.hotkeys-table td.hotkey-binding
+{
+  text-align: right;
+  min-width: 16em;
+  white-space: nowrap;
+}
+
+.hotkey-action
+{
+  width: *;
+}
+
+.hotkey-binding
+{
+  cursor: pointer;
+  font-family: Consolas, 'Segoe UI', monospace;
+}
+
+.hotkey-binding:hover
+{
+  background: #3a3f44;
+}

@@ -9,13 +9,14 @@ class ExclusiveMonitor :
 {
 public:
     ExclusiveMonitor(IMemory & memory, Dynarmic::ExclusiveMonitor & monitor);
+    virtual ~ExclusiveMonitor();
 
     // IExclusiveMonitor
     uint8_t ExclusiveRead8(uint32_t coreIndex, uint64_t addr) override;
     uint16_t ExclusiveRead16(uint32_t coreIndex, uint64_t addr) override;
     uint32_t ExclusiveRead32(uint32_t coreIndex, uint64_t addr) override;
     uint64_t ExclusiveRead64(uint32_t coreIndex, uint64_t addr) override;
-    void ExclusiveRead128(uint32_t coreIndex, uint64_t addr, uint64_t & outHigh, uint64_t & outLow);
+    void ExclusiveRead128(uint32_t coreIndex, uint64_t addr, uint64_t & outHigh, uint64_t & outLow) override;
     void ClearExclusive(uint32_t coreIndex) override;
 
     bool ExclusiveWrite8(uint32_t coreIndex, uint64_t addr, uint8_t value) override;

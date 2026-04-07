@@ -14,6 +14,7 @@ Dynarmic::HaltReason TranslateDynarmicHaltReason(CpuHaltReason hr)
     case CpuHaltReason::SupervisorCallBreakLoop: return (Dynarmic::HaltReason::UserDefined3 | Dynarmic::HaltReason::UserDefined2);
     case CpuHaltReason::InstructionBreakpoint: return Dynarmic::HaltReason::UserDefined4;
     case CpuHaltReason::PrefetchAbort: return Dynarmic::HaltReason::UserDefined6;
+    case CpuHaltReason::PrefetchAbortBreakLoop: return (Dynarmic::HaltReason::UserDefined6 | Dynarmic::HaltReason::UserDefined2);
     }
     UNIMPLEMENTED();
     return Dynarmic::HaltReason::Step;
@@ -27,9 +28,11 @@ CpuHaltReason TranslateHaltReason(Dynarmic::HaltReason hr)
     case Dynarmic::HaltReason::MemoryAbort: return CpuHaltReason::DataAbort;
     case Dynarmic::HaltReason::UserDefined2: return CpuHaltReason::BreakLoop;
     case Dynarmic::HaltReason::UserDefined3: return CpuHaltReason::SupervisorCall;
-    case (Dynarmic::HaltReason::UserDefined3 | Dynarmic::HaltReason::UserDefined2): return CpuHaltReason::SupervisorCallBreakLoop;
     case Dynarmic::HaltReason::UserDefined4: return CpuHaltReason::InstructionBreakpoint;
     case Dynarmic::HaltReason::UserDefined6: return CpuHaltReason::PrefetchAbort;
+    case Dynarmic::HaltReason::UserDefined2and3: return CpuHaltReason::SupervisorCallBreakLoop;
+    case Dynarmic::HaltReason::UserDefined2and6: return CpuHaltReason::PrefetchAbortBreakLoop;
+    default: break;
     }
     UNIMPLEMENTED();
     return CpuHaltReason::StepThread;

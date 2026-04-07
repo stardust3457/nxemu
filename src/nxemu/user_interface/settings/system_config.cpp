@@ -2,9 +2,8 @@
 #include "settings/ui_settings.h"
 #include "system_config.h"
 #include "system_config_audio.h"
-#include "system_config_debug.h"
+#include "system_config_general.h"
 #include "system_config_graphics.h"
-#include "system_config_game_browser.h"
 #include <common/std_string.h>
 #include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
@@ -40,6 +39,13 @@ void SystemConfig::Display(void * parentWindow, const char * startPage)
         WINDOW_WIDTH = 1050,
     };
 
+    std::string initialPage(startPage != nullptr ? startPage : ""), subPage;
+    const size_t separator = initialPage.find(':');
+    if (separator != std::string::npos)
+    {
+        subPage = initialPage.substr(separator + 1);
+        initialPage = initialPage.substr(0, separator);
+    }
     if (!m_sciterUI.WindowCreate(parentWindow, "system_config.html", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, SUIW_CHILD, m_window))
     {
         return;
@@ -53,9 +59,16 @@ void SystemConfig::Display(void * parentWindow, const char * startPage)
         {
             m_pageNav = std::static_pointer_cast<IPageNav>(interfacePtr);
             m_pageNav->AddSink(this);
-            if (startPage != nullptr)
+            if (!initialPage.empty())
             {
-                m_pageNav->SetCurrentPage(startPage);
+                m_pageNav->SetCurrentPage(initialPage.c_str());
+                if (!subPage.empty())
+                {
+                    if (initialPage == "General" && m_systemConfigGeneral)
+                    {
+                        m_systemConfigGeneral->SetInitialPage(subPage.c_str());
+                    }
+                }
             }
         }
         SciterElement okButton = root.FindFirst("button[role=\"window-ok\"]");
@@ -304,17 +317,13 @@ void SystemConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEME
     {
         m_systemConfigAudio.reset(new SystemConfigAudio(m_sciterUI, *this, m_modules, m_window->GetHandle(), page));
     }
-    else if (pageName == "Debug")
-    {
-        m_systemConfigDebug.reset(new SystemConfigDebug(m_sciterUI, *this, m_window->GetHandle(), page));
-    }
     else if (pageName == "Graphics")
     {
         m_systemConfigGraphics.reset(new SystemConfigGraphics(m_sciterUI, *this, m_window->GetHandle(), page));
     }
-    else if (pageName == "GameBrowser")
+    else if (pageName == "General")
     {
-        m_systemConfigGameBrowser.reset(new SystemConfigGameBrowser(m_sciterUI, *this, *m_window, page));
+        m_systemConfigGeneral.reset(new SystemConfigGeneral(m_sciterUI, *this, *m_window, page));
     }
 }
 
@@ -331,17 +340,13 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
         {
             m_systemConfigAudio->SaveSetting();
         }
-        if (m_systemConfigDebug)
-        {
-            m_systemConfigDebug->SaveSetting();
-        }
         if (m_systemConfigGraphics)
         {
             m_systemConfigGraphics->SaveSetting();
         }
-        if (m_systemConfigGameBrowser)
+        if (m_systemConfigGeneral)
         {
-            m_systemConfigGameBrowser->SaveSetting();
+            m_systemConfigGeneral->SaveSetting();
         }
         if (m_modules.IsValid())
         {

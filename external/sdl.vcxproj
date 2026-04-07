@@ -31,6 +31,7 @@
     </ClCompile>
     <Lib>
       <AdditionalDependencies>Winmm.lib;Setupapi.lib;Imm32.lib;Version.lib;avrt.lib</AdditionalDependencies>
+      <AdditionalOptions>/IGNORE:4006 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

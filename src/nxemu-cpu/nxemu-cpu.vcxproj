@@ -198,7 +198,7 @@
     <ClCompile Include="dynarmic\backend\x64\emit_x64_vector.cpp" />
     <ClCompile Include="dynarmic\backend\x64\emit_x64_vector_floating_point.cpp" />
     <ClCompile Include="dynarmic\backend\x64\emit_x64_vector_saturation.cpp" />
-    <ClCompile Include="dynarmic\backend\x64\exception_handler_windows_x64.cpp" />
+    <ClCompile Include="dynarmic\backend\x64\exception_handler_windows.cpp" />
     <ClCompile Include="dynarmic\backend\x64\exclusive_monitor.cpp" />
     <ClCompile Include="dynarmic\backend\x64\hostloc.cpp" />
     <ClCompile Include="dynarmic\backend\x64\perf_map.cpp" />

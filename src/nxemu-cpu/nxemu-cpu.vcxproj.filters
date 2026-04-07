@@ -593,7 +593,7 @@
     <ClCompile Include="dynarmic\backend\x64\emit_x64_vector_saturation.cpp">
       <Filter>Source Files\dynarmic\backend\x64</Filter>
     </ClCompile>
-    <ClCompile Include="dynarmic\backend\x64\exception_handler_windows_x64.cpp">
+    <ClCompile Include="dynarmic\backend\x64\exception_handler_windows.cpp">
       <Filter>Source Files\dynarmic\backend\x64</Filter>
     </ClCompile>
     <ClCompile Include="dynarmic\backend\x64\exclusive_monitor.cpp">

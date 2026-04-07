@@ -3,20 +3,19 @@
 #include "settings/system_config.h"
 #include "settings/ui_settings.h"
 #include "user_interface/key_mappings.h"
-#include "user_interface/settings/system_config.h"
-#include "user_interface/settings/input_config.h"
 #include <common/std_string.h>
 #include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/version.h>
+#include <nxemu-module-spec/system_loader.h>
+#include <nxemu-module-spec/video.h>
 #include <nxemu-os/os_settings_identifiers.h>
 #include <nxemu-video/video_settings_identifiers.h>
+#include <nxemu/settings/ui_identifiers.h>
 #include <sciter_element.h>
 #include <widgets/menubar.h>
-#include <yuzu_common/settings_input.h>
 #include <yuzu_common/settings.h>
-#include <nxemu-module-spec/video.h>
-#include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/settings_input.h>
 
 #include <Windows.h>
 
@@ -39,6 +38,26 @@ enum
     EVENT_EMULATION_STOPPED = 0x2002,
     EVENT_EMULATION_FIRST_FRAME = 0x2003,
 };
+
+const uint32_t kKeyboardStateControl = 0x0040u | 0x0080u;
+const uint32_t kKeyboardStateAlt = 0x0100u | 0x0200u;
+const uint32_t kKeyboardStateShift = 0x0001u | 0x0002u;
+
+bool AcceleratorMatchesKey(const MenuBarAccelerator & accel, uint32_t keyCode, uint32_t keyboardState)
+{
+    if (accel.IsNone())
+    {
+        return false;
+    }
+    if (keyCode != accel.key)
+    {
+        return false;
+    }
+    bool ctrl = (keyboardState & kKeyboardStateControl) != 0;
+    bool alt = (keyboardState & kKeyboardStateAlt) != 0;
+    bool shift = (keyboardState & kKeyboardStateShift) != 0;
+    return ctrl == accel.ctrl && alt == accel.alt && shift == accel.shift;
+}
 }
 
 SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitle) :
@@ -63,6 +82,7 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     settings.RegisterCallback(NXOsSetting::SpeedLimit, SciterMainWindow::SettingChanged, this);
     settings.RegisterCallback(NXOsSetting::UseMultiCore, SciterMainWindow::SettingChanged, this);
     settings.RegisterCallback(NXOsSetting::UseSpeedLimit, SciterMainWindow::SettingChanged, this);
+    settings.RegisterCallback(NXUISetting::Hotkeys, SciterMainWindow::HotKeysChanged, this);
 
     m_useMultiCore = settings.GetBool(NXOsSetting::UseMultiCore);
     m_useSpeedLimit = settings.GetBool(NXOsSetting::UseSpeedLimit);
@@ -78,6 +98,14 @@ SciterMainWindow::~SciterMainWindow()
     settings.UnregisterCallback(NXCoreSetting::GameName, SciterMainWindow::GameNameChanged, this);
     settings.UnregisterCallback(NXCoreSetting::DisplayedFrames, SciterMainWindow::DisplayedFramesChanged, this);
     settings.UnregisterCallback(NXOsSetting::AudioVolume, SciterMainWindow::SettingChanged, this);
+    settings.UnregisterCallback(NXOsSetting::ResolutionUpFactor, SciterMainWindow::SettingChanged, this);
+    settings.UnregisterCallback(NXOsSetting::SpeedLimit, SciterMainWindow::SettingChanged, this);
+    settings.UnregisterCallback(NXOsSetting::UseMultiCore, SciterMainWindow::SettingChanged, this);
+    settings.UnregisterCallback(NXOsSetting::UseSpeedLimit, SciterMainWindow::SettingChanged, this);
+    settings.UnregisterCallback(NXUISetting::Hotkeys, SciterMainWindow::HotKeysChanged, this);
+
+    m_systemConfig.reset(nullptr);
+    m_inputConfig.reset(nullptr);
 
     settings.SetBool(NXCoreSetting::ShuttingDown, true);
     if (m_romBrowser)
@@ -93,9 +121,10 @@ void SciterMainWindow::ResetMenu()
     {
         return;
     }
+
     MenuBarItemList mainTitleMenu;
     MenuBarItemList fileMenu;
-    fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "Load File..."));
+    fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
 
     Stringlist & recentFiles = uiSettings.recentFiles;
     MenuBarItemList RecentFileMenu;
@@ -112,7 +141,7 @@ void SciterMainWindow::ResetMenu()
     }
 
     fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
-    fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit"));
+    fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "File", &fileMenu));
 
     MenuBarItemList systemMenu;
@@ -388,6 +417,12 @@ void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * u
     impl->m_rootElement.PostEvent(EVENT_EMULATION_FIRST_FRAME);
 }
 
+void SciterMainWindow::HotKeysChanged(const char * /*setting*/, void * userData)
+{
+    SciterMainWindow * impl = (SciterMainWindow *)userData;
+    impl->ResetMenu();
+}
+
 void SciterMainWindow::PreventOSSleep()
 {
 #ifdef _WIN32
@@ -505,6 +540,47 @@ void SciterMainWindow::UpdateStatusBar()
     statusTextEl.SetText(status.c_str());
 }
 
+const MenuBarAccelerator * SciterMainWindow::HotkeyAccelerator(const char * name)
+{
+    if (name == nullptr)
+    {
+        return nullptr;
+    }
+    HotkeyMap::iterator itr = uiSettings.hotkeys.find(name);
+    return itr != uiSettings.hotkeys.end() ? &itr->second : nullptr;
+}
+
+const char * SciterMainWindow::IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState)
+{
+    for (const HotkeyMap::value_type & entry : uiSettings.hotkeys)
+    {
+        if (AcceleratorMatchesKey(entry.second, keyCode, keyboardState))
+        {
+            return entry.first.c_str();
+        }
+    }
+    return nullptr;
+}
+
+bool SciterMainWindow::ProcessMenuBarAccelerator(const char * hotkeyId)
+{
+    if (hotkeyId == nullptr)
+    {
+        return false;
+    }
+    if (strcmp(hotkeyId, Hotkey::LoadFile) == 0)
+    {
+        OnOpenFile();
+        return true;
+    }
+    if (strcmp(hotkeyId, Hotkey::Exit) == 0)
+    {
+        OnFileExit();
+        return true;
+    }
+    return false;
+}
+
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
 {
     Stringlist & recentFiles = uiSettings.recentFiles;
@@ -551,7 +627,7 @@ float SciterMainWindow::PixelRatio() const
     return 1.0;
 }
 
-bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t /*keyboardState*/)
+bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
 #ifdef _WIN32
     if (m_win32Fullscreen && m_win32Fullscreen->active && keyCode == SCITER_KEY_ESCAPE)
@@ -560,6 +636,10 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
         return true;
     }
 #endif
+    if (ProcessMenuBarAccelerator(IsMenuBarAccelerator((uint32_t)keyCode, keyboardState)))
+    {
+        return true;
+    }
     if (m_modules.IsValid())
     {
         IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
@@ -572,8 +652,12 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
     return false;
 }
 
-bool SciterMainWindow::OnKeyUp(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t /*keyboardState*/)
+bool SciterMainWindow::OnKeyUp(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
+    if (IsMenuBarAccelerator((uint32_t)keyCode, keyboardState) != nullptr)
+    {
+        return true;
+    }
     if (m_modules.IsValid())
     {
         IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();

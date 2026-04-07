@@ -25,12 +25,12 @@ constexpr const char* TrimSourcePath(std::string_view source) {
 }
 
 /// Logs a message to the global logger, using fmt
-void FmtLogMessageImpl(LogClass log_class, LogLevel log_level, const char* filename,
+void FmtLogMessageImpl(LogClass log_class, LogLevel log_level, const char * filename,
                        unsigned int line_num, const char* function, const char* format,
                        const fmt::format_args& args);
 
 template <typename... Args>
-void FmtLogMessage(LogClass log_class, LogLevel log_level, const char* filename, unsigned int line_num,
+void FmtLogMessage(LogClass log_class, LogLevel log_level, const char * filename, unsigned int line_num,
                    const char* function, const char* format, const Args&... args) {
     FmtLogMessageImpl(log_class, log_level, filename, line_num, function, format,
                       fmt::make_format_args(args...));

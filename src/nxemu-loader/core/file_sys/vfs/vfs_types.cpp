@@ -256,6 +256,20 @@ IVirtualDirectory * VirtualFileImpl::ExtractRomFS()
     return std::make_unique<VirtualDirectoryImpl>(dir).release();
 }
 
+IVirtualDirectory * VirtualFileImpl::GetContainingDirectory() const
+{
+    if (!m_file)
+    {
+        return nullptr;
+    }
+    FileSys::VirtualDir dir = m_file->GetContainingDirectory();
+    if (dir.get() == nullptr)
+    {
+        return nullptr;
+    }
+    return std::make_unique<VirtualDirectoryImpl>(dir).release();
+}
+
 IVirtualFile * VirtualFileImpl::Duplicate()
 {
     return std::make_unique<VirtualFileImpl>(m_file).release();

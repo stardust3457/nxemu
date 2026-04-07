@@ -587,10 +587,10 @@ void EmitIR<IR::Opcode::FPVectorRoundInt16>(oaknut::CodeGenerator& code, EmitCon
                 Common::FptrCast(
                     [](VectorArray<FPT>& output, const VectorArray<FPT>& input, FP::FPCR fpcr, FP::FPSR& fpsr) {
                         constexpr FP::RoundingMode rounding_mode = mp::get<0, I>::value;
-                        constexpr bool exact = mp::get<1, I>::value;
+                        constexpr bool exactVal = mp::get<1, I>::value;
 
                         for (size_t i = 0; i < output.size(); ++i) {
-                            output[i] = static_cast<FPT>(FP::FPRoundInt<FPT>(input[i], fpcr, rounding_mode, exact, fpsr));
+                            output[i] = static_cast<FPT>(FP::FPRoundInt<FPT>(input[i], fpcr, rounding_mode, exactVal, fpsr));
                         }
                     })};
         },

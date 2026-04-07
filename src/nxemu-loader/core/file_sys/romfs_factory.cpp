@@ -1,20 +1,20 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "core/file_sys/romfs_factory.h"
+#include <memory>
+#include "yuzu_common/yuzu_assert.h"
+#include "yuzu_common/common_types.h"
+#include "yuzu_common/logging/log.h"
 #include "core/file_sys/common_funcs.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/filesystem.h"
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
+#include "core/file_sys/romfs_factory.h"
 #include "core/file_sys/vfs/vfs_ivirtualfile.h"
 #include "core/loader/loader.h"
 #include "system_loader.h"
-#include "yuzu_common/common_types.h"
-#include "yuzu_common/logging/log.h"
-#include "yuzu_common/yuzu_assert.h"
-#include <memory>
 
 namespace FileSys {
 
@@ -115,6 +115,10 @@ IVirtualFile * RomFsControllerImpl::PatchBaseNca(uint64_t title_id, StorageId st
 IVirtualFile * RomFsControllerImpl::OpenRomFS(u64 title_id, StorageId storage_id, LoaderContentRecordType type)
 {
     FileSys::VirtualFile fs = m_factory->Open(title_id, storage_id, type);
+    if (fs == nullptr)
+    {
+        return nullptr;
+    }
     return std::make_unique<VirtualFileImpl>(fs).release();
 }
 

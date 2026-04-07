@@ -114,6 +114,7 @@ bool Systemloader::Initialize()
 
 bool Systemloader::SelectAndLoad(void * parentWindow)
 {
+#ifndef __ANDROID__
     Path fileToOpen;
     std::string fileName;
     const char * filter = "Switch Files (*.dxci, *.dnsp, *.nro)\0*.dxci;*.dnsp;*.nro;\0All files (*.*)\0*.*\0";
@@ -126,6 +127,9 @@ bool Systemloader::SelectAndLoad(void * parentWindow)
         return false;
     }
     return LoadRom(fileName.c_str());
+#else
+    return false;
+#endif
 }
 
 bool Systemloader::LoadRom(const char * fileName)
@@ -284,7 +288,11 @@ IFileSystemController & Systemloader::FileSystemController()
 IVirtualFile * Systemloader::SynthesizeSystemArchive(const uint64_t title_id)
 {
     FileSys::VirtualFile file = FileSys::SystemArchive::SynthesizeSystemArchive(title_id);
-    return std::make_unique<VirtualFileImpl>(file).release();
+    if (file)
+    {
+        return std::make_unique<VirtualFileImpl>(file).release();
+    }
+    return nullptr;
 }
 
 uint32_t Systemloader::GetContentProviderEntriesCount(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId)

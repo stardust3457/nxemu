@@ -1,5 +1,6 @@
 #pragma once
 #include <common/path.h>
+#include <nxemu/user_interface/hotkey_map.h>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,7 @@ struct UISettings
     bool performVulkanCheck;
     bool hasBrokenVulkan;
     bool enableAllControllers;
+    HotkeyMap hotkeys;
 };
 
 extern UISettings uiSettings;

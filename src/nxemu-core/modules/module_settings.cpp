@@ -91,5 +91,11 @@ void ModuleSettings::RegisterCallback(const char* setting, SettingChangeCallback
 
 void ModuleSettings::UnregisterCallback(const char* setting, SettingChangeCallback callback, void* userData)
 {
+#ifdef _WIN32
     __debugbreak();
+#else
+    (void)setting;
+    (void)callback;
+    (void)userData;
+#endif
 }

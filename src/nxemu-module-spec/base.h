@@ -2,10 +2,14 @@
 #include <stdint.h>
 #include <string>
 
-#if !defined(EXPORT) && defined(__cplusplus)
+#if !defined(EXPORT) && defined(__cplusplus) && defined(_WIN32)
 #define EXPORT extern "C" __declspec(dllexport)
-#elif !defined(EXPORT)
+#elif !defined(EXPORT) && defined(__cplusplus)
+#define EXPORT extern "C" __attribute__((visibility("default")))
+#elif !defined(EXPORT) && defined(_WIN32)
 #define EXPORT __declspec(dllexport)
+#elif !defined(EXPORT)
+#define EXPORT __attribute__((visibility("default")))
 #endif
 
 #ifndef CALL
@@ -22,7 +26,7 @@
 
 enum
 {
-    MODULE_LOADER_SPECS_VERSION = 0x0118,
+    MODULE_LOADER_SPECS_VERSION = 0x0119,
     MODULE_VIDEO_SPECS_VERSION = 0x0116,
     MODULE_CPU_SPECS_VERSION = 0x010D,
     MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x0111,

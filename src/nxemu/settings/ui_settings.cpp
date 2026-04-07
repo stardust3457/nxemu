@@ -1,9 +1,16 @@
-#include "ui_identifiers.h"
 #include "ui_settings.h"
+#include "ui_identifiers.h"
+#include <common/json.h>
 #include <common/json_util.h>
 #include <common/path.h>
-#include <nxemu-core/settings/settings.h>
 #include <nxemu-core/notification.h>
+#include <nxemu-core/settings/settings.h>
+#include <sciter_handler.h>
+
+static const HotkeyMap g_defaultHotkeys = {
+    {Hotkey::LoadFile, {.key = (uint32_t)SCITER_KEY_O, .ctrl = true}},
+    {Hotkey::Exit, {.key = (uint32_t)SCITER_KEY_Q, .ctrl = true}},
+};
 
 namespace
 {
@@ -16,6 +23,7 @@ namespace
         int32,
         Bool,
         StringList,
+        Hotkeys,
     };
 
     std::string SerializeStringList(const Stringlist & list)
@@ -36,6 +44,7 @@ namespace
         UISetting(const char * id, const char * key, bool * value, bool defaultValue);
         UISetting(const char * id, const char * key, int32_t * value, uint32_t defaultValue);
         UISetting(const char * id, const char * key, Stringlist * value);
+        UISetting(const char * id, const char * key, HotkeyMap * value, const HotkeyMap * defaultHotkeyMap);
 
         const char * identifier;
         const char * json_key;
@@ -47,6 +56,7 @@ namespace
             bool * boolean;
             int32_t * int32;
             Stringlist * string_list;
+            HotkeyMap * hotkey_map;
         } setting;
         std::string * settingValue;
         Path default_path;
@@ -54,7 +64,8 @@ namespace
         {
             const char * default_string;
             const uint32_t default_int32;
-            const bool default_bool;        
+            const bool default_bool;
+            const HotkeyMap * default_hotKeys;
         };
     };
 
@@ -69,6 +80,7 @@ namespace
         {nullptr, "PerformVulkanCheck", &uiSettings.performVulkanCheck, true},
         {nullptr, nullptr, &uiSettings.hasBrokenVulkan, false},
         {nullptr, nullptr, &uiSettings.enableAllControllers, false},
+        {NXUISetting::Hotkeys, "Hotkeys", &uiSettings.hotkeys, &g_defaultHotkeys},
     };
 
     void UISettingChanged(const char * setting, void * /*userData*/);
@@ -101,6 +113,9 @@ void SetupUISetting(void)
             break;
         case SettingType::StringList:
             *(setting.setting.string_list) = {};
+            break;
+        case SettingType::Hotkeys:
+            *setting.setting.hotkey_map = setting.default_hotKeys != nullptr ? *setting.default_hotKeys : HotkeyMap{};
             break;
         default:
             g_notify->BreakPoint(__FILE__, __LINE__);
@@ -155,6 +170,43 @@ void SetupUISetting(void)
                 }
             }
             break;
+        case SettingType::Hotkeys:
+            if (value.isObject() && setting.setting.hotkey_map != nullptr)
+            {
+                HotkeyMap & map = *setting.setting.hotkey_map;
+                for (const std::string & name : value.GetMemberNames())
+                {
+                    const JsonValue & v = value[name];
+                    if (!v.isObject())
+                    {
+                        continue;
+                    }
+
+                    HotkeyMap::iterator itr = map.find(name);
+                    if (itr == map.end())
+                    {
+                        continue;
+                    }
+                    MenuBarAccelerator & accel = itr->second;
+                    if (v.isMember("key") && v["key"].isInt())
+                    {
+                        accel.key = (uint32_t)v["key"].asInt64();
+                    }
+                    if (v.isMember("ctrl") && v["ctrl"].isBool())
+                    {
+                        accel.ctrl = v["ctrl"].asBool();
+                    }
+                    if (v.isMember("alt") && v["alt"].isBool())
+                    {
+                        accel.alt = v["alt"].asBool();
+                    }
+                    if (v.isMember("shift") && v["shift"].isBool())
+                    {
+                        accel.shift = v["shift"].asBool();
+                    }
+                }
+            }
+            break;
         default:
             g_notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -171,6 +223,14 @@ void SetupUISetting(void)
             case SettingType::StringList:
                 settingsStore.SetDefaultString(setting.identifier, setting.default_string);
                 settingsStore.SetString(setting.identifier, setting.setting.string_list != nullptr ? SerializeStringList(*setting.setting.string_list).c_str() : setting.default_string);
+                break;
+            case SettingType::String:
+                settingsStore.SetDefaultString(setting.identifier, setting.default_string);
+                settingsStore.SetString(setting.identifier, setting.setting.string != nullptr ? setting.setting.string->c_str() : setting.default_string);
+                break;
+            case SettingType::Hotkeys:
+                settingsStore.SetDefaultString(setting.identifier, setting.default_hotKeys != nullptr ? SerializeUIHotkeysMap(*setting.default_hotKeys).c_str() : "");
+                settingsStore.SetString(setting.identifier, SerializeUIHotkeysMap(*setting.setting.hotkey_map).c_str());
                 break;
             default:
                 g_notify->BreakPoint(__FILE__, __LINE__);
@@ -221,6 +281,16 @@ void SaveUISetting(void)
             if (*setting.setting.boolean != setting.default_bool)
             {
                 JsonSetNestedValue(json, setting.json_key, JsonValue(*setting.setting.int32));
+            }
+            break;
+        case SettingType::Hotkeys:
+            if (setting.default_hotKeys != nullptr)
+            {
+                JsonValue diff = HotkeyMapToJsonObjectDiff(*setting.setting.hotkey_map, *setting.default_hotKeys);
+                if (!diff.GetMemberNames().empty())
+                {
+                    JsonSetNestedValue(json, setting.json_key, std::move(diff));
+                }
             }
             break;
         default:
@@ -293,6 +363,16 @@ namespace
         setting.string_list = value;
     }
 
+    UISetting::UISetting(const char * id, const char * key, HotkeyMap * value, const HotkeyMap * defaultHotkeyMap) :
+        identifier(id),
+        json_key(key),
+        settingType(SettingType::Hotkeys),
+        settingValue(nullptr),
+        default_hotKeys(defaultHotkeyMap)
+    {
+        setting.hotkey_map = value;
+    }
+
     void UISettingChanged(const char * setting, void * /*userData*/)
     {
         SettingsStore & settingsStore = SettingsStore::GetInstance();
@@ -331,6 +411,32 @@ namespace
                                 uiSetting.setting.string_list->push_back(root[i].asString());
                             }
                         }
+                    }
+                }
+                break;
+            case SettingType::String:
+                if (uiSetting.setting.string != nullptr)
+                {
+                    *uiSetting.setting.string = settingsStore.GetString(setting);
+                }
+                break;
+            case SettingType::Hotkeys:
+                if (uiSetting.setting.hotkey_map != nullptr)
+                {
+                    const std::string json = settingsStore.GetString(setting);
+                    JsonReader reader;
+                    JsonValue root;
+                    if (json.empty())
+                    {
+                        uiSetting.setting.hotkey_map->clear();
+                    }
+                    else if (reader.Parse(json.data(), json.data() + json.size(), root) && root.isObject())
+                    {
+                        DeserializeHotkeyMapFromJsonObject(root, *uiSetting.setting.hotkey_map);
+                    }
+                    else
+                    {
+                        uiSetting.setting.hotkey_map->clear();
                     }
                 }
                 break;

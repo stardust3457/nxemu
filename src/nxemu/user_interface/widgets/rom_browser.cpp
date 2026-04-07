@@ -302,7 +302,7 @@ bool WidgetRomBrowser::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/
     std::string className = el.GetAttribute("class");
     if (strcmp(className.c_str(), "config-button") == 0 && m_window != nullptr)
     {
-        m_window->ShowConfig("GameBrowser");
+        m_window->ShowConfig("General:GameBrowser");
         return true;
     }
     else if (strcmp(className.c_str(), "rom-card") == 0)
