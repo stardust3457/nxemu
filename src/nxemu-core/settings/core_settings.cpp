@@ -328,6 +328,16 @@ void CoreSettingChanged(const char * setting, void* /*userData*/)
                 *coreSetting.value.strValue = settingsStore.GetString(setting);
             }
             break;
+        case SettingType::Path:
+            if (coreSetting.value.path != nullptr)
+            {
+                *coreSetting.value.path = Path(settingsStore.GetString(setting), "").DirectoryNormalize(Path(Path::MODULE_DIRECTORY));
+            }
+            if (coreSetting.clearValue.strValue != nullptr)
+            {
+                *coreSetting.clearValue.strValue = settingsStore.GetString(setting);
+            }
+            break;
         default:
             UNIMPLEMENTED();
         }
