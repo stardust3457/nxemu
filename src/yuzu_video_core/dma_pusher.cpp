@@ -4,7 +4,6 @@
 #include "yuzu_common/cityhash.h"
 #include "yuzu_common/microprofile.h"
 #include "yuzu_common/settings.h"
-#include "core/core.h"
 #include "yuzu_video_core/dma_pusher.h"
 #include "yuzu_video_core/engines/maxwell_3d.h"
 #include "yuzu_video_core/gpu.h"

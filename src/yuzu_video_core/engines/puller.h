@@ -16,6 +16,7 @@ class System;
 }
 
 namespace Tegra {
+class GPU;
 class MemoryManager;
 class DmaPusher;
 
