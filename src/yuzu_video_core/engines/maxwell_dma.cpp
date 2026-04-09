@@ -133,7 +133,7 @@ void MaxwellDMA::Launch() {
                 read_buffer.resize_destructive(16);
                 for (u32 offset = 0; offset < regs.line_length_in; offset += 16) {
                     Tegra::Memory::GpuGuestMemoryScoped<
-                        u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
+                        u8, GuestMemoryFlags::SafeReadCachedWrite>
                         tmp_write_buffer(memory_manager,
                                          convert_linear_2_blocklinear_addr(regs.offset_in + offset),
                                          16, &read_buffer);
@@ -146,7 +146,7 @@ void MaxwellDMA::Launch() {
                 read_buffer.resize_destructive(16);
                 for (u32 offset = 0; offset < regs.line_length_in; offset += 16) {
                     Tegra::Memory::GpuGuestMemoryScoped<
-                        u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
+                        u8, GuestMemoryFlags::SafeReadCachedWrite>
                         tmp_write_buffer(memory_manager, regs.offset_in + offset, 16, &read_buffer);
                     tmp_write_buffer.SetAddressAndSize(
                         convert_linear_2_blocklinear_addr(regs.offset_out + offset), 16);
@@ -154,7 +154,7 @@ void MaxwellDMA::Launch() {
             } else {
                 if (!accelerate.BufferCopy(regs.offset_in, regs.offset_out, regs.line_length_in)) {
                     Tegra::Memory::GpuGuestMemoryScoped<
-                        u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
+                        u8, GuestMemoryFlags::SafeReadCachedWrite>
                         tmp_write_buffer(memory_manager, regs.offset_in, regs.line_length_in,
                                          &read_buffer);
                     tmp_write_buffer.SetAddressAndSize(regs.offset_out, regs.line_length_in);
@@ -225,9 +225,9 @@ void MaxwellDMA::CopyBlockLinearToPitch() {
 
     const size_t dst_size = dst_operand.pitch * regs.line_count;
 
-    Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
+    Tegra::Memory::GpuGuestMemory<u8, GuestMemoryFlags::SafeRead> tmp_read_buffer(
         memory_manager, src_operand.address, src_size, &read_buffer);
-    Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
+    Tegra::Memory::GpuGuestMemoryScoped<u8, GuestMemoryFlags::UnsafeReadCachedWrite>
         tmp_write_buffer(memory_manager, dst_operand.address, dst_size, &write_buffer);
 
     UnswizzleSubrect(tmp_write_buffer, tmp_read_buffer, bytes_per_pixel, width, height, depth,
@@ -289,9 +289,9 @@ void MaxwellDMA::CopyPitchToBlockLinear() {
 
     GPUVAddr src_addr = regs.offset_in;
     GPUVAddr dst_addr = regs.offset_out;
-    Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
+    Tegra::Memory::GpuGuestMemory<u8, GuestMemoryFlags::SafeRead> tmp_read_buffer(
         memory_manager, src_addr, src_size, &read_buffer);
-    Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadCachedWrite>
+    Tegra::Memory::GpuGuestMemoryScoped<u8, GuestMemoryFlags::UnsafeReadCachedWrite>
         tmp_write_buffer(memory_manager, dst_addr, dst_size, &write_buffer);
 
     //  If the input is linear and the output is tiled, swizzle the input and copy it over.
@@ -343,9 +343,9 @@ void MaxwellDMA::CopyBlockLinearToBlockLinear() {
 
     intermediate_buffer.resize_destructive(mid_buffer_size);
 
-    Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::SafeRead> tmp_read_buffer(
+    Tegra::Memory::GpuGuestMemory<u8, GuestMemoryFlags::SafeRead> tmp_read_buffer(
         memory_manager, regs.offset_in, src_size, &read_buffer);
-    Tegra::Memory::GpuGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::SafeReadCachedWrite>
+    Tegra::Memory::GpuGuestMemoryScoped<u8, GuestMemoryFlags::SafeReadCachedWrite>
         tmp_write_buffer(memory_manager, regs.offset_out, dst_size, &write_buffer);
 
     UnswizzleSubrect(intermediate_buffer, tmp_read_buffer, bytes_per_pixel, src_width, src.height,

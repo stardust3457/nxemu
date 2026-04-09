@@ -6,9 +6,9 @@
 #include "yuzu_audio_core/device/audio_buffer.h"
 #include "yuzu_audio_core/device/device_session.h"
 #include "yuzu_audio_core/sink/sink_stream.h"
+#include "yuzu_common/guest_memory.h"
 #include "core/core.h"
 #include "core/core_timing.h"
-#include "core/guest_memory.h"
 #include "core/memory.h"
 
 #include "core/hle/kernel/k_process.h"
@@ -99,7 +99,7 @@ void DeviceSession::AppendBuffers(std::span<const AudioBuffer> buffers) {
         if (type == Sink::StreamType::In) {
             stream->AppendBuffer(new_buffer, tmp_samples);
         } else {
-            Core::Memory::CpuGuestMemory<s16, Core::Memory::GuestMemoryFlags::UnsafeRead> samples(
+            Core::Memory::CpuGuestMemory<s16, ::GuestMemoryFlags::UnsafeRead> samples(
                 handle->GetCoreMemory(), buffer.samples, buffer.size / sizeof(s16));
             stream->AppendBuffer(new_buffer, samples);
         }

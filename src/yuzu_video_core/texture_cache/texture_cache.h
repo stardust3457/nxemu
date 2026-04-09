@@ -1083,8 +1083,7 @@ void TextureCache<P>::UploadImageContents(Image& image, StagingBuffer& staging) 
         return;
     }
 
-    Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::UnsafeRead> swizzle_data(
-        *gpu_memory, gpu_addr, image.guest_size_bytes, &swizzle_data_buffer);
+    Tegra::Memory::GpuGuestMemory<u8, GuestMemoryFlags::UnsafeRead> swizzle_data(*gpu_memory, gpu_addr, image.guest_size_bytes, &swizzle_data_buffer);
 
     if (True(image.flags & ImageFlagBits::Converted)) {
         unswizzle_data_buffer.resize_destructive(image.unswizzled_size_bytes);
@@ -1289,8 +1288,7 @@ void TextureCache<P>::QueueAsyncDecode(Image& image, ImageId image_id) {
 
     static Common::ScratchBuffer<u8> local_unswizzle_data_buffer;
     local_unswizzle_data_buffer.resize_destructive(image.unswizzled_size_bytes);
-    Tegra::Memory::GpuGuestMemory<u8, Tegra::Memory::GuestMemoryFlags::UnsafeRead> swizzle_data(
-        *gpu_memory, image.gpu_addr, image.guest_size_bytes, &swizzle_data_buffer);
+    Tegra::Memory::GpuGuestMemory<u8, GuestMemoryFlags::UnsafeRead> swizzle_data(*gpu_memory, image.gpu_addr, image.guest_size_bytes, &swizzle_data_buffer);
 
     auto copies = UnswizzleImage(*gpu_memory, image.gpu_addr, image.info, swizzle_data,
                                  local_unswizzle_data_buffer);

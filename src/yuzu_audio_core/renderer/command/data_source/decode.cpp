@@ -7,9 +7,9 @@
 #include "yuzu_audio_core/renderer/command/data_source/decode.h"
 #include "yuzu_audio_core/renderer/command/resample/resample.h"
 #include "yuzu_common/fixed_point.h"
+#include "yuzu_common/guest_memory.h"
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/scratch_buffer.h"
-#include "core/guest_memory.h"
 #include "core/memory.h"
 
 namespace AudioCore::Renderer {
@@ -50,7 +50,7 @@ static u32 DecodePcm(Core::Memory::Memory& memory, std::span<s16> out_buffer,
                            (((req.start_offset + req.offset) * channel_count) * sizeof(T))};
         const u64 size{channel_count * samples_to_decode};
 
-        Core::Memory::CpuGuestMemory<T, Core::Memory::GuestMemoryFlags::UnsafeRead> samples(
+        Core::Memory::CpuGuestMemory<T, ::GuestMemoryFlags::UnsafeRead> samples(
             memory, source, size);
         if constexpr (std::is_floating_point_v<T>) {
             for (u32 i = 0; i < samples_to_decode; i++) {
@@ -73,7 +73,7 @@ static u32 DecodePcm(Core::Memory::Memory& memory, std::span<s16> out_buffer,
         }
 
         const VAddr source{req.buffer + ((req.start_offset + req.offset) * sizeof(T))};
-        Core::Memory::CpuGuestMemory<T, Core::Memory::GuestMemoryFlags::UnsafeRead> samples(
+        Core::Memory::CpuGuestMemory<T, ::GuestMemoryFlags::UnsafeRead> samples(
             memory, source, samples_to_decode);
 
         if constexpr (std::is_floating_point_v<T>) {
@@ -140,7 +140,7 @@ static u32 DecodeAdpcm(Core::Memory::Memory& memory, std::span<s16> out_buffer,
     }
 
     const auto size{std::max((samples_to_process / 8U) * SamplesPerFrame, 8U)};
-    Core::Memory::CpuGuestMemory<u8, Core::Memory::GuestMemoryFlags::UnsafeRead> wavebuffer(
+    Core::Memory::CpuGuestMemory<u8, ::GuestMemoryFlags::UnsafeRead> wavebuffer(
         memory, req.buffer + position_in_frame / 2, size);
 
     auto context{req.adpcm_context};

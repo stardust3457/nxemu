@@ -488,7 +488,6 @@
     <ClInclude Include="core\file_sys\fs_save_data_types.h" />
     <ClInclude Include="core\file_sys\fs_string_util.h" />
     <ClInclude Include="core\gpu_dirty_memory_manager.h" />
-    <ClInclude Include="core\guest_memory.h" />
     <ClInclude Include="core\hardware_properties.h" />
     <ClInclude Include="core\hle\api_version.h" />
     <ClInclude Include="core\hle\kernel\board\nintendo\nx\secure_monitor.h" />

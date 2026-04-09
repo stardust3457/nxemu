@@ -238,8 +238,7 @@ bool BufferCache<P>::DMACopy(GPUVAddr src_address, GPUVAddr dest_address, u64 am
         memory_tracker.MarkRegionAsGpuModified(*cpu_dest_address, amount);
     }
 
-    Tegra::Memory::DeviceGuestMemoryScoped<u8, Tegra::Memory::GuestMemoryFlags::UnsafeReadWrite>
-        tmp(device_memory, *cpu_src_address, amount, &tmp_buffer);
+    Tegra::Memory::DeviceGuestMemoryScoped<u8, GuestMemoryFlags::UnsafeReadWrite> tmp(device_memory, *cpu_src_address, amount, &tmp_buffer);
     tmp.SetAddressAndSize(*cpu_dest_address, amount);
     return true;
 }

@@ -540,9 +540,6 @@
     <ClInclude Include="core\cpu_manager.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
-    <ClInclude Include="core\guest_memory.h">
-      <Filter>Header Files\core</Filter>
-    </ClInclude>
     <ClInclude Include="core\gpu_dirty_memory_manager.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>

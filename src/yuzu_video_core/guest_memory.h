@@ -3,28 +3,22 @@
 
 #pragma once
 
-#include <iterator>
-#include <memory>
-#include <optional>
-#include <span>
-#include <vector>
+#include "yuzu_common/guest_memory.h"
+#include "yuzu_video_core/host1x/gpu_device_memory_manager.h"
 
-#include "yuzu_common/scratch_buffer.h"
-#include "core/guest_memory.h"
-#include "yuzu_video_core/memory_manager.h"
+namespace Tegra {
+class MemoryManager;
+}
 
 namespace Tegra::Memory {
 
-using GuestMemoryFlags = Core::Memory::GuestMemoryFlags;
-
 template <typename T, GuestMemoryFlags FLAGS>
-using DeviceGuestMemory = Core::Memory::GuestMemory<Tegra::MaxwellDeviceMemoryManager, T, FLAGS>;
+using DeviceGuestMemory = GuestMemory<Tegra::MaxwellDeviceMemoryManager, T, FLAGS>;
 template <typename T, GuestMemoryFlags FLAGS>
-using DeviceGuestMemoryScoped =
-    Core::Memory::GuestMemoryScoped<Tegra::MaxwellDeviceMemoryManager, T, FLAGS>;
+using DeviceGuestMemoryScoped = GuestMemoryScoped<Tegra::MaxwellDeviceMemoryManager, T, FLAGS>;
 template <typename T, GuestMemoryFlags FLAGS>
-using GpuGuestMemory = Core::Memory::GuestMemory<Tegra::MemoryManager, T, FLAGS>;
+using GpuGuestMemory = GuestMemory<Tegra::MemoryManager, T, FLAGS>;
 template <typename T, GuestMemoryFlags FLAGS>
-using GpuGuestMemoryScoped = Core::Memory::GuestMemoryScoped<Tegra::MemoryManager, T, FLAGS>;
+using GpuGuestMemoryScoped = GuestMemoryScoped<Tegra::MemoryManager, T, FLAGS>;
 
 } // namespace Tegra::Memory

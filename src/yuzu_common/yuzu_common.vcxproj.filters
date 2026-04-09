@@ -129,6 +129,9 @@
     <ClInclude Include="free_region_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="guest_memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="heap_tracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>

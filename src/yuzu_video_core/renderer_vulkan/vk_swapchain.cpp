@@ -9,7 +9,6 @@
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/polyfill_ranges.h"
 #include "yuzu_common/settings.h"
-#include "core/core.h"
 #include "yuzu_video_core/renderer_vulkan/vk_scheduler.h"
 #include "yuzu_video_core/renderer_vulkan/vk_swapchain.h"
 #include "yuzu_video_core/vulkan_common/vk_enum_string_helper.h"

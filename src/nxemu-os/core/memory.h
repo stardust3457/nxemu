@@ -12,9 +12,9 @@
 
 #include <nxemu-module-spec/cpu.h>
 
+#include "yuzu_common/guest_memory.h"
 #include "yuzu_common/scratch_buffer.h"
 #include "yuzu_common/typed_address.h"
-#include "core/guest_memory.h"
 #include "core/hle/result.h"
 
 namespace Common {
@@ -504,8 +504,8 @@ private:
 };
 
 template <typename T, GuestMemoryFlags FLAGS>
-using CpuGuestMemory = GuestMemory<Core::Memory::Memory, T, FLAGS>;
+using CpuGuestMemory = GuestMemory<Memory, T, FLAGS>;
 template <typename T, GuestMemoryFlags FLAGS>
-using CpuGuestMemoryScoped = GuestMemoryScoped<Core::Memory::Memory, T, FLAGS>;
+using CpuGuestMemoryScoped = GuestMemoryScoped<Memory, T, FLAGS>;
 
 } // namespace Core::Memory
