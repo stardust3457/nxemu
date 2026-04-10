@@ -14,7 +14,6 @@
 #include "yuzu_common/fs/path_util.h"
 #include "yuzu_common/microprofile.h"
 #include "yuzu_common/thread_worker.h"
-#include "core/core.h"
 #include "yuzu_shader_recompiler/backend/spirv/emit_spirv.h"
 #include "yuzu_shader_recompiler/environment.h"
 #include "yuzu_shader_recompiler/frontend/maxwell/control_flow.h"

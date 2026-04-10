@@ -11,8 +11,6 @@
 #include "yuzu_common/yuzu_assert.h"
 #include "yuzu_common/microprofile.h"
 #include "yuzu_common/settings.h"
-#include "core/core.h"
-#include "core/core_timing.h"
 #include "frontend/emu_window.h"
 #include "frontend/graphics_context.h"
 #include "yuzu_common/nvdata.h"

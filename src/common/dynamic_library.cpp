@@ -17,7 +17,7 @@ DynLibHandle DynamicLibraryOpen(const char * path, bool showErrors)
     SetErrorMode(lastErrorMode);
 #else
     (void)showErrors;
-    DynLibHandle Lib = (DynLibHandle)(dlopen(path, RTLD_NOW | RTLD_LOCAL));
+    DynLibHandle lib = (DynLibHandle)(dlopen(path, RTLD_NOW | RTLD_LOCAL));
 #endif
     return lib;
 }

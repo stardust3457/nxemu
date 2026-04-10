@@ -5,7 +5,6 @@
 
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/settings.h"
-#include "core/core.h"
 #include "yuzu_video_core/host1x/gpu_device_memory_manager.h"
 #include "yuzu_video_core/host1x/host1x.h"
 #include "yuzu_video_core/renderer_base.h"

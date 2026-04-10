@@ -13,7 +13,6 @@
 #include "yuzu_common/microprofile.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/stb.h"
-#include "core/core_timing.h"
 #include "frontend/emu_window.h"
 #include "yuzu_video_core/capture.h"
 #include "yuzu_video_core/present.h"

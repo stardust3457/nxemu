@@ -335,7 +335,7 @@ std::vector<u8> HLERequestContext::ReadBufferCopy(std::size_t buffer_index) cons
 }
 
 std::span<const u8> HLERequestContext::ReadBufferA(std::size_t buffer_index) const {
-    Core::Memory::CpuGuestMemory<u8, ::GuestMemoryFlags::UnsafeRead> gm(memory, 0, 0);
+    Core::Memory::CpuGuestMemory<u8, GuestMemoryFlags::UnsafeRead> gm(memory, 0, 0);
 
     ASSERT_OR_EXECUTE_MSG(
         BufferDescriptorA().size() > buffer_index, { return {}; },
@@ -345,7 +345,7 @@ std::span<const u8> HLERequestContext::ReadBufferA(std::size_t buffer_index) con
 }
 
 std::span<const u8> HLERequestContext::ReadBufferX(std::size_t buffer_index) const {
-    Core::Memory::CpuGuestMemory<u8, ::GuestMemoryFlags::UnsafeRead> gm(memory, 0, 0);
+    Core::Memory::CpuGuestMemory<u8, GuestMemoryFlags::UnsafeRead> gm(memory, 0, 0);
 
     ASSERT_OR_EXECUTE_MSG(
         BufferDescriptorX().size() > buffer_index, { return {}; },
@@ -355,7 +355,7 @@ std::span<const u8> HLERequestContext::ReadBufferX(std::size_t buffer_index) con
 }
 
 std::span<const u8> HLERequestContext::ReadBuffer(std::size_t buffer_index) const {
-    Core::Memory::CpuGuestMemory<u8, ::GuestMemoryFlags::UnsafeRead> gm(memory, 0, 0);
+    Core::Memory::CpuGuestMemory<u8, GuestMemoryFlags::UnsafeRead> gm(memory, 0, 0);
 
     const bool is_buffer_a{BufferDescriptorA().size() > buffer_index &&
                            BufferDescriptorA()[buffer_index].Size()};

@@ -16,7 +16,6 @@
 #include "yuzu_common/scope_exit.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/stb.h"
-#include "core/core_timing.h"
 #include "frontend/graphics_context.h"
 #include "yuzu_video_core/capture.h"
 #include "yuzu_video_core/gpu.h"

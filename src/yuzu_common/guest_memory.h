@@ -9,6 +9,7 @@
 #include <span>
 #include <vector>
 
+#include "yuzu_common/common_types.h"
 #include "yuzu_common/scratch_buffer.h"
 #include "yuzu_common/yuzu_assert.h"
 

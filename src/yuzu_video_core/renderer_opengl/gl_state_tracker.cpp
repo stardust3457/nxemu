@@ -6,7 +6,6 @@
 #include <cstddef>
 
 #include "yuzu_common/common_types.h"
-#include "core/core.h"
 #include "yuzu_video_core/control/channel_state.h"
 #include "yuzu_video_core/engines/maxwell_3d.h"
 #include "yuzu_video_core/renderer_opengl/gl_state_tracker.h"
