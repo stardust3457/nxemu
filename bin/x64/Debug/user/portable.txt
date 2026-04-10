@@ -1,0 +1,1 @@
+The application detects this directory at startup and runs in portable mode, storing all user data here instead of the system default location.

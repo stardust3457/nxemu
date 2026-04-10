@@ -30,6 +30,7 @@ IF %ERRORLEVEL% NEQ 0 GOTO EndErr
 rd "%base_dir%\bin\package" /Q /S > NUL 2>&1
 md "%base_dir%\bin\package\"
 md "%base_dir%\bin\package\lang\"
+md "%base_dir%\bin\package\user\"
 md "%base_dir%\bin\package\modules\"
 md "%base_dir%\bin\package\modules\cpu\"
 md "%base_dir%\bin\package\modules\loader\"
@@ -37,6 +38,7 @@ md "%base_dir%\bin\package\modules\operating_system\"
 md "%base_dir%\bin\package\modules\video\"
 )
 
+copy "%base_dir%\bin\%VSPlatform%\Release\user\portable.txt" "%base_dir%\bin\package\user"
 copy "%base_dir%\bin\%VSPlatform%\Release\sciter.dll" "%base_dir%\bin\package"
 copy "%base_dir%\bin\%VSPlatform%\Release\nxemu.exe" "%base_dir%\bin\package"
 copy "%base_dir%\modules\%VSPlatform%\cpu\nxemu-cpu.dll" "%base_dir%\bin\package\modules\cpu"
