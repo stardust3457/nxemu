@@ -11,7 +11,8 @@ class SystemConfig;
 
 class SystemConfigHotkeys :
     public IDoubleClickSink,
-    public IKeySink
+    public IKeySink,
+    public IClickSink
 {
 public:
     SystemConfigHotkeys(ISciterUI & sciterUI, ISciterWindow & window, SciterElement page);
@@ -32,6 +33,7 @@ private:
     bool ConflictsWithOther(const MenuBarAccelerator & candidate, const std::string & assigningHotkeyId) const;
 
     bool OnDoubleClick(SCITER_ELEMENT element, SCITER_ELEMENT source) override;
+    bool OnClick(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t reason) override;
     bool OnKeyDown(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) override;
     bool OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) override;
     bool OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) override;
@@ -48,5 +50,5 @@ private:
     /// Empty when not recording a new shortcut.
     std::string m_captureHotkeyId;
 
-    bool m_keySinkAttached;
+    bool m_captureSinksAttached;
 };

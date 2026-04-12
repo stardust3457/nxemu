@@ -29,21 +29,9 @@ std::string MenuBarAcceleratorToJson(const MenuBarAccelerator & accel)
     return JsonStyledWriter().write(o);
 }
 
-MenuBarAccelerator MenuBarAcceleratorFromKeyEvent(uint32_t keyCode, uint32_t keyboardState, bool * cancel)
+MenuBarAccelerator MenuBarAcceleratorFromKeyEvent(uint32_t keyCode, uint32_t keyboardState)
 {
-    if (cancel != nullptr)
-    {
-        *cancel = false;
-    }
     MenuBarAccelerator none{};
-    if (keyCode == (uint32_t)SCITER_KEY_ESCAPE)
-    {
-        if (cancel != nullptr)
-        {
-            *cancel = true;
-        }
-        return none;
-    }
     if (IsModifierKeyCode(keyCode))
     {
         return none;
@@ -51,16 +39,33 @@ MenuBarAccelerator MenuBarAcceleratorFromKeyEvent(uint32_t keyCode, uint32_t key
     bool ctrl = (keyboardState & kKeyboardStateControl) != 0;
     bool alt = (keyboardState & kKeyboardStateAlt) != 0;
     bool shift = (keyboardState & kKeyboardStateShift) != 0;
-    if (!ctrl && !alt && !shift)
+
+    // Escape is bindable like any key (e.g. Exit Fullscreen). Cancel capture by clicking outside the cell.
+    if (keyCode == (uint32_t)SCITER_KEY_ESCAPE)
     {
-        return none;
+        MenuBarAccelerator a{};
+        a.key = keyCode;
+        a.ctrl = ctrl;
+        a.alt = alt;
+        a.shift = shift;
+        return a;
     }
-    MenuBarAccelerator a{};
-    a.key = keyCode;
-    a.ctrl = ctrl;
-    a.alt = alt;
-    a.shift = shift;
-    return a;
+    if (ctrl || alt || shift)
+    {
+        MenuBarAccelerator a{};
+        a.key = keyCode;
+        a.ctrl = ctrl;
+        a.alt = alt;
+        a.shift = shift;
+        return a;
+    }
+    if (keyCode >= (uint32_t)SCITER_KEY_F1 && keyCode <= (uint32_t)SCITER_KEY_F24)
+    {
+        MenuBarAccelerator a{};
+        a.key = keyCode;
+        return a;
+    }
+    return none;
 }
 
 JsonValue HotkeyMapToJsonObject(const HotkeyMap & m)
