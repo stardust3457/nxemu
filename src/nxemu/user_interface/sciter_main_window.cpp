@@ -23,6 +23,7 @@
 struct Win32FullscreenState
 {
     bool active = false;
+    uint32_t pendingSwallowKeyUp = 0;
     WINDOWPLACEMENT placement{};
     LONG_PTR savedStyle = 0;
     LONG_PTR savedExStyle = 0;
@@ -143,7 +144,7 @@ void SciterMainWindow::ResetMenu()
 
     MenuBarItemList mainTitleMenu;
     MenuBarItemList fileMenu;
-    fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
+    fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "&Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
 
     Stringlist & recentFiles = uiSettings.recentFiles;
     MenuBarItemList RecentFileMenu;
@@ -156,33 +157,33 @@ void SciterMainWindow::ResetMenu()
             RecentFileMenu.push_back(MenuBarItem(ID_RECENT_FILE_START + recentFileIndex, MenuString.c_str()));
             recentFileIndex += 1;
         }
-        fileMenu.emplace_back(MenuBarItem::SUB_MENU, "Recent File", &RecentFileMenu);
+        fileMenu.emplace_back(MenuBarItem::SUB_MENU, "&Recent File", &RecentFileMenu);
     }
 
     fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
-    fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "File", &fileMenu));
+    fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "E&xit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&File", &fileMenu));
 
     MenuBarItemList systemMenu;
     if (m_emulationRunning)
     {
-        systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "Stop"));
-        mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "System", &systemMenu));    
+        systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "&Stop"));
+        mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&System", &systemMenu));    
     }
 
     MenuBarItemList viewMenu;
-    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "Fullscreen"));
+    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen));
     MenuBarItemList resetWindowSizeMenu;
     resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_720, "Reset Window Size to 720p"));
     resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_900, "Reset Window Size to 900p"));
     resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_1080, "Reset Window Size to 1080p"));
     viewMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Reset Window Size", &resetWindowSizeMenu));
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "View", &viewMenu));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&View", &viewMenu));
 
     MenuBarItemList optionsMenu;
-    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
-    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Configure..."));
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Options", &optionsMenu));
+    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "&Controllers..."));
+    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Confi&gure..."));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&Options", &optionsMenu));
 
     m_menuBar->AddSink(this);
     m_menuBar->SetMenuContent(mainTitleMenu);
@@ -660,10 +661,20 @@ float SciterMainWindow::PixelRatio() const
 
 bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
-    if (m_win32Fullscreen && m_win32Fullscreen->active && keyCode == SCITER_KEY_ESCAPE)
+    const char * hotkeyId = IsMenuBarAccelerator((uint32_t)keyCode, keyboardState);
     {
-        ExitFullscreen();
-        return true;
+        if (strcmp(hotkeyId, Hotkey::ExitFullscreen) == 0 && m_win32Fullscreen->active)
+        {
+            m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
+            ExitFullscreen();
+            return true;
+        }
+        if (strcmp(hotkeyId, Hotkey::Fullscreen) == 0)
+        {
+            m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
+            ToggleFullscreen();
+            return true;
+        }
     }
     if (ProcessMenuBarAccelerator(IsMenuBarAccelerator((uint32_t)keyCode, keyboardState)))
     {
@@ -683,6 +694,14 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
 
 bool SciterMainWindow::OnKeyUp(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
+#ifdef _WIN32
+    if (m_win32Fullscreen != nullptr && m_win32Fullscreen->pendingSwallowKeyUp != 0 &&
+        (uint32_t)keyCode == m_win32Fullscreen->pendingSwallowKeyUp)
+    {
+        m_win32Fullscreen->pendingSwallowKeyUp = 0;
+        return true;
+    }
+#endif
     if (IsMenuBarAccelerator((uint32_t)keyCode, keyboardState) != nullptr)
     {
         return true;

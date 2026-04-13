@@ -7,7 +7,10 @@
     background-color: #1e1e1e;
     border: 1px solid #404040;
     border-radius: 4px;
-    min-height: 8rem;
+    box-sizing: border-box;
+    height: 8rem;
+    max-height: 8rem;
+    overflow-y: auto;
     padding: 0.1rem;
     margin-bottom: 1rem;
     width: 100%%;
@@ -47,7 +50,7 @@
   </page>
   <Page label="Hotkeys" Name="Hotkeys">
     <div class="input-group hotkeys-page">
-      <div class="hotkeys-hint">Double-click a binding to change it. While recording, press Delete or Backspace to clear the shortcut, or Escape to cancel.</div>
+      <div class="hotkeys-hint">Double-click a binding to change it. While recording, press Delete to clear the shortcut, or click outside the cell to cancel.</div>
       <table class="hotkeys-table">
         <thead>
           <tr><th>Action</th><th>Hotkey</th></tr>
