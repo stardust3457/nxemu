@@ -118,7 +118,6 @@ public:
         GenerateYuzuPath(YuzuPath::ConfigDir, yuzu_path_config);
         GenerateYuzuPath(YuzuPath::CrashDumpsDir, yuzu_path / CRASH_DUMPS_DIR);
         GenerateYuzuPath(YuzuPath::DumpDir, yuzu_path / DUMP_DIR);
-        GenerateYuzuPath(YuzuPath::KeysDir, yuzu_path / KEYS_DIR);
         GenerateYuzuPath(YuzuPath::LoadDir, yuzu_path / LOAD_DIR);
         GenerateYuzuPath(YuzuPath::LogDir, yuzu_path / LOG_DIR);
         GenerateYuzuPath(YuzuPath::NANDDir, yuzu_path / NAND_DIR);
