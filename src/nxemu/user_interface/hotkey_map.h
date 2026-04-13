@@ -9,11 +9,13 @@ namespace Hotkey
 {
 constexpr const char LoadFile[] = "LoadFile";
 constexpr const char Exit[] = "Exit";
+constexpr const char Fullscreen[] = "Fullscreen";
+constexpr const char ExitFullscreen[] = "ExitFullscreen";
 }
 
 using HotkeyMap = std::map<std::string, MenuBarAccelerator>;
 
-MenuBarAccelerator MenuBarAcceleratorFromKeyEvent(uint32_t keyCode, uint32_t keyboardState, bool * cancel);
+MenuBarAccelerator MenuBarAcceleratorFromKeyEvent(uint32_t keyCode, uint32_t keyboardState);
 
 JsonValue HotkeyMapToJsonObject(const HotkeyMap & m);
 JsonValue HotkeyMapToJsonObjectDiff(const HotkeyMap & current, const HotkeyMap & defaults);
