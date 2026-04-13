@@ -6,12 +6,12 @@
 
 #StatusBar
 {
-  background: #31363b;
+  background: var(--color-statusbar-background);
   flow: horizontal;
-  color: #eff0f1;
+  color: var(--color-ui-text-primary);
   padding: 0.2em 1em;
-  border-top: 1px solid #434242;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  border-top: 1px solid var(--color-statusbar-border);
+  font-family: var(--font-ui);
   font-size: 0.8em;
   font-weight: 100;
   height: 1.6rem;
@@ -37,22 +37,58 @@
 #StatusBar #volume:hover,
 #StatusBar #renderer:hover
 {
-  border: 1px solid #76797c;
+  border: 1px solid var(--color-statusbar-hover-border);
 }
 
 #VolumePopup
 {
-  background: #31363b;
-  border: 1px solid #434242;
+  background: var(--color-statusbar-background);
+  border: 1px solid var(--color-statusbar-border);
   padding: 1em;
 }
 
-#RomBrowserPanel,
-#LoadingPanel
+.main-contents-panel
 {
   width: 100%%;
   height: 100%%;
   display: none;
+}
+
+#PausePanel
+{
+  background: var(--color-pause-panel-background);
+  color: var(--color-ui-text-primary);
+  overflow: hidden;
+}
+
+#PausePanel .pause-panel-container
+{
+  width: 100%%;
+  height: 100%%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+#PausePanel .pause-panel-title
+{
+  font-family: var(--font-ui);
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+#PausePanel .pause-panel-subtitle
+{
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--color-ui-text-muted);
+  margin: 0;
 }
 
 rombrowser
@@ -83,7 +119,7 @@ rombrowser .config-button svg
 
 rombrowser .config-button .outline
 {
-  fill: #eff0f1;
+  fill: var(--color-ui-text-primary);
 }
 
 rombrowser .config-button:hover .outline
@@ -104,10 +140,10 @@ rombrowser .config-button:hover
 
 rombrowser .games-title h1
 {
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 1.5rem;
   font-weight: 400;
-  color: #eff0f1;
+  color: var(--color-ui-text-primary);
   padding: 0 0 0.6rem;
   margin: 0;
   width:*

@@ -35,12 +35,29 @@ public:
         while (!stop_token.stop_requested())
         {
             std::unique_lock lk{m_should_run_mutex};
-            if (m_should_run)
+            if (m_should_run.load(std::memory_order_relaxed))
             {
                 m_system.Run();
                 m_stopped.Reset();
 
-                Common::CondvarWait(m_should_run_cv, lk, stop_token, [&] { return !m_should_run; });
+                Common::CondvarWait(m_should_run_cv, lk, stop_token, [&] {
+                    return !m_should_run.load(std::memory_order_relaxed);
+                });
+            }
+            else
+            {
+                m_system.Pause();
+                m_stopped.Set();
+                g_settings->SetInt(NXCoreSetting::EmulationState, (int32_t)EmulationState::Paused);
+
+                Common::CondvarWait(m_should_run_cv, lk, stop_token, [&] {
+                    return m_should_run.load(std::memory_order_relaxed);
+                });
+
+                if (!stop_token.stop_requested())
+                {
+                    g_settings->SetInt(NXCoreSetting::EmulationState, (int32_t)EmulationState::Running);
+                }
             }
         }
 
@@ -63,7 +80,7 @@ public:
     std::mutex m_should_run_mutex;
     std::condition_variable_any m_should_run_cv;
     Common::Event m_stopped;
-    bool m_should_run;
+    std::atomic<bool> m_should_run;
     Core::System & m_system;
     Kernel::KProcess *& m_process;
 };
@@ -102,7 +119,7 @@ void EmuThread::SetRunning(bool should_run)
     {
         // Notify the running thread to change state.
         std::unique_lock run_lk{impl->m_should_run_mutex};
-        impl->m_should_run = should_run;
+        impl->m_should_run.store(should_run, std::memory_order_release);
         impl->m_should_run_cv.notify_one();
     }
 
@@ -111,4 +128,9 @@ void EmuThread::SetRunning(bool should_run)
     {
         impl->m_stopped.Wait();
     }
+}
+
+bool EmuThread::IsRunning() const
+{
+    return impl->m_should_run.load(std::memory_order_acquire);
 }

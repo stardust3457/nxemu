@@ -356,3 +356,21 @@ PerfStatsResults OSManager::GetAndResetPerfStats()
 {
     return m_coreSystem.GetAndResetPerfStats();
 }
+
+void OSManager::SetEmulationPaused(bool paused)
+{
+    if (!m_emuThread)
+    {
+        return;
+    }
+    m_emuThread->SetRunning(!paused);
+}
+
+bool OSManager::IsEmulationPaused() const
+{
+    if (!m_emuThread)
+    {
+        return false;
+    }
+    return !m_emuThread->IsRunning();
+}

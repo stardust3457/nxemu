@@ -35,6 +35,7 @@ class SciterMainWindow :
         ID_FILE_EXIT,
 
         // System Menu
+        ID_SYSTEM_PAUSE_CONTINUE,
         ID_SYSTEM_STOP,
         
         // Emulation Menu
@@ -94,6 +95,7 @@ private:
     void OnOpenFile();
     void OnFileExit();
     void OnStopGame();
+    void OnPauseContinueGame();
     void OnSystemConfig();
     void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
@@ -112,6 +114,7 @@ private:
     void ResetWindowSize1080();
 #endif
     void LayoutRenderWindow();
+    void UpdatePausePanel();
 
     // IWindowDestroySink
     void OnWindowDestroy(HWINDOW hWnd) override;

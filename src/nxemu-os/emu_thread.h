@@ -15,6 +15,7 @@ public:
     void Start();
     void Stop();
     void SetRunning(bool should_run);
+    bool IsRunning() const;
 
 private:
     struct Impl;

@@ -45,6 +45,8 @@ public:
     IParamPackage * GetNextInput() const override;
     void PumpInputEvents() const override;
     PerfStatsResults GetAndResetPerfStats() override;
+    void SetEmulationPaused(bool paused) override;
+    bool IsEmulationPaused() const override;
 
 private:
     OSManager() = delete;

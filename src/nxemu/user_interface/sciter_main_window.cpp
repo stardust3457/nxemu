@@ -167,6 +167,16 @@ void SciterMainWindow::ResetMenu()
     MenuBarItemList systemMenu;
     if (m_emulationRunning)
     {
+        bool paused = false;
+        if (m_modules.IsValid())
+        {
+            paused = m_modules.Modules().OperatingSystem().IsEmulationPaused();
+        }
+        systemMenu.push_back(MenuBarItem(
+            ID_SYSTEM_PAUSE_CONTINUE,
+            paused ? "Continue" : "Pause",
+            nullptr,
+            HotkeyAccelerator(Hotkey::PauseContinue)));
         systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "&Stop"));
         mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&System", &systemMenu));    
     }
@@ -335,6 +345,8 @@ void SciterMainWindow::CreateRenderWindow()
         IVideo & video = m_modules.Modules().Video();
         video.UpdateFramebufferLayout(rect.right - rect.left, rect.bottom - rect.top);
     }
+
+    UpdatePausePanel();
 }
 
 void SciterMainWindow::SetCaption(const std::string & caption)
@@ -385,11 +397,17 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
     else if (state == EmulationState::Running)
     {
         impl->m_rootElement.PostEvent(EVENT_EMULATION_RUNNING);
+        impl->ResetMenu();
+    }
+    else if (state == EmulationState::Paused)
+    {
+        impl->ResetMenu();
     }
     else if (state == EmulationState::Stopped)
     {
         impl->m_rootElement.PostEvent(EVENT_EMULATION_STOPPED);
     }
+    impl->UpdatePausePanel();
 }
 
 void SciterMainWindow::GameFileChanged(const char * /*setting*/, void * userData)
@@ -493,6 +511,26 @@ void SciterMainWindow::OnStopGame()
     settings.SetBool(NXCoreSetting::EmulationRunning, false);
 }
 
+void SciterMainWindow::OnPauseContinueGame()
+{
+    if (!m_emulationRunning || !m_modules.IsValid())
+    {
+        return;
+    }
+    IOperatingSystem & os = m_modules.Modules().OperatingSystem();
+    if (os.IsEmulationPaused())
+    {
+        PreventOSSleep();
+        os.SetEmulationPaused(false);
+    }
+    else
+    {
+        os.SetEmulationPaused(true);
+        AllowOSSleep();
+    }
+    ResetMenu();
+}
+
 void SciterMainWindow::OnSystemConfig()
 {
     ShowConfig(nullptr);
@@ -526,10 +564,19 @@ void SciterMainWindow::UpdateStatusBar()
     IVideo & video = m_modules.Modules().Video();
     std::string status;
 
+    if (operatingSystem.IsEmulationPaused())
+    {
+        status += "Paused";
+    }
+
     const int shaders_building = video.ShadersBuilding();
 
     if (shaders_building > 0)
     {
+        if (!status.empty())
+        {
+            status += " | ";
+        }
         status += stdstr_f("Building: %d shader(s)", shaders_building);
     }
 
@@ -603,6 +650,11 @@ bool SciterMainWindow::ProcessMenuBarAccelerator(const char * hotkeyId)
         OnFileExit();
         return true;
     }
+    if (strcmp(hotkeyId, Hotkey::PauseContinue) == 0)
+    {
+        OnPauseContinueGame();
+        return true;
+    }
     return false;
 }
 
@@ -626,6 +678,7 @@ void SciterMainWindow::OnMenuItem(int32_t id, SCITER_ELEMENT /*item*/)
     {
     case ID_FILE_LOAD_FILE: OnOpenFile(); break;
     case ID_FILE_EXIT: OnFileExit(); break;
+    case ID_SYSTEM_PAUSE_CONTINUE: OnPauseContinueGame(); break;
     case ID_SYSTEM_STOP: OnStopGame(); break;
     case ID_EMULATION_CONTROLLERS: OnInputConfig(); break;
     case ID_EMULATION_CONFIGURE: OnSystemConfig(); break;
@@ -752,6 +805,37 @@ void SciterMainWindow::LayoutRenderWindow()
     {
         IVideo & video = m_modules.Modules().Video();
         video.UpdateFramebufferLayout(width, height);
+    }
+    UpdatePausePanel();
+}
+
+void SciterMainWindow::UpdatePausePanel()
+{
+    SciterElement panel(m_rootElement.GetElementByID("PausePanel"));
+    if (!panel.IsValid())
+    {
+        return;
+    }
+
+    const bool paused =
+        m_emulationRunning && m_modules.IsValid() && m_modules.Modules().OperatingSystem().IsEmulationPaused();
+
+    panel.SetStyleAttribute("display", paused ? "block" : "none");
+
+    if (m_renderWindow == nullptr || !m_emulationRunning)
+    {
+        return;
+    }
+
+    if (paused)
+    {
+        ShowWindow((HWND)m_renderWindow, SW_HIDE);
+    }
+    else
+    {
+        SettingsStore & settings = SettingsStore::GetInstance();
+        const bool showRender = settings.GetBool(NXCoreSetting::DisplayedFrames);
+        ShowWindow((HWND)m_renderWindow, showRender ? SW_SHOW : SW_HIDE);
     }
 }
 
@@ -1064,6 +1148,7 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*sour
         {
             romBrowserPanel.SetStyleAttribute("display", "block");
         }
+        UpdatePausePanel();
     }
     else if (event_code == EVENT_EMULATION_FIRST_FRAME)
     {
@@ -1077,6 +1162,7 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*sour
                 LoadingPanel.SetStyleAttribute("display", "none");
             }
         }
+        UpdatePausePanel();
     }
     return false;
 }

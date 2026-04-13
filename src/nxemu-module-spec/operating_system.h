@@ -431,6 +431,8 @@ nxinterface IOperatingSystem
     virtual IParamPackage * GetNextInput() const = 0;
     virtual void PumpInputEvents() const = 0;
     virtual PerfStatsResults GetAndResetPerfStats() = 0;
+    virtual void SetEmulationPaused(bool paused) = 0;
+    virtual bool IsEmulationPaused() const = 0;
 };
 
 EXPORT IOperatingSystem * CALL CreateOperatingSystem(ISystemModules & modules);

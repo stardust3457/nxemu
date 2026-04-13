@@ -1,4 +1,11 @@
 :root {
+  --font-ui: 'Segoe UI', Arial, sans-serif;
+  --color-ui-text-primary: #eff0f1;
+  --color-ui-text-muted: #b0b6bc;
+  --color-statusbar-background: #31363b;
+  --color-statusbar-border: #434242;
+  --color-statusbar-hover-border: #76797c;
+  --color-pause-panel-background: #25282c;
   --color-main-background: #2d2d2d;
   --color-titlebar-background: #181818;
   --color-titlebar-background-inactive: #2d2d2d;
@@ -52,7 +59,7 @@ html > header > window-caption
   line-height: window-caption-height;
   width: *;
   padding: 0 1em;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.9em;
   font-weight: 100;
 }
@@ -138,8 +145,8 @@ ul#menu-bar
   margin: 0;
   padding: 0 0.5em 0.3em 0.5em;
   background: var(--color-menubar-background);
-  color: #eff0f1;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  color: var(--color-ui-text-primary);
+  font-family: var(--font-ui);
   font-size: 0.9em;
   font-weight: 100;
   behavior:menu-bar;
