@@ -172,7 +172,7 @@ void SciterMainWindow::ResetMenu()
     }
 
     MenuBarItemList viewMenu;
-    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen));
+    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen)));
     MenuBarItemList resetWindowSizeMenu;
     resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_720, "Reset Window Size to 720p"));
     resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_900, "Reset Window Size to 900p"));
