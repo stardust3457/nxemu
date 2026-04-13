@@ -715,6 +715,7 @@ float SciterMainWindow::PixelRatio() const
 bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
     const char * hotkeyId = IsMenuBarAccelerator((uint32_t)keyCode, keyboardState);
+    if (hotkeyId != nullptr)
     {
         if (strcmp(hotkeyId, Hotkey::ExitFullscreen) == 0 && m_win32Fullscreen->active)
         {
