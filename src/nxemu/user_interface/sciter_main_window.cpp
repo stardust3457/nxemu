@@ -18,8 +18,8 @@
 #include <yuzu_common/settings_input.h>
 
 #include <Windows.h>
+#include <cmath>
 
-#ifdef _WIN32
 struct Win32FullscreenState
 {
     bool active = false;
@@ -28,7 +28,6 @@ struct Win32FullscreenState
     LONG_PTR savedStyle = 0;
     LONG_PTR savedExStyle = 0;
 };
-#endif
 
 namespace
 {
@@ -59,6 +58,28 @@ bool AcceleratorMatchesKey(const MenuBarAccelerator & accel, uint32_t keyCode, u
     bool shift = (keyboardState & kKeyboardStateShift) != 0;
     return ctrl == accel.ctrl && alt == accel.alt && shift == accel.shift;
 }
+
+/** Matches Layout::EmulationAspectRatio (yuzu_video_core) for window-size reset; inlined to avoid a link dep. */
+static float EmulationAspectRatioForWindowReset(float window_aspect_ratio)
+{
+    using Settings::AspectRatio;
+    const auto aspect = static_cast<AspectRatio>(Settings::values.aspect_ratio.GetValue());
+    switch (aspect)
+    {
+    case AspectRatio::R16_9:
+        return 720.0f / 1280.0f;
+    case AspectRatio::R4_3:
+        return 3.0f / 4.0f;
+    case AspectRatio::R21_9:
+        return 9.0f / 21.0f;
+    case AspectRatio::R16_10:
+        return 10.0f / 16.0f;
+    case AspectRatio::Stretch:
+        return window_aspect_ratio;
+    default:
+        return 720.0f / 1280.0f;
+    }
+}
 }
 
 SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitle) :
@@ -67,10 +88,8 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_renderWindow(nullptr),
     m_windowTitle(windowTitle),
     m_volumePopup(false),
-    m_emulationRunning(false)
-#ifdef _WIN32
-    , m_win32Fullscreen(std::make_unique<Win32FullscreenState>())
-#endif
+    m_emulationRunning(false),
+    m_win32Fullscreen(std::make_unique<Win32FullscreenState>())
 {
     SettingsStore & settings = SettingsStore::GetInstance();
     settings.RegisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
@@ -153,7 +172,12 @@ void SciterMainWindow::ResetMenu()
     }
 
     MenuBarItemList viewMenu;
-    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen)));
+    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen));
+    MenuBarItemList resetWindowSizeMenu;
+    resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_720, "Reset Window Size to 720p"));
+    resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_900, "Reset Window Size to 900p"));
+    resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_1080, "Reset Window Size to 1080p"));
+    viewMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Reset Window Size", &resetWindowSizeMenu));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&View", &viewMenu));
 
     MenuBarItemList optionsMenu;
@@ -606,9 +630,16 @@ void SciterMainWindow::OnMenuItem(int32_t id, SCITER_ELEMENT /*item*/)
     case ID_EMULATION_CONTROLLERS: OnInputConfig(); break;
     case ID_EMULATION_CONFIGURE: OnSystemConfig(); break;
     case ID_VIEW_FULLSCREEN:
-#ifdef _WIN32
         ToggleFullscreen();
-#endif
+        break;
+    case ID_VIEW_RESET_WINDOW_SIZE_720:
+        ResetWindowSize(1280U, 720U);
+        break;
+    case ID_VIEW_RESET_WINDOW_SIZE_900:
+        ResetWindowSize(1600U, 900U);
+        break;
+    case ID_VIEW_RESET_WINDOW_SIZE_1080:
+        ResetWindowSize(1920U, 1080U);
         break;
     default:
         if (id >= ID_RECENT_FILE_START && id <= ID_RECENT_FILE_END)
@@ -631,8 +662,6 @@ float SciterMainWindow::PixelRatio() const
 bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
     const char * hotkeyId = IsMenuBarAccelerator((uint32_t)keyCode, keyboardState);
-#ifdef _WIN32
-    if (m_win32Fullscreen != nullptr && hotkeyId != nullptr)
     {
         if (strcmp(hotkeyId, Hotkey::ExitFullscreen) == 0 && m_win32Fullscreen->active)
         {
@@ -647,8 +676,7 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
             return true;
         }
     }
-#endif
-    if (ProcessMenuBarAccelerator(hotkeyId))
+    if (ProcessMenuBarAccelerator(IsMenuBarAccelerator((uint32_t)keyCode, keyboardState)))
     {
         return true;
     }
@@ -727,7 +755,6 @@ void SciterMainWindow::LayoutRenderWindow()
     }
 }
 
-#ifdef _WIN32
 void SciterMainWindow::ToggleFullscreen()
 {
     if (!m_win32Fullscreen)
@@ -840,7 +867,57 @@ void SciterMainWindow::ExitFullscreen()
     }
     LayoutRenderWindow();
 }
-#endif
+
+void SciterMainWindow::ResetWindowSize(uint32_t nominal_width, uint32_t nominal_height)
+{
+    if (m_window == nullptr || nominal_width == 0 || nominal_height == 0)
+    {
+        return;
+    }
+    if (m_win32Fullscreen && m_win32Fullscreen->active)
+    {
+        ExitFullscreen();
+    }
+    HWND hwnd = (HWND)m_window->GetHandle();
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
+    if (!mainContents.IsValid())
+    {
+        return;
+    }
+    SciterElement::RECT contentRect = mainContents.GetLocation();
+    const int32_t curW = contentRect.right - contentRect.left;
+    const int32_t curH = contentRect.bottom - contentRect.top;
+    if (curW <= 0 || curH <= 0)
+    {
+        return;
+    }
+
+    const float window_aspect_ratio =
+        static_cast<float>(nominal_height) / static_cast<float>(nominal_width);
+    const float emulation_aspect_ratio = EmulationAspectRatioForWindowReset(window_aspect_ratio);
+    const uint32_t targetH = nominal_height;
+    const uint32_t targetW =
+        static_cast<uint32_t>(std::lround(static_cast<double>(nominal_height) / static_cast<double>(emulation_aspect_ratio)));
+
+    RECT wr{};
+    if (!GetWindowRect(hwnd, &wr))
+    {
+        return;
+    }
+    const int outerW = wr.right - wr.left;
+    const int outerH = wr.bottom - wr.top;
+    const int deltaW = static_cast<int>(targetW) - curW;
+    const int deltaH = static_cast<int>(targetH) - curH;
+
+    SetWindowPos(hwnd, nullptr, 0, 0, outerW + deltaW, outerH + deltaH, SWP_NOMOVE | SWP_NOZORDER);
+    m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
+    SciterElement mc(m_rootElement.GetElementByID("MainContents"));
+    if (mc.IsValid())
+    {
+        mc.Update(true);
+    }
+    LayoutRenderWindow();
+}
 
 bool SciterMainWindow::OnClick(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t /*reason*/)
 {

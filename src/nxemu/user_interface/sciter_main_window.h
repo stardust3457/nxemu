@@ -43,6 +43,9 @@ class SciterMainWindow :
 
         // View Menu
         ID_VIEW_FULLSCREEN,
+        ID_VIEW_RESET_WINDOW_SIZE_720,
+        ID_VIEW_RESET_WINDOW_SIZE_900,
+        ID_VIEW_RESET_WINDOW_SIZE_1080,
 
         // Recent files
         ID_RECENT_FILE_START,
@@ -103,6 +106,10 @@ private:
     void ToggleFullscreen();
     void EnterFullscreen();
     void ExitFullscreen();
+    void ResetWindowSize(uint32_t nominal_width, uint32_t nominal_height);
+    void ResetWindowSize720();
+    void ResetWindowSize900();
+    void ResetWindowSize1080();
 #endif
     void LayoutRenderWindow();
 
