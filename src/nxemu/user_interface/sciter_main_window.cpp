@@ -124,7 +124,7 @@ void SciterMainWindow::ResetMenu()
 
     MenuBarItemList mainTitleMenu;
     MenuBarItemList fileMenu;
-    fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
+    fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "&Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
 
     Stringlist & recentFiles = uiSettings.recentFiles;
     MenuBarItemList RecentFileMenu;
@@ -137,28 +137,28 @@ void SciterMainWindow::ResetMenu()
             RecentFileMenu.push_back(MenuBarItem(ID_RECENT_FILE_START + recentFileIndex, MenuString.c_str()));
             recentFileIndex += 1;
         }
-        fileMenu.emplace_back(MenuBarItem::SUB_MENU, "Recent File", &RecentFileMenu);
+        fileMenu.emplace_back(MenuBarItem::SUB_MENU, "&Recent File", &RecentFileMenu);
     }
 
     fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
-    fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "Exit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "File", &fileMenu));
+    fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "E&xit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&File", &fileMenu));
 
     MenuBarItemList systemMenu;
     if (m_emulationRunning)
     {
-        systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "Stop"));
-        mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "System", &systemMenu));    
+        systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "&Stop"));
+        mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&System", &systemMenu));    
     }
 
     MenuBarItemList viewMenu;
-    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "Fullscreen"));
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "View", &viewMenu));
+    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen"));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&View", &viewMenu));
 
     MenuBarItemList optionsMenu;
-    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "Controllers..."));
-    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Configure..."));
-    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Options", &optionsMenu));
+    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "&Controllers..."));
+    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Confi&gure..."));
+    mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&Options", &optionsMenu));
 
     m_menuBar->AddSink(this);
     m_menuBar->SetMenuContent(mainTitleMenu);

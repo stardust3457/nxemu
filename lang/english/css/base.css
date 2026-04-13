@@ -137,7 +137,6 @@ ul#menu-bar
 {
   margin: 0;
   padding: 0 0.5em 0.3em 0.5em;
-  border-left: 1px solid transparent;
   background: var(--color-menubar-background);
   color: #eff0f1;
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -167,6 +166,21 @@ ul#menu-bar:focus > li:current,
 ul#menu-bar > li:owns-popup {
   background-color: var(--color-menubar-background-active);
   border-radius: 5px 5px 0;
+}
+
+ul#menu-bar caption u,
+menu li .menu-item-label u
+{
+  text-decoration: none;
+}
+
+[data-menu-mnemonics="1"] ul#menu-bar caption u,
+[data-menu-mnemonics="1"] menu li .menu-item-label u,
+ul#menu-bar > li:owns-popup caption u,
+menu[window-state="shown"] li .menu-item-label u,
+menu[window-state="shown"] caption u
+{
+  text-decoration: underline;
 }
 
 menu
@@ -234,6 +248,21 @@ menu li:hover
 {
   background: var(--color-menuitem-background-hover);
   border-radius: 2px;
+}
+
+menu li:current,
+menu li:hover:owns-popup
+{
+  background-color: #094771;
+  border-radius: 2px;
+}
+
+menu li:current .menu-item-label,
+menu li:current .menu-accelerator,
+menu li:hover:owns-popup .menu-item-label,
+menu li:hover:owns-popup .menu-accelerator
+{
+  color: #f0f0f0;
 }
 
 menu li:disabled 
