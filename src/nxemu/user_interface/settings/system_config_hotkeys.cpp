@@ -9,6 +9,24 @@ namespace
 {
 const char * kPressShortcut = "Press shortcut…";
 
+bool ElementIsOrInside(SCITER_ELEMENT descendant, const SciterElement & ancestor)
+{
+    if (!ancestor.IsValid())
+    {
+        return false;
+    }
+    SciterElement el(descendant);
+    while (el.IsValid())
+    {
+        if (el == ancestor)
+        {
+            return true;
+        }
+        el = el.GetParent();
+    }
+    return false;
+}
+
 std::string BindingCellText(const MenuBarAccelerator & accel)
 {
     std::string s = accel.Format();
@@ -28,6 +46,8 @@ struct HotkeyLabelEntry
 static const HotkeyLabelEntry kHotkeyLabels[] = {
     {Hotkey::LoadFile, "Load File..."},
     {Hotkey::Exit, "Exit"},
+    {Hotkey::Fullscreen, "Fullscreen"},
+    {Hotkey::ExitFullscreen, "Exit Fullscreen"},
 };
 
 std::string HotkeyBindingElementId(const std::string & hotkeyId)
@@ -42,18 +62,26 @@ SystemConfigHotkeys::SystemConfigHotkeys(ISciterUI & sciterUI, ISciterWindow & w
     m_page(page),
     m_root(window.GetRootElement()),
     m_hotkeysTableBody(page.GetElementByID("HotkeysTableBody")),
-    m_keySinkAttached(false)
+    m_captureSinksAttached(false)
 {
     DeserializeUIHotkeysMap(SettingsStore::GetInstance().GetString(NXUISetting::Hotkeys), m_sessionHotkeys);
+    for (const HotkeyMap::value_type & entry : uiSettings.hotkeys)
+    {
+        if (m_sessionHotkeys.find(entry.first) == m_sessionHotkeys.end())
+        {
+            m_sessionHotkeys.insert(entry);
+        }
+    }
     BuildHotkeysTable();
 }
 
 SystemConfigHotkeys::~SystemConfigHotkeys()
 {
-    if (m_keySinkAttached && m_root.IsValid())
+    if (m_captureSinksAttached && m_root.IsValid())
     {
         m_sciterUI.DetachHandler(m_root, IID_IKEYSINK, (IKeySink *)this);
-        m_keySinkAttached = false;
+        m_sciterUI.DetachHandler(m_root, IID_ICLICKSINK, (IClickSink *)this);
+        m_captureSinksAttached = false;
     }
     if (m_hotkeysTableBody.IsValid())
     {
@@ -158,25 +186,42 @@ void SystemConfigHotkeys::StartCapture(const std::string & hotkeyId)
     {
         cell.SetText(kPressShortcut);
     }
-    if (m_root.IsValid() && !m_keySinkAttached)
+    if (m_root.IsValid() && !m_captureSinksAttached)
     {
         m_sciterUI.AttachHandler(m_root, IID_IKEYSINK, (IKeySink *)this);
-        m_keySinkAttached = true;
+        m_sciterUI.AttachHandler(m_root, IID_ICLICKSINK, (IClickSink *)this);
+        m_captureSinksAttached = true;
     }
 }
 
 void SystemConfigHotkeys::EndCapture(bool cancelled)
 {
-    if (m_keySinkAttached && m_root.IsValid())
+    if (m_captureSinksAttached && m_root.IsValid())
     {
         m_sciterUI.DetachHandler(m_root, IID_IKEYSINK, (IKeySink *)this);
-        m_keySinkAttached = false;
+        m_sciterUI.DetachHandler(m_root, IID_ICLICKSINK, (IClickSink *)this);
+        m_captureSinksAttached = false;
     }
     m_captureHotkeyId.clear();
     if (cancelled)
     {
         UpdateBindingDisplay();
     }
+}
+
+bool SystemConfigHotkeys::OnClick(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t /*reason*/)
+{
+    if (m_captureHotkeyId.empty())
+    {
+        return false;
+    }
+    SciterElement bindingCell(m_page.GetElementByID(HotkeyBindingElementId(m_captureHotkeyId).c_str()));
+    if (ElementIsOrInside(source, bindingCell))
+    {
+        return false;
+    }
+    EndCapture(true);
+    return true;
 }
 
 bool SystemConfigHotkeys::OnDoubleClick(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source)
@@ -193,7 +238,7 @@ bool SystemConfigHotkeys::OnDoubleClick(SCITER_ELEMENT /*element*/, SCITER_ELEME
 
 bool SystemConfigHotkeys::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*target*/, SciterKeys keyCode, uint32_t keyboardState)
 {
-    if (m_captureHotkeyId.empty() || !m_keySinkAttached)
+    if (m_captureHotkeyId.empty() || !m_captureSinksAttached)
     {
         return false;
     }
@@ -206,13 +251,7 @@ bool SystemConfigHotkeys::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /
         EndCapture(false);
         return true;
     }
-    bool cancel = false;
-    MenuBarAccelerator built = MenuBarAcceleratorFromKeyEvent(kc, keyboardState, &cancel);
-    if (cancel)
-    {
-        EndCapture(true);
-        return true;
-    }
+    MenuBarAccelerator built = MenuBarAcceleratorFromKeyEvent(kc, keyboardState);
     if (built.IsNone())
     {
         return true;

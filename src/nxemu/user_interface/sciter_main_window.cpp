@@ -23,6 +23,7 @@
 struct Win32FullscreenState
 {
     bool active = false;
+    uint32_t pendingSwallowKeyUp = 0;
     WINDOWPLACEMENT placement{};
     LONG_PTR savedStyle = 0;
     LONG_PTR savedExStyle = 0;
@@ -152,7 +153,7 @@ void SciterMainWindow::ResetMenu()
     }
 
     MenuBarItemList viewMenu;
-    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen"));
+    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen)));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&View", &viewMenu));
 
     MenuBarItemList optionsMenu;
@@ -629,14 +630,25 @@ float SciterMainWindow::PixelRatio() const
 
 bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
+    const char * hotkeyId = IsMenuBarAccelerator((uint32_t)keyCode, keyboardState);
 #ifdef _WIN32
-    if (m_win32Fullscreen && m_win32Fullscreen->active && keyCode == SCITER_KEY_ESCAPE)
+    if (m_win32Fullscreen != nullptr && hotkeyId != nullptr)
     {
-        ExitFullscreen();
-        return true;
+        if (strcmp(hotkeyId, Hotkey::ExitFullscreen) == 0 && m_win32Fullscreen->active)
+        {
+            m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
+            ExitFullscreen();
+            return true;
+        }
+        if (strcmp(hotkeyId, Hotkey::Fullscreen) == 0)
+        {
+            m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
+            ToggleFullscreen();
+            return true;
+        }
     }
 #endif
-    if (ProcessMenuBarAccelerator(IsMenuBarAccelerator((uint32_t)keyCode, keyboardState)))
+    if (ProcessMenuBarAccelerator(hotkeyId))
     {
         return true;
     }
@@ -654,6 +666,14 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
 
 bool SciterMainWindow::OnKeyUp(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
+#ifdef _WIN32
+    if (m_win32Fullscreen != nullptr && m_win32Fullscreen->pendingSwallowKeyUp != 0 &&
+        (uint32_t)keyCode == m_win32Fullscreen->pendingSwallowKeyUp)
+    {
+        m_win32Fullscreen->pendingSwallowKeyUp = 0;
+        return true;
+    }
+#endif
     if (IsMenuBarAccelerator((uint32_t)keyCode, keyboardState) != nullptr)
     {
         return true;

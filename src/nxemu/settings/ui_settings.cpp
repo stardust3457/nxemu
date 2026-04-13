@@ -7,14 +7,27 @@
 #include <nxemu-core/settings/settings.h>
 #include <sciter_handler.h>
 
-static const HotkeyMap g_defaultHotkeys = {
-    {Hotkey::LoadFile, {.key = (uint32_t)SCITER_KEY_O, .ctrl = true}},
-    {Hotkey::Exit, {.key = (uint32_t)SCITER_KEY_Q, .ctrl = true}},
-};
-
 namespace
 {
     Path GetDefaultLanguageDir();
+
+    const HotkeyMap g_defaultHotkeys = {
+        {Hotkey::LoadFile, {.key = (uint32_t)SCITER_KEY_O, .ctrl = true}},
+        {Hotkey::Exit, {.key = (uint32_t)SCITER_KEY_Q, .ctrl = true}},
+        {Hotkey::Fullscreen, {.key = (uint32_t)SCITER_KEY_F11, .ctrl = false, .alt = false, .shift = false}},
+        {Hotkey::ExitFullscreen, {.key = (uint32_t)SCITER_KEY_ESCAPE, .ctrl = false, .alt = false, .shift = false}},
+    };
+
+    void merge_default_hotkeys(HotkeyMap & map)
+    {
+        for (const HotkeyMap::value_type & def : g_defaultHotkeys)
+        {
+            if (map.find(def.first) == map.end())
+            {
+                map.insert(def);
+            }
+        }
+    }
 
     enum class SettingType
     {
@@ -438,6 +451,7 @@ namespace
                     {
                         uiSetting.setting.hotkey_map->clear();
                     }
+                    merge_default_hotkeys(*uiSetting.setting.hotkey_map);
                 }
                 break;
             default:
