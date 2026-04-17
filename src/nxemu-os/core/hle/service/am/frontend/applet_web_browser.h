@@ -20,13 +20,14 @@ namespace FileSys {
 enum class LoaderContentRecordType : u8;
 }
 
-namespace Service::AM::Frontend {
+class WebBrowserApplet;
+
+namespace Service::AM::Frontend
+{
 
 class WebBrowser final : public FrontendApplet {
 public:
-    WebBrowser(Core::System& system_, std::shared_ptr<Applet> applet_,
-               LibraryAppletMode applet_mode_);
-
+    WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, const WebBrowserApplet & frontend_);
     ~WebBrowser() override;
 
     void Initialize() override;
@@ -62,6 +63,8 @@ private:
     void ExecuteWeb();
     void ExecuteWifi();
     void ExecuteLobby();
+
+    const WebBrowserApplet & frontend;
 
     bool complete{false};
     Result status{ResultSuccess};

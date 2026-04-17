@@ -3,23 +3,26 @@
 
 #include <cstring>
 
-#include "yuzu_common/yuzu_assert.h"
-#include "yuzu_common/string_util.h"
 #include "core/core.h"
 #include "core/hle/service/acc/errors.h"
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/am/frontend/applet_profile_select.h"
 #include "core/hle/service/am/service/storage.h"
+#include "yuzu_common/string_util.h"
+#include "yuzu_common/yuzu_assert.h"
 
-namespace Service::AM::Frontend {
+namespace Service::AM::Frontend
+{
 
-ProfileSelect::ProfileSelect(Core::System& system_, std::shared_ptr<Applet> applet_,
-                             LibraryAppletMode applet_mode_)
-    : FrontendApplet{system_, applet_, applet_mode_} {}
+ProfileSelect::ProfileSelect(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_) :
+    FrontendApplet{system_, applet_, applet_mode_}
+{
+}
 
 ProfileSelect::~ProfileSelect() = default;
 
-void ProfileSelect::Initialize() {
+void ProfileSelect::Initialize()
+{
     complete = false;
     status = ResultSuccess;
     final_data.clear();
@@ -29,12 +32,12 @@ void ProfileSelect::Initialize() {
 
     const std::shared_ptr<IStorage> user_config_storage = PopInData();
     ASSERT(user_config_storage != nullptr);
-    const auto& user_config = user_config_storage->GetData();
+    const auto & user_config = user_config_storage->GetData();
 
-    LOG_INFO(Service_AM, "Initializing Profile Select Applet with version={}",
-             profile_select_version);
+    LOG_INFO(Service_AM, "Initializing Profile Select Applet with version={}", profile_select_version);
 
-    switch (profile_select_version) {
+    switch (profile_select_version)
+    {
     case ProfileSelectAppletVersion::Version1:
         ASSERT(user_config.size() == sizeof(UiSettingsV1));
         std::memcpy(&config_old, user_config.data(), sizeof(UiSettingsV1));
@@ -50,25 +53,32 @@ void ProfileSelect::Initialize() {
     }
 }
 
-Result ProfileSelect::GetStatus() const {
+Result ProfileSelect::GetStatus() const
+{
     return status;
 }
 
-void ProfileSelect::ExecuteInteractive() {
+void ProfileSelect::ExecuteInteractive()
+{
     ASSERT_MSG(false, "Attempted to call interactive execution on non-interactive applet.");
 }
 
-void ProfileSelect::Execute() {
+void ProfileSelect::Execute()
+{
     UNIMPLEMENTED();
 }
 
-void ProfileSelect::SelectionComplete(std::optional<Common::UUID> uuid) {
+void ProfileSelect::SelectionComplete(std::optional<Common::UUID> uuid)
+{
     UiReturnArg output{};
 
-    if (uuid.has_value() && uuid->IsValid()) {
+    if (uuid.has_value() && uuid->IsValid())
+    {
         output.result = 0;
         output.uuid_selected = *uuid;
-    } else {
+    }
+    else
+    {
         status = Account::ResultCancelledByUser;
         output.result = Account::ResultCancelledByUser.raw;
         output.uuid_selected = Common::InvalidUUID;
@@ -81,7 +91,8 @@ void ProfileSelect::SelectionComplete(std::optional<Common::UUID> uuid) {
     Exit();
 }
 
-Result ProfileSelect::RequestExit() {
+Result ProfileSelect::RequestExit()
+{
     UNIMPLEMENTED();
     R_SUCCEED();
 }

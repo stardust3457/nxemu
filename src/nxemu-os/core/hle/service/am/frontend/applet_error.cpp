@@ -1,44 +1,50 @@
 // SPDX-FileCopyrightText: Copyright 2019 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <array>
-#include <cstring>
-#include "yuzu_common/yuzu_assert.h"
-#include "yuzu_common/logging/log.h"
-#include "yuzu_common/string_util.h"
+#include "core/hle/service/am/frontend/applet_error.h"
 #include "core/core.h"
 #include "core/hle/service/am/am.h"
-#include "core/hle/service/am/frontend/applet_error.h"
 #include "core/hle/service/am/service/storage.h"
+#include "yuzu_common/logging/log.h"
+#include "yuzu_common/string_util.h"
+#include "yuzu_common/yuzu_assert.h"
+#include <array>
+#include <cstring>
 
-namespace Service::AM::Frontend {
+namespace Service::AM::Frontend
+{
 
-struct ErrorCode {
+struct ErrorCode
+{
     u32 error_category{};
     u32 error_number{};
 
-    static constexpr ErrorCode FromU64(u64 error_code) {
+    static constexpr ErrorCode FromU64(u64 error_code)
+    {
         return {
             .error_category{static_cast<u32>(error_code >> 32)},
             .error_number{static_cast<u32>(error_code & 0xFFFFFFFF)},
         };
     }
 
-    static constexpr ErrorCode FromResult(Result result) {
+    static constexpr ErrorCode FromResult(Result result)
+    {
         return {
             .error_category{2000 + static_cast<u32>(result.GetModule())},
             .error_number{result.GetDescription()},
         };
     }
 
-    constexpr Result ToResult() const {
+    constexpr Result ToResult() const
+    {
         return Result{static_cast<ErrorModule>(error_category - 2000), error_number};
     }
 };
 static_assert(sizeof(ErrorCode) == 0x8, "ErrorCode has incorrect size.");
 
 #pragma pack(push, 4)
-struct ShowError {
+struct ShowError
+{
     u8 mode;
     bool jump;
     INSERT_PADDING_BYTES_NOINIT(4);
@@ -50,7 +56,8 @@ struct ShowError {
 static_assert(sizeof(ShowError) == 0x14, "ShowError has incorrect size.");
 #pragma pack(pop)
 
-struct ShowErrorRecord {
+struct ShowErrorRecord
+{
     u8 mode;
     bool jump;
     INSERT_PADDING_BYTES_NOINIT(6);
@@ -59,7 +66,8 @@ struct ShowErrorRecord {
 };
 static_assert(sizeof(ShowErrorRecord) == 0x18, "ShowErrorRecord has incorrect size.");
 
-struct SystemErrorArg {
+struct SystemErrorArg
+{
     u8 mode;
     bool jump;
     INSERT_PADDING_BYTES_NOINIT(6);
@@ -70,7 +78,8 @@ struct SystemErrorArg {
 };
 static_assert(sizeof(SystemErrorArg) == 0x1018, "SystemErrorArg has incorrect size.");
 
-struct ApplicationErrorArg {
+struct ApplicationErrorArg
+{
     u8 mode;
     bool jump;
     INSERT_PADDING_BYTES_NOINIT(6);
@@ -81,7 +90,8 @@ struct ApplicationErrorArg {
 };
 static_assert(sizeof(ApplicationErrorArg) == 0x1014, "ApplicationErrorArg has incorrect size.");
 
-union Error::ErrorArguments {
+union Error::ErrorArguments
+{
     ShowError error;
     ShowErrorRecord error_record;
     SystemErrorArg system_error;
@@ -89,25 +99,31 @@ union Error::ErrorArguments {
     std::array<u8, 0x1018> raw{};
 };
 
-namespace {
+namespace
+{
 template <typename T>
-void CopyArgumentData(const std::vector<u8>& data, T& variable) {
+void CopyArgumentData(const std::vector<u8> & data, T & variable)
+{
     ASSERT(data.size() >= sizeof(T));
     std::memcpy(&variable, data.data(), sizeof(T));
 }
 
-Result Decode64BitError(u64 error) {
+Result Decode64BitError(u64 error)
+{
     return ErrorCode::FromU64(error).ToResult();
 }
 
 } // Anonymous namespace
 
-Error::Error(Core::System& system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_)
-    : FrontendApplet{system_, applet_, applet_mode_} {}
+Error::Error(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_) :
+    FrontendApplet{system_, applet_, applet_mode_}
+{
+}
 
 Error::~Error() = default;
 
-void Error::Initialize() {
+void Error::Initialize()
+{
     FrontendApplet::Initialize();
     args = std::make_unique<ErrorArguments>();
     complete = false;
@@ -119,12 +135,16 @@ void Error::Initialize() {
     ASSERT(!data.empty());
     std::memcpy(&mode, data.data(), sizeof(ErrorAppletMode));
 
-    switch (mode) {
+    switch (mode)
+    {
     case ErrorAppletMode::ShowError:
         CopyArgumentData(data, args->error);
-        if (args->error.use_64bit_error_code) {
+        if (args->error.use_64bit_error_code)
+        {
             error_code = Decode64BitError(args->error.error_code_64);
-        } else {
+        }
+        else
+        {
             error_code = Result(args->error.error_code_32);
         }
         break;
@@ -150,32 +170,38 @@ void Error::Initialize() {
     }
 }
 
-Result Error::GetStatus() const {
+Result Error::GetStatus() const
+{
     return ResultSuccess;
 }
 
-void Error::ExecuteInteractive() {
+void Error::ExecuteInteractive()
+{
     ASSERT_MSG(false, "Unexpected interactive applet data!");
 }
 
-void Error::Execute() {
-    if (complete) {
+void Error::Execute()
+{
+    if (complete)
+    {
         return;
     }
 
     const auto callback = [this] { DisplayCompleted(); };
     const auto title_id = system.GetApplicationProcessProgramID();
 
-    switch (mode) {
+    switch (mode)
+    {
     case ErrorAppletMode::ShowError:
         UNIMPLEMENTED();
         break;
     case ErrorAppletMode::ShowSystemError:
-    case ErrorAppletMode::ShowApplicationError: {
+    case ErrorAppletMode::ShowApplicationError:
+    {
         const auto is_system = mode == ErrorAppletMode::ShowSystemError;
-        const auto& main_text =
+        const auto & main_text =
             is_system ? args->system_error.main_text : args->application_error.main_text;
-        const auto& detail_text =
+        const auto & detail_text =
             is_system ? args->system_error.detail_text : args->application_error.detail_text;
 
         const auto main_text_string =
@@ -196,13 +222,15 @@ void Error::Execute() {
     }
 }
 
-void Error::DisplayCompleted() {
+void Error::DisplayCompleted()
+{
     complete = true;
     PushOutData(std::make_shared<IStorage>(system, std::vector<u8>(0x1000)));
     Exit();
 }
 
-Result Error::RequestExit() {
+Result Error::RequestExit()
+{
     UNIMPLEMENTED();
     R_SUCCEED();
 }

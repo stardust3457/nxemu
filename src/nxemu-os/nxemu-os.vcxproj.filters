@@ -517,6 +517,12 @@
     <Filter Include="Header Files\core\hle\service\hid">
       <UniqueIdentifier>{77d48f6a-4e17-4274-bf79-1e78da385d84}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\applets">
+      <UniqueIdentifier>{732a34c4-372d-4f87-b2aa-2d3ad903e6d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\applets">
+      <UniqueIdentifier>{cdc1998a-c8ce-494d-bd46-31d4803ba1c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nxemu-os.h">
@@ -1956,6 +1962,45 @@
     <ClInclude Include="emu_thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="applets\applet.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\cabinet.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\controller.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\error.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\general.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\mii_edit.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\profile_select.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\software_keyboard.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\web_browser.h">
+      <Filter>Header Files\applets</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\am\frontend\applet_mii_edit.h">
+      <Filter>Header Files\core\hle\service\am\frontend</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\am\frontend\applet_mii_edit_types.h">
+      <Filter>Header Files\core\hle\service\am\frontend</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\am\frontend\applet_software_keyboard.h">
+      <Filter>Header Files\core\hle\service\am\frontend</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hle\service\am\frontend\applet_web_browser.h">
+      <Filter>Header Files\core\hle\service\am\frontend</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="version.h.in">
@@ -3258,6 +3303,42 @@
     </ClCompile>
     <ClCompile Include="emu_thread.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\arm\debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\cabinet.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\controller.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\error.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\general.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\mii_edit.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\profile_select.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\software_keyboard.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\web_browser.cpp">
+      <Filter>Source Files\applets</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hle\service\am\frontend\applet_mii_edit.cpp">
+      <Filter>Source Files\core\hle\service\am\frontend</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hle\service\am\frontend\applet_web_browser.cpp">
+      <Filter>Source Files\core\hle\service\am\frontend</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hle\service\am\frontend\applet_software_keyboard.cpp">
+      <Filter>Source Files\core\hle\service\am\frontend</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

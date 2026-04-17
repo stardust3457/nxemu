@@ -6,19 +6,19 @@
 #include <functional>
 #include <vector>
 
+#include "applets/applet.h"
 #include "yuzu_common/common_types.h"
-#include "frontend/applets/applet.h"
 
-namespace Core::HID {
+namespace Core::HID
+{
 class HIDCore;
 }
-
-namespace Core::Frontend {
 
 using BorderColor = std::array<u8, 4>;
 using ExplainText = std::array<char, 0x81>;
 
-struct ControllerParameters {
+struct ControllerParameters
+{
     s8 min_players{};
     s8 max_players{};
     bool keep_controllers_connected{};
@@ -35,27 +35,26 @@ struct ControllerParameters {
     bool allow_gamecube_controller{};
 };
 
-class ControllerApplet : public Applet {
+class ControllerApplet : public Applet
+{
 public:
     using ReconfigureCallback = std::function<void(bool)>;
 
     virtual ~ControllerApplet();
 
     virtual void ReconfigureControllers(ReconfigureCallback callback,
-                                        const ControllerParameters& parameters) const = 0;
+                                        const ControllerParameters & parameters) const = 0;
 };
 
-class DefaultControllerApplet final : public ControllerApplet {
+class DefaultControllerApplet final : public ControllerApplet
+{
 public:
-    explicit DefaultControllerApplet(HID::HIDCore& hid_core_);
+    explicit DefaultControllerApplet(Core::HID::HIDCore & hid_core_);
     ~DefaultControllerApplet() override;
 
     void Close() const override;
-    void ReconfigureControllers(ReconfigureCallback callback,
-                                const ControllerParameters& parameters) const override;
+    void ReconfigureControllers(ReconfigureCallback callback, const ControllerParameters & parameters) const override;
 
 private:
-    HID::HIDCore& hid_core;
+    Core::HID::HIDCore & hid_core;
 };
-
-} // namespace Core::Frontend

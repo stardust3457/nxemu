@@ -3,22 +3,20 @@
 
 #pragma once
 
-#include <functional>
 #include "yuzu_common/common_types.h"
+#include <functional>
 
-#include "frontend/applets/applet.h"
+#include "applets/applet.h"
 
-namespace Core::Frontend {
-
-class ParentalControlsApplet : public Applet {
+class ParentalControlsApplet : public Applet
+{
 public:
     virtual ~ParentalControlsApplet();
 
     // Prompts the user to enter a PIN and calls the callback with whether or not it matches the
     // correct PIN. If the bool is passed, and the PIN was recently entered correctly, the frontend
     // should not prompt and simply return true.
-    virtual void VerifyPIN(std::function<void(bool)> finished,
-                           bool suspend_future_verification_temporarily) = 0;
+    virtual void VerifyPIN(std::function<void(bool)> finished, bool suspend_future_verification_temporarily) = 0;
 
     // Prompts the user to enter a PIN and calls the callback for correctness. Frontends can
     // optionally alert the user that this is to change parental controls settings.
@@ -31,19 +29,20 @@ public:
     virtual void ChangePIN(std::function<void()> finished) = 0;
 };
 
-class DefaultParentalControlsApplet final : public ParentalControlsApplet {
+class DefaultParentalControlsApplet final : public ParentalControlsApplet
+{
 public:
     ~DefaultParentalControlsApplet() override;
 
     void Close() const override;
-    void VerifyPIN(std::function<void(bool)> finished,
-                   bool suspend_future_verification_temporarily) override;
+    void VerifyPIN(std::function<void(bool)> finished, bool suspend_future_verification_temporarily) override;
     void VerifyPINForSettings(std::function<void(bool)> finished) override;
     void RegisterPIN(std::function<void()> finished) override;
     void ChangePIN(std::function<void()> finished) override;
 };
 
-class PhotoViewerApplet : public Applet {
+class PhotoViewerApplet : public Applet
+{
 public:
     virtual ~PhotoViewerApplet();
 
@@ -51,7 +50,8 @@ public:
     virtual void ShowAllPhotos(std::function<void()> finished) const = 0;
 };
 
-class DefaultPhotoViewerApplet final : public PhotoViewerApplet {
+class DefaultPhotoViewerApplet final : public PhotoViewerApplet
+{
 public:
     ~DefaultPhotoViewerApplet() override;
 
@@ -59,5 +59,3 @@ public:
     void ShowPhotosForApplication(u64 title_id, std::function<void()> finished) const override;
     void ShowAllPhotos(std::function<void()> finished) const override;
 };
-
-} // namespace Core::Frontend

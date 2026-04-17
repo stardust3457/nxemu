@@ -44,6 +44,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="applets\cabinet.cpp" />
+    <ClCompile Include="applets\controller.cpp" />
+    <ClCompile Include="applets\error.cpp" />
+    <ClCompile Include="applets\general.cpp" />
+    <ClCompile Include="applets\mii_edit.cpp" />
+    <ClCompile Include="applets\profile_select.cpp" />
+    <ClCompile Include="applets\software_keyboard.cpp" />
+    <ClCompile Include="applets\web_browser.cpp" />
     <ClCompile Include="core\arm\debug.cpp" />
     <ClCompile Include="core\constants.cpp" />
     <ClCompile Include="core\core.cpp" />
@@ -90,6 +98,9 @@
     <ClCompile Include="core\hle\kernel\svc\svc_thread_profiler.cpp" />
     <ClCompile Include="core\hle\kernel\svc\svc_tick.cpp" />
     <ClCompile Include="core\hle\kernel\svc\svc_transfer_memory.cpp" />
+    <ClCompile Include="core\hle\service\am\frontend\applet_mii_edit.cpp" />
+    <ClCompile Include="core\hle\service\am\frontend\applet_software_keyboard.cpp" />
+    <ClCompile Include="core\hle\service\am\frontend\applet_web_browser.cpp" />
     <ClCompile Include="core\hle\service\am\hid_registration.cpp" />
     <ClCompile Include="core\hle\service\audio\audio.cpp" />
     <ClCompile Include="core\hle\service\audio\audio_controller.cpp" />
@@ -467,6 +478,15 @@
     <None Include="version.h.in" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="applets\applet.h" />
+    <ClInclude Include="applets\cabinet.h" />
+    <ClInclude Include="applets\controller.h" />
+    <ClInclude Include="applets\error.h" />
+    <ClInclude Include="applets\general.h" />
+    <ClInclude Include="applets\mii_edit.h" />
+    <ClInclude Include="applets\profile_select.h" />
+    <ClInclude Include="applets\software_keyboard.h" />
+    <ClInclude Include="applets\web_browser.h" />
     <ClInclude Include="core\arm\debug.h" />
     <ClInclude Include="core\constants.h" />
     <ClInclude Include="core\core.h" />
@@ -583,6 +603,10 @@
     <ClInclude Include="core\hle\kernel\k_shared_memory_info.h" />
     <ClInclude Include="core\hle\kernel\board\nintendo\nx\k_memory_layout.h" />
     <ClInclude Include="core\hle\kernel\board\nintendo\nx\k_system_control.h" />
+    <ClInclude Include="core\hle\service\am\frontend\applet_mii_edit.h" />
+    <ClInclude Include="core\hle\service\am\frontend\applet_mii_edit_types.h" />
+    <ClInclude Include="core\hle\service\am\frontend\applet_software_keyboard.h" />
+    <ClInclude Include="core\hle\service\am\frontend\applet_web_browser.h" />
     <ClInclude Include="core\hle\service\audio\audio.h" />
     <ClInclude Include="core\hle\service\audio\audio_controller.h" />
     <ClInclude Include="core\hle\service\audio\audio_device.h" />

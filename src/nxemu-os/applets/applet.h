@@ -3,12 +3,9 @@
 
 #pragma once
 
-namespace Core::Frontend {
-
-class Applet {
+class Applet
+{
 public:
     virtual ~Applet() = default;
     virtual void Close() const = 0;
 };
-
-} // namespace Core::Frontend
