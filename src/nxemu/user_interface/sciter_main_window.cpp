@@ -214,8 +214,6 @@ bool SciterMainWindow::Show()
     {
         return false;
     }
-    m_sciterUiThreadId = std::this_thread::get_id();
-    m_hasSciterUiThreadId = true;
     m_rootElement = m_window->GetRootElement();
     m_sciterUI.AttachHandler(m_rootElement, IID_IKEYSINK, (IKeySink *)this);
     m_sciterUI.AttachHandler(m_rootElement, IID_EVENTSINK, (IEventSink *)this);
