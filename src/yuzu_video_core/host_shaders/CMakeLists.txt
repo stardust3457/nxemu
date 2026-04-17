@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2018 yuzu Emulator Project
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-set(FIDELITYFX_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/externals/FidelityFX-FSR/ffx-fsr)
+set(FIDELITYFX_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/3rd_party/fidelityfx_fsr/ffx-fsr)
 
 set(FIDELITYFX_FILES
     ${FIDELITYFX_INCLUDE_DIR}/ffx_a.h

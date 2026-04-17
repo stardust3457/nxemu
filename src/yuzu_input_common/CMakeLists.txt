@@ -35,6 +35,16 @@ add_library(input_common STATIC
     precompiled_headers.h
 )
 
+target_include_directories(input_common PUBLIC
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/nxemu-os
+    ${CMAKE_BINARY_DIR}/generated
+    ${CMAKE_SOURCE_DIR}/external/fmt/include
+)
+target_include_directories(input_common SYSTEM PUBLIC
+    ${CMAKE_SOURCE_DIR}/external/boost
+)
+
 if (MSVC)
     target_compile_options(input_common PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
@@ -87,7 +97,7 @@ if (ENABLE_LIBUSB)
 endif()
 
 create_target_directory_groups(input_common)
-target_link_libraries(input_common PUBLIC hid_core PRIVATE common Boost::headers)
+target_link_libraries(input_common PUBLIC hid_core PRIVATE common)
 
 if (YUZU_USE_PRECOMPILED_HEADERS)
     target_precompile_headers(input_common PRIVATE precompiled_headers.h)
