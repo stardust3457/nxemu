@@ -66,6 +66,10 @@ namespace
         { NXCoreSetting::EmulationState, (int)EmulationState::Stopped },
         { NXCoreSetting::DisplayedFrames, false },
         { NXCoreSetting::ShuttingDown, false},
+        { NXCoreSetting::DiskCacheLoadStage, -1 },
+        { NXCoreSetting::DiskCacheLoadCurrent, 0 },
+        { NXCoreSetting::DiskCacheLoadTotal, 0 },
+        { NXCoreSetting::DiskCacheLoadTick, 0 },
     };
 
     void CoreSettingChanged(const char* setting, void* /*userData*/);

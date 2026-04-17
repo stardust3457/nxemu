@@ -56,8 +56,7 @@ public:
     virtual void ResetCounter(VideoCommon::QueryType type) = 0;
 
     /// Records a GPU query and caches it
-    virtual void Query(GPUVAddr gpu_addr, VideoCommon::QueryType type,
-                       VideoCommon::QueryPropertiesFlags flags, u32 payload, u32 subreport) = 0;
+    virtual void Query(GPUVAddr gpu_addr, VideoCommon::QueryType type, VideoCommon::QueryPropertiesFlags flags, u32 payload, u32 subreport) = 0;
 
     /// Signal an uniform buffer binding
     virtual void BindGraphicsUniformBuffer(size_t stage, u32 index, GPUVAddr gpu_addr,
@@ -151,12 +150,10 @@ public:
 
     [[nodiscard]] virtual Tegra::Engines::AccelerateDMAInterface& AccessAccelerateDMA() = 0;
 
-    virtual void AccelerateInlineToMemory(GPUVAddr address, size_t copy_size,
-                                          std::span<const u8> memory) = 0;
+    virtual void AccelerateInlineToMemory(GPUVAddr address, size_t copy_size, std::span<const u8> memory) = 0;
 
     /// Initialize disk cached resources for the game being emulated
-    virtual void LoadDiskResources(u64 title_id, std::stop_token stop_loading,
-                                   const DiskResourceLoadCallback& callback) {}
+    virtual void LoadDiskResources(u64 title_id, std::stop_token stop_loading,  const DiskResourceLoadCallback& callback) {}
 
     virtual void InitializeChannel(Tegra::Control::ChannelState& channel) {}
 

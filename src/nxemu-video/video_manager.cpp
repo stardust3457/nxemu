@@ -6,8 +6,15 @@
 #include "yuzu_video_core/host1x/host1x.h"
 #include "yuzu_video_core/video_core.h"
 #include "yuzu_video_core/gpu.h"
+#include "yuzu_video_core/renderer_base.h"
+#include "yuzu_video_core/rasterizer_interface.h"
 #include <nxemu-core/settings/identifiers.h>
 #include "yuzu_video_core/shader_notify.h"
+#include <stop_token>
+#include "yuzu_common/settings.h"
+#include <chrono>
+#include <future>
+#include <thread>
 
 extern IModuleSettings * g_settings;
 
@@ -41,8 +48,57 @@ struct VideoManager::Impl
         m_emuWindow->UpdateCurrentFramebufferLayout(layout.width, layout.height);
         m_gpuCore = nullptr;
         m_gpuCore = VideoCore::CreateGPU(m_modules, *(m_emuWindow.get()), *m_host1x);
+        if (!m_gpuCore)
+        {
+            return;
+        }
+        m_init = std::async(std::launch::async, [this]() {
+            const auto notify_disk_cache_progress = [](VideoCore::LoadCallbackStage stage, std::size_t value, std::size_t total) {
+                if (g_settings == nullptr)
+                {
+                    return;
+                }
+                int stage_int = -1;
+                switch (stage)
+                {
+                case VideoCore::LoadCallbackStage::Prepare:
+                    stage_int = 0;
+                    break;
+                case VideoCore::LoadCallbackStage::Build:
+                    stage_int = 1;
+                    break;
+                case VideoCore::LoadCallbackStage::Complete:
+                    stage_int = 2;
+                    break;
+                }
+                g_settings->SetInt(NXCoreSetting::DiskCacheLoadStage, stage_int);
+                g_settings->SetInt(NXCoreSetting::DiskCacheLoadCurrent, static_cast<int32_t>(value));
+                g_settings->SetInt(NXCoreSetting::DiskCacheLoadTotal, static_cast<int32_t>(total));
+                g_settings->SetInt(NXCoreSetting::DiskCacheLoadTick, g_settings->GetInt(NXCoreSetting::DiskCacheLoadTick) + 1);
+            };
 
-        m_gpuCore->Start();
+            notify_disk_cache_progress(VideoCore::LoadCallbackStage::Prepare, 0, 0);
+            if (Settings::values.use_disk_shader_cache.GetValue())
+            {
+                const u64 program_id = m_modules.OperatingSystem().GetProgramId();
+                const std::stop_token stop_token;
+                m_gpuCore->ObtainContext();
+                m_gpuCore->Renderer().ReadRasterizer()->LoadDiskResources(program_id, stop_token,
+                                                                          notify_disk_cache_progress);
+                m_gpuCore->ReleaseContext();
+            }
+            else
+            {
+                m_gpuCore->ObtainContext();
+            }
+            notify_disk_cache_progress(VideoCore::LoadCallbackStage::Complete, 0, 0);
+            if (!Settings::values.use_disk_shader_cache.GetValue())
+            {
+                m_gpuCore->ReleaseContext();
+            }
+
+            m_gpuCore->Start();
+        });
     }
     std::unique_ptr<Tegra::Host1x::Host1x> m_host1x;
     std::unique_ptr<RenderWindow> m_emuWindow;
@@ -50,6 +106,7 @@ struct VideoManager::Impl
     IRenderWindow & m_window;
     ISystemModules & m_modules;
     Tegra::MemoryManagerRegistry m_memoryManagerRegistry;
+    std::future<void> m_init;
 };
 
 VideoManager::VideoManager(IRenderWindow & window, ISystemModules & modules) :

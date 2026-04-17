@@ -26,5 +26,9 @@ constexpr const char * EmulationRunning = "nxcore:EmulationRunning";
 constexpr const char * EmulationState = "nxcore:EmulationState";
 constexpr const char * DisplayedFrames = "nxcore:DisplayedFrames";
 constexpr const char * ShuttingDown = "nxcore:ShuttingDown";
+constexpr const char * DiskCacheLoadStage = "nxcore:DiskCacheLoadStage";
+constexpr const char * DiskCacheLoadCurrent = "nxcore:DiskCacheLoadCurrent";
+constexpr const char * DiskCacheLoadTotal = "nxcore:DiskCacheLoadTotal";
+constexpr const char * DiskCacheLoadTick = "nxcore:DiskCacheLoadTick";
 
 } // namespace NXCoreSetting

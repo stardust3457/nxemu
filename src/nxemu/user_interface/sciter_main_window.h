@@ -85,6 +85,7 @@ private:
     static void GameFileChanged(const char * setting, void * userData);
     static void GameNameChanged(const char * setting, void * userData);
     static void DisplayedFramesChanged(const char * setting, void * userData);
+    static void DiskCacheLoadChanged(const char * setting, void * userData);
     static void HotKeysChanged(const char * setting, void * userData);
     void UpdateStatusbar();
     void DismissvolumePopup(SCITER_ELEMENT source, int32_t x, int32_t y);
@@ -115,6 +116,8 @@ private:
 #endif
     void LayoutRenderWindow();
     void UpdatePausePanel();
+    void ApplyEmulationLoadingUi();
+    void RefreshDiskCacheLoadingText();
 
     // IWindowDestroySink
     void OnWindowDestroy(HWINDOW hWnd) override;
