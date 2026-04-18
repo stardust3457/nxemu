@@ -4,7 +4,7 @@
 #pragma once
 
 #include <set>
-#include <common/threadsafe_queue.h>
+#include <yuzu_common/threadsafe_queue.h>
 #include <jni.h>
 #include "yuzu_input_common/input_engine.h"
 

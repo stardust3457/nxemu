@@ -477,7 +477,7 @@ public:
      * @param cached Whether or not any pages within the address range should be
      *               marked as cached or uncached.
      */
-    void RasterizerMarkRegionCached(uint64_t vaddr, u64 size, bool cached);
+    void RasterizerMarkRegionCached(uint64_t vaddr, u64 size, bool cached) override;
 
     /**
      * Marks each page within the specified address range as debug or non-debug.

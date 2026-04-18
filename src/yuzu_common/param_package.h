@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <nxemu-module-spec/operating_system.h>
 
 namespace Common {
