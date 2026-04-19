@@ -28,29 +28,21 @@ class SciterMainWindow :
     public ITimerSink,
     public IEventSink
 {
-    enum MainMenuID
+    enum class GuiAction : int32_t
     {
-        // File Menu
-        ID_FILE_LOAD_FILE = 1,
-        ID_FILE_EXIT,
-
-        // System Menu
-        ID_SYSTEM_PAUSE_CONTINUE,
-        ID_SYSTEM_STOP,
-        
-        // Emulation Menu
-        ID_EMULATION_CONTROLLERS,
-        ID_EMULATION_CONFIGURE,
-
-        // View Menu
-        ID_VIEW_FULLSCREEN,
-        ID_VIEW_RESET_WINDOW_SIZE_720,
-        ID_VIEW_RESET_WINDOW_SIZE_900,
-        ID_VIEW_RESET_WINDOW_SIZE_1080,
-
-        // Recent files
-        ID_RECENT_FILE_START,
-        ID_RECENT_FILE_END = ID_RECENT_FILE_START + 20,
+        Invalid,
+        LoadFile,
+        ExitApplication,
+        PauseOrContinueEmulation,
+        StopEmulation,
+        OpenControllersDialog,
+        OpenSystemConfiguration,
+        ToggleFullscreen,
+        ResetWindowSize720p,
+        ResetWindowSize900p,
+        ResetWindowSize1080p,
+        RecentFileMenuFirst,
+        RecentFileMenuLast = RecentFileMenuFirst + 20,
     };
 
     enum
@@ -103,7 +95,8 @@ private:
     void UpdateStatusBar();
     const MenuBarAccelerator * HotkeyAccelerator(const char * name);
     const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);
-    bool ProcessMenuBarAccelerator(const char * hotkeyId);
+    GuiAction HotkeyToGuiAction(const char * hotkeyId);
+    void OnGuiAction(GuiAction action);
 
 #ifdef _WIN32
     void ToggleFullscreen();

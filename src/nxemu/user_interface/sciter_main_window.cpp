@@ -147,7 +147,7 @@ void SciterMainWindow::ResetMenu()
 
     MenuBarItemList mainTitleMenu;
     MenuBarItemList fileMenu;
-    fileMenu.push_back(MenuBarItem(ID_FILE_LOAD_FILE, "&Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
+    fileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::LoadFile), "&Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
 
     Stringlist & recentFiles = uiSettings.recentFiles;
     MenuBarItemList RecentFileMenu;
@@ -157,14 +157,14 @@ void SciterMainWindow::ResetMenu()
         for (Stringlist::const_iterator itr = recentFiles.begin(); itr != recentFiles.end(); itr++)
         {
             stdstr_f MenuString("%d %s", recentFileIndex + 1, itr->c_str());
-            RecentFileMenu.push_back(MenuBarItem(ID_RECENT_FILE_START + recentFileIndex, MenuString.c_str()));
+            RecentFileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::RecentFileMenuFirst) + recentFileIndex, MenuString.c_str()));
             recentFileIndex += 1;
         }
         fileMenu.emplace_back(MenuBarItem::SUB_MENU, "&Recent File", &RecentFileMenu);
     }
 
     fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
-    fileMenu.push_back(MenuBarItem(ID_FILE_EXIT, "E&xit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
+    fileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ExitApplication), "E&xit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&File", &fileMenu));
 
     MenuBarItemList systemMenu;
@@ -175,27 +175,23 @@ void SciterMainWindow::ResetMenu()
         {
             paused = m_modules.Modules().OperatingSystem().IsEmulationPaused();
         }
-        systemMenu.push_back(MenuBarItem(
-            ID_SYSTEM_PAUSE_CONTINUE,
-            paused ? "Continue" : "Pause",
-            nullptr,
-            HotkeyAccelerator(Hotkey::PauseContinue)));
-        systemMenu.push_back(MenuBarItem(ID_SYSTEM_STOP, "&Stop"));
+        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::PauseOrContinueEmulation),paused ? "Continue" : "Pause",nullptr, HotkeyAccelerator(Hotkey::PauseContinue)));
+        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::StopEmulation), "&Stop"));
         mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&System", &systemMenu));
     }
 
     MenuBarItemList viewMenu;
-    viewMenu.push_back(MenuBarItem(ID_VIEW_FULLSCREEN, "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen)));
+    viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleFullscreen),"&Fullscreen",nullptr,HotkeyAccelerator(Hotkey::Fullscreen)));
     MenuBarItemList resetWindowSizeMenu;
-    resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_720, "Reset Window Size to 720p"));
-    resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_900, "Reset Window Size to 900p"));
-    resetWindowSizeMenu.push_back(MenuBarItem(ID_VIEW_RESET_WINDOW_SIZE_1080, "Reset Window Size to 1080p"));
+    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize720p),"Reset Window Size to 720p"));
+    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize900p),"Reset Window Size to 900p"));
+    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize1080p),"Reset Window Size to 1080p"));
     viewMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Reset Window Size", &resetWindowSizeMenu));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&View", &viewMenu));
 
     MenuBarItemList optionsMenu;
-    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONTROLLERS, "&Controllers..."));
-    optionsMenu.push_back(MenuBarItem(ID_EMULATION_CONFIGURE, "Confi&gure..."));
+    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenControllersDialog), "&Controllers..."));
+    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenSystemConfiguration), "Confi&gure..."));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&Options", &optionsMenu));
 
     m_menuBar->AddSink(this);
@@ -689,28 +685,25 @@ const char * SciterMainWindow::IsMenuBarAccelerator(uint32_t keyCode, uint32_t k
     return nullptr;
 }
 
-bool SciterMainWindow::ProcessMenuBarAccelerator(const char * hotkeyId)
+SciterMainWindow::GuiAction SciterMainWindow::HotkeyToGuiAction(const char * hotkeyId)
 {
     if (hotkeyId == nullptr)
     {
-        return false;
+        return GuiAction::Invalid;
     }
     if (strcmp(hotkeyId, Hotkey::LoadFile) == 0)
     {
-        OnOpenFile();
-        return true;
+        return GuiAction::LoadFile;
     }
     if (strcmp(hotkeyId, Hotkey::Exit) == 0)
     {
-        OnFileExit();
-        return true;
+        return GuiAction::ExitApplication;
     }
     if (strcmp(hotkeyId, Hotkey::PauseContinue) == 0)
     {
-        OnPauseContinueGame();
-        return true;
+        return GuiAction::PauseOrContinueEmulation;
     }
-    return false;
+    return GuiAction::Invalid;
 }
 
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
@@ -729,31 +722,52 @@ void SciterMainWindow::OnWindowDestroy(HWINDOW /*hWnd*/)
 
 void SciterMainWindow::OnMenuItem(int32_t id, SCITER_ELEMENT /*item*/)
 {
-    switch (id)
+    OnGuiAction(static_cast<GuiAction>(id));
+}
+
+void SciterMainWindow::OnGuiAction(GuiAction action)
+{
+    if (action >= GuiAction::RecentFileMenuFirst && action <= GuiAction::RecentFileMenuLast)
     {
-    case ID_FILE_LOAD_FILE: OnOpenFile(); break;
-    case ID_FILE_EXIT: OnFileExit(); break;
-    case ID_SYSTEM_PAUSE_CONTINUE: OnPauseContinueGame(); break;
-    case ID_SYSTEM_STOP: OnStopGame(); break;
-    case ID_EMULATION_CONTROLLERS: OnInputConfig(); break;
-    case ID_EMULATION_CONFIGURE: OnSystemConfig(); break;
-    case ID_VIEW_FULLSCREEN:
+        OnRecetGame(static_cast<uint32_t>(action) - static_cast<uint32_t>(GuiAction::RecentFileMenuFirst));
+        return;
+    }
+
+    switch (action)
+    {
+    case GuiAction::LoadFile:
+        OnOpenFile();
+        break;
+    case GuiAction::ExitApplication:
+        OnFileExit();
+        break;
+    case GuiAction::PauseOrContinueEmulation:
+        OnPauseContinueGame();
+        break;
+    case GuiAction::StopEmulation:
+        OnStopGame();
+        break;
+    case GuiAction::OpenControllersDialog:
+        OnInputConfig();
+        break;
+    case GuiAction::OpenSystemConfiguration:
+        OnSystemConfig();
+        break;
+    case GuiAction::ToggleFullscreen:
         ToggleFullscreen();
         break;
-    case ID_VIEW_RESET_WINDOW_SIZE_720:
+    case GuiAction::ResetWindowSize720p:
         ResetWindowSize(1280U, 720U);
         break;
-    case ID_VIEW_RESET_WINDOW_SIZE_900:
+    case GuiAction::ResetWindowSize900p:
         ResetWindowSize(1600U, 900U);
         break;
-    case ID_VIEW_RESET_WINDOW_SIZE_1080:
+    case GuiAction::ResetWindowSize1080p:
         ResetWindowSize(1920U, 1080U);
         break;
+    case GuiAction::Invalid:
     default:
-        if (id >= ID_RECENT_FILE_START && id <= ID_RECENT_FILE_END)
-        {
-            OnRecetGame(id - ID_RECENT_FILE_START);
-        }
+        break;
     }
 }
 
@@ -775,19 +789,21 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
         if (strcmp(hotkeyId, Hotkey::ExitFullscreen) == 0 && m_win32Fullscreen->active)
         {
             m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
-            ExitFullscreen();
+            OnGuiAction(GuiAction::ToggleFullscreen);
             return true;
         }
         if (strcmp(hotkeyId, Hotkey::Fullscreen) == 0)
         {
             m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
-            ToggleFullscreen();
+            OnGuiAction(GuiAction::ToggleFullscreen);
             return true;
         }
-    }
-    if (ProcessMenuBarAccelerator(IsMenuBarAccelerator((uint32_t)keyCode, keyboardState)))
-    {
-        return true;
+        const GuiAction fromKey = HotkeyToGuiAction(hotkeyId);
+        if (fromKey != GuiAction::Invalid)
+        {
+            OnGuiAction(fromKey);
+            return true;
+        }
     }
     if (m_modules.IsValid())
     {
