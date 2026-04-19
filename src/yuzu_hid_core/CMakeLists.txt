@@ -159,7 +159,20 @@ else()
 endif()
 
 create_target_directory_groups(hid_core)
-target_link_libraries(hid_core PUBLIC core)
+
+target_include_directories(hid_core PUBLIC
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/yuzu_hid_core
+    ${CMAKE_SOURCE_DIR}/src/nxemu-os
+    ${CMAKE_BINARY_DIR}/generated
+    ${CMAKE_SOURCE_DIR}/external/fmt/include
+)
+# Boost is third-party; mark SYSTEM so -Werror does not apply to header-only warnings (e.g. Asio).
+target_include_directories(hid_core SYSTEM PUBLIC
+    ${CMAKE_SOURCE_DIR}/external/boost
+)
+
+target_link_libraries(hid_core PUBLIC nxemu_core fmt::fmt)
 
 if (YUZU_USE_PRECOMPILED_HEADERS)
     target_precompile_headers(hid_core PRIVATE precompiled_headers.h)

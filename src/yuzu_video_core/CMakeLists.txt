@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 add_subdirectory(host_shaders)
+add_subdirectory(frontend)
 
 if(LIBVA_FOUND)
     set_source_files_properties(host1x/ffmpeg/ffmpeg.cpp
@@ -317,11 +318,42 @@ add_library(video_core STATIC
     vulkan_common/vulkan.h
 )
 
-target_link_libraries(video_core PUBLIC common core)
-target_link_libraries(video_core PUBLIC glad shader_recompiler stb bc_decoder)
+target_include_directories(video_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(video_core PUBLIC common nxemu_core yuzu_common)
+target_link_libraries(video_core PUBLIC glad shader_recompiler stb::headers bc_decoder)
 
 if (YUZU_USE_BUNDLED_FFMPEG AND NOT (WIN32 OR ANDROID))
     add_dependencies(video_core ffmpeg-build)
+endif()
+
+if(NOT FFmpeg_INCLUDE_DIR)
+    set(FFmpeg_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/external/ffmpeg/include")
+endif()
+
+if(ANDROID AND NOT FFmpeg_LIBRARIES)
+    # Static link order matters. Expected layout: external/ffmpeg/lib/<abi>/lib*.a
+    set(_ffmpeg_android_root "${CMAKE_SOURCE_DIR}/external/ffmpeg/lib/${ANDROID_ABI}")
+    set(_ffmpeg_android_names
+        libavutil libswresample libavcodec libavfilter libswscale)
+    set(_ffmpeg_android_ok TRUE)
+    foreach(_n IN LISTS _ffmpeg_android_names)
+        if(NOT EXISTS "${_ffmpeg_android_root}/${_n}.a")
+            set(_ffmpeg_android_ok FALSE)
+            break()
+        endif()
+    endforeach()
+    if(_ffmpeg_android_ok)
+        set(_ffmpeg_android_libs "")
+        foreach(_n IN LISTS _ffmpeg_android_names)
+            list(APPEND _ffmpeg_android_libs "${_ffmpeg_android_root}/${_n}.a")
+        endforeach()
+        set(FFmpeg_LIBRARIES "${_ffmpeg_android_libs}")
+    else()
+        message(WARNING
+            "Missing some FFmpeg static libraries in ${_ffmpeg_android_root} "
+            "(need: ${_ffmpeg_android_names}.a). Cross-compile for ${ANDROID_ABI}, install them there, "
+            "or pass -DFFmpeg_LIBRARIES=... at configure time.")
+    endif()
 endif()
 
 target_include_directories(video_core PRIVATE ${FFmpeg_INCLUDE_DIR})
@@ -359,6 +391,7 @@ else()
 
     target_compile_options(video_core PRIVATE
         -Wno-sign-conversion
+        -Wno-implicit-int-conversion
     )
 
     # xbyak
@@ -374,10 +407,6 @@ if (ARCHITECTURE_x86_64)
         macro/macro_jit_x64.h
     )
     target_link_libraries(video_core PUBLIC xbyak::xbyak)
-endif()
-
-if (ARCHITECTURE_x86_64 OR ARCHITECTURE_arm64)
-    target_link_libraries(video_core PRIVATE dynarmic::dynarmic)
 endif()
 
 if (YUZU_USE_PRECOMPILED_HEADERS)

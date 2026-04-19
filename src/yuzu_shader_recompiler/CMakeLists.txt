@@ -242,7 +242,11 @@ add_library(shader_recompiler STATIC
     varying_state.h
 )
 
-target_link_libraries(shader_recompiler PUBLIC common fmt::fmt sirit)
+target_include_directories(shader_recompiler PRIVATE
+    "${CMAKE_SOURCE_DIR}/external/boost"
+)
+
+target_link_libraries(shader_recompiler PUBLIC common fmt::fmt sirit boost_headers)
 
 if (MSVC)
     target_compile_options(shader_recompiler PRIVATE
