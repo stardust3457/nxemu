@@ -459,7 +459,7 @@ public:
         return m_page_table.GetAllocateOption();
     }
 
-    u32 GetAddressSpaceWidth() const {
+    u32 GetAddressSpaceWidth() const override {
         return m_page_table.GetAddressSpaceWidth();
     }
 

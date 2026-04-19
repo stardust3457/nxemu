@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <set>
-#include <common/settings_input.h>
+#include "yuzu_common/settings_input.h"
 #include "yuzu_common/yuzu_thread.h"
 #include <jni.h>
 #include "yuzu_common/android/android_common.h"
 #include "yuzu_common/android/id_cache.h"
-#include "input_common/drivers/android.h"
+#include "yuzu_input_common/drivers/android.h"
 
 namespace InputCommon {
 

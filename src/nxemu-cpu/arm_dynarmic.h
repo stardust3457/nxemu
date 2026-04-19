@@ -8,7 +8,7 @@
 Dynarmic::HaltReason TranslateDynarmicHaltReason(CpuHaltReason hr);
 CpuHaltReason TranslateHaltReason(Dynarmic::HaltReason hr);
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
 
 class ScopedJitExecution {
 public:

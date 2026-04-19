@@ -104,7 +104,7 @@ void CDmaPusher::ExecuteCommand(u32 state_offset, u32 data)
         }
         break;
     case ChClassId::GraphicsVic:
-        ThiStateWrite(vic_thi_state, static_cast<u32>(state_offset), {data});
+        ThiStateWrite(vic_thi_state, static_cast<u32>(state_offset), data);
         switch (static_cast<ThiMethod>(state_offset)) {
         case ThiMethod::IncSyncpt: {
             LOG_DEBUG(Service_NVDRV, "VIC Class IncSyncpt Method");
