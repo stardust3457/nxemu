@@ -7,12 +7,11 @@
 
 #include "yuzu_common/common_types.h"
 
-#include "frontend/applets/applet.h"
+#include "applets/applet.h"
 #include "core/hle/service/am/frontend/applet_software_keyboard_types.h"
 
-namespace Core::Frontend {
-
-struct KeyboardInitializeParameters {
+struct KeyboardInitializeParameters
+{
     std::u16string ok_text;
     std::u16string header_text;
     std::u16string sub_text;
@@ -33,7 +32,8 @@ struct KeyboardInitializeParameters {
     bool disable_cancel_button;
 };
 
-struct InlineAppearParameters {
+struct InlineAppearParameters
+{
     u32 max_text_length;
     u32 min_text_length;
     f32 key_top_scale_x;
@@ -48,60 +48,42 @@ struct InlineAppearParameters {
     bool disable_cancel_button;
 };
 
-struct InlineTextParameters {
+struct InlineTextParameters
+{
     std::u16string input_text;
     s32 cursor_position;
 };
 
-class SoftwareKeyboardApplet : public Applet {
+class SoftwareKeyboardApplet : public Applet
+{
 public:
-    using SubmitInlineCallback =
-        std::function<void(Service::AM::Frontend::SwkbdReplyType, std::u16string, s32)>;
-    using SubmitNormalCallback =
-        std::function<void(Service::AM::Frontend::SwkbdResult, std::u16string, bool)>;
+    using SubmitInlineCallback = std::function<void(Service::AM::Frontend::SwkbdReplyType, std::u16string, s32)>;
+    using SubmitNormalCallback = std::function<void(Service::AM::Frontend::SwkbdResult, std::u16string, bool)>;
 
     virtual ~SoftwareKeyboardApplet();
 
-    virtual void InitializeKeyboard(bool is_inline,
-                                    KeyboardInitializeParameters initialize_parameters,
-                                    SubmitNormalCallback submit_normal_callback_,
-                                    SubmitInlineCallback submit_inline_callback_) = 0;
-
+    virtual void InitializeKeyboard(bool is_inline, KeyboardInitializeParameters initialize_parameters, SubmitNormalCallback submit_normal_callback_, SubmitInlineCallback submit_inline_callback_) = 0;
     virtual void ShowNormalKeyboard() const = 0;
-
-    virtual void ShowTextCheckDialog(Service::AM::Frontend::SwkbdTextCheckResult text_check_result,
-                                     std::u16string text_check_message) const = 0;
-
+    virtual void ShowTextCheckDialog(Service::AM::Frontend::SwkbdTextCheckResult text_check_result, std::u16string text_check_message) const = 0;
     virtual void ShowInlineKeyboard(InlineAppearParameters appear_parameters) const = 0;
-
     virtual void HideInlineKeyboard() const = 0;
-
     virtual void InlineTextChanged(InlineTextParameters text_parameters) const = 0;
-
     virtual void ExitKeyboard() const = 0;
 };
 
-class DefaultSoftwareKeyboardApplet final : public SoftwareKeyboardApplet {
+class DefaultSoftwareKeyboardApplet final :
+    public SoftwareKeyboardApplet
+{
 public:
     ~DefaultSoftwareKeyboardApplet() override;
 
     void Close() const override;
-
-    void InitializeKeyboard(bool is_inline, KeyboardInitializeParameters initialize_parameters,
-                            SubmitNormalCallback submit_normal_callback_,
-                            SubmitInlineCallback submit_inline_callback_) override;
-
+    void InitializeKeyboard(bool is_inline, KeyboardInitializeParameters initialize_parameters, SubmitNormalCallback submit_normal_callback_, SubmitInlineCallback submit_inline_callback_) override;
     void ShowNormalKeyboard() const override;
-
-    void ShowTextCheckDialog(Service::AM::Frontend::SwkbdTextCheckResult text_check_result,
-                             std::u16string text_check_message) const override;
-
+    void ShowTextCheckDialog(Service::AM::Frontend::SwkbdTextCheckResult text_check_result, std::u16string text_check_message) const override;
     void ShowInlineKeyboard(InlineAppearParameters appear_parameters) const override;
-
     void HideInlineKeyboard() const override;
-
     void InlineTextChanged(InlineTextParameters text_parameters) const override;
-
     void ExitKeyboard() const override;
 
 private:
@@ -113,5 +95,3 @@ private:
     mutable SubmitNormalCallback submit_normal_callback;
     mutable SubmitInlineCallback submit_inline_callback;
 };
-
-} // namespace Core::Frontend
