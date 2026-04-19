@@ -542,6 +542,9 @@ void OsSettingChanged(const char * setting, void * /*userData*/)
         case SettingType::BooleanSetting:
             osSetting.setting.booleanSetting->SetValue(g_settings->GetBool(setting));
             break;
+        case SettingType::BooleanSwitchable:
+            osSetting.setting.booleanSwitchable->SetValue(g_settings->GetBool(setting));
+            break;
         case SettingType::BooleanValue:
             *osSetting.setting.boolValue = g_settings->GetBool(setting);
             break;
@@ -573,7 +576,7 @@ void SetupOsSetting(void)
             osSetting.setting.u16->SetValue(osSetting.setting.u16->GetDefault());
             break;
         case SettingType::BooleanSwitchable:
-            osSetting.setting.booleanSetting->SetValue(osSetting.setting.booleanSwitchable->GetDefault());
+            osSetting.setting.booleanSwitchable->SetValue(osSetting.setting.booleanSwitchable->GetDefault());
             break;
         case SettingType::BooleanSetting:
             osSetting.setting.booleanSetting->SetValue(osSetting.setting.booleanSetting->GetDefault());
@@ -631,6 +634,18 @@ void SetupOsSetting(void)
                 if (value.isInt())
                 {
                     osSetting.setting.u8->SetValue((uint8_t)value.asInt64());
+                }
+                break;
+            case SettingType::U16:
+                if (value.isInt())
+                {
+                    osSetting.setting.u16->SetValue((uint16_t)value.asInt64());
+                }
+                break;
+            case SettingType::BooleanSwitchable:
+                if (value.isBool())
+                {
+                    osSetting.setting.booleanSwitchable->SetValue(value.asBool());
                 }
                 break;
             case SettingType::BooleanSetting:
