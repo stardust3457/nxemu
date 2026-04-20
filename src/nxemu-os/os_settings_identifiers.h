@@ -12,5 +12,6 @@ namespace NXOsSetting
     constexpr const char * SpeedLimit = "nxos:SpeedLimit";
     constexpr const char * UseMultiCore = "nxos:UseMultiCore";
     constexpr const char * UseSpeedLimit = "nxos:UseSpeedLimit";
+    constexpr const char * DockedMode = "nxos:DockedMode";
 
 } // namespace NXOsSetting

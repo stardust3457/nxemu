@@ -475,18 +475,6 @@ struct Values {
 
     Setting<s32> current_user{linkage, 0, "current_user", Category::System};
 
-    SwitchableSetting<ConsoleMode> use_docked_mode{linkage,
-#ifdef ANDROID
-                                                   ConsoleMode::Handheld,
-#else
-                                                   ConsoleMode::Docked,
-#endif
-                                                   "use_docked_mode",
-                                                   Category::System,
-                                                   Specialization::Radio,
-                                                   true,
-                                                   true};
-
     // Linux
     SwitchableSetting<bool> enable_gamemode{linkage, true, "enable_gamemode", Category::Linux};
 
@@ -625,8 +613,6 @@ bool IsGPULevelHigh();
 bool IsFastmemEnabled();
 void SetNceEnabled(bool is_64bit);
 bool IsNceEnabled();
-
-bool IsDockedMode();
 
 float Volume();
 

@@ -1,17 +1,23 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "yuzu_common/settings.h"
+#include "core/hle/service/vi/system_display_service.h"
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/vi/container.h"
-#include "core/hle/service/vi/system_display_service.h"
 #include "core/hle/service/vi/vi_types.h"
+#include "os_settings_identifiers.h"
+#include <nxemu-module-spec/base.h>
+#include <yuzu_common/settings_enums.h>
 
-namespace Service::VI {
+extern IModuleSettings * g_settings;
 
-ISystemDisplayService::ISystemDisplayService(Core::System& system_,
-                                             std::shared_ptr<Container> container)
-    : ServiceFramework{system_, "ISystemDisplayService"}, m_container{std::move(container)} {
+namespace Service::VI
+{
+
+ISystemDisplayService::ISystemDisplayService(Core::System & system_, std::shared_ptr<Container> container) :
+    ServiceFramework{system_, "ISystemDisplayService"},
+    m_container{std::move(container)}
+{
     // clang-format off
     static const FunctionInfo functions[] = {
         {1200, nullptr, "GetZOrderCountMin"},
@@ -66,24 +72,26 @@ ISystemDisplayService::ISystemDisplayService(Core::System& system_,
 
 ISystemDisplayService::~ISystemDisplayService() = default;
 
-Result ISystemDisplayService::SetLayerZ(u32 z_value, u64 layer_id) {
+Result ISystemDisplayService::SetLayerZ(u32 z_value, u64 layer_id)
+{
     LOG_WARNING(Service_VI, "(STUBBED) called. layer_id={}, z_value={}", layer_id, z_value);
     R_SUCCEED();
 }
 
 // This function currently does nothing but return a success error code in
 // the vi library itself, so do the same thing, but log out the passed in values.
-Result ISystemDisplayService::SetLayerVisibility(bool visible, u64 layer_id) {
+Result ISystemDisplayService::SetLayerVisibility(bool visible, u64 layer_id)
+{
     LOG_DEBUG(Service_VI, "called, layer_id={}, visible={}", layer_id, visible);
     R_SUCCEED();
 }
 
-Result ISystemDisplayService::ListDisplayModes(
-    Out<u64> out_count, u64 display_id,
-    OutArray<DisplayMode, BufferAttr_HipcMapAlias> out_display_modes) {
+Result ISystemDisplayService::ListDisplayModes(Out<u64> out_count, u64 display_id,OutArray<DisplayMode, BufferAttr_HipcMapAlias> out_display_modes)
+{
     LOG_WARNING(Service_VI, "(STUBBED) called, display_id={}", display_id);
 
-    if (!out_display_modes.empty()) {
+    if (!out_display_modes.empty())
+    {
         out_display_modes[0] = {
             .width = 1920,
             .height = 1080,
@@ -91,20 +99,27 @@ Result ISystemDisplayService::ListDisplayModes(
             .unknown = {},
         };
         *out_count = 1;
-    } else {
+    }
+    else
+    {
         *out_count = 0;
     }
 
     R_SUCCEED();
 }
 
-Result ISystemDisplayService::GetDisplayMode(Out<DisplayMode> out_display_mode, u64 display_id) {
+Result ISystemDisplayService::GetDisplayMode(Out<DisplayMode> out_display_mode, u64 display_id)
+{
     LOG_WARNING(Service_VI, "(STUBBED) called, display_id={}", display_id);
 
-    if (Settings::IsDockedMode()) {
+    const bool is_docked = g_settings->GetInt(NXOsSetting::DockedMode) == static_cast<int32_t>(Settings::ConsoleMode::Docked);
+    if (is_docked)
+    {
         out_display_mode->width = static_cast<u32>(DisplayResolution::DockedWidth);
         out_display_mode->height = static_cast<u32>(DisplayResolution::DockedHeight);
-    } else {
+    }
+    else
+    {
         out_display_mode->width = static_cast<u32>(DisplayResolution::UndockedWidth);
         out_display_mode->height = static_cast<u32>(DisplayResolution::UndockedHeight);
     }
@@ -115,34 +130,34 @@ Result ISystemDisplayService::GetDisplayMode(Out<DisplayMode> out_display_mode, 
     R_SUCCEED();
 }
 
-Result ISystemDisplayService::GetSharedBufferMemoryHandleId(
-    Out<s32> out_nvmap_handle, Out<u64> out_size,
-    OutLargeData<SharedMemoryPoolLayout, BufferAttr_HipcMapAlias> out_pool_layout, u64 buffer_id,
-    ClientAppletResourceUserId aruid) {
+Result ISystemDisplayService::GetSharedBufferMemoryHandleId(Out<s32> out_nvmap_handle, Out<u64> out_size, OutLargeData<SharedMemoryPoolLayout, BufferAttr_HipcMapAlias> out_pool_layout, u64 buffer_id, ClientAppletResourceUserId aruid)
+{
     LOG_INFO(Service_VI, "called. buffer_id={}, aruid={:#x}", buffer_id, aruid.pid);
-
-    R_RETURN(m_container->GetSharedBufferManager()->GetSharedBufferMemoryHandleId(
-        out_size, out_nvmap_handle, out_pool_layout, buffer_id, aruid.pid));
+    R_RETURN(m_container->GetSharedBufferManager()->GetSharedBufferMemoryHandleId(out_size, out_nvmap_handle, out_pool_layout, buffer_id, aruid.pid));
 }
 
-Result ISystemDisplayService::OpenSharedLayer(u64 layer_id) {
+Result ISystemDisplayService::OpenSharedLayer(u64 layer_id)
+{
     LOG_INFO(Service_VI, "(STUBBED) called. layer_id={}", layer_id);
     R_SUCCEED();
 }
 
-Result ISystemDisplayService::ConnectSharedLayer(u64 layer_id) {
+Result ISystemDisplayService::ConnectSharedLayer(u64 layer_id)
+{
     LOG_INFO(Service_VI, "(STUBBED) called. layer_id={}", layer_id);
     R_SUCCEED();
 }
 
 Result ISystemDisplayService::GetSharedFrameBufferAcquirableEvent(
-    OutCopyHandle<Kernel::KReadableEvent> out_event, u64 layer_id) {
+    OutCopyHandle<Kernel::KReadableEvent> out_event, u64 layer_id)
+{
     LOG_DEBUG(Service_VI, "called");
     R_RETURN(m_container->GetSharedBufferManager()->GetSharedFrameBufferAcquirableEvent(out_event,
                                                                                         layer_id));
 }
 
-Result ISystemDisplayService::CancelSharedFrameBuffer(u64 layer_id, s64 slot) {
+Result ISystemDisplayService::CancelSharedFrameBuffer(u64 layer_id, s64 slot)
+{
     LOG_DEBUG(Service_VI, "called");
     R_RETURN(m_container->GetSharedBufferManager()->CancelSharedFrameBuffer(layer_id, slot));
 }

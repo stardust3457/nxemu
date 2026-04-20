@@ -53,6 +53,7 @@
     <ClCompile Include="user_interface\settings\system_config_game_browser.cpp" />
     <ClCompile Include="user_interface\settings\system_config_general.cpp" />
     <ClCompile Include="user_interface\settings\system_config_graphics.cpp" />
+    <ClCompile Include="user_interface\settings\system_config_system.cpp" />
     <ClCompile Include="user_interface\settings\system_config_hotkeys.cpp" />
     <ClCompile Include="user_interface\settings\system_config_logging.cpp" />
     <ClCompile Include="user_interface\widgets\rom_browser.cpp" />
@@ -77,6 +78,7 @@
     <ClInclude Include="user_interface\settings\system_config_game_browser.h" />
     <ClInclude Include="user_interface\settings\system_config_general.h" />
     <ClInclude Include="user_interface\settings\system_config_graphics.h" />
+    <ClInclude Include="user_interface\settings\system_config_system.h" />
     <ClInclude Include="user_interface\settings\system_config_hotkeys.h" />
     <ClInclude Include="user_interface\settings\system_config_logging.h" />
     <ClInclude Include="user_interface\widgets\rom_browser.h" />

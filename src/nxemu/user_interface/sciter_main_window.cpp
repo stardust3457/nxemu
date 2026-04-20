@@ -81,6 +81,7 @@ static float EmulationAspectRatioForWindowReset(float window_aspect_ratio)
         return 720.0f / 1280.0f;
     }
 }
+
 } // namespace
 
 SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitle) :

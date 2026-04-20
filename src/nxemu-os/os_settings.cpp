@@ -9,6 +9,8 @@
 
 extern IModuleSettings * g_settings;
 
+OSSettings osSettings = {};
+
 namespace
 {
     enum class SettingType
@@ -17,6 +19,7 @@ namespace
         StringValue,
         AudioEngine,
         AudioMode,
+        ConsoleMode,
         U8,
         U16,
         BooleanSwitchable,
@@ -33,6 +36,7 @@ namespace
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<std::string> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioEngine> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioMode, true>* val);
+        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::ConsoleMode> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u8, true> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u16, true> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<bool> * val);
@@ -52,6 +56,7 @@ namespace
             Settings::SwitchableSetting<std::string> * stringSetting;
             Settings::SwitchableSetting<Settings::AudioEngine> * audioEngine;
             Settings::SwitchableSetting<Settings::AudioMode, true> * audioMode;
+            Settings::SwitchableSetting<Settings::ConsoleMode> * consoleMode;
             Settings::SwitchableSetting<u8, true> * u8;
             Settings::SwitchableSetting<u16, true> * u16;
             Settings::SwitchableSetting<bool> * booleanSwitchable;
@@ -450,9 +455,10 @@ namespace
         { NXOsSetting::AudioVolume, "audio\\volume", &Settings::values.volume },
         { NXOsSetting::AudioMuted, "audio\\muted", &Settings::values.audio_muted },
         { NXOsSetting::ResolutionUpFactor, "resolution\\up_factor", &Settings::values.resolution_info.up_factor, 1.0f },
-        { NXOsSetting::SpeedLimit, "core\\speed_limit", &Settings::values.speed_limit },
-        { NXOsSetting::UseMultiCore, "core\\use_multi_core", &Settings::values.use_multi_core },
-        { NXOsSetting::UseSpeedLimit, "core\\use_speed_limit", &Settings::values.use_speed_limit },
+        { NXOsSetting::SpeedLimit, "system\\speed_limit", &Settings::values.speed_limit },
+        { NXOsSetting::UseMultiCore, "system\\use_multi_core", &Settings::values.use_multi_core },
+        { NXOsSetting::UseSpeedLimit, "system\\use_speed_limit", &Settings::values.use_speed_limit },
+        { NXOsSetting::DockedMode, "system\\docked_mode", &osSettings.use_docked_mode},
     };
 
     template <typename T>
@@ -536,6 +542,9 @@ void OsSettingChanged(const char * setting, void * /*userData*/)
         case SettingType::AudioMode:
             osSetting.setting.audioMode->SetValue((Settings::AudioMode)g_settings->GetInt(setting));
             break;
+        case SettingType::ConsoleMode:
+            osSetting.setting.consoleMode->SetValue((Settings::ConsoleMode)g_settings->GetInt(setting));
+            break;
         case SettingType::U8:
             osSetting.setting.u8->SetValue(g_settings->GetInt(setting));
             break;
@@ -568,6 +577,9 @@ void SetupOsSetting(void)
             break;
         case SettingType::AudioMode:
             osSetting.setting.audioMode->SetValue(osSetting.setting.audioMode->GetDefault());
+            break;
+        case SettingType::ConsoleMode:
+            osSetting.setting.consoleMode->SetValue(osSetting.setting.consoleMode->GetDefault());
             break;
         case SettingType::U8:
             osSetting.setting.u8->SetValue(osSetting.setting.u8->GetDefault());
@@ -628,6 +640,12 @@ void SetupOsSetting(void)
                 if (value.isString())
                 {
                     osSetting.setting.audioMode->SetValue(Settings::ToEnum<Settings::AudioMode>(value.asString()));
+                }
+                break;
+            case SettingType::ConsoleMode:
+                if (value.isString())
+                {
+                    osSetting.setting.consoleMode->SetValue(Settings::ToEnum<Settings::ConsoleMode>(value.asString()));
                 }
                 break;
             case SettingType::U8:
@@ -705,6 +723,10 @@ void SetupOsSetting(void)
             g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.audioMode->GetDefault());
             g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.audioMode->GetValue());
             break;
+        case SettingType::ConsoleMode:
+            g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.consoleMode->GetDefault());
+            g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.consoleMode->GetValue());
+            break;
         case SettingType::U8:
             g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.u8->GetDefault());
             g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.u8->GetValue());
@@ -760,6 +782,12 @@ void SaveOsSettings(void)
             if (osSetting.setting.audioMode->GetValue() != osSetting.setting.audioMode->GetDefault())
             {
                 JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.audioMode->GetValue()));
+            }
+            break;
+        case SettingType::ConsoleMode:
+            if (osSetting.setting.consoleMode->GetValue() != osSetting.setting.consoleMode->GetDefault())
+            {
+                JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.consoleMode->GetValue()));
             }
             break;
         case SettingType::U8:
@@ -847,6 +875,14 @@ namespace
         settingType(SettingType::AudioMode)
     {
         setting.audioMode = val;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::ConsoleMode> * val) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::ConsoleMode)
+    {
+        setting.consoleMode = val;
     }
 
     OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u8, true> * val) :

@@ -63,6 +63,9 @@
     <ClCompile Include="user_interface\settings\system_config_graphics.cpp">
       <Filter>Source Files\user_interface\settings</Filter>
     </ClCompile>
+    <ClCompile Include="user_interface\settings\system_config_system.cpp">
+      <Filter>Source Files\user_interface\settings</Filter>
+    </ClCompile>
     <ClCompile Include="user_interface\settings\config_setting .cpp">
       <Filter>Source Files\user_interface\settings</Filter>
     </ClCompile>
@@ -123,6 +126,9 @@
       <Filter>Header Files\user_interface\settings</Filter>
     </ClInclude>
     <ClInclude Include="user_interface\settings\system_config_graphics.h">
+      <Filter>Header Files\user_interface\settings</Filter>
+    </ClInclude>
+    <ClInclude Include="user_interface\settings\system_config_system.h">
       <Filter>Header Files\user_interface\settings</Filter>
     </ClInclude>
     <ClInclude Include="user_interface\settings\config_setting.h">

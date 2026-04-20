@@ -3,24 +3,27 @@
 
 #include <cmath>
 
-#include "yuzu_common/yuzu_assert.h"
-#include "yuzu_common/settings.h"
-#include "yuzu_common/settings_enums.h"
 #include "frontend/framebuffer_layout.h"
+#include "nxemu-os/os_settings_identifiers.h"
+#include "yuzu_common/settings.h"
+#include "yuzu_common/yuzu_assert.h"
+#include <nxemu-module-spec/base.h>
 
-namespace Layout {
+extern IModuleSettings * g_settings;
+
+namespace Layout
+{
 
 // Finds the largest size subrectangle contained in window area that is confined to the aspect ratio
 template <class T>
-static Common::Rectangle<T> MaxRectangle(Common::Rectangle<T> window_area,
-                                         float screen_aspect_ratio) {
-    const float scale = std::min(static_cast<float>(window_area.GetWidth()),
-                                 static_cast<float>(window_area.GetHeight()) / screen_aspect_ratio);
-    return Common::Rectangle<T>{0, 0, static_cast<T>(std::round(scale)),
-                                static_cast<T>(std::round(scale * screen_aspect_ratio))};
+static Common::Rectangle<T> MaxRectangle(Common::Rectangle<T> window_area, float screen_aspect_ratio)
+{
+    const float scale = std::min(static_cast<float>(window_area.GetWidth()), static_cast<float>(window_area.GetHeight()) / screen_aspect_ratio);
+    return Common::Rectangle<T>{0, 0, static_cast<T>(std::round(scale)), static_cast<T>(std::round(scale * screen_aspect_ratio))};
 }
 
-FramebufferLayout DefaultFrameLayout(u32 width, u32 height) {
+FramebufferLayout DefaultFrameLayout(u32 width, u32 height)
+{
     ASSERT(width > 0);
     ASSERT(height > 0);
     // The drawing code needs at least somewhat valid values for both screens
@@ -33,15 +36,17 @@ FramebufferLayout DefaultFrameLayout(u32 width, u32 height) {
     };
 
     const float window_aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
-    const float emulation_aspect_ratio = EmulationAspectRatio(
-        static_cast<AspectRatio>(Settings::values.aspect_ratio.GetValue()), window_aspect_ratio);
+    const float emulation_aspect_ratio = EmulationAspectRatio(static_cast<AspectRatio>(Settings::values.aspect_ratio.GetValue()), window_aspect_ratio);
 
     const Common::Rectangle<u32> screen_window_area{0, 0, width, height};
     Common::Rectangle<u32> screen = MaxRectangle(screen_window_area, emulation_aspect_ratio);
 
-    if (window_aspect_ratio < emulation_aspect_ratio) {
+    if (window_aspect_ratio < emulation_aspect_ratio)
+    {
         screen = screen.TranslateX((screen_window_area.GetWidth() - screen.GetWidth()) / 2);
-    } else {
+    }
+    else
+    {
         screen = screen.TranslateY((height - screen.GetHeight()) / 2);
     }
 
@@ -49,8 +54,9 @@ FramebufferLayout DefaultFrameLayout(u32 width, u32 height) {
     return res;
 }
 
-FramebufferLayout FrameLayoutFromResolutionScale(f32 res_scale) {
-    const bool is_docked = Settings::IsDockedMode();
+FramebufferLayout FrameLayoutFromResolutionScale(f32 res_scale)
+{
+    const bool is_docked = g_settings->GetInt(NXOsSetting::DockedMode) == static_cast<int32_t>(Settings::ConsoleMode::Docked);
     const u32 screen_width = is_docked ? ScreenDocked::Width : ScreenUndocked::Width;
     const u32 screen_height = is_docked ? ScreenDocked::Height : ScreenUndocked::Height;
 
@@ -60,8 +66,10 @@ FramebufferLayout FrameLayoutFromResolutionScale(f32 res_scale) {
     return DefaultFrameLayout(width, height);
 }
 
-float EmulationAspectRatio(AspectRatio aspect, float window_aspect_ratio) {
-    switch (aspect) {
+float EmulationAspectRatio(AspectRatio aspect, float window_aspect_ratio)
+{
+    switch (aspect)
+    {
     case AspectRatio::Default:
         return static_cast<float>(ScreenUndocked::Height) / ScreenUndocked::Width;
     case AspectRatio::R4_3:

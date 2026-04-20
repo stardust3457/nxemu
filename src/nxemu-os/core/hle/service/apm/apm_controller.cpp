@@ -5,26 +5,34 @@
 #include <array>
 #include <utility>
 
+#include "core/core_timing.h"
+#include "core/hle/service/apm/apm_controller.h"
+#include "os_settings_identifiers.h"
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/settings_enums.h"
-#include "core/core_timing.h"
-#include "core/hle/service/apm/apm_controller.h"
+#include <nxemu-module-spec/base.h>
 
-namespace Service::APM {
+extern IModuleSettings * g_settings;
+
+namespace Service::APM
+{
 
 constexpr auto DEFAULT_PERFORMANCE_CONFIGURATION = PerformanceConfiguration::Config7;
 
-Controller::Controller(Core::Timing::CoreTiming& core_timing_)
-    : core_timing{core_timing_}, configs{
-                                     {PerformanceMode::Normal, DEFAULT_PERFORMANCE_CONFIGURATION},
-                                     {PerformanceMode::Boost, DEFAULT_PERFORMANCE_CONFIGURATION},
-                                 } {}
+Controller::Controller(Core::Timing::CoreTiming & core_timing_) :
+    core_timing{core_timing_}, 
+    configs{
+        {PerformanceMode::Normal, DEFAULT_PERFORMANCE_CONFIGURATION},
+        {PerformanceMode::Boost, DEFAULT_PERFORMANCE_CONFIGURATION},
+    }
+{
+}
 
 Controller::~Controller() = default;
 
-void Controller::SetPerformanceConfiguration(PerformanceMode mode,
-                                             PerformanceConfiguration config) {
+void Controller::SetPerformanceConfiguration(PerformanceMode mode, PerformanceConfiguration config)
+{
     static constexpr std::array<std::pair<PerformanceConfiguration, u32>, 16> config_to_speed{{
         {PerformanceConfiguration::Config1, 1020},
         {PerformanceConfiguration::Config2, 1020},
@@ -45,9 +53,10 @@ void Controller::SetPerformanceConfiguration(PerformanceMode mode,
     }};
 
     const auto iter = std::find_if(config_to_speed.cbegin(), config_to_speed.cend(),
-                                   [config](const auto& entry) { return entry.first == config; });
+                                   [config](const auto & entry) { return entry.first == config; });
 
-    if (iter == config_to_speed.cend()) {
+    if (iter == config_to_speed.cend())
+    {
         LOG_ERROR(Service_APM, "Invalid performance configuration value provided: {}", config);
         return;
     }
@@ -56,30 +65,35 @@ void Controller::SetPerformanceConfiguration(PerformanceMode mode,
     configs.insert_or_assign(mode, config);
 }
 
-void Controller::SetFromCpuBoostMode(CpuBoostMode mode) {
+void Controller::SetFromCpuBoostMode(CpuBoostMode mode)
+{
     static constexpr std::array<PerformanceConfiguration, 3> BOOST_MODE_TO_CONFIG_MAP{{
         PerformanceConfiguration::Config7,
         PerformanceConfiguration::Config13,
         PerformanceConfiguration::Config15,
     }};
 
-    SetPerformanceConfiguration(PerformanceMode::Boost,
-                                BOOST_MODE_TO_CONFIG_MAP.at(static_cast<u32>(mode)));
+    SetPerformanceConfiguration(PerformanceMode::Boost, BOOST_MODE_TO_CONFIG_MAP.at(static_cast<u32>(mode)));
 }
 
-PerformanceMode Controller::GetCurrentPerformanceMode() const {
-    return Settings::IsDockedMode() ? PerformanceMode::Boost : PerformanceMode::Normal;
+PerformanceMode Controller::GetCurrentPerformanceMode() const
+{
+    const bool docked = g_settings->GetInt(NXOsSetting::DockedMode) == static_cast<int32_t>(Settings::ConsoleMode::Docked);
+    return docked ? PerformanceMode::Boost : PerformanceMode::Normal;
 }
 
-PerformanceConfiguration Controller::GetCurrentPerformanceConfiguration(PerformanceMode mode) {
-    if (configs.find(mode) == configs.end()) {
+PerformanceConfiguration Controller::GetCurrentPerformanceConfiguration(PerformanceMode mode)
+{
+    if (configs.find(mode) == configs.end())
+    {
         configs.insert_or_assign(mode, DEFAULT_PERFORMANCE_CONFIGURATION);
     }
 
     return configs[mode];
 }
 
-void Controller::SetClockSpeed(u32 mhz) {
+void Controller::SetClockSpeed(u32 mhz)
+{
     LOG_DEBUG(Service_APM, "called, mhz={:08X}", mhz);
     // TODO(DarkLordZach): Actually signal core_timing to change clock speed.
     // TODO(Rodrigo): Remove [[maybe_unused]] when core_timing is used.

@@ -177,10 +177,6 @@ bool IsNceEnabled() {
     return is_nce_enabled;
 }
 
-bool IsDockedMode() {
-    return values.use_docked_mode.GetValue() == Settings::ConsoleMode::Docked;
-}
-
 float Volume() {
     if (values.audio_muted) {
         return 0.0f;

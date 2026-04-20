@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "applets/controller.h"
+#include "os_settings_identifiers.h"
+#include <nxemu-module-spec/base.h>
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/settings_enums.h"
@@ -9,6 +11,8 @@
 #include "yuzu_hid_core/frontend/emulated_controller.h"
 #include "yuzu_hid_core/hid_core.h"
 #include "yuzu_hid_core/hid_types.h"
+
+extern IModuleSettings * g_settings;
 
 ControllerApplet::~ControllerApplet() = default;
 
@@ -76,7 +80,7 @@ void DefaultControllerApplet::ReconfigureControllers(ReconfigureCallback callbac
                 controller->Connect(true);
             }
         }
-        else if (index == 0 && parameters.enable_single_mode && parameters.allow_handheld && !Settings::IsDockedMode())
+        else if (index == 0 && parameters.enable_single_mode && parameters.allow_handheld && g_settings->GetInt(NXOsSetting::DockedMode) != static_cast<int32_t>(Settings::ConsoleMode::Docked))
         {
             // We should *never* reach here under any normal circumstances.
             controller->SetNpadStyleIndex(NpadStyleIndex::Handheld);
