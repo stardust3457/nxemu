@@ -9,6 +9,8 @@
 #include "yuzu_common/hex_util.h"
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/settings.h"
+#include <nxemu-module-spec/base.h>
+#include "nxemu-os/os_settings_identifiers.h"
 #ifndef _WIN32
 #include "yuzu_common/string_util.h"
 #endif
@@ -27,6 +29,8 @@
 #include "core/hle/service/ns/language.h"
 #include "core/hle/service/set/settings_server.h"
 #include "core/loader/loader.h"
+
+extern IModuleSettings * g_settings;
 
 namespace FileSys
 {
@@ -477,7 +481,7 @@ PatchManager::Metadata PatchManager::ParseControlNCA(const NCA & nca) const
     auto nacp = nacp_file == nullptr ? nullptr : std::make_unique<NACP>(nacp_file);
 
     // Get language code from settings
-    const auto language_code = Service::Set::GetLanguageCodeFromIndex(static_cast<u32>(Settings::values.language_index.GetValue()));
+    const auto language_code = Service::Set::GetLanguageCodeFromIndex((uint32_t)g_settings->GetInt(NXOsSetting::LanguageIndex));
 
     // Convert to application language and get priority list
     const auto application_language = Service::NS::ConvertToApplicationLanguage(language_code).value_or(Service::NS::ApplicationLanguage::AmericanEnglish);

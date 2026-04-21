@@ -19,6 +19,7 @@ namespace
         StringValue,
         AudioEngine,
         AudioMode,
+        Language,
         ConsoleMode,
         U8,
         U16,
@@ -27,7 +28,10 @@ namespace
         BooleanValue,
         UnsignedInt,
         Float,
-        ControllerType
+        ControllerType,
+        S32Setting,
+        U32Switchable,
+        S64Switchable
     };
 
     class OsSetting
@@ -36,6 +40,7 @@ namespace
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<std::string> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioEngine> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioMode, true>* val);
+        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::Language, true> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::ConsoleMode> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u8, true> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u16, true> * val);
@@ -47,6 +52,9 @@ namespace
         OsSetting(const char * id, const char * path, uint32_t * val, uint32_t defaultValue);
         OsSetting(const char * id, const char * path, std::string * val, const char * defaultValue);
         OsSetting(const char * id, const char * path, InputSettings::ControllerType * val, InputSettings::ControllerType defaultValue);
+        OsSetting(const char * id, const char * path, Settings::Setting<s32> * val);
+        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u32> * val);
+        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<s64, true> * val);
 
         const char * identifier;
         const char * json_path;
@@ -56,6 +64,7 @@ namespace
             Settings::SwitchableSetting<std::string> * stringSetting;
             Settings::SwitchableSetting<Settings::AudioEngine> * audioEngine;
             Settings::SwitchableSetting<Settings::AudioMode, true> * audioMode;
+            Settings::SwitchableSetting<Settings::Language, true> * languageIndex;
             Settings::SwitchableSetting<Settings::ConsoleMode> * consoleMode;
             Settings::SwitchableSetting<u8, true> * u8;
             Settings::SwitchableSetting<u16, true> * u16;
@@ -66,6 +75,9 @@ namespace
             float * floatValue;
             std::string * stringValue;
             InputSettings::ControllerType * controllerType;
+            Settings::Setting<s32> * s32Setting;
+            Settings::SwitchableSetting<u32> * u32Switchable;
+            Settings::SwitchableSetting<s64, true> * s64Switchable;
         } setting;
         union
         {
@@ -458,6 +470,12 @@ namespace
         {NXOsSetting::SpeedLimit, "system\\speed_limit", &Settings::values.speed_limit},
         {NXOsSetting::UseMultiCore, "system\\use_multi_core", &Settings::values.use_multi_core},
         {NXOsSetting::UseSpeedLimit, "system\\use_speed_limit", &Settings::values.use_speed_limit},
+        {NXOsSetting::LanguageIndex, "system\\language_index", &osSettings.language_index},
+        {NXOsSetting::CurrentUser, "system\\current_user", &osSettings.current_user},
+        {NXOsSetting::RngSeedEnabled, "system\\rng_seed_enabled", &osSettings.rng_seed_enabled},
+        {NXOsSetting::RngSeed, "system\\rng_seed", &osSettings.rng_seed},
+        {NXOsSetting::CustomRtcEnabled, "system\\custom_rtc_enabled", &osSettings.custom_rtc_enabled},
+        {NXOsSetting::CustomRtcOffset, "system\\custom_rtc_offset", &osSettings.custom_rtc_offset},
         {NXOsSetting::DockedMode, "system\\docked_mode", &osSettings.use_docked_mode},
     };
 
@@ -542,6 +560,9 @@ void OsSettingChanged(const char * setting, void * /*userData*/)
         case SettingType::AudioMode:
             osSetting.setting.audioMode->SetValue((Settings::AudioMode)g_settings->GetInt(setting));
             break;
+        case SettingType::Language:
+            osSetting.setting.languageIndex->SetValue((Settings::Language)g_settings->GetInt(setting));
+            break;
         case SettingType::ConsoleMode:
             osSetting.setting.consoleMode->SetValue((Settings::ConsoleMode)g_settings->GetInt(setting));
             break;
@@ -556,6 +577,15 @@ void OsSettingChanged(const char * setting, void * /*userData*/)
             break;
         case SettingType::BooleanValue:
             *osSetting.setting.boolValue = g_settings->GetBool(setting);
+            break;
+        case SettingType::S32Setting:
+            osSetting.setting.s32Setting->SetValue(g_settings->GetInt(setting));
+            break;
+        case SettingType::U32Switchable:
+            osSetting.setting.u32Switchable->SetValue(static_cast<u32>(g_settings->GetInt(setting)));
+            break;
+        case SettingType::S64Switchable:
+            osSetting.setting.s64Switchable->SetValue(static_cast<s64>(g_settings->GetInt(setting)));
             break;
         default:
             UNIMPLEMENTED();
@@ -577,6 +607,9 @@ void SetupOsSetting(void)
             break;
         case SettingType::AudioMode:
             osSetting.setting.audioMode->SetValue(osSetting.setting.audioMode->GetDefault());
+            break;
+        case SettingType::Language:
+            osSetting.setting.languageIndex->SetValue(osSetting.setting.languageIndex->GetDefault());
             break;
         case SettingType::ConsoleMode:
             osSetting.setting.consoleMode->SetValue(osSetting.setting.consoleMode->GetDefault());
@@ -607,6 +640,15 @@ void SetupOsSetting(void)
             break;
         case SettingType::ControllerType:
             *osSetting.setting.controllerType = osSetting.defaultValue.controllerType;
+            break;
+        case SettingType::S32Setting:
+            osSetting.setting.s32Setting->SetValue(osSetting.setting.s32Setting->GetDefault());
+            break;
+        case SettingType::U32Switchable:
+            osSetting.setting.u32Switchable->SetValue(osSetting.setting.u32Switchable->GetDefault());
+            break;
+        case SettingType::S64Switchable:
+            osSetting.setting.s64Switchable->SetValue(osSetting.setting.s64Switchable->GetDefault());
             break;
         default:
             UNIMPLEMENTED();
@@ -640,6 +682,12 @@ void SetupOsSetting(void)
                 if (value.isString())
                 {
                     osSetting.setting.audioMode->SetValue(Settings::ToEnum<Settings::AudioMode>(value.asString()));
+                }
+                break;
+            case SettingType::Language:
+                if (value.isString())
+                {
+                    osSetting.setting.languageIndex->SetValue(Settings::ToEnum<Settings::Language>(value.asString()));
                 }
                 break;
             case SettingType::ConsoleMode:
@@ -696,6 +744,24 @@ void SetupOsSetting(void)
                     *osSetting.setting.controllerType = ParseEnum<InputSettings::ControllerType>(value.asString());
                 }
                 break;
+            case SettingType::S32Setting:
+                if (value.isInt())
+                {
+                    osSetting.setting.s32Setting->SetValue(static_cast<s32>(value.asInt64()));
+                }
+                break;
+            case SettingType::U32Switchable:
+                if (value.isInt())
+                {
+                    osSetting.setting.u32Switchable->SetValue(static_cast<u32>(value.asUInt64()));
+                }
+                break;
+            case SettingType::S64Switchable:
+                if (value.isInt())
+                {
+                    osSetting.setting.s64Switchable->SetValue(static_cast<s64>(value.asInt64()));
+                }
+                break;
             default:
                 UNIMPLEMENTED();
             }
@@ -722,6 +788,10 @@ void SetupOsSetting(void)
         case SettingType::AudioMode:
             g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.audioMode->GetDefault());
             g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.audioMode->GetValue());
+            break;
+        case SettingType::Language:
+            g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.languageIndex->GetDefault());
+            g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.languageIndex->GetValue());
             break;
         case SettingType::ConsoleMode:
             g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.consoleMode->GetDefault());
@@ -750,6 +820,18 @@ void SetupOsSetting(void)
         case SettingType::Float:
             g_settings->SetDefaultFloat(osSetting.identifier, osSetting.defaultValue.floatValue);
             g_settings->SetFloat(osSetting.identifier, *osSetting.setting.floatValue);
+            break;
+        case SettingType::S32Setting:
+            g_settings->SetDefaultInt(osSetting.identifier, osSetting.setting.s32Setting->GetDefault());
+            g_settings->SetInt(osSetting.identifier, osSetting.setting.s32Setting->GetValue());
+            break;
+        case SettingType::U32Switchable:
+            g_settings->SetDefaultInt(osSetting.identifier, static_cast<int32_t>(osSetting.setting.u32Switchable->GetDefault()));
+            g_settings->SetInt(osSetting.identifier, static_cast<int32_t>(osSetting.setting.u32Switchable->GetValue()));
+            break;
+        case SettingType::S64Switchable:
+            g_settings->SetDefaultInt(osSetting.identifier, static_cast<int32_t>(osSetting.setting.s64Switchable->GetDefault()));
+            g_settings->SetInt(osSetting.identifier, static_cast<int32_t>(osSetting.setting.s64Switchable->GetValue()));
             break;
         default:
             UNIMPLEMENTED();
@@ -782,6 +864,12 @@ void SaveOsSettings(void)
             if (osSetting.setting.audioMode->GetValue() != osSetting.setting.audioMode->GetDefault())
             {
                 JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.audioMode->GetValue()));
+            }
+            break;
+        case SettingType::Language:
+            if (osSetting.setting.languageIndex->GetValue() != osSetting.setting.languageIndex->GetDefault())
+            {
+                JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.languageIndex->GetValue()));
             }
             break;
         case SettingType::ConsoleMode:
@@ -844,6 +932,26 @@ void SaveOsSettings(void)
                 JsonSetNestedValue(root, osSetting.json_path, CanonicalizeEnum(*osSetting.setting.controllerType));
             }
             break;
+        case SettingType::S32Setting:
+            if (osSetting.setting.s32Setting->GetValue() != osSetting.setting.s32Setting->GetDefault())
+            {
+                JsonSetNestedValue(root, osSetting.json_path, osSetting.setting.s32Setting->GetValue());
+            }
+            break;
+        case SettingType::U32Switchable:
+            if (osSetting.setting.u32Switchable->GetValue() != osSetting.setting.u32Switchable->GetDefault())
+            {
+                JsonSetNestedValue(root, osSetting.json_path,
+                                   static_cast<int32_t>(osSetting.setting.u32Switchable->GetValue()));
+            }
+            break;
+        case SettingType::S64Switchable:
+            if (osSetting.setting.s64Switchable->GetValue() != osSetting.setting.s64Switchable->GetDefault())
+            {
+                JsonSetNestedValue(root, osSetting.json_path,
+                                   static_cast<int32_t>(osSetting.setting.s64Switchable->GetValue()));
+            }
+            break;
         default:
             UNIMPLEMENTED();
         }
@@ -875,6 +983,14 @@ namespace
         settingType(SettingType::AudioMode)
     {
         setting.audioMode = val;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::Language, true> * val) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::Language)
+    {
+        setting.languageIndex = val;
     }
 
     OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::ConsoleMode> * val) :
@@ -969,5 +1085,29 @@ namespace
     {
         setting.controllerType = val;
         defaultValue.controllerType = defaultValue_;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::Setting<s32> * val) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::S32Setting)
+    {
+        setting.s32Setting = val;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u32> * val) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::U32Switchable)
+    {
+        setting.u32Switchable = val;
+    }
+
+    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<s64, true> * val) :
+        identifier(id),
+        json_path(path),
+        settingType(SettingType::S64Switchable)
+    {
+        setting.s64Switchable = val;
     }
 }

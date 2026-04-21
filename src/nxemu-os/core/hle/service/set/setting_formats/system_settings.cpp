@@ -1,21 +1,20 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "yuzu_common/settings.h"
 #include "core/hle/service/set/setting_formats/system_settings.h"
+#include "os_settings.h"
 
-namespace Service::Set {
+namespace Service::Set
+{
 
-SystemSettings DefaultSystemSettings() {
+SystemSettings DefaultSystemSettings()
+{
     SystemSettings settings{};
 
     settings.version = 0x140000;
     settings.flags = 7;
-
     settings.mii_author_id = Common::UUID::MakeDefault();
-
     settings.color_set_id = ColorSet::BasicWhite;
-
     settings.notification_settings = {
         .flags{0x300},
         .volume = NotificationVolume::High,
@@ -57,14 +56,12 @@ SystemSettings DefaultSystemSettings() {
     settings.bluetooth_enable_flag = true;
     settings.wireless_lan_enable_flag = true;
 
-    const auto language_code =
-        available_language_codes[static_cast<s32>(::Settings::values.language_index.GetValue())];
-    const auto key_code =
-        std::find_if(language_to_layout.cbegin(), language_to_layout.cend(),
-                     [=](const auto& element) { return element.first == language_code; });
+    const auto language_code = available_language_codes[static_cast<s32>(osSettings.language_index.GetValue())];
+    const auto key_code = std::find_if(language_to_layout.cbegin(), language_to_layout.cend(), [=](const auto & element) { return element.first == language_code; });
 
     settings.keyboard_layout = KeyboardLayout::EnglishUs;
-    if (key_code != language_to_layout.end()) {
+    if (key_code != language_to_layout.end())
+    {
         settings.keyboard_layout = key_code->second;
     }
 

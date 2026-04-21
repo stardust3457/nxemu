@@ -1,32 +1,36 @@
 // SPDX-FileCopyrightText: Copyright 2023 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <random>
-#include "yuzu_common/scope_exit.h"
-#include "yuzu_common/settings.h"
-#include "core/core.h"
 #include "core/hle/kernel/k_process.h"
+#include "core/arm/debug.h"
+#include "core/core.h"
 #include "core/hle/kernel/k_scoped_resource_reservation.h"
 #include "core/hle/kernel/k_shared_memory.h"
 #include "core/hle/kernel/k_shared_memory_info.h"
 #include "core/hle/kernel/k_thread_local_page.h"
 #include "core/hle/kernel/k_thread_queue.h"
 #include "core/hle/kernel/k_worker_task_manager.h"
-#include "core/arm/debug.h"
+#include "yuzu_common/scope_exit.h"
+#include "os_settings.h"
+#include <random>
 
-namespace Kernel {
+namespace Kernel
+{
 
-namespace {
+namespace
+{
 
-Result TerminateChildren(KernelCore& kernel, KProcess* process,
-                         const KThread* thread_to_not_terminate) {
+Result TerminateChildren(KernelCore & kernel, KProcess * process,
+                         const KThread * thread_to_not_terminate)
+{
     // Request that all children threads terminate.
     {
         KScopedLightLock proc_lk(process->GetListLock());
         KScopedSchedulerLock sl(kernel);
 
         if (thread_to_not_terminate != nullptr &&
-            process->GetPinnedThread(GetCurrentCoreId(kernel)) == thread_to_not_terminate) {
+            process->GetPinnedThread(GetCurrentCoreId(kernel)) == thread_to_not_terminate)
+        {
             // NOTE: Here Nintendo unpins the current thread instead of the thread_to_not_terminate.
             // This is valid because the only caller which uses non-nullptr as argument uses
             // GetCurrentThreadPointer(), but it's still notable because it seems incorrect at
@@ -34,10 +38,13 @@ Result TerminateChildren(KernelCore& kernel, KProcess* process,
             process->UnpinCurrentThread();
         }
 
-        auto& thread_list = process->GetThreadList();
-        for (auto it = thread_list.begin(); it != thread_list.end(); ++it) {
-            if (KThread* thread = std::addressof(*it); thread != thread_to_not_terminate) {
-                if (thread->GetState() != ThreadState::Terminated) {
+        auto & thread_list = process->GetThreadList();
+        for (auto it = thread_list.begin(); it != thread_list.end(); ++it)
+        {
+            if (KThread * thread = std::addressof(*it); thread != thread_to_not_terminate)
+            {
+                if (thread->GetState() != ThreadState::Terminated)
+                {
                     thread->RequestTerminate();
                 }
             }
@@ -45,17 +52,22 @@ Result TerminateChildren(KernelCore& kernel, KProcess* process,
     }
 
     // Wait for all children threads to terminate.
-    while (true) {
+    while (true)
+    {
         // Get the next child.
-        KThread* cur_child = nullptr;
+        KThread * cur_child = nullptr;
         {
             KScopedLightLock proc_lk(process->GetListLock());
 
-            auto& thread_list = process->GetThreadList();
-            for (auto it = thread_list.begin(); it != thread_list.end(); ++it) {
-                if (KThread* thread = std::addressof(*it); thread != thread_to_not_terminate) {
-                    if (thread->GetState() != ThreadState::Terminated) {
-                        if (thread->Open()) {
+            auto & thread_list = process->GetThreadList();
+            for (auto it = thread_list.begin(); it != thread_list.end(); ++it)
+            {
+                if (KThread * thread = std::addressof(*it); thread != thread_to_not_terminate)
+                {
+                    if (thread->GetState() != ThreadState::Terminated)
+                    {
+                        if (thread->Open())
+                        {
                             cur_child = thread;
                             break;
                         }
@@ -65,17 +77,20 @@ Result TerminateChildren(KernelCore& kernel, KProcess* process,
         }
 
         // If we didn't find any non-terminated children, we're done.
-        if (cur_child == nullptr) {
+        if (cur_child == nullptr)
+        {
             break;
         }
 
         // Terminate and close the thread.
-        SCOPE_EXIT {
+        SCOPE_EXIT
+        {
             cur_child->Close();
         };
 
         if (const Result terminate_result = cur_child->Terminate();
-            ResultTerminationRequested == terminate_result) {
+            ResultTerminationRequested == terminate_result)
+        {
             R_THROW(terminate_result);
         }
     }
@@ -83,15 +98,19 @@ Result TerminateChildren(KernelCore& kernel, KProcess* process,
     R_SUCCEED();
 }
 
-class ThreadQueueImplForKProcessEnterUserException final : public KThreadQueue {
+class ThreadQueueImplForKProcessEnterUserException final : public KThreadQueue
+{
 private:
-    KThread** m_exception_thread;
+    KThread ** m_exception_thread;
 
 public:
-    explicit ThreadQueueImplForKProcessEnterUserException(KernelCore& kernel, KThread** t)
-        : KThreadQueue(kernel), m_exception_thread(t) {}
+    explicit ThreadQueueImplForKProcessEnterUserException(KernelCore & kernel, KThread ** t) :
+        KThreadQueue(kernel), m_exception_thread(t)
+    {
+    }
 
-    virtual void EndWait(KThread* waiting_thread, Result wait_result) override {
+    virtual void EndWait(KThread * waiting_thread, Result wait_result) override
+    {
         // Set the exception thread.
         *m_exception_thread = waiting_thread;
 
@@ -99,8 +118,9 @@ public:
         KThreadQueue::EndWait(waiting_thread, wait_result);
     }
 
-    virtual void CancelWait(KThread* waiting_thread, Result wait_result,
-                            bool cancel_timer_task) override {
+    virtual void CancelWait(KThread * waiting_thread, Result wait_result,
+                            bool cancel_timer_task) override
+    {
         // Remove the thread as a waiter on its mutex owner.
         waiting_thread->GetLockOwner()->RemoveWaiter(waiting_thread);
 
@@ -109,9 +129,9 @@ public:
     }
 };
 
-void GenerateRandom(std::span<u64> out_random) {
-    std::mt19937 rng(Settings::values.rng_seed_enabled ? Settings::values.rng_seed.GetValue()
-                                                       : static_cast<u32>(std::time(nullptr)));
+void GenerateRandom(std::span<u64> out_random)
+{
+    std::mt19937 rng(osSettings.rng_seed_enabled ? osSettings.rng_seed.GetValue() : static_cast<u32>(std::time(nullptr)));
     std::uniform_int_distribution<u64> distribution;
     std::generate(out_random.begin(), out_random.end(), [&] { return distribution(rng); });
 }
@@ -184,10 +204,12 @@ void KProcess::Finalize()
     KSynchronizationObject::Finalize();
 }
 
-Result KProcess::Initialize(const Svc::CreateProcessParameter& params, KResourceLimit* res_limit,
-                            bool is_real) {
+Result KProcess::Initialize(const Svc::CreateProcessParameter & params, KResourceLimit * res_limit,
+                            bool is_real)
+{
     // TODO: remove this special case
-    if (is_real) {
+    if (is_real)
+    {
         // Create and clear the process local region.
         R_TRY(this->CreateThreadLocalRegion(std::addressof(m_plr_address)));
         this->GetCoreMemory().ZeroBlock(m_plr_address, Svc::ThreadLocalRegionSize);
@@ -211,7 +233,8 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, KResource
     m_is_application = True(params.flags & Svc::CreateProcessFlag::IsApplication);
 
     // Set thread fields.
-    for (size_t i = 0; i < Hardware::NUM_CPU_CORES; i++) {
+    for (size_t i = 0; i < Hardware::NUM_CPU_CORES; i++)
+    {
         m_running_threads[i] = nullptr;
         m_pinned_threads[i] = nullptr;
         m_running_thread_idle_counts[i] = 0;
@@ -219,7 +242,8 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, KResource
     }
 
     // Set max memory based on address space type.
-    switch ((params.flags & Svc::CreateProcessFlag::AddressSpaceMask)) {
+    switch ((params.flags & Svc::CreateProcessFlag::AddressSpaceMask))
+    {
     case Svc::CreateProcessFlag::AddressSpace32Bit:
     case Svc::CreateProcessFlag::AddressSpace64BitDeprecated:
     case Svc::CreateProcessFlag::AddressSpace64Bit:
@@ -260,9 +284,10 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, KResource
     R_SUCCEED();
 }
 
-Result KProcess::Initialize(const Svc::CreateProcessParameter& params, const KPageGroup& pg,
-                            std::span<const u32> caps, KResourceLimit* res_limit,
-                            KMemoryManager::Pool pool, bool immortal) {
+Result KProcess::Initialize(const Svc::CreateProcessParameter & params, const KPageGroup & pg,
+                            std::span<const u32> caps, KResourceLimit * res_limit,
+                            KMemoryManager::Pool pool, bool immortal)
+{
     ASSERT(res_limit != nullptr);
     ASSERT((params.code_num_pages * PageSize) / PageSize ==
            static_cast<size_t>(params.code_num_pages));
@@ -274,12 +299,14 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, const KPa
 
     // Setup our system resource.
     if (const size_t system_resource_num_pages = params.system_resource_num_pages;
-        system_resource_num_pages != 0) {
+        system_resource_num_pages != 0)
+    {
         // Create a secure system resource.
-        KSecureSystemResource* secure_resource = KSecureSystemResource::Create(m_kernel);
+        KSecureSystemResource * secure_resource = KSecureSystemResource::Create(m_kernel);
         R_UNLESS(secure_resource != nullptr, ResultOutOfResource);
 
-        ON_RESULT_FAILURE {
+        ON_RESULT_FAILURE
+        {
             secure_resource->Close();
         };
 
@@ -289,7 +316,9 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, const KPa
 
         // Set our system resource.
         m_system_resource = secure_resource;
-    } else {
+    }
+    else
+    {
         // Use the system-wide system resource.
         const bool is_app = True(params.flags & Svc::CreateProcessFlag::IsApplication);
         m_system_resource = std::addressof(is_app ? m_kernel.GetAppSystemResource()
@@ -302,7 +331,8 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, const KPa
     }
 
     // Ensure we clean up our secure resource, if we fail.
-    ON_RESULT_FAILURE {
+    ON_RESULT_FAILURE
+    {
         m_system_resource->Close();
         m_system_resource = nullptr;
     };
@@ -317,7 +347,8 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, const KPa
                                       params.code_address, params.code_num_pages * PageSize,
                                       m_system_resource, res_limit, m_memory, 0));
     }
-    ON_RESULT_FAILURE_2 {
+    ON_RESULT_FAILURE_2
+    {
         m_page_table.Finalize();
     };
 
@@ -349,9 +380,10 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params, const KPa
     R_SUCCEED();
 }
 
-Result KProcess::Initialize(const Svc::CreateProcessParameter& params,
-                            std::span<const u32> user_caps, KResourceLimit* res_limit,
-                            KMemoryManager::Pool pool, KProcessAddress aslr_space_start) {
+Result KProcess::Initialize(const Svc::CreateProcessParameter & params,
+                            std::span<const u32> user_caps, KResourceLimit * res_limit,
+                            KMemoryManager::Pool pool, KProcessAddress aslr_space_start)
+{
     ASSERT(res_limit != nullptr);
 
     // Set members.
@@ -371,12 +403,14 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params,
     R_UNLESS(memory_reservation.Succeeded(), ResultLimitReached);
 
     // Setup our system resource.
-    if (system_resource_num_pages != 0) {
+    if (system_resource_num_pages != 0)
+    {
         // Create a secure system resource.
-        KSecureSystemResource* secure_resource = KSecureSystemResource::Create(m_kernel);
+        KSecureSystemResource * secure_resource = KSecureSystemResource::Create(m_kernel);
         R_UNLESS(secure_resource != nullptr, ResultOutOfResource);
 
-        ON_RESULT_FAILURE {
+        ON_RESULT_FAILURE
+        {
             secure_resource->Close();
         };
 
@@ -385,8 +419,9 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params,
 
         // Set our system resource.
         m_system_resource = secure_resource;
-
-    } else {
+    }
+    else
+    {
         // Use the system-wide system resource.
         const bool is_app = True(params.flags & Svc::CreateProcessFlag::IsApplication);
         m_system_resource = std::addressof(is_app ? m_kernel.GetAppSystemResource()
@@ -399,7 +434,8 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params,
     }
 
     // Ensure we clean up our secure resource, if we fail.
-    ON_RESULT_FAILURE {
+    ON_RESULT_FAILURE
+    {
         m_system_resource->Close();
         m_system_resource = nullptr;
     };
@@ -414,7 +450,8 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params,
                                       params.code_address, code_size, m_system_resource, res_limit,
                                       m_memory, aslr_space_start));
     }
-    ON_RESULT_FAILURE_2 {
+    ON_RESULT_FAILURE_2
+    {
         m_page_table.Finalize();
     };
 
@@ -440,7 +477,8 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params,
 
     // If we should optimize memory allocations, do so.
     if (m_system_resource->IsSecureResource() &&
-        True(params.flags & Svc::CreateProcessFlag::OptimizeMemoryAllocation)) {
+        True(params.flags & Svc::CreateProcessFlag::OptimizeMemoryAllocation))
+    {
         R_TRY(m_kernel.MemoryManager().InitializeOptimizedMemory(m_process_id, pool));
     }
 
@@ -452,12 +490,14 @@ Result KProcess::Initialize(const Svc::CreateProcessParameter& params,
     R_SUCCEED();
 }
 
-void KProcess::DoWorkerTaskImpl() {
+void KProcess::DoWorkerTaskImpl()
+{
     // Terminate child threads.
     TerminateChildren(m_kernel, this, nullptr);
 
     // Finalize the handle table, if we're not immortal.
-    if (!m_is_immortal && m_is_handle_table_initialized) {
+    if (!m_is_immortal && m_is_handle_table_initialized)
+    {
         this->FinalizeHandleTable();
     }
 
@@ -465,10 +505,13 @@ void KProcess::DoWorkerTaskImpl() {
     this->FinishTermination();
 }
 
-Result KProcess::StartTermination() {
+Result KProcess::StartTermination()
+{
     // Finalize the handle table when we're done, if the process isn't immortal.
-    SCOPE_EXIT {
-        if (!m_is_immortal) {
+    SCOPE_EXIT
+    {
+        if (!m_is_immortal)
+        {
             this->FinalizeHandleTable();
         }
     };
@@ -477,11 +520,14 @@ Result KProcess::StartTermination() {
     R_RETURN(TerminateChildren(m_kernel, this, GetCurrentThreadPointer(m_kernel)));
 }
 
-void KProcess::FinishTermination() {
+void KProcess::FinishTermination()
+{
     // Only allow termination to occur if the process isn't immortal.
-    if (!m_is_immortal) {
+    if (!m_is_immortal)
+    {
         // Release resource limit hint.
-        if (m_resource_limit != nullptr) {
+        if (m_resource_limit != nullptr)
+        {
             m_memory_release_hint = this->GetUsedNonSystemUserPhysicalMemorySize();
             m_resource_limit->Release(Svc::LimitableResource::PhysicalMemoryMax, 0,
                                       m_memory_release_hint);
@@ -498,7 +544,8 @@ void KProcess::FinishTermination() {
     }
 }
 
-void KProcess::Exit() {
+void KProcess::Exit()
+{
     // Determine whether we need to start terminating
     bool needs_terminate = false;
     {
@@ -510,14 +557,16 @@ void KProcess::Exit() {
         ASSERT(m_state != State::Crashed);
         ASSERT(m_state != State::Terminated);
         if (m_state == State::Running || m_state == State::RunningAttached ||
-            m_state == State::DebugBreak) {
+            m_state == State::DebugBreak)
+        {
             this->ChangeState(State::Terminating);
             needs_terminate = true;
         }
     }
 
     // If we need to start termination, do so.
-    if (needs_terminate) {
+    if (needs_terminate)
+    {
         this->StartTermination();
 
         // Register the process as a work task.
@@ -528,7 +577,8 @@ void KProcess::Exit() {
     GetCurrentThread(m_kernel).Exit();
 }
 
-Result KProcess::Terminate() {
+Result KProcess::Terminate()
+{
     // Determine whether we need to start terminating.
     bool needs_terminate = false;
     {
@@ -541,19 +591,24 @@ Result KProcess::Terminate() {
         KScopedSchedulerLock sl(m_kernel);
 
         if (m_state == State::Running || m_state == State::RunningAttached ||
-            m_state == State::Crashed || m_state == State::DebugBreak) {
+            m_state == State::Crashed || m_state == State::DebugBreak)
+        {
             this->ChangeState(State::Terminating);
             needs_terminate = true;
         }
     }
 
     // If we need to terminate, do so.
-    if (needs_terminate) {
+    if (needs_terminate)
+    {
         // Start termination.
-        if (R_SUCCEEDED(this->StartTermination())) {
+        if (R_SUCCEEDED(this->StartTermination()))
+        {
             // Finish termination.
             this->FinishTermination();
-        } else {
+        }
+        else
+        {
             // Register the process as a work task.
             m_kernel.WorkerTaskManager().AddTask(m_kernel, KWorkerTaskManager::WorkerType::Exit,
                                                  this);
@@ -563,21 +618,25 @@ Result KProcess::Terminate() {
     R_SUCCEED();
 }
 
-Result KProcess::AddSharedMemory(KSharedMemory* shmem, KProcessAddress address, size_t size) {
+Result KProcess::AddSharedMemory(KSharedMemory * shmem, KProcessAddress address, size_t size)
+{
     // Lock ourselves, to prevent concurrent access.
     KScopedLightLock lk(m_state_lock);
 
     // Try to find an existing info for the memory.
-    KSharedMemoryInfo* info = nullptr;
-    for (auto it = m_shared_memory_list.begin(); it != m_shared_memory_list.end(); ++it) {
-        if (it->GetSharedMemory() == shmem) {
+    KSharedMemoryInfo * info = nullptr;
+    for (auto it = m_shared_memory_list.begin(); it != m_shared_memory_list.end(); ++it)
+    {
+        if (it->GetSharedMemory() == shmem)
+        {
             info = std::addressof(*it);
             break;
         }
     }
 
     // If we didn't find an info, create one.
-    if (info == nullptr) {
+    if (info == nullptr)
+    {
         // Allocate a new info.
         info = KSharedMemoryInfo::Allocate(m_kernel);
         R_UNLESS(info != nullptr, ResultOutOfResource);
@@ -594,15 +653,18 @@ Result KProcess::AddSharedMemory(KSharedMemory* shmem, KProcessAddress address, 
     R_SUCCEED();
 }
 
-void KProcess::RemoveSharedMemory(KSharedMemory* shmem, KProcessAddress address, size_t size) {
+void KProcess::RemoveSharedMemory(KSharedMemory * shmem, KProcessAddress address, size_t size)
+{
     // Lock ourselves, to prevent concurrent access.
     KScopedLightLock lk(m_state_lock);
 
     // Find an existing info for the memory.
-    KSharedMemoryInfo* info = nullptr;
+    KSharedMemoryInfo * info = nullptr;
     auto it = m_shared_memory_list.begin();
-    for (; it != m_shared_memory_list.end(); ++it) {
-        if (it->GetSharedMemory() == shmem) {
+    for (; it != m_shared_memory_list.end(); ++it)
+    {
+        if (it->GetSharedMemory() == shmem)
+        {
             info = std::addressof(*it);
             break;
         }
@@ -610,7 +672,8 @@ void KProcess::RemoveSharedMemory(KSharedMemory* shmem, KProcessAddress address,
     ASSERT(info != nullptr);
 
     // Close a reference to the info and its memory.
-    if (info->Close()) {
+    if (info->Close())
+    {
         m_shared_memory_list.erase(it);
         KSharedMemoryInfo::Free(m_kernel, info);
     }
@@ -618,19 +681,22 @@ void KProcess::RemoveSharedMemory(KSharedMemory* shmem, KProcessAddress address,
     shmem->Close();
 }
 
-Result KProcess::CreateThreadLocalRegion(KProcessAddress* out) {
-    KThreadLocalPage* tlp = nullptr;
+Result KProcess::CreateThreadLocalRegion(KProcessAddress * out)
+{
+    KThreadLocalPage * tlp = nullptr;
     KProcessAddress tlr = 0;
 
     // See if we can get a region from a partially used TLP.
     {
         KScopedSchedulerLock sl(m_kernel);
 
-        if (auto it = m_partially_used_tlp_tree.begin(); it != m_partially_used_tlp_tree.end()) {
+        if (auto it = m_partially_used_tlp_tree.begin(); it != m_partially_used_tlp_tree.end())
+        {
             tlr = it->Reserve();
             ASSERT(tlr != 0);
 
-            if (it->IsAllUsed()) {
+            if (it->IsAllUsed())
+            {
                 tlp = std::addressof(*it);
                 m_partially_used_tlp_tree.erase(it);
                 m_fully_used_tlp_tree.insert(*tlp);
@@ -644,7 +710,8 @@ Result KProcess::CreateThreadLocalRegion(KProcessAddress* out) {
     // Allocate a new page.
     tlp = KThreadLocalPage::Allocate(m_kernel);
     R_UNLESS(tlp != nullptr, ResultOutOfMemory);
-    ON_RESULT_FAILURE {
+    ON_RESULT_FAILURE
+    {
         KThreadLocalPage::Free(m_kernel, tlp);
     };
 
@@ -658,9 +725,12 @@ Result KProcess::CreateThreadLocalRegion(KProcessAddress* out) {
     // Insert into our tree.
     {
         KScopedSchedulerLock sl(m_kernel);
-        if (tlp->IsAllUsed()) {
+        if (tlp->IsAllUsed())
+        {
             m_fully_used_tlp_tree.insert(*tlp);
-        } else {
+        }
+        else
+        {
             m_partially_used_tlp_tree.insert(*tlp);
         }
     }
@@ -670,8 +740,9 @@ Result KProcess::CreateThreadLocalRegion(KProcessAddress* out) {
     R_SUCCEED();
 }
 
-Result KProcess::DeleteThreadLocalRegion(KProcessAddress addr) {
-    KThreadLocalPage* page_to_free = nullptr;
+Result KProcess::DeleteThreadLocalRegion(KProcessAddress addr)
+{
+    KThreadLocalPage * page_to_free = nullptr;
 
     // Release the region.
     {
@@ -679,7 +750,8 @@ Result KProcess::DeleteThreadLocalRegion(KProcessAddress addr) {
 
         // Try to find the page in the partially used list.
         auto it = m_partially_used_tlp_tree.find_key(Common::AlignDown(GetInteger(addr), PageSize));
-        if (it == m_partially_used_tlp_tree.end()) {
+        if (it == m_partially_used_tlp_tree.end())
+        {
             // If we don't find it, it has to be in the fully used list.
             it = m_fully_used_tlp_tree.find_key(Common::AlignDown(GetInteger(addr), PageSize));
             R_UNLESS(it != m_fully_used_tlp_tree.end(), ResultInvalidAddress);
@@ -688,20 +760,26 @@ Result KProcess::DeleteThreadLocalRegion(KProcessAddress addr) {
             it->Release(addr);
 
             // Move the page out of the fully used list.
-            KThreadLocalPage* tlp = std::addressof(*it);
+            KThreadLocalPage * tlp = std::addressof(*it);
             m_fully_used_tlp_tree.erase(it);
-            if (tlp->IsAllFree()) {
+            if (tlp->IsAllFree())
+            {
                 page_to_free = tlp;
-            } else {
+            }
+            else
+            {
                 m_partially_used_tlp_tree.insert(*tlp);
             }
-        } else {
+        }
+        else
+        {
             // Release the region.
             it->Release(addr);
 
             // Handle the all-free case.
-            KThreadLocalPage* tlp = std::addressof(*it);
-            if (tlp->IsAllFree()) {
+            KThreadLocalPage * tlp = std::addressof(*it);
+            if (tlp->IsAllFree())
+            {
                 m_partially_used_tlp_tree.erase(it);
                 page_to_free = tlp;
             }
@@ -709,7 +787,8 @@ Result KProcess::DeleteThreadLocalRegion(KProcessAddress addr) {
     }
 
     // If we should free the page it was in, do so.
-    if (page_to_free != nullptr) {
+    if (page_to_free != nullptr)
+    {
         page_to_free->Finalize();
 
         KThreadLocalPage::Free(m_kernel, page_to_free);
@@ -718,55 +797,72 @@ Result KProcess::DeleteThreadLocalRegion(KProcessAddress addr) {
     R_SUCCEED();
 }
 
-bool KProcess::ReserveResource(Svc::LimitableResource which, s64 value) {
-    if (KResourceLimit* rl = this->GetResourceLimit(); rl != nullptr) {
+bool KProcess::ReserveResource(Svc::LimitableResource which, s64 value)
+{
+    if (KResourceLimit * rl = this->GetResourceLimit(); rl != nullptr)
+    {
         return rl->Reserve(which, value);
-    } else {
+    }
+    else
+    {
         return true;
     }
 }
 
-bool KProcess::ReserveResource(Svc::LimitableResource which, s64 value, s64 timeout) {
-    if (KResourceLimit* rl = this->GetResourceLimit(); rl != nullptr) {
+bool KProcess::ReserveResource(Svc::LimitableResource which, s64 value, s64 timeout)
+{
+    if (KResourceLimit * rl = this->GetResourceLimit(); rl != nullptr)
+    {
         return rl->Reserve(which, value, timeout);
-    } else {
+    }
+    else
+    {
         return true;
     }
 }
 
-void KProcess::ReleaseResource(Svc::LimitableResource which, s64 value) {
-    if (KResourceLimit* rl = this->GetResourceLimit(); rl != nullptr) {
+void KProcess::ReleaseResource(Svc::LimitableResource which, s64 value)
+{
+    if (KResourceLimit * rl = this->GetResourceLimit(); rl != nullptr)
+    {
         rl->Release(which, value);
     }
 }
 
-void KProcess::ReleaseResource(Svc::LimitableResource which, s64 value, s64 hint) {
-    if (KResourceLimit* rl = this->GetResourceLimit(); rl != nullptr) {
+void KProcess::ReleaseResource(Svc::LimitableResource which, s64 value, s64 hint)
+{
+    if (KResourceLimit * rl = this->GetResourceLimit(); rl != nullptr)
+    {
         rl->Release(which, value, hint);
     }
 }
 
-void KProcess::IncrementRunningThreadCount() {
+void KProcess::IncrementRunningThreadCount()
+{
     ASSERT(m_num_running_threads.load() >= 0);
 
     ++m_num_running_threads;
 }
 
-void KProcess::DecrementRunningThreadCount() {
+void KProcess::DecrementRunningThreadCount()
+{
     ASSERT(m_num_running_threads.load() > 0);
 
-    if (const auto prev = m_num_running_threads--; prev == 1) {
+    if (const auto prev = m_num_running_threads--; prev == 1)
+    {
         this->Terminate();
     }
 }
 
-bool KProcess::EnterUserException() {
+bool KProcess::EnterUserException()
+{
     // Get the current thread.
-    KThread* cur_thread = GetCurrentThreadPointer(m_kernel);
+    KThread * cur_thread = GetCurrentThreadPointer(m_kernel);
     ASSERT(this == cur_thread->GetOwnerKProcess());
 
     // Check that we haven't already claimed the exception thread.
-    if (m_exception_thread == cur_thread) {
+    if (m_exception_thread == cur_thread)
+    {
         return false;
     }
 
@@ -780,12 +876,14 @@ bool KProcess::EnterUserException() {
         KScopedSchedulerLock sl(m_kernel);
 
         // Check that we're not terminating.
-        if (cur_thread->IsTerminationRequested()) {
+        if (cur_thread->IsTerminationRequested())
+        {
             return false;
         }
 
         // If we don't have an exception thread, we can just claim it directly.
-        if (m_exception_thread == nullptr) {
+        if (m_exception_thread == nullptr)
+        {
             m_exception_thread = cur_thread;
             KScheduler::SetSchedulerUpdateNeeded(m_kernel);
             return true;
@@ -806,46 +904,55 @@ bool KProcess::EnterUserException() {
     return ResultTerminationRequested != cur_thread->GetWaitResult();
 }
 
-bool KProcess::LeaveUserException() {
+bool KProcess::LeaveUserException()
+{
     return this->ReleaseUserException(GetCurrentThreadPointer(m_kernel));
 }
 
-bool KProcess::ReleaseUserException(KThread* thread) {
+bool KProcess::ReleaseUserException(KThread * thread)
+{
     KScopedSchedulerLock sl(m_kernel);
 
-    if (m_exception_thread == thread) {
+    if (m_exception_thread == thread)
+    {
         m_exception_thread = nullptr;
 
         // Remove waiter thread.
         bool has_waiters;
-        if (KThread* next = thread->RemoveKernelWaiterByKey(
+        if (KThread * next = thread->RemoveKernelWaiterByKey(
                 std::addressof(has_waiters),
                 reinterpret_cast<uintptr_t>(std::addressof(m_exception_thread)) | 1);
-            next != nullptr) {
+            next != nullptr)
+        {
             next->EndWait(ResultSuccess);
         }
 
         KScheduler::SetSchedulerUpdateNeeded(m_kernel);
 
         return true;
-    } else {
+    }
+    else
+    {
         return false;
     }
 }
 
-void KProcess::RegisterThread(KThread* thread) {
+void KProcess::RegisterThread(KThread * thread)
+{
     KScopedLightLock lk(m_list_lock);
 
     m_thread_list.push_back(*thread);
 }
 
-void KProcess::UnregisterThread(KThread* thread) {
+void KProcess::UnregisterThread(KThread * thread)
+{
     KScopedLightLock lk(m_list_lock);
 
     m_thread_list.erase(m_thread_list.iterator_to(*thread));
 }
 
-size_t KProcess::GetUsedUserPhysicalMemorySize() const {
+size_t KProcess::GetUsedUserPhysicalMemorySize() const
+{
     const size_t norm_size = m_page_table.GetNormalMemorySize();
     const size_t other_size = m_code_size + m_main_thread_stack_size;
     const size_t sec_size = this->GetRequiredSecureMemorySizeNonDefault();
@@ -853,7 +960,8 @@ size_t KProcess::GetUsedUserPhysicalMemorySize() const {
     return norm_size + other_size + sec_size;
 }
 
-size_t KProcess::GetTotalUserPhysicalMemorySize() const {
+size_t KProcess::GetTotalUserPhysicalMemorySize() const
+{
     // Get the amount of free and used size.
     const size_t free_size =
         m_resource_limit->GetFreeValue(Svc::LimitableResource::PhysicalMemoryMax);
@@ -869,21 +977,26 @@ size_t KProcess::GetTotalUserPhysicalMemorySize() const {
 
     // NOTE: These function calls will recalculate, introducing a race...it is unclear why Nintendo
     // does it this way.
-    if (used_size + free_size > max_size) {
+    if (used_size + free_size > max_size)
+    {
         return max_size;
-    } else {
+    }
+    else
+    {
         return free_size + this->GetUsedUserPhysicalMemorySize();
     }
 }
 
-size_t KProcess::GetUsedNonSystemUserPhysicalMemorySize() const {
+size_t KProcess::GetUsedNonSystemUserPhysicalMemorySize() const
+{
     const size_t norm_size = m_page_table.GetNormalMemorySize();
     const size_t other_size = m_code_size + m_main_thread_stack_size;
 
     return norm_size + other_size;
 }
 
-size_t KProcess::GetTotalNonSystemUserPhysicalMemorySize() const {
+size_t KProcess::GetTotalNonSystemUserPhysicalMemorySize() const
+{
     // Get the amount of free and used size.
     const size_t free_size =
         m_resource_limit->GetFreeValue(Svc::LimitableResource::PhysicalMemoryMax);
@@ -899,14 +1012,18 @@ size_t KProcess::GetTotalNonSystemUserPhysicalMemorySize() const {
 
     // NOTE: These function calls will recalculate, introducing a race...it is unclear why Nintendo
     // does it this way.
-    if (used_size + free_size > max_size) {
+    if (used_size + free_size > max_size)
+    {
         return max_size - this->GetRequiredSecureMemorySizeNonDefault();
-    } else {
+    }
+    else
+    {
         return free_size + this->GetUsedNonSystemUserPhysicalMemorySize();
     }
 }
 
-Result KProcess::Run(s32 priority, size_t stack_size) {
+Result KProcess::Run(s32 priority, size_t stack_size)
+{
     // Lock ourselves, to prevent concurrent access.
     KScopedLightLock lk(m_state_lock);
 
@@ -933,7 +1050,8 @@ Result KProcess::Run(s32 priority, size_t stack_size) {
 
     // Allocate and map our stack.
     KProcessAddress stack_top = 0;
-    if (stack_size) {
+    if (stack_size)
+    {
         KProcessAddress stack_bottom;
         R_TRY(m_page_table.MapPages(std::addressof(stack_bottom), stack_size / PageSize,
                                     KMemoryState::Stack, KMemoryPermission::UserReadWrite));
@@ -943,8 +1061,10 @@ Result KProcess::Run(s32 priority, size_t stack_size) {
     }
 
     // Ensure our stack is safe to clean up on exit.
-    ON_RESULT_FAILURE {
-        if (m_main_thread_stack_size) {
+    ON_RESULT_FAILURE
+    {
+        if (m_main_thread_stack_size)
+        {
             ASSERT(R_SUCCEEDED(m_page_table.UnmapPages(stack_top - m_main_thread_stack_size,
                                                        m_main_thread_stack_size / PageSize,
                                                        KMemoryState::Stack)));
@@ -958,14 +1078,16 @@ Result KProcess::Run(s32 priority, size_t stack_size) {
 
     // Initialize our handle table.
     R_TRY(this->InitializeHandleTable(m_capabilities.GetHandleTableSize()));
-    ON_RESULT_FAILURE_2 {
+    ON_RESULT_FAILURE_2
+    {
         this->FinalizeHandleTable();
     };
 
     // Create a new thread for the process.
-    KThread* main_thread = KThread::Create(m_kernel);
+    KThread * main_thread = KThread::Create(m_kernel);
     R_UNLESS(main_thread != nullptr, ResultOutOfResource);
-    SCOPE_EXIT {
+    SCOPE_EXIT
+    {
         main_thread->Close();
     };
 
@@ -987,12 +1109,14 @@ Result KProcess::Run(s32 priority, size_t stack_size) {
 
     // Update our state.
     this->ChangeState((state == State::Created) ? State::Running : State::RunningAttached);
-    ON_RESULT_FAILURE_2 {
+    ON_RESULT_FAILURE_2
+    {
         this->ChangeState(state);
     };
 
     // Suspend for debug, if we should.
-    if (m_kernel.System().DebuggerEnabled()) {
+    if (m_kernel.System().DebuggerEnabled())
+    {
         main_thread->RequestSuspend(SuspendType::Debug);
     }
 
@@ -1008,7 +1132,8 @@ Result KProcess::Run(s32 priority, size_t stack_size) {
     R_SUCCEED();
 }
 
-Result KProcess::Reset() {
+Result KProcess::Reset()
+{
     // Lock the process and the scheduler.
     KScopedLightLock lk(m_state_lock);
     KScopedSchedulerLock sl(m_kernel);
@@ -1022,7 +1147,8 @@ Result KProcess::Reset() {
     R_SUCCEED();
 }
 
-Result KProcess::SetActivity(Svc::ProcessActivity activity) {
+Result KProcess::SetActivity(Svc::ProcessActivity activity)
+{
     // Lock ourselves and the scheduler.
     KScopedLightLock lk(m_state_lock);
     KScopedLightLock list_lk(m_list_lock);
@@ -1033,19 +1159,23 @@ Result KProcess::SetActivity(Svc::ProcessActivity activity) {
     R_UNLESS(m_state != State::Terminated, ResultInvalidState);
 
     // Either pause or resume.
-    if (activity == Svc::ProcessActivity::Paused) {
+    if (activity == Svc::ProcessActivity::Paused)
+    {
         // Verify that we're not suspended.
         R_UNLESS(!m_is_suspended, ResultInvalidState);
 
         // Suspend all threads.
         auto end = this->GetThreadList().end();
-        for (auto it = this->GetThreadList().begin(); it != end; ++it) {
+        for (auto it = this->GetThreadList().begin(); it != end; ++it)
+        {
             it->RequestSuspend(SuspendType::Process);
         }
 
         // Set ourselves as suspended.
         this->SetSuspended(true);
-    } else {
+    }
+    else
+    {
         ASSERT(activity == Svc::ProcessActivity::Runnable);
 
         // Verify that we're suspended.
@@ -1053,7 +1183,8 @@ Result KProcess::SetActivity(Svc::ProcessActivity activity) {
 
         // Resume all threads.
         auto end = this->GetThreadList().end();
-        for (auto it = this->GetThreadList().begin(); it != end; ++it) {
+        for (auto it = this->GetThreadList().begin(); it != end; ++it)
+        {
             it->Resume(SuspendType::Process);
         }
 
@@ -1064,15 +1195,17 @@ Result KProcess::SetActivity(Svc::ProcessActivity activity) {
     R_SUCCEED();
 }
 
-void KProcess::PinCurrentThread() {
+void KProcess::PinCurrentThread()
+{
     ASSERT(KScheduler::IsSchedulerLockedByCurrentThread(m_kernel));
 
     // Get the current thread.
     const s32 core_id = GetCurrentCoreId(m_kernel);
-    KThread* cur_thread = GetCurrentThreadPointer(m_kernel);
+    KThread * cur_thread = GetCurrentThreadPointer(m_kernel);
 
     // If the thread isn't terminated, pin it.
-    if (!cur_thread->IsTerminationRequested()) {
+    if (!cur_thread->IsTerminationRequested())
+    {
         // Pin it.
         this->PinThread(core_id, cur_thread);
         cur_thread->Pin(core_id);
@@ -1082,12 +1215,13 @@ void KProcess::PinCurrentThread() {
     }
 }
 
-void KProcess::UnpinCurrentThread() {
+void KProcess::UnpinCurrentThread()
+{
     ASSERT(KScheduler::IsSchedulerLockedByCurrentThread(m_kernel));
 
     // Get the current thread.
     const s32 core_id = GetCurrentCoreId(m_kernel);
-    KThread* cur_thread = GetCurrentThreadPointer(m_kernel);
+    KThread * cur_thread = GetCurrentThreadPointer(m_kernel);
 
     // Unpin it.
     cur_thread->Unpin();
@@ -1097,7 +1231,8 @@ void KProcess::UnpinCurrentThread() {
     KScheduler::SetSchedulerUpdateNeeded(m_kernel);
 }
 
-void KProcess::UnpinThread(KThread* thread) {
+void KProcess::UnpinThread(KThread * thread)
+{
     ASSERT(KScheduler::IsSchedulerLockedByCurrentThread(m_kernel));
 
     // Get the thread's core id.
@@ -1111,7 +1246,7 @@ void KProcess::UnpinThread(KThread* thread) {
     KScheduler::SetSchedulerUpdateNeeded(m_kernel);
 }
 
-Result KProcess::GetThreadList(s32* out_num_threads, KProcessAddress out_thread_ids, s32 max_out_count)
+Result KProcess::GetThreadList(s32 * out_num_threads, KProcessAddress out_thread_ids, s32 max_out_count)
 {
     auto & memory = this->GetCoreMemory();
 
@@ -1121,11 +1256,13 @@ Result KProcess::GetThreadList(s32* out_num_threads, KProcessAddress out_thread_
     // Iterate over the list.
     s32 count = 0;
     auto end = this->GetThreadList().end();
-    for (auto it = this->GetThreadList().begin(); it != end; ++it) {
+    for (auto it = this->GetThreadList().begin(); it != end; ++it)
+    {
         // If we're within array bounds, write the id.
-        if (count < max_out_count) {
+        if (count < max_out_count)
+        {
             // Get the thread id.
-            KThread* thread = std::addressof(*it);
+            KThread * thread = std::addressof(*it);
             const u64 id = thread->GetId();
 
             // Copy the id to userland.
@@ -1141,14 +1278,16 @@ Result KProcess::GetThreadList(s32* out_num_threads, KProcessAddress out_thread_
     R_SUCCEED();
 }
 
-void KProcess::Switch(KProcess* cur_process, KProcess* next_process) {}
+void KProcess::Switch(KProcess * cur_process, KProcess * next_process)
+{
+}
 
-KProcess::KProcess(KernelCore& kernel) : 
+KProcess::KProcess(KernelCore & kernel) :
     KAutoObjectWithSlabHeapAndContainer(kernel),
     m_page_table{kernel},
     m_state_lock{kernel},
     m_list_lock{kernel},
-    m_cond_var{kernel.System()}, 
+    m_cond_var{kernel.System()},
     m_address_arbiter{kernel.System()},
     m_handle_table{kernel},
     m_exclusive_monitor{},
@@ -1159,15 +1298,17 @@ KProcess::KProcess(KernelCore& kernel) :
 KProcess::~KProcess() = default;
 
 Result KProcess::LoadFromMetadata(const IProgramMetadata & metadata, std::size_t code_size,
-                                  KProcessAddress aslr_space_start, bool is_hbl) {
+                                  KProcessAddress aslr_space_start, bool is_hbl)
+{
     // Create a resource limit for the process.
     const auto pool = static_cast<KMemoryManager::Pool>(metadata.GetPoolPartition());
     const auto physical_memory_size = m_kernel.MemoryManager().GetSize(pool);
-    auto* res_limit =
+    auto * res_limit =
         Kernel::CreateResourceLimitForProcess(m_kernel.System(), physical_memory_size);
 
     // Ensure we maintain a clean state on exit.
-    SCOPE_EXIT {
+    SCOPE_EXIT
+    {
         res_limit->Close();
     };
 
@@ -1176,17 +1317,20 @@ Result KProcess::LoadFromMetadata(const IProgramMetadata & metadata, std::size_t
     u64 code_address{};
 
     // Determine if we are an application.
-    if (pool == KMemoryManager::Pool::Application) {
+    if (pool == KMemoryManager::Pool::Application)
+    {
         flag |= Svc::CreateProcessFlag::IsApplication;
     }
 
     // If we are 64-bit, create as such.
-    if (metadata.Is64BitProgram()) {
+    if (metadata.Is64BitProgram())
+    {
         flag |= Svc::CreateProcessFlag::Is64Bit;
     }
 
     // Set the address space type and code address.
-    switch (metadata.GetAddressSpaceType()) {
+    switch (metadata.GetAddressSpaceType())
+    {
     case ProgramAddressSpaceType::Is39Bit:
         flag |= Svc::CreateProcessFlag::AddressSpace64Bit;
 
@@ -1222,7 +1366,7 @@ Result KProcess::LoadFromMetadata(const IProgramMetadata & metadata, std::size_t
     };
 
     // Set the process name.
-    const auto& name = metadata.GetName();
+    const auto & name = metadata.GetName();
     size_t name_len = strlen(name) + 1;
     std::memcpy(params.name.data(), name, std::min(name_len, sizeof(params.name)));
 

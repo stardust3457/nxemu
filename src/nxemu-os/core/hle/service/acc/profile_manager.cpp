@@ -10,9 +10,12 @@
 #include "yuzu_common/fs/fs.h"
 #include "yuzu_common/fs/path_util.h"
 #include "yuzu_common/polyfill_ranges.h"
-#include "yuzu_common/settings.h"
 #include "yuzu_common/string_util.h"
+#include <nxemu-module-spec/base.h>
+#include "os_settings_identifiers.h"
 #include "core/hle/service/acc/profile_manager.h"
+
+extern IModuleSettings * g_settings;
 
 namespace Service::Account {
 
@@ -50,13 +53,13 @@ ProfileManager::ProfileManager() {
         WriteUserSaveFile();
     }
 
-    auto current =
-        std::clamp<int>(static_cast<s32>(Settings::values.current_user), 0, MAX_USERS - 1);
+    auto current = std::clamp<int>(static_cast<s32>(g_settings->GetInt(NXOsSetting::CurrentUser)), 0,
+                                   MAX_USERS - 1);
 
     // If user index don't exist. Load the first user and change the active user
     if (!UserExistsIndex(current)) {
         current = 0;
-        Settings::values.current_user = 0;
+        g_settings->SetInt(NXOsSetting::CurrentUser, 0);
     }
 
     OpenUser(*GetUser(current));

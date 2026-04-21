@@ -1,29 +1,32 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <algorithm>
-#include <cstdlib>
-#include <ctime>
-#include <vector>
-#include "yuzu_common/logging/log.h"
-#include "yuzu_common/settings.h"
+#include "core/hle/service/spl/spl_module.h"
 #include "core/hle/service/ipc_helpers.h"
 #include "core/hle/service/server_manager.h"
 #include "core/hle/service/spl/csrng.h"
 #include "core/hle/service/spl/spl.h"
-#include "core/hle/service/spl/spl_module.h"
+#include "os_settings.h"
+#include "yuzu_common/logging/log.h"
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
 
-namespace Service::SPL {
+namespace Service::SPL
+{
 
-Module::Interface::Interface(Core::System& system_, std::shared_ptr<Module> module_,
-                             const char* name)
-    : ServiceFramework{system_, name}, module{std::move(module_)},
-      rng(Settings::values.rng_seed_enabled ? Settings::values.rng_seed.GetValue()
-                                            : static_cast<u32>(std::time(nullptr))) {}
+Module::Interface::Interface(Core::System & system_, std::shared_ptr<Module> module_, const char * name) :
+    ServiceFramework{system_, name},
+    module{std::move(module_)},
+    rng(osSettings.rng_seed_enabled ? osSettings.rng_seed.GetValue() : static_cast<u32>(std::time(nullptr)))
+{
+}
 
 Module::Interface::~Interface() = default;
 
-void Module::Interface::GetConfig(HLERequestContext& ctx) {
+void Module::Interface::GetConfig(HLERequestContext & ctx)
+{
     IPC::RequestParser rp{ctx};
     const auto config_item = rp.PopEnum<ConfigItem>();
 
@@ -32,37 +35,39 @@ void Module::Interface::GetConfig(HLERequestContext& ctx) {
     u64 smc_result{};
     const auto result_code = GetConfigImpl(&smc_result, config_item);
 
-    if (result_code != ResultSuccess) {
-        LOG_ERROR(Service_SPL, "called, config_item={}, result_code={}", config_item,
-                  result_code.raw);
+    if (result_code != ResultSuccess)
+    {
+        LOG_ERROR(Service_SPL, "called, config_item={}, result_code={}", config_item, result_code.raw);
 
         IPC::ResponseBuilder rb{ctx, 2};
         rb.Push(result_code);
     }
 
-    LOG_DEBUG(Service_SPL, "called, config_item={}, result_code={}, smc_result={}", config_item,
-              result_code.raw, smc_result);
+    LOG_DEBUG(Service_SPL, "called, config_item={}, result_code={}, smc_result={}", config_item, result_code.raw, smc_result);
 
     IPC::ResponseBuilder rb{ctx, 4};
     rb.Push(result_code);
     rb.Push(smc_result);
 }
 
-void Module::Interface::ModularExponentiate(HLERequestContext& ctx) {
+void Module::Interface::ModularExponentiate(HLERequestContext & ctx)
+{
     UNIMPLEMENTED_MSG("ModularExponentiate is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
 }
 
-void Module::Interface::SetConfig(HLERequestContext& ctx) {
+void Module::Interface::SetConfig(HLERequestContext & ctx)
+{
     UNIMPLEMENTED_MSG("SetConfig is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
 }
 
-void Module::Interface::GenerateRandomBytes(HLERequestContext& ctx) {
+void Module::Interface::GenerateRandomBytes(HLERequestContext & ctx)
+{
     LOG_DEBUG(Service_SPL, "called");
 
     const std::size_t size = ctx.GetWriteBufferSize();
@@ -77,29 +82,34 @@ void Module::Interface::GenerateRandomBytes(HLERequestContext& ctx) {
     rb.Push(ResultSuccess);
 }
 
-void Module::Interface::IsDevelopment(HLERequestContext& ctx) {
+void Module::Interface::IsDevelopment(HLERequestContext & ctx)
+{
     UNIMPLEMENTED_MSG("IsDevelopment is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
 }
 
-void Module::Interface::SetBootReason(HLERequestContext& ctx) {
+void Module::Interface::SetBootReason(HLERequestContext & ctx)
+{
     UNIMPLEMENTED_MSG("SetBootReason is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
 }
 
-void Module::Interface::GetBootReason(HLERequestContext& ctx) {
+void Module::Interface::GetBootReason(HLERequestContext & ctx)
+{
     UNIMPLEMENTED_MSG("GetBootReason is not implemented!");
 
     IPC::ResponseBuilder rb{ctx, 2};
     rb.Push(ResultSecureMonitorNotImplemented);
 }
 
-Result Module::Interface::GetConfigImpl(u64* out_config, ConfigItem config_item) const {
-    switch (config_item) {
+Result Module::Interface::GetConfigImpl(u64 * out_config, ConfigItem config_item) const
+{
+    switch (config_item)
+    {
     case ConfigItem::DisableProgramVerification:
     case ConfigItem::DramId:
     case ConfigItem::SecurityEngineInterruptNumber:
@@ -166,7 +176,8 @@ Result Module::Interface::GetConfigImpl(u64* out_config, ConfigItem config_item)
     }
 }
 
-void LoopProcess(Core::System& system) {
+void LoopProcess(Core::System & system)
+{
     auto server_manager = std::make_unique<ServerManager>(system);
     auto module = std::make_shared<Module>();
 

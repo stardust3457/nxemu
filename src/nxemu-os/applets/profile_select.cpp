@@ -3,7 +3,10 @@
 
 #include "applets/profile_select.h"
 #include "core/hle/service/acc/profile_manager.h"
-#include "yuzu_common/settings.h"
+#include <nxemu-module-spec/base.h>
+#include "os_settings_identifiers.h"
+
+extern IModuleSettings * g_settings;
 
 ProfileSelectApplet::~ProfileSelectApplet() = default;
 
@@ -14,6 +17,6 @@ void DefaultProfileSelectApplet::Close() const
 void DefaultProfileSelectApplet::SelectProfile(SelectProfileCallback callback, const ProfileSelectParameters & parameters) const
 {
     Service::Account::ProfileManager manager;
-    callback(manager.GetUser(Settings::values.current_user.GetValue()).value_or(Common::UUID{}));
+    callback(manager.GetUser(g_settings->GetInt(NXOsSetting::CurrentUser)).value_or(Common::UUID{}));
     LOG_INFO(Service_ACC, "called, selecting current user instead of prompting...");
 }

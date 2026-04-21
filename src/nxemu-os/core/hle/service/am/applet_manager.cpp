@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "yuzu_common/settings.h"
 #include "yuzu_common/uuid.h"
+#include <nxemu-module-spec/base.h>
+#include "os_settings_identifiers.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hle/service/acc/profile_manager.h"
@@ -12,6 +13,8 @@
 #include "core/hle/service/am/frontend/applet_controller.h"
 #include "core/hle/service/am/frontend/applet_software_keyboard_types.h"
 #include "core/hle/service/am/service/storage.h"
+
+extern IModuleSettings * g_settings;
 
 namespace Service::AM {
 
@@ -197,7 +200,8 @@ void AppletManager::CreateAndInsertByFrontendAppletParameters(
         lp.is_account_selected = 1;
 
         Account::ProfileManager profile_manager{};
-        const auto uuid = profile_manager.GetUser(static_cast<s32>(Settings::values.current_user));
+        const auto uuid = profile_manager.GetUser(static_cast<std::size_t>(
+            g_settings->GetInt(NXOsSetting::CurrentUser)));
         ASSERT(uuid.has_value() && uuid->IsValid());
         lp.current_user = *uuid;
 

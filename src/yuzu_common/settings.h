@@ -381,42 +381,6 @@ struct Values {
     Setting<bool> disable_buffer_reorder{linkage, false, "disable_buffer_reorder",
                                          Category::RendererDebug};
 
-    // System
-    SwitchableSetting<Language, true> language_index{linkage,
-                                                     Language::EnglishAmerican,
-                                                     Language::Japanese,
-                                                     Language::PortugueseBrazilian,
-                                                     "language_index",
-                                                     Category::System};
-    SwitchableSetting<Region, true> region_index{linkage,        Region::Usa,    Region::Japan,
-                                                 Region::Taiwan, "region_index", Category::System};
-    SwitchableSetting<TimeZone, true> time_zone_index{linkage,           TimeZone::Auto,
-                                                      TimeZone::Auto,    TimeZone::Zulu,
-                                                      "time_zone_index", Category::System};
-    // Measured in seconds since epoch
-    SwitchableSetting<bool> custom_rtc_enabled{
-        linkage, false, "custom_rtc_enabled", Category::System, Specialization::Paired, true, true};
-    SwitchableSetting<s64> custom_rtc{
-        linkage, 0,    "custom_rtc",       Category::System, Specialization::Time,
-        false,   true, &custom_rtc_enabled};
-    SwitchableSetting<s64, true> custom_rtc_offset{linkage,
-                                                   0,
-                                                   std::numeric_limits<int>::min(),
-                                                   std::numeric_limits<int>::max(),
-                                                   "custom_rtc_offset",
-                                                   Category::System,
-                                                   Specialization::Countable,
-                                                   true,
-                                                   true};
-    SwitchableSetting<bool> rng_seed_enabled{
-        linkage, false, "rng_seed_enabled", Category::System, Specialization::Paired, true, true};
-    SwitchableSetting<u32> rng_seed{
-        linkage, 0,    "rng_seed",       Category::System, Specialization::Hex,
-        true,    true, &rng_seed_enabled};
-    Setting<std::string> device_name{
-        linkage, "NxEmu", "device_name", Category::System, Specialization::Default, true, true};
-
-    Setting<s32> current_user{linkage, 0, "current_user", Category::System};
 
     // Linux
     SwitchableSetting<bool> enable_gamemode{linkage, true, "enable_gamemode", Category::Linux};

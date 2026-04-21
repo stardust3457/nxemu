@@ -31,6 +31,21 @@ struct OSSettings
     Settings::Setting<bool, false> audio_muted{linkage, false, "audio_muted", Settings::Category::Audio, Settings::Specialization::Default, true, true};
     Settings::Setting<bool, false> dump_audio_commands{linkage, false, "dump_audio_commands", Settings::Category::Audio, Settings::Specialization::Default, false};
 
+    // System
+    Settings::SwitchableSetting<Settings::Language, true> language_index{linkage, Settings::Language::EnglishAmerican, Settings::Language::Japanese, Settings::Language::PortugueseBrazilian, "language_index", Settings::Category::System};
+    Settings::SwitchableSetting<Settings::Region, true> region_index{linkage, Settings::Region::Usa, Settings::Region::Japan, Settings::Region::Taiwan, "region_index", Settings::Category::System};
+    Settings::SwitchableSetting<Settings::TimeZone, true> time_zone_index{linkage, Settings::TimeZone::Auto, Settings::TimeZone::Auto, Settings::TimeZone::Zulu, "time_zone_index", Settings::Category::System};
+
+    // Measured in seconds since epoch
+    Settings::SwitchableSetting<bool> custom_rtc_enabled{linkage, false, "custom_rtc_enabled", Settings::Category::System, Settings::Specialization::Paired, true, true};
+    Settings::SwitchableSetting<s64> custom_rtc{linkage, 0, "custom_rtc", Settings::Category::System, Settings::Specialization::Time, false, true, &custom_rtc_enabled};
+    Settings::SwitchableSetting<s64, true> custom_rtc_offset{linkage, 0, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), "custom_rtc_offset", Settings::Category::System, Settings::Specialization::Countable, true, true};
+    Settings::SwitchableSetting<bool> rng_seed_enabled{linkage, false, "rng_seed_enabled", Settings::Category::System, Settings::Specialization::Paired, true, true};
+    Settings::SwitchableSetting<u32> rng_seed{linkage, 0, "rng_seed", Settings::Category::System, Settings::Specialization::Hex, true, true, &rng_seed_enabled};
+    Settings::Setting<std::string> device_name{linkage, "NxEmu", "device_name", Settings::Category::System, Settings::Specialization::Default, true, true};
+
+    Settings::Setting<s32> current_user{linkage, 0, "current_user", Settings::Category::System};
+
 #ifdef ANDROID
     SwitchableSetting<ConsoleMode> use_docked_mode{linkage, ConsoleMode::Handheld, "use_docked_mode", Category::System, Specialization::Radio, true, true};
 #else
