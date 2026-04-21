@@ -1,24 +1,30 @@
 // SPDX-FileCopyrightText: Copyright 2022 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "yuzu_audio_core/audio_core.h"
 #include "yuzu_audio_core/audio_in_manager.h"
+#include "core/core.h"
+#include "core/hle/service/audio/errors.h"
+#include "nxemu-os/os_settings.h"
+#include "yuzu_audio_core/audio_core.h"
 #include "yuzu_audio_core/audio_manager.h"
 #include "yuzu_audio_core/in/audio_in.h"
 #include "yuzu_audio_core/sink/sink_details.h"
 #include "yuzu_common/settings.h"
-#include "core/core.h"
-#include "core/hle/service/audio/errors.h"
 
-namespace AudioCore::AudioIn {
+namespace AudioCore::AudioIn
+{
 
-Manager::Manager(Core::System& system_) : system{system_} {
+Manager::Manager(Core::System & system_) :
+    system{system_}
+{
     std::iota(session_ids.begin(), session_ids.end(), 0);
     num_free_sessions = MaxInSessions;
 }
 
-Result Manager::AcquireSessionId(size_t& session_id) {
-    if (num_free_sessions == 0) {
+Result Manager::AcquireSessionId(size_t & session_id)
+{
+    if (num_free_sessions == 0)
+    {
         LOG_ERROR(Service_Audio, "All 4 AudioIn sessions are in use, cannot create any more");
         return Service::Audio::ResultOutOfSessions;
     }
@@ -28,7 +34,8 @@ Result Manager::AcquireSessionId(size_t& session_id) {
     return ResultSuccess;
 }
 
-void Manager::ReleaseSessionId(const size_t session_id) {
+void Manager::ReleaseSessionId(const size_t session_id)
+{
     std::scoped_lock l{mutex};
     LOG_DEBUG(Service_Audio, "Freeing AudioIn session {}", session_id);
     session_ids[free_session_id] = session_id;
@@ -38,10 +45,12 @@ void Manager::ReleaseSessionId(const size_t session_id) {
     applet_resource_user_ids[session_id] = 0;
 }
 
-Result Manager::LinkToManager() {
+Result Manager::LinkToManager()
+{
     std::scoped_lock l{mutex};
-    if (!linked_to_manager) {
-        AudioManager& manager{system.AudioCore().GetAudioManager()};
+    if (!linked_to_manager)
+    {
+        AudioManager & manager{system.AudioCore().GetAudioManager()};
         manager.SetInManager(std::bind(&Manager::BufferReleaseAndRegister, this));
         linked_to_manager = true;
     }
@@ -49,14 +58,18 @@ Result Manager::LinkToManager() {
     return ResultSuccess;
 }
 
-void Manager::Start() {
-    if (sessions_started) {
+void Manager::Start()
+{
+    if (sessions_started)
+    {
         return;
     }
 
     std::scoped_lock l{mutex};
-    for (auto& session : sessions) {
-        if (session) {
+    for (auto & session : sessions)
+    {
+        if (session)
+        {
             session->StartSession();
         }
     }
@@ -64,23 +77,28 @@ void Manager::Start() {
     sessions_started = true;
 }
 
-void Manager::BufferReleaseAndRegister() {
+void Manager::BufferReleaseAndRegister()
+{
     std::scoped_lock l{mutex};
-    for (auto& session : sessions) {
-        if (session != nullptr) {
+    for (auto & session : sessions)
+    {
+        if (session != nullptr)
+        {
             session->ReleaseAndRegisterBuffers();
         }
     }
 }
 
 u32 Manager::GetDeviceNames(std::span<Renderer::AudioDevice::AudioDeviceName> names,
-                            [[maybe_unused]] const bool filter) {
+                            [[maybe_unused]] const bool filter)
+{
     std::scoped_lock l{mutex};
 
     LinkToManager();
 
-    auto input_devices{Sink::GetDeviceListForSink(Settings::values.sink_id.GetValue(), true)};
-    if (!input_devices.empty() && !names.empty()) {
+    auto input_devices{Sink::GetDeviceListForSink(osSettings.sink_id.GetValue(), true)};
+    if (!input_devices.empty() && !names.empty())
+    {
         names[0] = Renderer::AudioDevice::AudioDeviceName("Uac");
         return 1;
     }

@@ -133,63 +133,6 @@ struct TouchFromButtonMap {
 struct Values {
     Linkage linkage{};
 
-    // Applet
-    Setting<AppletMode> cabinet_applet_mode{linkage, AppletMode::LLE, "cabinet_applet_mode",
-                                            Category::LibraryApplet};
-    Setting<AppletMode> controller_applet_mode{linkage, AppletMode::HLE, "controller_applet_mode",
-                                               Category::LibraryApplet};
-    Setting<AppletMode> data_erase_applet_mode{linkage, AppletMode::HLE, "data_erase_applet_mode",
-                                               Category::LibraryApplet};
-    Setting<AppletMode> error_applet_mode{linkage, AppletMode::LLE, "error_applet_mode",
-                                          Category::LibraryApplet};
-    Setting<AppletMode> net_connect_applet_mode{linkage, AppletMode::HLE, "net_connect_applet_mode",
-                                                Category::LibraryApplet};
-    Setting<AppletMode> player_select_applet_mode{
-        linkage, AppletMode::HLE, "player_select_applet_mode", Category::LibraryApplet};
-    Setting<AppletMode> swkbd_applet_mode{linkage, AppletMode::LLE, "swkbd_applet_mode",
-                                          Category::LibraryApplet};
-    Setting<AppletMode> mii_edit_applet_mode{linkage, AppletMode::LLE, "mii_edit_applet_mode",
-                                             Category::LibraryApplet};
-    Setting<AppletMode> web_applet_mode{linkage, AppletMode::HLE, "web_applet_mode",
-                                        Category::LibraryApplet};
-    Setting<AppletMode> shop_applet_mode{linkage, AppletMode::HLE, "shop_applet_mode",
-                                         Category::LibraryApplet};
-    Setting<AppletMode> photo_viewer_applet_mode{
-        linkage, AppletMode::LLE, "photo_viewer_applet_mode", Category::LibraryApplet};
-    Setting<AppletMode> offline_web_applet_mode{linkage, AppletMode::LLE, "offline_web_applet_mode",
-                                                Category::LibraryApplet};
-    Setting<AppletMode> login_share_applet_mode{linkage, AppletMode::HLE, "login_share_applet_mode",
-                                                Category::LibraryApplet};
-    Setting<AppletMode> wifi_web_auth_applet_mode{
-        linkage, AppletMode::HLE, "wifi_web_auth_applet_mode", Category::LibraryApplet};
-    Setting<AppletMode> my_page_applet_mode{linkage, AppletMode::LLE, "my_page_applet_mode",
-                                            Category::LibraryApplet};
-
-    // Audio
-    SwitchableSetting<AudioEngine> sink_id{linkage, AudioEngine::Auto, "output_engine",
-                                           Category::Audio, Specialization::RuntimeList};
-    SwitchableSetting<std::string> audio_output_device_id{
-        linkage, "auto", "output_device", Category::Audio, Specialization::RuntimeList};
-    SwitchableSetting<std::string> audio_input_device_id{
-        linkage, "auto", "input_device", Category::Audio, Specialization::RuntimeList};
-    SwitchableSetting<AudioMode, true> sound_index{
-        linkage,       AudioMode::Stereo,     AudioMode::Mono,         AudioMode::Surround,
-        "sound_index", Category::SystemAudio, Specialization::Default, true,
-        true};
-    SwitchableSetting<u8, true> volume{linkage,
-                                       100,
-                                       0,
-                                       200,
-                                       "volume",
-                                       Category::Audio,
-                                       Specialization::Scalar | Specialization::Percentage,
-                                       true,
-                                       true};
-    Setting<bool, false> audio_muted{
-        linkage, false, "audio_muted", Category::Audio, Specialization::Default, true, true};
-    Setting<bool, false> dump_audio_commands{
-        linkage, false, "dump_audio_commands", Category::Audio, Specialization::Default, false};
-
     // Core
     SwitchableSetting<bool> use_multi_core{linkage, true, "use_multi_core", Category::Core};
     SwitchableSetting<MemoryLayout, true> memory_layout_mode{linkage,

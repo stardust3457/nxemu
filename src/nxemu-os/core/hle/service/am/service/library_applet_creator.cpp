@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "yuzu_common/settings.h"
+#include "os_settings.h"
 #include "core/hle/kernel/k_transfer_memory.h"
 #include "core/hle/service/am/applet_data_broker.h"
 #include "core/hle/service/am/applet_manager.h"
@@ -20,7 +20,7 @@ namespace {
 bool ShouldCreateGuestApplet(AppletId applet_id) {
 #define X(Name, name)                                                                              \
     if (applet_id == AppletId::Name &&                                                             \
-        Settings::values.name##_applet_mode.GetValue() != Settings::AppletMode::LLE) {             \
+        osSettings.name##_applet_mode.GetValue() != Settings::AppletMode::LLE) {                   \
         return false;                                                                              \
     }
 

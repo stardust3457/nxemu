@@ -177,13 +177,6 @@ bool IsNceEnabled() {
     return is_nce_enabled;
 }
 
-float Volume() {
-    if (values.audio_muted) {
-        return 0.0f;
-    }
-    return values.volume.GetValue() / static_cast<f32>(values.volume.GetDefault());
-}
-
 const char* TranslateCategory(Category category) {
     switch (category) {
     case Category::Android:

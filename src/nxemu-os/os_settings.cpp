@@ -448,17 +448,17 @@ namespace
         {nullptr, "controller\\player_9\\ProfileName", &Settings::values.players.GetValue(true)[9].profile_name, ""},
         {nullptr, "controller\\player_9\\Vibration\\UseSystem", &Settings::values.players.GetValue(true)[9].use_system_vibrator, false},
 
-        { NXOsSetting::AudioSinkId, "audio\\sink_id", &Settings::values.sink_id},
-        { NXOsSetting::AudioOutputDeviceId, "audio\\output_device_id", &Settings::values.audio_output_device_id },
-        { NXOsSetting::AudioInputDeviceId, "audio\\input_device_id", &Settings::values.audio_input_device_id },
-        { NXOsSetting::AudioMode, "audio\\mode", &Settings::values.sound_index },
-        { NXOsSetting::AudioVolume, "audio\\volume", &Settings::values.volume },
-        { NXOsSetting::AudioMuted, "audio\\muted", &Settings::values.audio_muted },
-        { NXOsSetting::ResolutionUpFactor, "resolution\\up_factor", &Settings::values.resolution_info.up_factor, 1.0f },
-        { NXOsSetting::SpeedLimit, "system\\speed_limit", &Settings::values.speed_limit },
-        { NXOsSetting::UseMultiCore, "system\\use_multi_core", &Settings::values.use_multi_core },
-        { NXOsSetting::UseSpeedLimit, "system\\use_speed_limit", &Settings::values.use_speed_limit },
-        { NXOsSetting::DockedMode, "system\\docked_mode", &osSettings.use_docked_mode},
+        {NXOsSetting::AudioSinkId, "audio\\sink_id", &osSettings.sink_id},
+        {NXOsSetting::AudioOutputDeviceId, "audio\\output_device_id", &osSettings.audio_output_device_id},
+        {NXOsSetting::AudioInputDeviceId, "audio\\input_device_id", &osSettings.audio_input_device_id},
+        {NXOsSetting::AudioMode, "audio\\mode", &osSettings.sound_index},
+        {NXOsSetting::AudioVolume, "audio\\volume", &osSettings.volume},
+        {NXOsSetting::AudioMuted, "audio\\muted", &osSettings.audio_muted},
+        {NXOsSetting::ResolutionUpFactor, "resolution\\up_factor", &Settings::values.resolution_info.up_factor, 1.0f},
+        {NXOsSetting::SpeedLimit, "system\\speed_limit", &Settings::values.speed_limit},
+        {NXOsSetting::UseMultiCore, "system\\use_multi_core", &Settings::values.use_multi_core},
+        {NXOsSetting::UseSpeedLimit, "system\\use_speed_limit", &Settings::values.use_speed_limit},
+        {NXOsSetting::DockedMode, "system\\docked_mode", &osSettings.use_docked_mode},
     };
 
     template <typename T>
