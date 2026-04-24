@@ -1,15 +1,17 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "yuzu_common/settings.h"
+#include "nxemu-os/os_settings.h"
 #include "yuzu_input_common/input_engine.h"
 #include "yuzu_input_common/input_mapping.h"
 
-namespace InputCommon {
+namespace InputCommon
+{
 
 MappingFactory::MappingFactory() = default;
 
-void MappingFactory::BeginMapping(PollingInputType type) {
+void MappingFactory::BeginMapping(PollingInputType type)
+{
     is_enabled = true;
     input_type = type;
     input_queue.Clear();
@@ -17,21 +19,26 @@ void MappingFactory::BeginMapping(PollingInputType type) {
     second_axis = -1;
 }
 
-Common::ParamPackage MappingFactory::GetNextInput() {
+Common::ParamPackage MappingFactory::GetNextInput()
+{
     Common::ParamPackage input;
     input_queue.Pop(input);
     return input;
 }
 
-void MappingFactory::RegisterInput(const MappingData& data) {
-    if (!is_enabled) {
+void MappingFactory::RegisterInput(const MappingData & data)
+{
+    if (!is_enabled)
+    {
         return;
     }
-    if (!IsDriverValid(data)) {
+    if (!IsDriverValid(data))
+    {
         return;
     }
 
-    switch (input_type) {
+    switch (input_type)
+    {
     case PollingInputType::Button:
         RegisterButton(data);
         return;
@@ -46,25 +53,30 @@ void MappingFactory::RegisterInput(const MappingData& data) {
     }
 }
 
-void MappingFactory::StopMapping() {
+void MappingFactory::StopMapping()
+{
     is_enabled = false;
     input_type = PollingInputType::None;
     input_queue.Clear();
 }
 
-void MappingFactory::RegisterButton(const MappingData& data) {
+void MappingFactory::RegisterButton(const MappingData & data)
+{
     Common::ParamPackage new_input;
     new_input.Set("engine", data.engine);
-    if (data.pad.guid.IsValid()) {
+    if (data.pad.guid.IsValid())
+    {
         new_input.Set("guid", data.pad.guid.RawString());
     }
     new_input.Set("port", static_cast<int>(data.pad.port));
     new_input.Set("pad", static_cast<int>(data.pad.pad));
 
-    switch (data.type) {
+    switch (data.type)
+    {
     case EngineInputType::Button:
         // Workaround for old compatibility
-        if (data.engine == "keyboard") {
+        if (data.engine == "keyboard")
+        {
             new_input.Set("code", data.index);
             break;
         }
@@ -76,7 +88,8 @@ void MappingFactory::RegisterButton(const MappingData& data) {
         break;
     case EngineInputType::Analog:
         // Ignore mouse axis when mapping buttons
-        if (data.engine == "mouse" && data.index != 4) {
+        if (data.engine == "mouse" && data.index != 4)
+        {
             return;
         }
         new_input.Set("axis", data.index);
@@ -91,17 +104,20 @@ void MappingFactory::RegisterButton(const MappingData& data) {
     input_queue.Push(new_input);
 }
 
-void MappingFactory::RegisterStick(const MappingData& data) {
+void MappingFactory::RegisterStick(const MappingData & data)
+{
     Common::ParamPackage new_input;
     new_input.Set("engine", data.engine);
-    if (data.pad.guid.IsValid()) {
+    if (data.pad.guid.IsValid())
+    {
         new_input.Set("guid", data.pad.guid.RawString());
     }
     new_input.Set("port", static_cast<int>(data.pad.port));
     new_input.Set("pad", static_cast<int>(data.pad.pad));
 
     // If engine is mouse map the mouse position as a joystick
-    if (data.engine == "mouse") {
+    if (data.engine == "mouse")
+    {
         new_input.Set("axis_x", 0);
         new_input.Set("axis_y", 1);
         new_input.Set("threshold", 0.5f);
@@ -111,16 +127,19 @@ void MappingFactory::RegisterStick(const MappingData& data) {
         return;
     }
 
-    switch (data.type) {
+    switch (data.type)
+    {
     case EngineInputType::Button:
     case EngineInputType::HatButton:
         RegisterButton(data);
         return;
     case EngineInputType::Analog:
-        if (first_axis == data.index) {
+        if (first_axis == data.index)
+        {
             return;
         }
-        if (first_axis == -1) {
+        if (first_axis == -1)
+        {
             first_axis = data.index;
             return;
         }
@@ -136,17 +155,20 @@ void MappingFactory::RegisterStick(const MappingData& data) {
     input_queue.Push(new_input);
 }
 
-void MappingFactory::RegisterMotion(const MappingData& data) {
+void MappingFactory::RegisterMotion(const MappingData & data)
+{
     Common::ParamPackage new_input;
     new_input.Set("engine", data.engine);
-    if (data.pad.guid.IsValid()) {
+    if (data.pad.guid.IsValid())
+    {
         new_input.Set("guid", data.pad.guid.RawString());
     }
     new_input.Set("port", static_cast<int>(data.pad.port));
     new_input.Set("pad", static_cast<int>(data.pad.pad));
 
     // If engine is mouse map it automatically to mouse motion
-    if (data.engine == "mouse") {
+    if (data.engine == "mouse")
+    {
         new_input.Set("motion", 0);
         new_input.Set("pad", 1);
         new_input.Set("threshold", 0.001f);
@@ -154,23 +176,28 @@ void MappingFactory::RegisterMotion(const MappingData& data) {
         return;
     }
 
-    switch (data.type) {
+    switch (data.type)
+    {
     case EngineInputType::Button:
     case EngineInputType::HatButton:
         RegisterButton(data);
         return;
     case EngineInputType::Analog:
-        if (first_axis == data.index) {
+        if (first_axis == data.index)
+        {
             return;
         }
-        if (second_axis == data.index) {
+        if (second_axis == data.index)
+        {
             return;
         }
-        if (first_axis == -1) {
+        if (first_axis == -1)
+        {
             first_axis = data.index;
             return;
         }
-        if (second_axis == -1) {
+        if (second_axis == -1)
+        {
             second_axis = data.index;
             return;
         }
@@ -189,28 +216,34 @@ void MappingFactory::RegisterMotion(const MappingData& data) {
     input_queue.Push(new_input);
 }
 
-bool MappingFactory::IsDriverValid(const MappingData& data) const {
+bool MappingFactory::IsDriverValid(const MappingData & data) const
+{
     // Only port 0 can be mapped on the keyboard
-    if (data.engine == "keyboard" && data.pad.port != 0) {
+    if (data.engine == "keyboard" && data.pad.port != 0)
+    {
         return false;
     }
     // Only port 0 can be mapped on the mouse
-    if (data.engine == "mouse" && data.pad.port != 0) {
+    if (data.engine == "mouse" && data.pad.port != 0)
+    {
         return false;
     }
     // To prevent mapping with two devices we disable any UDP except motion
-    if (!Settings::values.enable_udp_controller && data.engine == "cemuhookudp" &&
-        data.type != EngineInputType::Motion) {
+    if (!osSettings.enable_udp_controller && data.engine == "cemuhookudp" && data.type != EngineInputType::Motion)
+    {
         return false;
     }
     // The following drivers don't need to be mapped
-    if (data.engine == "touch_from_button") {
+    if (data.engine == "touch_from_button")
+    {
         return false;
     }
-    if (data.engine == "analog_from_button") {
+    if (data.engine == "analog_from_button")
+    {
         return false;
     }
-    if (data.engine == "virtual_gamepad") {
+    if (data.engine == "virtual_gamepad")
+    {
         return false;
     }
     return true;

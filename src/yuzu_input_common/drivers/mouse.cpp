@@ -1,16 +1,17 @@
 // SPDX-FileCopyrightText: Copyright 2021 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <thread>
 #include <fmt/format.h>
 #include <math.h>
+#include <thread>
 
+#include "nxemu-os/os_settings.h"
 #include "yuzu_common/param_package.h"
-#include "yuzu_common/settings.h"
 #include "yuzu_common/thread.h"
 #include "yuzu_input_common/drivers/mouse.h"
 
-namespace InputCommon {
+namespace InputCommon
+{
 constexpr int update_time = 10;
 constexpr float default_panning_sensitivity = 0.0010f;
 constexpr float default_stick_sensitivity = 0.0006f;
@@ -47,7 +48,9 @@ constexpr PadIdentifier touch_identifier = {
     .pad = 0,
 };
 
-Mouse::Mouse(std::string input_engine_) : InputEngine(std::move(input_engine_)) {
+Mouse::Mouse(std::string input_engine_) :
+    InputEngine(std::move(input_engine_))
+{
     PreSetController(identifier);
     PreSetController(real_mouse_identifier);
     PreSetController(touch_identifier);
@@ -73,10 +76,12 @@ Mouse::Mouse(std::string input_engine_) : InputEngine(std::move(input_engine_)) 
     update_thread = std::jthread([this](std::stop_token stop_token) { UpdateThread(stop_token); });
 }
 
-void Mouse::UpdateThread(std::stop_token stop_token) {
+void Mouse::UpdateThread(std::stop_token stop_token)
+{
     Common::SetCurrentThreadName("Mouse");
 
-    while (!stop_token.stop_requested()) {
+    while (!stop_token.stop_requested())
+    {
         UpdateStickInput();
         UpdateMotionInput();
 
@@ -84,8 +89,10 @@ void Mouse::UpdateThread(std::stop_token stop_token) {
     }
 }
 
-void Mouse::UpdateStickInput() {
-    if (!IsMousePanningEnabled()) {
+void Mouse::UpdateStickInput()
+{
+    if (!IsMousePanningEnabled())
+    {
         return;
     }
 
@@ -93,7 +100,8 @@ void Mouse::UpdateStickInput() {
 
     // Prevent input from exceeding the max range (1.0f) too much,
     // but allow some room to make it easier to sustain
-    if (length > maximum_stick_range) {
+    if (length > maximum_stick_range)
+    {
         last_mouse_change /= length;
         last_mouse_change *= maximum_stick_range;
     }
@@ -103,14 +111,15 @@ void Mouse::UpdateStickInput() {
 
     // Decay input over time
     const float clamped_length = std::min(1.0f, length);
-    const float decay_strength = Settings::values.mouse_panning_decay_strength.GetValue();
+    const float decay_strength = osSettings.mouse_panning_decay_strength.GetValue();
     const float decay = 1 - clamped_length * clamped_length * decay_strength * 0.01f;
-    const float min_decay = Settings::values.mouse_panning_min_decay.GetValue();
+    const float min_decay = osSettings.mouse_panning_min_decay.GetValue();
     const float clamped_decay = std::min(1 - min_decay / 100.0f, decay);
     last_mouse_change *= clamped_decay;
 }
 
-void Mouse::UpdateMotionInput() {
+void Mouse::UpdateMotionInput()
+{
     const float sensitivity =
         IsMousePanningEnabled() ? default_motion_panning_sensitivity : default_motion_sensitivity;
 
@@ -118,7 +127,8 @@ void Mouse::UpdateMotionInput() {
                                               last_motion_change.y * last_motion_change.y);
 
     // Clamp rotation speed
-    if (rotation_velocity > maximum_rotation_speed / sensitivity) {
+    if (rotation_velocity > maximum_rotation_speed / sensitivity)
+    {
         const float multiplier = maximum_rotation_speed / rotation_velocity / sensitivity;
         last_motion_change.x = last_motion_change.x * multiplier;
         last_motion_change.y = last_motion_change.y * multiplier;
@@ -134,7 +144,8 @@ void Mouse::UpdateMotionInput() {
         .delta_timestamp = update_time * 1000,
     };
 
-    if (IsMousePanningEnabled()) {
+    if (IsMousePanningEnabled())
+    {
         last_motion_change.x = 0;
         last_motion_change.y = 0;
     }
@@ -143,17 +154,14 @@ void Mouse::UpdateMotionInput() {
     SetMotion(motion_identifier, 0, motion_data);
 }
 
-void Mouse::Move(int x, int y, int center_x, int center_y) {
-    if (IsMousePanningEnabled()) {
-        const auto mouse_change =
-            (Common::MakeVec(x, y) - Common::MakeVec(center_x, center_y)).Cast<float>();
-        const float x_sensitivity =
-            Settings::values.mouse_panning_x_sensitivity.GetValue() * default_panning_sensitivity;
-        const float y_sensitivity =
-            Settings::values.mouse_panning_y_sensitivity.GetValue() * default_panning_sensitivity;
-        const float deadzone_counterweight =
-            Settings::values.mouse_panning_deadzone_counterweight.GetValue() *
-            default_deadzone_counterweight;
+void Mouse::Move(int x, int y, int center_x, int center_y)
+{
+    if (IsMousePanningEnabled())
+    {
+        const auto mouse_change = (Common::MakeVec(x, y) - Common::MakeVec(center_x, center_y)).Cast<float>();
+        const float x_sensitivity = osSettings.mouse_panning_x_sensitivity.GetValue() * default_panning_sensitivity;
+        const float y_sensitivity = osSettings.mouse_panning_y_sensitivity.GetValue() * default_panning_sensitivity;
+        const float deadzone_counterweight = osSettings.mouse_panning_deadzone_counterweight.GetValue() * default_deadzone_counterweight;
 
         last_motion_change += {-mouse_change.y * x_sensitivity, -mouse_change.x * y_sensitivity, 0};
         last_mouse_change.x += mouse_change.x * x_sensitivity;
@@ -161,7 +169,8 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
 
         // Bind the mouse change to [0 <= deadzone_counterweight <= 1.0]
         const float length = last_mouse_change.Length();
-        if (length < deadzone_counterweight && length != 0.0f) {
+        if (length < deadzone_counterweight && length != 0.0f)
+        {
             last_mouse_change /= length;
             last_mouse_change *= deadzone_counterweight;
         }
@@ -169,12 +178,11 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
         return;
     }
 
-    if (button_pressed) {
+    if (button_pressed)
+    {
         const auto mouse_move = Common::MakeVec<int>(x, y) - mouse_origin;
-        const float x_sensitivity =
-            Settings::values.mouse_panning_x_sensitivity.GetValue() * default_stick_sensitivity;
-        const float y_sensitivity =
-            Settings::values.mouse_panning_y_sensitivity.GetValue() * default_stick_sensitivity;
+        const float x_sensitivity = osSettings.mouse_panning_x_sensitivity.GetValue() * default_stick_sensitivity;
+        const float y_sensitivity = osSettings.mouse_panning_y_sensitivity.GetValue() * default_stick_sensitivity;
         SetAxis(identifier, mouse_axis_x, static_cast<float>(mouse_move.x) * x_sensitivity);
         SetAxis(identifier, mouse_axis_y, static_cast<float>(-mouse_move.y) * y_sensitivity);
 
@@ -186,17 +194,20 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
     }
 }
 
-void Mouse::MouseMove(f32 touch_x, f32 touch_y) {
+void Mouse::MouseMove(f32 touch_x, f32 touch_y)
+{
     SetAxis(real_mouse_identifier, mouse_axis_x, touch_x);
     SetAxis(real_mouse_identifier, mouse_axis_y, touch_y);
 }
 
-void Mouse::TouchMove(f32 touch_x, f32 touch_y) {
+void Mouse::TouchMove(f32 touch_x, f32 touch_y)
+{
     SetAxis(touch_identifier, mouse_axis_x, touch_x);
     SetAxis(touch_identifier, mouse_axis_y, touch_y);
 }
 
-void Mouse::PressButton(int x, int y, MouseButton button) {
+void Mouse::PressButton(int x, int y, MouseButton button)
+{
     SetButton(identifier, static_cast<int>(button), true);
 
     // Set initial analog parameters
@@ -205,22 +216,26 @@ void Mouse::PressButton(int x, int y, MouseButton button) {
     button_pressed = true;
 }
 
-void Mouse::PressMouseButton(MouseButton button) {
+void Mouse::PressMouseButton(MouseButton button)
+{
     SetButton(real_mouse_identifier, static_cast<int>(button), true);
 }
 
-void Mouse::PressTouchButton(f32 touch_x, f32 touch_y, MouseButton button) {
+void Mouse::PressTouchButton(f32 touch_x, f32 touch_y, MouseButton button)
+{
     SetAxis(touch_identifier, mouse_axis_x, touch_x);
     SetAxis(touch_identifier, mouse_axis_y, touch_y);
     SetButton(touch_identifier, static_cast<int>(button), true);
 }
 
-void Mouse::ReleaseButton(MouseButton button) {
+void Mouse::ReleaseButton(MouseButton button)
+{
     SetButton(identifier, static_cast<int>(button), false);
     SetButton(real_mouse_identifier, static_cast<int>(button), false);
     SetButton(touch_identifier, static_cast<int>(button), false);
 
-    if (!IsMousePanningEnabled()) {
+    if (!IsMousePanningEnabled())
+    {
         SetAxis(identifier, mouse_axis_x, 0);
         SetAxis(identifier, mouse_axis_y, 0);
     }
@@ -231,7 +246,8 @@ void Mouse::ReleaseButton(MouseButton button) {
     button_pressed = false;
 }
 
-void Mouse::MouseWheelChange(int x, int y) {
+void Mouse::MouseWheelChange(int x, int y)
+{
     wheel_position.x += x;
     wheel_position.y += y;
     last_motion_change.z += static_cast<f32>(y);
@@ -239,17 +255,20 @@ void Mouse::MouseWheelChange(int x, int y) {
     SetAxis(identifier, wheel_axis_y, static_cast<f32>(wheel_position.y));
 }
 
-void Mouse::ReleaseAllButtons() {
+void Mouse::ReleaseAllButtons()
+{
     ResetButtonState();
     button_pressed = false;
 }
 
-bool Mouse::IsMousePanningEnabled() {
+bool Mouse::IsMousePanningEnabled()
+{
     // Disable mouse panning when a real mouse is connected
-    return Settings::values.mouse_panning && !Settings::values.mouse_enabled;
+    return osSettings.mouse_panning && !osSettings.mouse_enabled;
 }
 
-std::vector<Common::ParamPackage> Mouse::GetInputDevices() const {
+std::vector<Common::ParamPackage> Mouse::GetInputDevices() const
+{
     std::vector<Common::ParamPackage> devices;
     devices.emplace_back(Common::ParamPackage{
         {"engine", GetEngineName()},
@@ -259,7 +278,8 @@ std::vector<Common::ParamPackage> Mouse::GetInputDevices() const {
 }
 
 AnalogMapping Mouse::GetAnalogMappingForDevice(
-    [[maybe_unused]] const IParamPackage & params) {
+    [[maybe_unused]] const IParamPackage & params)
+{
     // Only overwrite different buttons from default
     AnalogMapping mapping = {};
     Common::ParamPackage right_analog_params;
@@ -273,9 +293,11 @@ AnalogMapping Mouse::GetAnalogMappingForDevice(
     return mapping;
 }
 
-ButtonNames Mouse::GetUIButtonName(const IParamPackage & params) const {
+ButtonNames Mouse::GetUIButtonName(const IParamPackage & params) const
+{
     const auto button = static_cast<MouseButton>(params.GetInt("button", 0));
-    switch (button) {
+    switch (button)
+    {
     case MouseButton::Left:
         return ButtonNames::ButtonLeft;
     case MouseButton::Right:
@@ -296,17 +318,22 @@ ButtonNames Mouse::GetUIButtonName(const IParamPackage & params) const {
     }
 }
 
-ButtonNames Mouse::GetUIName(const IParamPackage & params) const {
-    if (params.Has("button")) {
+ButtonNames Mouse::GetUIName(const IParamPackage & params) const
+{
+    if (params.Has("button"))
+    {
         return GetUIButtonName(params);
     }
-    if (params.Has("axis")) {
+    if (params.Has("axis"))
+    {
         return ButtonNames::Value;
     }
-    if (params.Has("axis_x") && params.Has("axis_y") && params.Has("axis_z")) {
+    if (params.Has("axis_x") && params.Has("axis_y") && params.Has("axis_z"))
+    {
         return ButtonNames::Engine;
     }
-    if (params.Has("motion")) {
+    if (params.Has("motion"))
+    {
         return ButtonNames::Engine;
     }
 

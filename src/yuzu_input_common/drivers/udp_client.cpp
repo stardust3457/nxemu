@@ -1,36 +1,41 @@
 // SPDX-FileCopyrightText: 2018 Citra Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <random>
 #include <boost/asio.hpp>
 #include <fmt/format.h>
+#include <random>
 
+#include "nxemu-os/os_settings.h"
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/param_package.h"
-#include "yuzu_common/settings.h"
 #include "yuzu_input_common/drivers/udp_client.h"
 #include "yuzu_input_common/helpers/udp_protocol.h"
 
 using boost::asio::ip::udp;
 
-namespace InputCommon::CemuhookUDP {
+namespace InputCommon::CemuhookUDP
+{
 
-struct SocketCallback {
+struct SocketCallback
+{
     std::function<void(Response::Version)> version;
     std::function<void(Response::PortInfo)> port_info;
     std::function<void(Response::PadData)> pad_data;
 };
 
-class Socket {
+class Socket
+{
 public:
     using clock = std::chrono::system_clock;
 
-    explicit Socket(const std::string& host, u16 port, SocketCallback callback_)
-        : callback(std::move(callback_)), timer(io_service),
-          socket(io_service, udp::endpoint(udp::v4(), 0)), client_id(GenerateRandomClientId()) {
+    explicit Socket(const std::string & host, u16 port, SocketCallback callback_) :
+        callback(std::move(callback_)), timer(io_service),
+        socket(io_service, udp::endpoint(udp::v4(), 0)), client_id(GenerateRandomClientId())
+    {
         boost::system::error_code ec{};
         auto ipv4 = boost::asio::ip::make_address_v4(host, ec);
-        if (ec.value() != boost::system::errc::success) {
+        if (ec.value() != boost::system::errc::success)
+        {
             LOG_ERROR(Input, "Invalid IPv4 address \"{}\" provided to socket", host);
             ipv4 = boost::asio::ip::address_v4{};
         }
@@ -38,50 +43,61 @@ public:
         send_endpoint = {udp::endpoint(ipv4, port)};
     }
 
-    void Stop() {
+    void Stop()
+    {
         io_service.stop();
     }
 
-    void Loop() {
+    void Loop()
+    {
         io_service.run();
     }
 
-    void StartSend(const clock::time_point& from) {
+    void StartSend(const clock::time_point & from)
+    {
         timer.expires_at(from + std::chrono::seconds(3));
-        timer.async_wait([this](const boost::system::error_code& error) { HandleSend(error); });
+        timer.async_wait([this](const boost::system::error_code & error) { HandleSend(error); });
     }
 
-    void StartReceive() {
+    void StartReceive()
+    {
         socket.async_receive_from(
             boost::asio::buffer(receive_buffer), receive_endpoint,
-            [this](const boost::system::error_code& error, std::size_t bytes_transferred) {
+            [this](const boost::system::error_code & error, std::size_t bytes_transferred) {
                 HandleReceive(error, bytes_transferred);
             });
     }
 
 private:
-    u32 GenerateRandomClientId() const {
+    u32 GenerateRandomClientId() const
+    {
         std::random_device device;
         return device();
     }
 
-    void HandleReceive(const boost::system::error_code&, std::size_t bytes_transferred) {
-        if (auto type = Response::Validate(receive_buffer.data(), bytes_transferred)) {
-            switch (*type) {
-            case Type::Version: {
+    void HandleReceive(const boost::system::error_code &, std::size_t bytes_transferred)
+    {
+        if (auto type = Response::Validate(receive_buffer.data(), bytes_transferred))
+        {
+            switch (*type)
+            {
+            case Type::Version:
+            {
                 Response::Version version;
                 std::memcpy(&version, &receive_buffer[sizeof(Header)], sizeof(Response::Version));
                 callback.version(std::move(version));
                 break;
             }
-            case Type::PortInfo: {
+            case Type::PortInfo:
+            {
                 Response::PortInfo port_info;
                 std::memcpy(&port_info, &receive_buffer[sizeof(Header)],
                             sizeof(Response::PortInfo));
                 callback.port_info(std::move(port_info));
                 break;
             }
-            case Type::PadData: {
+            case Type::PadData:
+            {
                 Response::PadData pad_data;
                 std::memcpy(&pad_data, &receive_buffer[sizeof(Header)], sizeof(Response::PadData));
                 callback.pad_data(std::move(pad_data));
@@ -92,7 +108,8 @@ private:
         StartReceive();
     }
 
-    void HandleSend(const boost::system::error_code&) {
+    void HandleSend(const boost::system::error_code &)
+    {
         boost::system::error_code _ignored{};
         // Send a request for getting port info for the pad
         const Request::PortInfo port_info{4, {0, 1, 2, 3}};
@@ -129,18 +146,22 @@ private:
     udp::endpoint receive_endpoint;
 };
 
-static void SocketLoop(Socket* socket) {
+static void SocketLoop(Socket * socket)
+{
     socket->StartReceive();
     socket->StartSend(Socket::clock::now());
     socket->Loop();
 }
 
-UDPClient::UDPClient(std::string input_engine_) : InputEngine(std::move(input_engine_)) {
+UDPClient::UDPClient(std::string input_engine_) :
+    InputEngine(std::move(input_engine_))
+{
     LOG_INFO(Input, "Udp Initialization started");
     ReloadSockets();
 }
 
-UDPClient::~UDPClient() {
+UDPClient::~UDPClient()
+{
     Reset();
 }
 
@@ -148,14 +169,17 @@ UDPClient::ClientConnection::ClientConnection() = default;
 
 UDPClient::ClientConnection::~ClientConnection() = default;
 
-void UDPClient::ReloadSockets() {
+void UDPClient::ReloadSockets()
+{
     Reset();
 
-    std::stringstream servers_ss(Settings::values.udp_input_servers.GetValue());
+    std::stringstream servers_ss(osSettings.udp_input_servers.GetValue());
     std::string server_token;
     std::size_t client = 0;
-    while (std::getline(servers_ss, server_token, ',')) {
-        if (client == MAX_UDP_CLIENTS) {
+    while (std::getline(servers_ss, server_token, ','))
+    {
+        if (client == MAX_UDP_CLIENTS)
+        {
             break;
         }
         std::stringstream server_ss(server_token);
@@ -163,15 +187,17 @@ void UDPClient::ReloadSockets() {
         std::getline(server_ss, token, ':');
         std::string udp_input_address = token;
         std::getline(server_ss, token, ':');
-        char* temp;
+        char * temp;
         const u16 udp_input_port = static_cast<u16>(std::strtol(token.c_str(), &temp, 0));
-        if (*temp != '\0') {
+        if (*temp != '\0')
+        {
             LOG_ERROR(Input, "Port number is not valid {}", token);
             continue;
         }
 
         const std::size_t client_number = GetClientNumber(udp_input_address, udp_input_port);
-        if (client_number != MAX_UDP_CLIENTS) {
+        if (client_number != MAX_UDP_CLIENTS)
+        {
             LOG_ERROR(Input, "Duplicated UDP servers found");
             continue;
         }
@@ -179,20 +205,26 @@ void UDPClient::ReloadSockets() {
     }
 }
 
-std::size_t UDPClient::GetClientNumber(std::string_view host, u16 port) const {
-    for (std::size_t client = 0; client < clients.size(); client++) {
-        if (clients[client].active == -1) {
+std::size_t UDPClient::GetClientNumber(std::string_view host, u16 port) const
+{
+    for (std::size_t client = 0; client < clients.size(); client++)
+    {
+        if (clients[client].active == -1)
+        {
             continue;
         }
-        if (clients[client].host == host && clients[client].port == port) {
+        if (clients[client].host == host && clients[client].port == port)
+        {
             return client;
         }
     }
     return MAX_UDP_CLIENTS;
 }
 
-Common::Input::BatteryLevel UDPClient::GetBatteryLevel(Response::Battery battery) const {
-    switch (battery) {
+Common::Input::BatteryLevel UDPClient::GetBatteryLevel(Response::Battery battery) const
+{
+    switch (battery)
+    {
     case Response::Battery::Dying:
         return Common::Input::BatteryLevel::Empty;
     case Response::Battery::Low:
@@ -210,24 +242,29 @@ Common::Input::BatteryLevel UDPClient::GetBatteryLevel(Response::Battery battery
     }
 }
 
-void UDPClient::OnVersion([[maybe_unused]] Response::Version data) {
+void UDPClient::OnVersion([[maybe_unused]] Response::Version data)
+{
     LOG_TRACE(Input, "Version packet received: {}", data.version);
 }
 
-void UDPClient::OnPortInfo([[maybe_unused]] Response::PortInfo data) {
+void UDPClient::OnPortInfo([[maybe_unused]] Response::PortInfo data)
+{
     LOG_TRACE(Input, "PortInfo packet received: {}", data.model);
 }
 
-void UDPClient::OnPadData(Response::PadData data, std::size_t client) {
+void UDPClient::OnPadData(Response::PadData data, std::size_t client)
+{
     const std::size_t pad_index = (client * PADS_PER_CLIENT) + data.info.id;
 
-    if (pad_index >= pads.size()) {
+    if (pad_index >= pads.size())
+    {
         LOG_ERROR(Input, "Invalid pad id {}", data.info.id);
         return;
     }
 
     LOG_TRACE(Input, "PadData packet received");
-    if (data.packet_counter == pads[pad_index].packet_sequence) {
+    if (data.packet_counter == pads[pad_index].packet_sequence)
+    {
         LOG_WARNING(
             Input,
             "PadData packet dropped because its stale info. Current count: {} Packet count: {}",
@@ -263,7 +300,8 @@ void UDPClient::OnPadData(Response::PadData data, std::size_t client) {
     const PadIdentifier identifier = GetPadIdentifier(pad_index);
     SetMotion(identifier, 0, motion);
 
-    for (std::size_t id = 0; id < data.touch.size(); ++id) {
+    for (std::size_t id = 0; id < data.touch.size(); ++id)
+    {
         const auto touch_pad = data.touch[id];
         const auto touch_axis_x_id =
             static_cast<int>(id == 0 ? PadAxes::Touch1X : PadAxes::Touch2X);
@@ -273,7 +311,7 @@ void UDPClient::OnPadData(Response::PadData data, std::size_t client) {
             static_cast<int>(id == 0 ? PadButton::Touch1 : PadButton::Touch2);
 
         // TODO: Use custom calibration per device
-        const Common::ParamPackage touch_param(Settings::values.touch_device.GetValue());
+        const Common::ParamPackage touch_param(osSettings.touch_device.GetValue());
         const u16 min_x = static_cast<u16>(touch_param.Get("min_x", 100));
         const u16 min_y = static_cast<u16>(touch_param.Get("min_y", 50));
         const u16 max_x = static_cast<u16>(touch_param.Get("max_x", 1800));
@@ -286,7 +324,8 @@ void UDPClient::OnPadData(Response::PadData data, std::size_t client) {
             static_cast<f32>(std::clamp(static_cast<u16>(touch_pad.y), min_y, max_y) - min_y) /
             static_cast<f32>(max_y - min_y);
 
-        if (touch_pad.is_active) {
+        if (touch_pad.is_active)
+        {
             SetAxis(identifier, touch_axis_x_id, x);
             SetAxis(identifier, touch_axis_y_id, y);
             SetButton(identifier, touch_button_id, true);
@@ -307,12 +346,13 @@ void UDPClient::OnPadData(Response::PadData data, std::size_t client) {
             (data.right_stick_y - 127.0f) / 127.0f);
 
     static constexpr std::array<PadButton, 16> buttons{
-        PadButton::Share,    PadButton::L3,     PadButton::R3,    PadButton::Options,
-        PadButton::Up,       PadButton::Right,  PadButton::Down,  PadButton::Left,
-        PadButton::L2,       PadButton::R2,     PadButton::L1,    PadButton::R1,
+        PadButton::Share, PadButton::L3, PadButton::R3, PadButton::Options,
+        PadButton::Up, PadButton::Right, PadButton::Down, PadButton::Left,
+        PadButton::L2, PadButton::R2, PadButton::L1, PadButton::R1,
         PadButton::Triangle, PadButton::Circle, PadButton::Cross, PadButton::Square};
 
-    for (std::size_t i = 0; i < buttons.size(); ++i) {
+    for (std::size_t i = 0; i < buttons.size(); ++i)
+    {
         const bool button_status = (data.digital_button & (1U << i)) != 0;
         const int button = static_cast<int>(buttons[i]);
         SetButton(identifier, button, button_status);
@@ -324,7 +364,8 @@ void UDPClient::OnPadData(Response::PadData data, std::size_t client) {
     SetBattery(identifier, GetBatteryLevel(data.info.battery));
 }
 
-void UDPClient::StartCommunication(std::size_t client, const std::string& host, u16 port) {
+void UDPClient::StartCommunication(std::size_t client, const std::string & host, u16 port)
+{
     SocketCallback callback{[this](Response::Version version) { OnVersion(version); },
                             [this](Response::PortInfo info) { OnPortInfo(info); },
                             [this, client](Response::PadData data) { OnPadData(data, client); }};
@@ -335,14 +376,16 @@ void UDPClient::StartCommunication(std::size_t client, const std::string& host, 
     clients[client].active = 0;
     clients[client].socket = std::make_unique<Socket>(host, port, callback);
     clients[client].thread = std::thread{SocketLoop, clients[client].socket.get()};
-    for (std::size_t index = 0; index < PADS_PER_CLIENT; ++index) {
+    for (std::size_t index = 0; index < PADS_PER_CLIENT; ++index)
+    {
         const PadIdentifier identifier = GetPadIdentifier(client * PADS_PER_CLIENT + index);
         PreSetController(identifier);
         PreSetMotion(identifier, 0);
     }
 }
 
-PadIdentifier UDPClient::GetPadIdentifier(std::size_t pad_index) const {
+PadIdentifier UDPClient::GetPadIdentifier(std::size_t pad_index) const
+{
     const std::size_t client = pad_index / PADS_PER_CLIENT;
     return {
         .guid = clients[client].uuid,
@@ -351,15 +394,19 @@ PadIdentifier UDPClient::GetPadIdentifier(std::size_t pad_index) const {
     };
 }
 
-Common::UUID UDPClient::GetHostUUID(const std::string& host) const {
+Common::UUID UDPClient::GetHostUUID(const std::string & host) const
+{
     const auto ip = boost::asio::ip::make_address_v4(host);
     const auto hex_host = fmt::format("00000000-0000-0000-0000-0000{:06x}", ip.to_uint());
     return Common::UUID{hex_host};
 }
 
-void UDPClient::Reset() {
-    for (auto& client : clients) {
-        if (client.thread.joinable()) {
+void UDPClient::Reset()
+{
+    for (auto & client : clients)
+    {
+        if (client.thread.joinable())
+        {
             client.active = -1;
             client.socket->Stop();
             client.thread.join();
@@ -367,18 +414,24 @@ void UDPClient::Reset() {
     }
 }
 
-std::vector<Common::ParamPackage> UDPClient::GetInputDevices() const {
+std::vector<Common::ParamPackage> UDPClient::GetInputDevices() const
+{
     std::vector<Common::ParamPackage> devices;
-    if (!Settings::values.enable_udp_controller) {
+    if (!osSettings.enable_udp_controller)
+    {
         return devices;
     }
-    for (std::size_t client = 0; client < clients.size(); client++) {
-        if (clients[client].active != 1) {
+    for (std::size_t client = 0; client < clients.size(); client++)
+    {
+        if (clients[client].active != 1)
+        {
             continue;
         }
-        for (std::size_t index = 0; index < PADS_PER_CLIENT; ++index) {
+        for (std::size_t index = 0; index < PADS_PER_CLIENT; ++index)
+        {
             const std::size_t pad_index = client * PADS_PER_CLIENT + index;
-            if (!pads[pad_index].connected) {
+            if (!pads[pad_index].connected)
+            {
                 continue;
             }
             const auto pad_identifier = GetPadIdentifier(pad_index);
@@ -394,7 +447,8 @@ std::vector<Common::ParamPackage> UDPClient::GetInputDevices() const {
     return devices;
 }
 
-ButtonMapping UDPClient::GetButtonMappingForDevice(const IParamPackage & params) {
+ButtonMapping UDPClient::GetButtonMappingForDevice(const IParamPackage & params)
+{
     // This list excludes any button that can't be really mapped
     static constexpr std::array<std::pair<NativeButtonValues, PadButton>, 22>
         switch_to_dsu_button = {
@@ -421,12 +475,14 @@ ButtonMapping UDPClient::GetButtonMappingForDevice(const IParamPackage & params)
             {NativeButtonValues::Home, PadButton::Home},
             {NativeButtonValues::Screenshot, PadButton::TouchHardPress},
         };
-    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad")) {
+    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad"))
+    {
         return {};
     }
 
     ButtonMapping mapping{};
-    for (const auto& [switch_button, dsu_button] : switch_to_dsu_button) {
+    for (const auto & [switch_button, dsu_button] : switch_to_dsu_button)
+    {
         Common::ParamPackage button_params{};
         button_params.Set("engine", GetEngineName());
         button_params.Set("guid", params.GetString("guid", ""));
@@ -439,8 +495,10 @@ ButtonMapping UDPClient::GetButtonMappingForDevice(const IParamPackage & params)
     return mapping;
 }
 
-AnalogMapping UDPClient::GetAnalogMappingForDevice(const IParamPackage & params) {
-    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad")) {
+AnalogMapping UDPClient::GetAnalogMappingForDevice(const IParamPackage & params)
+{
+    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad"))
+    {
         return {};
     }
 
@@ -464,8 +522,10 @@ AnalogMapping UDPClient::GetAnalogMappingForDevice(const IParamPackage & params)
     return mapping;
 }
 
-MotionMapping UDPClient::GetMotionMappingForDevice(const IParamPackage & params) {
-    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad")) {
+MotionMapping UDPClient::GetMotionMappingForDevice(const IParamPackage & params)
+{
+    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad"))
+    {
         return {};
     }
 
@@ -489,9 +549,11 @@ MotionMapping UDPClient::GetMotionMappingForDevice(const IParamPackage & params)
     return mapping;
 }
 
-ButtonNames UDPClient::GetUIButtonName(const IParamPackage & params) const {
+ButtonNames UDPClient::GetUIButtonName(const IParamPackage & params) const
+{
     PadButton button = static_cast<PadButton>(params.GetInt("button", 0));
-    switch (button) {
+    switch (button)
+    {
     case PadButton::Left:
         return ButtonNames::ButtonLeft;
     case PadButton::Right:
@@ -535,39 +597,48 @@ ButtonNames UDPClient::GetUIButtonName(const IParamPackage & params) const {
     }
 }
 
-ButtonNames UDPClient::GetUIName(const IParamPackage & params) const {
-    if (params.Has("button")) {
+ButtonNames UDPClient::GetUIName(const IParamPackage & params) const
+{
+    if (params.Has("button"))
+    {
         return GetUIButtonName(params);
     }
-    if (params.Has("axis")) {
+    if (params.Has("axis"))
+    {
         return ButtonNames::Value;
     }
-    if (params.Has("motion")) {
+    if (params.Has("motion"))
+    {
         return ButtonNames::Engine;
     }
 
     return ButtonNames::Invalid;
 }
 
-bool UDPClient::IsStickInverted(const IParamPackage & params) {
-    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad")) {
+bool UDPClient::IsStickInverted(const IParamPackage & params)
+{
+    if (!params.Has("guid") || !params.Has("port") || !params.Has("pad"))
+    {
         return false;
     }
 
     const auto x_axis = static_cast<PadAxes>(params.GetInt("axis_x", 0));
     const auto y_axis = static_cast<PadAxes>(params.GetInt("axis_y", 0));
-    if (x_axis != PadAxes::LeftStickY && x_axis != PadAxes::RightStickY) {
+    if (x_axis != PadAxes::LeftStickY && x_axis != PadAxes::RightStickY)
+    {
         return false;
     }
-    if (y_axis != PadAxes::LeftStickX && y_axis != PadAxes::RightStickX) {
+    if (y_axis != PadAxes::LeftStickX && y_axis != PadAxes::RightStickX)
+    {
         return false;
     }
     return true;
 }
 
-void TestCommunication(const std::string& host, u16 port,
-                       const std::function<void()>& success_callback,
-                       const std::function<void()>& failure_callback) {
+void TestCommunication(const std::string & host, u16 port,
+                       const std::function<void()> & success_callback,
+                       const std::function<void()> & failure_callback)
+{
     std::thread([=] {
         Common::Event success_event;
         SocketCallback callback{
@@ -581,17 +652,21 @@ void TestCommunication(const std::string& host, u16 port,
             success_event.WaitUntil(std::chrono::steady_clock::now() + std::chrono::seconds(10));
         socket.Stop();
         worker_thread.join();
-        if (result) {
+        if (result)
+        {
             success_callback();
-        } else {
+        }
+        else
+        {
             failure_callback();
         }
     }).detach();
 }
 
 CalibrationConfigurationJob::CalibrationConfigurationJob(
-    const std::string& host, u16 port, std::function<void(Status)> status_callback,
-    std::function<void(u16, u16, u16, u16)> data_callback) {
+    const std::string & host, u16 port, std::function<void(Status)> status_callback,
+    std::function<void(u16, u16, u16, u16)> data_callback)
+{
 
     std::thread([=, this] {
         u16 min_x{UINT16_MAX};
@@ -604,25 +679,29 @@ CalibrationConfigurationJob::CalibrationConfigurationJob(
                                 [&](Response::PadData data) {
                                     constexpr u16 CALIBRATION_THRESHOLD = 100;
 
-                                    if (current_status == Status::Initialized) {
+                                    if (current_status == Status::Initialized)
+                                    {
                                         // Receiving data means the communication is ready now
                                         current_status = Status::Ready;
                                         status_callback(current_status);
                                     }
-                                    if (data.touch[0].is_active == 0) {
+                                    if (data.touch[0].is_active == 0)
+                                    {
                                         return;
                                     }
                                     LOG_DEBUG(Input, "Current touch: {} {}", data.touch[0].x,
                                               data.touch[0].y);
                                     min_x = std::min(min_x, static_cast<u16>(data.touch[0].x));
                                     min_y = std::min(min_y, static_cast<u16>(data.touch[0].y));
-                                    if (current_status == Status::Ready) {
+                                    if (current_status == Status::Ready)
+                                    {
                                         // First touch - min data (min_x/min_y)
                                         current_status = Status::Stage1Completed;
                                         status_callback(current_status);
                                     }
                                     if (data.touch[0].x - min_x > CALIBRATION_THRESHOLD &&
-                                        data.touch[0].y - min_y > CALIBRATION_THRESHOLD) {
+                                        data.touch[0].y - min_y > CALIBRATION_THRESHOLD)
+                                    {
                                         // Set the current position as max value and finishes
                                         // configuration
                                         max_x = data.touch[0].x;
@@ -642,11 +721,13 @@ CalibrationConfigurationJob::CalibrationConfigurationJob(
     }).detach();
 }
 
-CalibrationConfigurationJob::~CalibrationConfigurationJob() {
+CalibrationConfigurationJob::~CalibrationConfigurationJob()
+{
     Stop();
 }
 
-void CalibrationConfigurationJob::Stop() {
+void CalibrationConfigurationJob::Stop()
+{
     complete_event.Set();
 }
 
