@@ -61,7 +61,6 @@ private:
     SettingTranslationMap m_settingTranslations;
     std::shared_ptr<IPageNav> m_pageNav;
     std::unique_ptr<SystemConfigGraphics> m_systemConfigGraphics;
-    std::unique_ptr<SystemConfigSystem> m_systemConfigSystem;
     std::unique_ptr<SystemConfigAudio> m_systemConfigAudio;
     std::unique_ptr<SystemConfigGeneral> m_systemConfigGeneral;
 };

@@ -1141,14 +1141,14 @@ void InputConfigPlayer::SetConnectableControllers()
         availableControllers.emplace_back(NpadStyleIndex::GameCube, "GameCube Controller");
     }
 
+    if (m_controllerIndex == NpadIdType::Player1 && (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Handheld) != 0))
+    {
+        availableControllers.emplace_back(NpadStyleIndex::Handheld, "Handheld");
+    }
+
     // Disable all unsupported controllers
     if (uiSettings.enableAllControllers) 
     {
-        if (m_controllerIndex == NpadIdType::Player1 && ((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Handheld) != 0)
-        {
-            availableControllers.emplace_back(NpadStyleIndex::Handheld, "Handheld");
-        }
-
         if (((uint32_t)npad_style_set & (uint32_t)NpadStyleSet::Palma) != 0)
         {
             availableControllers.emplace_back(NpadStyleIndex::Pokeball, "Poke Ball Plus");

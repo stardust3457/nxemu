@@ -78,7 +78,7 @@ void Controller::SetFromCpuBoostMode(CpuBoostMode mode)
 
 PerformanceMode Controller::GetCurrentPerformanceMode() const
 {
-    const bool docked = g_settings->GetInt(NXOsSetting::DockedMode) == static_cast<int32_t>(Settings::ConsoleMode::Docked);
+    const bool docked = g_settings->GetInt(NXOsSetting::DockedMode) == static_cast<int32_t>(Settings::DockedMode::Docked);
     return docked ? PerformanceMode::Boost : PerformanceMode::Normal;
 }
 

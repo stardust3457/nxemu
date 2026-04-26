@@ -12,6 +12,7 @@ constexpr const char Exit[] = "Exit";
 constexpr const char Fullscreen[] = "Fullscreen";
 constexpr const char ExitFullscreen[] = "ExitFullscreen";
 constexpr const char PauseContinue[] = "PauseContinue";
+constexpr const char ToggleDockedMode[] = "ToggleDockedMode";
 }
 
 using HotkeyMap = std::map<std::string, MenuBarAccelerator>;

@@ -20,7 +20,7 @@ namespace
         AudioEngine,
         AudioMode,
         Language,
-        ConsoleMode,
+        DockedMode,
         U8,
         U16,
         BooleanSwitchable,
@@ -41,7 +41,7 @@ namespace
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioEngine> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::AudioMode, true>* val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::Language, true> * val);
-        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::ConsoleMode> * val);
+        OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::DockedMode> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u8, true> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u16, true> * val);
         OsSetting(const char * id, const char * path, Settings::SwitchableSetting<bool> * val);
@@ -65,7 +65,7 @@ namespace
             Settings::SwitchableSetting<Settings::AudioEngine> * audioEngine;
             Settings::SwitchableSetting<Settings::AudioMode, true> * audioMode;
             Settings::SwitchableSetting<Settings::Language, true> * languageIndex;
-            Settings::SwitchableSetting<Settings::ConsoleMode> * consoleMode;
+            Settings::SwitchableSetting<Settings::DockedMode> * dockedMode;
             Settings::SwitchableSetting<u8, true> * u8;
             Settings::SwitchableSetting<u16, true> * u16;
             Settings::SwitchableSetting<bool> * booleanSwitchable;
@@ -563,8 +563,8 @@ void OsSettingChanged(const char * setting, void * /*userData*/)
         case SettingType::Language:
             osSetting.setting.languageIndex->SetValue((Settings::Language)g_settings->GetInt(setting));
             break;
-        case SettingType::ConsoleMode:
-            osSetting.setting.consoleMode->SetValue((Settings::ConsoleMode)g_settings->GetInt(setting));
+        case SettingType::DockedMode:
+            osSetting.setting.dockedMode->SetValue((Settings::DockedMode)g_settings->GetInt(setting));
             break;
         case SettingType::U8:
             osSetting.setting.u8->SetValue(g_settings->GetInt(setting));
@@ -611,8 +611,8 @@ void SetupOsSetting(void)
         case SettingType::Language:
             osSetting.setting.languageIndex->SetValue(osSetting.setting.languageIndex->GetDefault());
             break;
-        case SettingType::ConsoleMode:
-            osSetting.setting.consoleMode->SetValue(osSetting.setting.consoleMode->GetDefault());
+        case SettingType::DockedMode:
+            osSetting.setting.dockedMode->SetValue(osSetting.setting.dockedMode->GetDefault());
             break;
         case SettingType::U8:
             osSetting.setting.u8->SetValue(osSetting.setting.u8->GetDefault());
@@ -690,10 +690,10 @@ void SetupOsSetting(void)
                     osSetting.setting.languageIndex->SetValue(Settings::ToEnum<Settings::Language>(value.asString()));
                 }
                 break;
-            case SettingType::ConsoleMode:
+            case SettingType::DockedMode:
                 if (value.isString())
                 {
-                    osSetting.setting.consoleMode->SetValue(Settings::ToEnum<Settings::ConsoleMode>(value.asString()));
+                    osSetting.setting.dockedMode->SetValue(Settings::ToEnum<Settings::DockedMode>(value.asString()));
                 }
                 break;
             case SettingType::U8:
@@ -793,9 +793,9 @@ void SetupOsSetting(void)
             g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.languageIndex->GetDefault());
             g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.languageIndex->GetValue());
             break;
-        case SettingType::ConsoleMode:
-            g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.consoleMode->GetDefault());
-            g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.consoleMode->GetValue());
+        case SettingType::DockedMode:
+            g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.dockedMode->GetDefault());
+            g_settings->SetInt(osSetting.identifier, (int32_t)osSetting.setting.dockedMode->GetValue());
             break;
         case SettingType::U8:
             g_settings->SetDefaultInt(osSetting.identifier, (int32_t)osSetting.setting.u8->GetDefault());
@@ -872,10 +872,10 @@ void SaveOsSettings(void)
                 JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.languageIndex->GetValue()));
             }
             break;
-        case SettingType::ConsoleMode:
-            if (osSetting.setting.consoleMode->GetValue() != osSetting.setting.consoleMode->GetDefault())
+        case SettingType::DockedMode:
+            if (osSetting.setting.dockedMode->GetValue() != osSetting.setting.dockedMode->GetDefault())
             {
-                JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.consoleMode->GetValue()));
+                JsonSetNestedValue(root, osSetting.json_path, Settings::CanonicalizeEnum(osSetting.setting.dockedMode->GetValue()));
             }
             break;
         case SettingType::U8:
@@ -993,12 +993,12 @@ namespace
         setting.languageIndex = val;
     }
 
-    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::ConsoleMode> * val) :
+    OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<Settings::DockedMode> * val) :
         identifier(id),
         json_path(path),
-        settingType(SettingType::ConsoleMode)
+        settingType(SettingType::DockedMode)
     {
-        setting.consoleMode = val;
+        setting.dockedMode = val;
     }
 
     OsSetting::OsSetting(const char * id, const char * path, Settings::SwitchableSetting<u8, true> * val) :
