@@ -110,6 +110,9 @@
     <ClCompile Include="helpers\joycon_protocol\ringcon.cpp">
       <Filter>Source Files\helpers\joycon_protocol</Filter>
     </ClCompile>
+    <ClCompile Include="drivers\android.cpp">
+      <Filter>Source Files\drivers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="input_engine.h">

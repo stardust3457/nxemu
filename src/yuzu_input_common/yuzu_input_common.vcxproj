@@ -31,6 +31,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="drivers\android.cpp" />
     <ClCompile Include="drivers\camera.cpp" />
     <ClCompile Include="drivers\gc_adapter.cpp" />
     <ClCompile Include="drivers\joycon.cpp" />

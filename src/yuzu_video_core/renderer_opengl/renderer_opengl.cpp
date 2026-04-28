@@ -8,12 +8,12 @@
 
 #include <glad/glad.h>
 
-#include "yuzu_common/yuzu_assert.h"
+#include "frontend/emu_window.h"
 #include "yuzu_common/logging/log.h"
 #include "yuzu_common/microprofile.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/stb.h"
-#include "frontend/emu_window.h"
+#include "yuzu_common/yuzu_assert.h"
 #include "yuzu_video_core/capture.h"
 #include "yuzu_video_core/present.h"
 #include "yuzu_video_core/renderer_opengl/gl_blit_screen.h"
@@ -24,10 +24,14 @@
 #include "yuzu_video_core/textures/decoders.h"
 #include "yuzu_video_core/watermark.h"
 
-namespace OpenGL {
-namespace {
-const char* GetSource(GLenum source) {
-    switch (source) {
+namespace OpenGL
+{
+namespace
+{
+const char * GetSource(GLenum source)
+{
+    switch (source)
+    {
     case GL_DEBUG_SOURCE_API:
         return "API";
     case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
@@ -46,8 +50,10 @@ const char* GetSource(GLenum source) {
     }
 }
 
-const char* GetType(GLenum type) {
-    switch (type) {
+const char * GetType(GLenum type)
+{
+    switch (type)
+    {
     case GL_DEBUG_TYPE_ERROR:
         return "ERROR";
     case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
@@ -68,13 +74,14 @@ const char* GetType(GLenum type) {
     }
 }
 
-void APIENTRY DebugHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                           const GLchar* message, const void* user_param) {
+void APIENTRY DebugHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * message, const void * user_param)
+{
     const char format[] = "{} {} {}: {}";
-    const char* const str_source = GetSource(source);
-    const char* const str_type = GetType(type);
+    const char * const str_source = GetSource(source);
+    const char * const str_type = GetType(type);
 
-    switch (severity) {
+    switch (severity)
+    {
     case GL_DEBUG_SEVERITY_HIGH:
         LOG_CRITICAL(Render_OpenGL, format, str_source, str_type, id, message);
         break;
@@ -89,17 +96,16 @@ void APIENTRY DebugHandler(GLenum source, GLenum type, GLuint id, GLenum severit
 }
 } // Anonymous namespace
 
-RendererOpenGL::RendererOpenGL(Core::Frontend::EmuWindow& emu_window_,
-                               Tegra::MaxwellDeviceMemoryManager& device_memory_, Tegra::GPU& gpu_,
-                               std::unique_ptr<Core::Frontend::GraphicsContext> context_)
-    : RendererBase{emu_window_, std::move(context_)},
-      emu_window{emu_window_}, device_memory{device_memory_}, gpu{gpu_}, device{emu_window_},
-      state_tracker{}, program_manager{device},
-      rasterizer(emu_window, gpu, device_memory, device, program_manager, state_tracker),
-      watermark_texture(0), watermark_vao(0), watermark_vbo(0), watermark_shader(0), watermark_width(0), watermark_height(0),
-      watermark_timer_started(false), watermark_show(true)
+RendererOpenGL::RendererOpenGL(Core::Frontend::EmuWindow & emu_window_, Tegra::MaxwellDeviceMemoryManager & device_memory_, Tegra::GPU & gpu_, std::unique_ptr<Core::Frontend::GraphicsContext> context_) :
+    RendererBase{emu_window_, std::move(context_)},
+    emu_window{emu_window_}, device_memory{device_memory_}, gpu{gpu_}, device{emu_window_},
+    state_tracker{}, program_manager{device},
+    rasterizer(emu_window, gpu, device_memory, device, program_manager, state_tracker),
+    watermark_texture(0), watermark_vao(0), watermark_vbo(0), watermark_shader(0), watermark_width(0), watermark_height(0),
+    watermark_timer_started(false), watermark_show(true)
 {
-    if (Settings::values.renderer_debug && GLAD_GL_KHR_debug) {
+    if (Settings::values.renderer_debug && GLAD_GL_KHR_debug)
+    {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(DebugHandler, nullptr);
@@ -109,29 +115,28 @@ RendererOpenGL::RendererOpenGL(Core::Frontend::EmuWindow& emu_window_,
     // Initialize default attributes to match hardware's disabled attributes
     GLint max_attribs{};
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_attribs);
-    for (GLint attrib = 0; attrib < max_attribs; ++attrib) {
+    for (GLint attrib = 0; attrib < max_attribs; ++attrib)
+    {
         glVertexAttrib4f(attrib, 0.0f, 0.0f, 0.0f, 1.0f);
     }
     // Enable seamless cubemaps when per texture parameters are not available
-    if (!GLAD_GL_ARB_seamless_cubemap_per_texture && !GLAD_GL_AMD_seamless_cubemap_per_texture) {
+    if (!GLAD_GL_ARB_seamless_cubemap_per_texture && !GLAD_GL_AMD_seamless_cubemap_per_texture)
+    {
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }
 
     // Enable unified vertex attributes when the driver supports it
-    if (device.HasVertexBufferUnifiedMemory()) {
+    if (device.HasVertexBufferUnifiedMemory())
+    {
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
         glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
-    blit_screen = std::make_unique<BlitScreen>(rasterizer, device_memory, state_tracker,
-                                               program_manager, device, PresentFiltersForDisplay);
-    blit_applet =
-        std::make_unique<BlitScreen>(rasterizer, device_memory, state_tracker, program_manager,
-                                     device, PresentFiltersForAppletCapture);
+    blit_screen = std::make_unique<BlitScreen>(rasterizer, device_memory, state_tracker, program_manager, device, PresentFiltersForDisplay);
+    blit_applet = std::make_unique<BlitScreen>(rasterizer, device_memory, state_tracker, program_manager, device, PresentFiltersForAppletCapture);
     capture_framebuffer.Create();
     capture_renderbuffer.Create();
     glBindRenderbuffer(GL_RENDERBUFFER, capture_renderbuffer.handle);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_SRGB8, VideoCore::Capture::LinearWidth,
-                          VideoCore::Capture::LinearHeight);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_SRGB8, VideoCore::Capture::LinearWidth, VideoCore::Capture::LinearHeight);
 
     InitializeWatermark();
 }
@@ -141,8 +146,10 @@ RendererOpenGL::~RendererOpenGL()
     CleanupWatermark();
 }
 
-void RendererOpenGL::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {
-    if (framebuffers.empty()) {
+void RendererOpenGL::Composite(std::span<const Tegra::FramebufferConfig> framebuffers)
+{
+    if (framebuffers.empty())
+    {
         return;
     }
 
@@ -166,23 +173,26 @@ void RendererOpenGL::Composite(std::span<const Tegra::FramebufferConfig> framebu
     render_window.OnFrameDisplayed();
 }
 
-void RendererOpenGL::AddTelemetryFields() {
-    const char* const gl_version{reinterpret_cast<char const*>(glGetString(GL_VERSION))};
-    const char* const gpu_vendor{reinterpret_cast<char const*>(glGetString(GL_VENDOR))};
-    const char* const gpu_model{reinterpret_cast<char const*>(glGetString(GL_RENDERER))};
+void RendererOpenGL::AddTelemetryFields()
+{
+    const char * const gl_version{reinterpret_cast<char const *>(glGetString(GL_VERSION))};
+    const char * const gpu_vendor{reinterpret_cast<char const *>(glGetString(GL_VENDOR))};
+    const char * const gpu_model{reinterpret_cast<char const *>(glGetString(GL_RENDERER))};
 
     LOG_INFO(Render_OpenGL, "GL_VERSION: {}", gl_version);
     LOG_INFO(Render_OpenGL, "GL_VENDOR: {}", gpu_vendor);
     LOG_INFO(Render_OpenGL, "GL_RENDERER: {}", gpu_model);
 }
 
-void RendererOpenGL::InitializeWatermark() 
+void RendererOpenGL::InitializeWatermark()
 {
-    while (glGetError() != GL_NO_ERROR) {}
+    while (glGetError() != GL_NO_ERROR)
+    {
+    }
 
     int channels;
     unsigned char * image_data = stbi_load_from_memory(watermark_png, watermark_png_len, &watermark_width, &watermark_height, &channels, 4);
-    if (!image_data) 
+    if (!image_data)
     {
         LOG_ERROR(Render_OpenGL, "Failed to load watermark image: {}", stbi_failure_reason());
         return;
@@ -206,9 +216,9 @@ void RendererOpenGL::InitializeWatermark()
     const size_t vertex_data_size = 6 * 4 * sizeof(float);
     glBufferData(GL_ARRAY_BUFFER, vertex_data_size, nullptr, GL_DYNAMIC_DRAW);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     const std::string vertex_shader_source = R"(
@@ -239,13 +249,13 @@ void main() {
 )";
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertex_src = vertex_shader_source.c_str();
+    const char * vertex_src = vertex_shader_source.c_str();
     glShaderSource(vertex_shader, 1, &vertex_src, nullptr);
     glCompileShader(vertex_shader);
 
     GLint success;
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-    if (!success) 
+    if (!success)
     {
         char info_log[512];
         glGetShaderInfoLog(vertex_shader, 512, nullptr, info_log);
@@ -254,12 +264,13 @@ void main() {
     }
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragment_src = fragment_shader_source.c_str();
+    const char * fragment_src = fragment_shader_source.c_str();
     glShaderSource(fragment_shader, 1, &fragment_src, nullptr);
     glCompileShader(fragment_shader);
 
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         char info_log[512];
         glGetShaderInfoLog(fragment_shader, 512, nullptr, info_log);
         LOG_ERROR(Render_OpenGL, "Fragment shader compilation failed: {}", info_log);
@@ -288,32 +299,34 @@ void main() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void RendererOpenGL::RenderWatermark() 
+void RendererOpenGL::RenderWatermark()
 {
-    if (!watermark_texture || !watermark_shader || !watermark_vao || !watermark_vbo) 
+    if (!watermark_texture || !watermark_shader || !watermark_vao || !watermark_vbo)
     {
         return;
     }
 
-    if (!watermark_timer_started) 
+    if (!watermark_timer_started)
     {
         watermark_start_time = std::chrono::steady_clock::now();
         watermark_timer_started = true;
     }
 
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
-    long long elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(current_time - watermark_start_time).count();
+    const long long elapsed_seconds =
+        std::chrono::duration_cast<std::chrono::seconds>(current_time - watermark_start_time).count();
+    const float elapsed = static_cast<float>(elapsed_seconds);
 
     float fade_alpha;
     const float fade_duration = 300.0f;
-    if (elapsed_seconds >= fade_duration) 
+    if (elapsed >= fade_duration)
     {
         fade_alpha = 0.0f;
         watermark_show = false;
     }
-    else 
+    else
     {
-        float progress = elapsed_seconds / fade_duration;
+        float progress = elapsed / fade_duration;
         float eased = 0.5f * (1.0f + cosf(progress * 3.14159f));
         fade_alpha = 0.8f * eased;
     }
@@ -339,28 +352,30 @@ void RendererOpenGL::RenderWatermark()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     const Layout::FramebufferLayout & layout = emu_window.GetFramebufferLayout();
+    const float layout_w = static_cast<float>(layout.width);
+    const float layout_h = static_cast<float>(layout.height);
     float watermark_scale = 0.14f;
-    float aspect_ratio = (float)watermark_height / (float)watermark_width;
-    float watermark_screen_width = layout.width * watermark_scale;
+    float aspect_ratio = static_cast<float>(watermark_height) / static_cast<float>(watermark_width);
+    float watermark_screen_width = layout_w * watermark_scale;
     float watermark_screen_height = watermark_screen_width * aspect_ratio;
 
     float padding = 18.0f;
-    float x = layout.width - watermark_screen_width - padding;
+    float x = layout_w - watermark_screen_width - padding;
     float y = padding;
-    
-    float ndc_left = (x / layout.width) * 2.0f - 1.0f;
-    float ndc_right = ((x + watermark_screen_width) / layout.width) * 2.0f - 1.0f;
-    float ndc_bottom = (y / layout.height) * 2.0f - 1.0f;
-    float ndc_top = ((y + watermark_screen_height) / layout.height) * 2.0f - 1.0f;
+
+    float ndc_left = (x / layout_w) * 2.0f - 1.0f;
+    float ndc_right = ((x + watermark_screen_width) / layout_w) * 2.0f - 1.0f;
+    float ndc_bottom = (y / layout_h) * 2.0f - 1.0f;
+    float ndc_top = ((y + watermark_screen_height) / layout_h) * 2.0f - 1.0f;
 
     float vertices[] = {
-        ndc_left,  ndc_bottom, 0.0f, 1.0f,  // Bottom-left
-        ndc_right, ndc_bottom, 1.0f, 1.0f,  // Bottom-right  
-        ndc_left,  ndc_top,    0.0f, 0.0f,  // Top-left
+        ndc_left, ndc_bottom, 0.0f, 1.0f,  // Bottom-left
+        ndc_right, ndc_bottom, 1.0f, 1.0f, // Bottom-right
+        ndc_left, ndc_top, 0.0f, 0.0f,     // Top-left
 
-        ndc_right, ndc_bottom, 1.0f, 1.0f,  // Bottom-right
-        ndc_right, ndc_top,    1.0f, 0.0f,  // Top-right
-        ndc_left,  ndc_top,    0.0f, 0.0f   // Top-left
+        ndc_right, ndc_bottom, 1.0f, 1.0f, // Bottom-right
+        ndc_right, ndc_top, 1.0f, 0.0f,    // Top-right
+        ndc_left, ndc_top, 0.0f, 0.0f      // Top-left
     };
 
     glUseProgram(watermark_shader);
@@ -372,7 +387,7 @@ void RendererOpenGL::RenderWatermark()
 
     GLint tex_uniform = glGetUniformLocation(watermark_shader, "watermarkTexture");
     GLint alpha_uniform = glGetUniformLocation(watermark_shader, "alpha");
-    if (tex_uniform != -1) 
+    if (tex_uniform != -1)
     {
         glUniform1i(tex_uniform, 0);
     }
@@ -382,7 +397,9 @@ void RendererOpenGL::RenderWatermark()
         glUniform1f(alpha_uniform, fade_alpha);
     }
 
-    while (glGetError() != GL_NO_ERROR) {}
+    while (glGetError() != GL_NO_ERROR)
+    {
+    }
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glUseProgram(current_program);
@@ -400,29 +417,29 @@ void RendererOpenGL::CleanupWatermark()
         watermark_texture = 0;
     }
 
-    if (watermark_shader) 
+    if (watermark_shader)
     {
         glDeleteProgram(watermark_shader);
         watermark_shader = 0;
     }
 
-    if (watermark_vao) 
+    if (watermark_vao)
     {
         glDeleteVertexArrays(1, &watermark_vao);
         watermark_vao = 0;
     }
 
-    if (watermark_vbo) 
+    if (watermark_vbo)
     {
         glDeleteBuffers(1, &watermark_vbo);
         watermark_vbo = 0;
     }
 }
 
-void RendererOpenGL::RenderToBuffer(std::span<const Tegra::FramebufferConfig> framebuffers,
-                                    const Layout::FramebufferLayout& layout, void* dst) {
+void RendererOpenGL::RenderToBuffer(std::span<const Tegra::FramebufferConfig> framebuffers, const Layout::FramebufferLayout & layout, void * dst)
+{
     GLint old_read_fb;
-    GLint old_draw_fb;  
+    GLint old_draw_fb;
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &old_read_fb);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &old_draw_fb);
 
@@ -449,28 +466,28 @@ void RendererOpenGL::RenderToBuffer(std::span<const Tegra::FramebufferConfig> fr
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, old_draw_fb);
 }
 
-void RendererOpenGL::RenderScreenshot(std::span<const Tegra::FramebufferConfig> framebuffers) {
-    if (!renderer_settings.screenshot_requested) {
+void RendererOpenGL::RenderScreenshot(std::span<const Tegra::FramebufferConfig> framebuffers)
+{
+    if (!renderer_settings.screenshot_requested)
+    {
         return;
     }
 
-    RenderToBuffer(framebuffers, renderer_settings.screenshot_framebuffer_layout,
-                   renderer_settings.screenshot_bits);
+    RenderToBuffer(framebuffers, renderer_settings.screenshot_framebuffer_layout, renderer_settings.screenshot_bits);
 
     renderer_settings.screenshot_complete_callback(true);
     renderer_settings.screenshot_requested = false;
 }
 
-void RendererOpenGL::RenderAppletCaptureLayer(
-    std::span<const Tegra::FramebufferConfig> framebuffers) {
+void RendererOpenGL::RenderAppletCaptureLayer(std::span<const Tegra::FramebufferConfig> framebuffers)
+{
     GLint old_read_fb;
     GLint old_draw_fb;
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &old_read_fb);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &old_draw_fb);
 
     glBindFramebuffer(GL_FRAMEBUFFER, capture_framebuffer.handle);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
-                              capture_renderbuffer.handle);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,capture_renderbuffer.handle);
 
     blit_applet->DrawScreen(framebuffers, VideoCore::Capture::Layout, true);
 
@@ -478,7 +495,8 @@ void RendererOpenGL::RenderAppletCaptureLayer(
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, old_draw_fb);
 }
 
-std::vector<u8> RendererOpenGL::GetAppletCaptureBuffer() {
+std::vector<u8> RendererOpenGL::GetAppletCaptureBuffer()
+{
     using namespace VideoCore::Capture;
 
     std::vector<u8> linear(TiledSize);
@@ -494,20 +512,17 @@ std::vector<u8> RendererOpenGL::GetAppletCaptureBuffer() {
     glGetIntegerv(GL_PACK_ROW_LENGTH, &old_pack_row_length);
 
     glBindFramebuffer(GL_FRAMEBUFFER, capture_framebuffer.handle);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
-                              capture_renderbuffer.handle);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, capture_renderbuffer.handle);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-    glReadPixels(0, 0, LinearWidth, LinearHeight, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV,
-                 linear.data());
+    glReadPixels(0, 0, LinearWidth, LinearHeight, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, linear.data());
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, old_read_fb);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, old_draw_fb);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, old_pixel_pack_buffer);
     glPixelStorei(GL_PACK_ROW_LENGTH, old_pack_row_length);
 
-    Tegra::Texture::SwizzleTexture(out, linear, BytesPerPixel, LinearWidth, LinearHeight,
-                                   LinearDepth, BlockHeight, BlockDepth);
+    Tegra::Texture::SwizzleTexture(out, linear, BytesPerPixel, LinearWidth, LinearHeight, LinearDepth, BlockHeight, BlockDepth);
 
     return out;
 }

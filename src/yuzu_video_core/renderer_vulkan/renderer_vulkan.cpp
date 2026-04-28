@@ -251,10 +251,11 @@ void RendererVulkan::RenderWatermark(Frame& frame)
 
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
     long long elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(current_time - wm.start_time).count();
+    const float elapsed = static_cast<float>(elapsed_seconds);
 
     float fade_alpha;
     const float fade_duration = 300.0f;
-    if (elapsed_seconds >= fade_duration)
+    if (elapsed >= fade_duration)
     {
         fade_alpha = 0.0f;
         wm.show = false;
@@ -262,24 +263,26 @@ void RendererVulkan::RenderWatermark(Frame& frame)
     }
     else
     {
-        float progress = elapsed_seconds / fade_duration;
+        float progress = elapsed / fade_duration;
         float eased = 0.5f * (1.0f + cosf(progress * 3.14159f));
         fade_alpha = 0.8f * eased;
     }
 
+    const float frame_w = static_cast<float>(frame.width);
+    const float frame_h = static_cast<float>(frame.height);
     float watermark_scale = 0.14f;
-    float aspect_ratio = (float)wm.height / (float)wm.width;
-    float watermark_screen_width = frame.width * watermark_scale;
+    float aspect_ratio = static_cast<float>(wm.height) / static_cast<float>(wm.width);
+    float watermark_screen_width = frame_w * watermark_scale;
     float watermark_screen_height = watermark_screen_width * aspect_ratio;
 
     float padding = 18.0f;
-    float x = frame.width - watermark_screen_width - padding;
+    float x = frame_w - watermark_screen_width - padding;
     float y = padding;
 
-    float ndc_left = (x / frame.width) * 2.0f - 1.0f    ;
-    float ndc_right = ((x + watermark_screen_width) / frame.width) * 2.0f - 1.0f;
-    float ndc_bottom = -(((y + watermark_screen_height) / frame.height) * 2.0f - 1.0f);;
-    float ndc_top = -((y / frame.height) * 2.0f - 1.0f);
+    float ndc_left = (x / frame_w) * 2.0f - 1.0f;
+    float ndc_right = ((x + watermark_screen_width) / frame_w) * 2.0f - 1.0f;
+    float ndc_bottom = -(((y + watermark_screen_height) / frame_h) * 2.0f - 1.0f);
+    float ndc_top = -((y / frame_h) * 2.0f - 1.0f);
 
     float vertices[] = {
         ndc_left,  ndc_bottom, 0.0f, 0.0f,  // Bottom-left -> tex (0,0) 
