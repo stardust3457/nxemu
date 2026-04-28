@@ -151,7 +151,7 @@ ENUM(AntiAliasing, None, Fxaa, Smaa, MaxEnum);
 
 ENUM(AspectRatio, R16_9, R4_3, R21_9, R16_10, Stretch);
 
-ENUM(ConsoleMode, Handheld, Docked);
+ENUM(DockedMode, Handheld, Docked);
 
 ENUM(AppletMode, HLE, LLE);
 

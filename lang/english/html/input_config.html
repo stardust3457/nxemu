@@ -146,6 +146,7 @@ div.center-buttons-grid
 }
 
 #ProController,
+#Handheld,
 #GCController,
 #DualJoycons,
 #LeftJoycon
@@ -350,9 +351,45 @@ input[type=hslider] > button.slider
 #RightJoycon .joycon-side-buttons .button .shape { stroke: #979797; stroke-width: 1; fill: #1a1b1e; }
 #RightJoycon .joycon-side-buttons .button[data-pressed="1"] .shape { fill: #aa0000; }
 
-#Handheld .body { fill: #CCCCCC stroke: #696b6e; stroke-width: 1; }
+#Handheld .controller { stroke: black; stroke-opacity: 0.28; stroke-width: 1; }
+#Handheld .handheld-bezel { fill: #2a2c30; stroke: none; }
+#Handheld .handheld-bezel-outline { fill: none; stroke: #555; stroke-width: 0.8; }
+#Handheld .screen { fill: #1a3a5c; stroke: none; }
+#Handheld .rail-left, #Handheld .rail-right { fill: #c9ced6; }
+#Handheld .tablet-bezel { fill: #35383e; stroke: black; stroke-opacity: 0.35; stroke-width: 1; }
+#Handheld .tablet-screen { fill: #141619; stroke: #0a0b0c; stroke-width: 1; }
+#Handheld .button .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#Handheld .button .label { fill: white; font-family: Arial, sans-serif; font-weight: bold; }
+#Handheld .button .symbol { fill: white; }
+#Handheld .button[data-pressed="1"] .shape { fill: #aa0000; }
+#Handheld .button[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#Handheld .home .outer { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#Handheld .home .inner { fill: none; stroke: white; stroke-width: 1; }
+#Handheld .home .house { fill: white; }
+#Handheld .screenshot .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#Handheld .screenshot .symbol { fill: white; }
+#Handheld .plus .shape, #Handheld .minus .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#Handheld .plus .symbol, #Handheld .minus .symbol { fill: white; }
+#Handheld .cube { stroke: #000; stroke-width: 1.3; stroke-linejoin: miter; }
+#Handheld .cube.face.front { fill: url(#hhFrontFaceGradient); fill-opacity: 1; }
+#Handheld .cube.face.back { fill: url(#hhBackFaceGradient); fill-opacity: 1; }
+#Handheld .cube.edge { stroke:#000; stroke-width:1; fill: none; }
 #Handheld .trigger .shape { fill: #232629; stroke: #ccc; stroke-width: 1; }
 #Handheld .trigger .label { fill: #ccc; }
+#Handheld .trigger.L .shape { stroke-width: 2; }
+#Handheld .trigger.R .shape { stroke-width: 2; }
+#Handheld .trigger[data-pressed="1"] .shape { fill: #aa0000; }
+#Handheld .trigger[data-setting="1"] .shape { animation: flash 0.5s ease-in-out infinite; }
+#Handheld .trigger[data-pressed="1"] .label { fill: white; }
+#Handheld .joystick-range { stroke: #CCC; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#Handheld .joystick-deadzone { stroke: #CC0000; stroke-width: 2; stroke-dasharray: 1 3; fill: none; }
+#Handheld .joystick-dot-raw { fill: #AAEBFF; stroke: none; }
+#Handheld .joystick-dot-calibrated { fill: #3BA55D; stroke: none; }
+#Handheld .dpad .shape { fill: #2c2c2c; stroke: black; stroke-opacity: 0.5; stroke-width: 1; }
+#Handheld .left-stick-movable .shape { stroke: #CCC; stroke-width: 1; fill: #2c2c2c; }
+#Handheld .left-stick-movable .line { stroke: #CCC; stroke-width: 1; fill: #2c2c2c; }
+#Handheld .right-stick-movable .shape { stroke: #CCC; stroke-width: 1; fill: #2c2c2c; }
+#Handheld .right-stick-movable .line { stroke: #CCC; stroke-width: 1; fill: #2c2c2c; }
 
 #GCController .outline { stroke: #000; stroke-width: 1.5; }
 #GCController .primary { fill: #ccc; }

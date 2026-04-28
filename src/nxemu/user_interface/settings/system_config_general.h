@@ -7,6 +7,7 @@ class SystemConfig;
 class SystemConfigGameBrowser;
 class SystemConfigHotkeys;
 class SystemConfigLogging;
+class SystemConfigSystem;
 
 class SystemConfigGeneral :
     public IPagesSink
@@ -37,4 +38,5 @@ private:
     std::unique_ptr<SystemConfigLogging> m_systemConfigLogging;
     std::unique_ptr<SystemConfigGameBrowser> m_systemConfigGameBrowser;
     std::unique_ptr<SystemConfigHotkeys> m_systemConfigHotkeys;
+    std::unique_ptr<SystemConfigSystem> m_systemConfigSystem;
 };

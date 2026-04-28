@@ -2,6 +2,7 @@
 #include "system_config_general.h"
 #include "system_config_hotkeys.h"
 #include "system_config_logging.h"
+#include "system_config_system.h"
 
 SystemConfigGeneral::SystemConfigGeneral(ISciterUI & sciterUI, SystemConfig & config, ISciterWindow & window, SciterElement page) :
     m_sciterUI(sciterUI),
@@ -45,6 +46,10 @@ void SystemConfigGeneral::SaveSetting(void)
     {
         m_systemConfigHotkeys->SaveSetting();
     }
+    if (m_systemConfigSystem)
+    {
+        m_systemConfigSystem->SaveSetting();
+    }
 }
 
 bool SystemConfigGeneral::PageNavChangeFrom(const std::string & /*pageName*/, SCITER_ELEMENT /*pageNav*/)
@@ -70,6 +75,10 @@ void SystemConfigGeneral::PageNavCreatedPage(const std::string & pageName, SCITE
     else if (pageName == "Hotkeys")
     {
         m_systemConfigHotkeys.reset(new SystemConfigHotkeys(m_sciterUI, m_window, page));
+    }
+    else if (pageName == "System")
+    {
+        m_systemConfigSystem.reset(new SystemConfigSystem(m_sciterUI, m_config, page));
     }
 }
 

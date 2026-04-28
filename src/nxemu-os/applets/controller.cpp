@@ -80,7 +80,7 @@ void DefaultControllerApplet::ReconfigureControllers(ReconfigureCallback callbac
                 controller->Connect(true);
             }
         }
-        else if (index == 0 && parameters.enable_single_mode && parameters.allow_handheld && g_settings->GetInt(NXOsSetting::DockedMode) != static_cast<int32_t>(Settings::ConsoleMode::Docked))
+        else if (index == 0 && parameters.enable_single_mode && parameters.allow_handheld && g_settings->GetInt(NXOsSetting::DockedMode) != static_cast<int32_t>(Settings::DockedMode::Docked))
         {
             // We should *never* reach here under any normal circumstances.
             controller->SetNpadStyleIndex(NpadStyleIndex::Handheld);

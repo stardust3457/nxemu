@@ -23,7 +23,6 @@ private:
     SystemConfigGameBrowser(const SystemConfigGameBrowser&) = delete;
     SystemConfigGameBrowser& operator=(const SystemConfigGameBrowser&) = delete;
 
-    void SetupGameBrowserPage(SciterElement page);
     void SelectDirectoryItem(const SciterElement & gameDirectoryList, SCITER_ELEMENT source);
     void RemoveSelectedDirectory();
 

@@ -322,10 +322,6 @@ void SystemConfig::PageNavCreatedPage(const std::string & pageName, SCITER_ELEME
     {
         m_systemConfigGraphics.reset(new SystemConfigGraphics(m_sciterUI, *this, m_window->GetHandle(), page));
     }
-    else if (pageName == "System")
-    {
-        m_systemConfigSystem.reset(new SystemConfigSystem(m_sciterUI, *this, page));
-    }
     else if (pageName == "General")
     {
         m_systemConfigGeneral.reset(new SystemConfigGeneral(m_sciterUI, *this, *m_window, page));
@@ -348,10 +344,6 @@ bool SystemConfig::OnClick(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/, ui
         if (m_systemConfigGraphics)
         {
             m_systemConfigGraphics->SaveSetting();
-        }
-        if (m_systemConfigSystem)
-        {
-            m_systemConfigSystem->SaveSetting();
         }
         if (m_systemConfigGeneral)
         {
@@ -472,8 +464,8 @@ void SystemConfig::InitializeTranslations()
         {(uint32_t)Settings::AudioMode::Surround, "Surround"},
     }});
 
-    m_settingTranslations.insert({ Settings::EnumMetadata<Settings::ConsoleMode>::Index(), {
-        {(uint32_t)Settings::ConsoleMode::Handheld, "Handheld"},
-        {(uint32_t)Settings::ConsoleMode::Docked, "Docked"},
+    m_settingTranslations.insert({Settings::EnumMetadata<Settings::DockedMode>::Index(), {
+        {(uint32_t)Settings::DockedMode::Handheld, "Handheld"},
+        {(uint32_t)Settings::DockedMode::Docked, "Docked"},
     }});
 }

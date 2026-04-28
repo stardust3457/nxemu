@@ -38,6 +38,7 @@ class SciterMainWindow :
         OpenControllersDialog,
         OpenSystemConfiguration,
         ToggleFullscreen,
+        ToggleDockedMode,
         ResetWindowSize720p,
         ResetWindowSize900p,
         ResetWindowSize1080p,
@@ -92,6 +93,7 @@ private:
     void OnSystemConfig();
     void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
+    void OnToggleDockedMode();
     void UpdateStatusBar();
     const MenuBarAccelerator * HotkeyAccelerator(const char * name);
     const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);

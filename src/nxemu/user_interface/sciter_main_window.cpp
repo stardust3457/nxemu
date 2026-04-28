@@ -105,6 +105,7 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     settings.RegisterCallback(NXOsSetting::SpeedLimit, SciterMainWindow::SettingChanged, this);
     settings.RegisterCallback(NXOsSetting::UseMultiCore, SciterMainWindow::SettingChanged, this);
     settings.RegisterCallback(NXOsSetting::UseSpeedLimit, SciterMainWindow::SettingChanged, this);
+    settings.RegisterCallback(NXOsSetting::DockedMode, SciterMainWindow::SettingChanged, this);
     settings.RegisterCallback(NXUISetting::Hotkeys, SciterMainWindow::HotKeysChanged, this);
 
     m_useMultiCore = settings.GetBool(NXOsSetting::UseMultiCore);
@@ -126,6 +127,7 @@ SciterMainWindow::~SciterMainWindow()
     settings.UnregisterCallback(NXOsSetting::SpeedLimit, SciterMainWindow::SettingChanged, this);
     settings.UnregisterCallback(NXOsSetting::UseMultiCore, SciterMainWindow::SettingChanged, this);
     settings.UnregisterCallback(NXOsSetting::UseSpeedLimit, SciterMainWindow::SettingChanged, this);
+    settings.UnregisterCallback(NXOsSetting::DockedMode, SciterMainWindow::SettingChanged, this);
     settings.UnregisterCallback(NXUISetting::Hotkeys, SciterMainWindow::HotKeysChanged, this);
 
     m_systemConfig.reset(nullptr);
@@ -239,6 +241,7 @@ bool SciterMainWindow::Show()
     UpdateStatusbar();
 
     m_sciterUI.AttachHandler(m_rootElement, IID_IMOUSEUPDOWNSINK, (IMouseUpDownSink *)this);
+    m_sciterUI.AttachHandler(m_rootElement.GetElementByID("dockedMode"), IID_ICLICKSINK, (IClickSink *)this);
     m_sciterUI.AttachHandler(m_rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink *)this);
     m_sciterUI.AttachHandler(m_rootElement.GetElementByID("volume"), IID_ICLICKSINK, (IClickSink *)this);
     m_sciterUI.AttachHandler(m_rootElement.GetElementByID("audioVolume"), IID_ISTATECHANGESINK, (IStateChangeSink *)this);
@@ -286,6 +289,12 @@ void SciterMainWindow::LoadGame(const char * path)
 void SciterMainWindow::UpdateStatusbar()
 {
     SettingsStore & settings = SettingsStore::GetInstance();
+    SciterElement dockedMode(m_rootElement.GetElementByID("dockedMode"));
+    if (dockedMode.IsValid())
+    {
+        stdstr_f text("%s", Settings::CanonicalizeEnum((Settings::DockedMode)settings.GetInt(NXOsSetting::DockedMode)).c_str());
+        dockedMode.SetHTML((const uint8_t *)text.c_str(), text.size());
+    }
     SciterElement renderer(m_rootElement.GetElementByID("renderer"));
     if (renderer.IsValid())
     {
@@ -704,6 +713,10 @@ SciterMainWindow::GuiAction SciterMainWindow::HotkeyToGuiAction(const char * hot
     {
         return GuiAction::PauseOrContinueEmulation;
     }
+    if (strcmp(hotkeyId, Hotkey::ToggleDockedMode) == 0)
+    {
+        return GuiAction::ToggleDockedMode;
+    }
     if (strcmp(hotkeyId, Hotkey::StopEmulation) == 0)
     {
         return GuiAction::StopEmulation;
@@ -717,6 +730,13 @@ SciterMainWindow::GuiAction SciterMainWindow::HotkeyToGuiAction(const char * hot
         return GuiAction::OpenControllersDialog;
     }
     return GuiAction::Invalid;
+}
+
+void SciterMainWindow::OnToggleDockedMode()
+{
+    SettingsStore & store = SettingsStore::GetInstance();
+    const bool docked = store.GetInt(NXOsSetting::DockedMode) == static_cast<int32_t>(Settings::DockedMode::Docked);
+    store.SetInt(NXOsSetting::DockedMode, static_cast<int32_t>(docked ? Settings::DockedMode::Handheld : Settings::DockedMode::Docked));
 }
 
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
@@ -768,6 +788,9 @@ void SciterMainWindow::OnGuiAction(GuiAction action)
         break;
     case GuiAction::ToggleFullscreen:
         ToggleFullscreen();
+        break;
+    case GuiAction::ToggleDockedMode:
+        OnToggleDockedMode();
         break;
     case GuiAction::ResetWindowSize720p:
         ResetWindowSize(1280U, 720U);
@@ -1091,7 +1114,11 @@ void SciterMainWindow::ResetWindowSize(uint32_t nominal_width, uint32_t nominal_
 bool SciterMainWindow::OnClick(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t /*reason*/)
 {
     SciterElement rootElement(m_window->GetRootElement());
-    if (source == rootElement.GetElementByID("renderer"))
+    if (source == rootElement.GetElementByID("dockedMode"))
+    {
+        OnToggleDockedMode();
+    }
+    else if (source == rootElement.GetElementByID("renderer"))
     {
         SettingsStore & settings = SettingsStore::GetInstance();
         Settings::RendererBackend graphicsAPI = (Settings::RendererBackend)settings.GetInt(NXVideoSetting::GraphicsAPI);
@@ -1172,6 +1199,11 @@ void SciterMainWindow::SettingChanged(const char * setting, void * userData)
     else if (strcmp(setting, NXOsSetting::SpeedLimit) == 0)
     {
         impl->m_speedLimit = SettingsStore::GetInstance().GetInt(NXOsSetting::SpeedLimit);
+    }
+    else if (strcmp(setting, NXOsSetting::DockedMode) == 0)
+    {
+        impl->UpdateStatusbar();
+        impl->LayoutRenderWindow();
     }
 }
 
