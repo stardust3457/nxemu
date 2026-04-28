@@ -177,7 +177,7 @@ void SciterMainWindow::ResetMenu()
             paused = m_modules.Modules().OperatingSystem().IsEmulationPaused();
         }
         systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::PauseOrContinueEmulation),paused ? "Continue" : "Pause",nullptr, HotkeyAccelerator(Hotkey::PauseContinue)));
-        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::StopEmulation), "&Stop"));
+        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::StopEmulation), "&Stop", nullptr, HotkeyAccelerator(Hotkey::StopEmulation)));
         mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&System", &systemMenu));
     }
 
@@ -191,8 +191,8 @@ void SciterMainWindow::ResetMenu()
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&View", &viewMenu));
 
     MenuBarItemList optionsMenu;
-    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenControllersDialog), "&Controllers..."));
-    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenSystemConfiguration), "Confi&gure..."));
+    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenControllersDialog), "&Controllers...", nullptr, HotkeyAccelerator(Hotkey::Controllers)));
+    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenSystemConfiguration), "Confi&gure...", nullptr, HotkeyAccelerator(Hotkey::Configure)));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&Options", &optionsMenu));
 
     m_menuBar->AddSink(this);
@@ -703,6 +703,18 @@ SciterMainWindow::GuiAction SciterMainWindow::HotkeyToGuiAction(const char * hot
     if (strcmp(hotkeyId, Hotkey::PauseContinue) == 0)
     {
         return GuiAction::PauseOrContinueEmulation;
+    }
+    if (strcmp(hotkeyId, Hotkey::StopEmulation) == 0)
+    {
+        return GuiAction::StopEmulation;
+    }
+    if (strcmp(hotkeyId, Hotkey::Configure) == 0)
+    {
+        return GuiAction::OpenSystemConfiguration;
+    }
+    if (strcmp(hotkeyId, Hotkey::Controllers) == 0)
+    {
+        return GuiAction::OpenControllersDialog;
     }
     return GuiAction::Invalid;
 }
