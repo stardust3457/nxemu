@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(nxemu-video LANGUAGES C CXX ASM)
 
-# Windows (nxemu-video.vcxproj): same .cpp files + ProjectReference yuzu_video_core (full GPU).
-# CMake: always link static `video_core` when that target exists (host builds). Android builds
-# only video_core_frontend until full yuzu_video_core is enabled for NDK.
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -16,6 +12,7 @@ include(generate_version_header)
 set(NXEMU_VIDEO_SOURCES
     nxemu-video.cpp
     render_window.cpp
+    video_manager.cpp
     video_manager.h
     video_settings.cpp
     video_settings.h
@@ -23,11 +20,6 @@ set(NXEMU_VIDEO_SOURCES
     version.h
     render_window.h
 )
-if(ANDROID)
-    list(APPEND NXEMU_VIDEO_SOURCES video_manager_android_stub.cpp)
-else()
-    list(APPEND NXEMU_VIDEO_SOURCES video_manager.cpp)
-endif()
 
 add_library(nxemu-video SHARED ${NXEMU_VIDEO_SOURCES})
 
@@ -45,5 +37,6 @@ if(TARGET video_core)
 endif()
 
 if(ANDROID)
-    target_link_libraries(nxemu-video PRIVATE log)
+    target_link_libraries(nxemu-video PRIVATE log android)
+    target_link_options(nxemu-video PRIVATE "LINKER:-Bsymbolic")
 endif()

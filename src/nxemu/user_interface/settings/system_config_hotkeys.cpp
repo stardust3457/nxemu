@@ -50,6 +50,9 @@ static const HotkeyLabelEntry kHotkeyLabels[] = {
     {Hotkey::ExitFullscreen, "Exit Fullscreen"},
     {Hotkey::PauseContinue, "Pause / Continue"},
     {Hotkey::ToggleDockedMode, "Change Docked Mode"},
+    {Hotkey::StopEmulation, "Stop Emulation"},
+    {Hotkey::Controllers, "Controllers..."},
+    {Hotkey::Configure, "Configure..."},
 };
 
 std::string HotkeyBindingElementId(const std::string & hotkeyId)

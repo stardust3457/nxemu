@@ -138,8 +138,8 @@ if(ANDROID)
             fs/fs_android.h
             android/android_common.cpp
             android/android_common.h
-            android/id_cache.cpp
-            android/id_cache.h
+            android/jni_android.cpp
+            android/jni_android.h
             android/applets/software_keyboard.cpp
             android/applets/software_keyboard.h
     )
