@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <string>
 #include <nxemu-core/modules/system_modules.h>
 #include <nxemu-module-spec/base.h>
 #include <sciter_ui.h>
@@ -37,6 +38,7 @@ class SciterMainWindow :
         OpenControllersDialog,
         OpenSystemConfiguration,
         ToggleFullscreen,
+        ToggleStartGamesInFullscreen,
         ToggleDockedMode,
         ResetWindowSize720p,
         ResetWindowSize900p,
@@ -92,6 +94,7 @@ private:
     void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
     void OnToggleDockedMode();
+    void OnToggleStartGamesInFullscreen();
     void UpdateStatusBar();
     const MenuBarAccelerator * HotkeyAccelerator(const char * name);
     const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);
@@ -156,6 +159,8 @@ private:
     bool m_useSpeedLimit;
     uint32_t m_speedLimit;
     bool m_emulationRunning;
+    bool m_pendingStartInFullscreen;
+    std::string m_fullscreenMenuSvg;
 #ifdef _WIN32
     std::unique_ptr<Win32FullscreenState> m_win32Fullscreen;
 #endif

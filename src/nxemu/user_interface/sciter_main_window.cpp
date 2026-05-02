@@ -89,6 +89,7 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_renderWindow(nullptr),
     m_windowTitle(windowTitle),
     m_emulationRunning(false),
+    m_pendingStartInFullscreen(false),
     m_win32Fullscreen(std::make_unique<Win32FullscreenState>())
 {
     SettingsStore & settings = SettingsStore::GetInstance();
@@ -110,6 +111,12 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_useMultiCore = settings.GetBool(NXOsSetting::UseMultiCore);
     m_useSpeedLimit = settings.GetBool(NXOsSetting::UseSpeedLimit);
     m_speedLimit = settings.GetBool(NXOsSetting::SpeedLimit);
+
+    std::vector<uint8_t> resource;
+    if (m_sciterUI.LoadResource("fullscreen.svg", resource))
+    {
+        m_fullscreenMenuSvg.assign(reinterpret_cast<const char *>(resource.data()), resource.size());
+    }
 }
 
 SciterMainWindow::~SciterMainWindow()
@@ -184,7 +191,16 @@ void SciterMainWindow::ResetMenu()
     }
 
     MenuBarItemList viewMenu;
-    viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleFullscreen),"&Fullscreen",nullptr,HotkeyAccelerator(Hotkey::Fullscreen)));
+    if (!m_emulationRunning)
+    {
+        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleStartGamesInFullscreen), "&Start games in fullscreen", nullptr, nullptr, uiSettings.startGamesInFullscreen ? MenuBarItem::CheckState::Checked : MenuBarItem::CheckState::Unchecked));
+        viewMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
+    }
+    if (m_emulationRunning)
+    {
+        const std::string * fullscreenSvg = m_fullscreenMenuSvg.empty() ? nullptr : &m_fullscreenMenuSvg;
+        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleFullscreen), "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen), MenuBarItem::CheckState::None, fullscreenSvg));
+    }
     MenuBarItemList resetWindowSizeMenu;
     resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize720p),"Reset Window Size to 720p"));
     resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize900p),"Reset Window Size to 900p"));
@@ -359,6 +375,11 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
     SciterMainWindow * impl = (SciterMainWindow *)userData;
     SettingsStore & settings = SettingsStore::GetInstance();
     impl->m_emulationRunning = settings.GetBool(NXCoreSetting::EmulationRunning);
+    impl->m_pendingStartInFullscreen = impl->m_emulationRunning && uiSettings.startGamesInFullscreen;
+    if (!impl->m_emulationRunning && impl->m_win32Fullscreen && impl->m_win32Fullscreen->active)
+    {
+        impl->ExitFullscreen();
+    }
     if (settings.GetBool(NXCoreSetting::ShuttingDown))
     {
         return;
@@ -406,6 +427,11 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
     }
     else if (state == EmulationState::Running)
     {
+        if (impl->m_pendingStartInFullscreen && uiSettings.startGamesInFullscreen)
+        {
+            impl->m_pendingStartInFullscreen = false;
+            impl->EnterFullscreen();
+        }
         impl->m_rootElement.PostEvent(EVENT_EMULATION_RUNNING);
         impl->ResetMenu();
     }
@@ -721,6 +747,17 @@ void SciterMainWindow::OnToggleDockedMode()
     store.SetInt(NXOsSetting::DockedMode, static_cast<int32_t>(docked ? Settings::DockedMode::Handheld : Settings::DockedMode::Docked));
 }
 
+void SciterMainWindow::OnToggleStartGamesInFullscreen()
+{
+    if (m_emulationRunning)
+    {
+        return;
+    }
+    uiSettings.startGamesInFullscreen = !uiSettings.startGamesInFullscreen;
+    SaveUISetting();
+    ResetMenu();
+}
+
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
 {
     Stringlist & recentFiles = uiSettings.recentFiles;
@@ -771,6 +808,9 @@ void SciterMainWindow::OnGuiAction(GuiAction action)
     case GuiAction::ToggleFullscreen:
         ToggleFullscreen();
         break;
+    case GuiAction::ToggleStartGamesInFullscreen:
+        OnToggleStartGamesInFullscreen();
+        break;
     case GuiAction::ToggleDockedMode:
         OnToggleDockedMode();
         break;
@@ -812,9 +852,13 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
         }
         if (strcmp(hotkeyId, Hotkey::Fullscreen) == 0)
         {
-            m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
-            OnGuiAction(GuiAction::ToggleFullscreen);
-            return true;
+            const bool allowFullscreen = m_emulationRunning || (m_win32Fullscreen != nullptr && m_win32Fullscreen->active);
+            if (allowFullscreen)
+            {
+                m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
+                OnGuiAction(GuiAction::ToggleFullscreen);
+                return true;
+            }
         }
         const GuiAction fromKey = HotkeyToGuiAction(hotkeyId);
         if (fromKey != GuiAction::Invalid)
@@ -939,7 +983,7 @@ void SciterMainWindow::ToggleFullscreen()
     {
         ExitFullscreen();
     }
-    else
+    else if (m_emulationRunning)
     {
         EnterFullscreen();
     }
@@ -947,7 +991,7 @@ void SciterMainWindow::ToggleFullscreen()
 
 void SciterMainWindow::EnterFullscreen()
 {
-    if (m_window == nullptr || !m_win32Fullscreen || m_win32Fullscreen->active)
+    if (m_window == nullptr || !m_win32Fullscreen || m_win32Fullscreen->active || !m_emulationRunning)
     {
         return;
     }
