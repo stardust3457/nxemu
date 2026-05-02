@@ -37,6 +37,7 @@ class SciterMainWindow :
         OpenControllersDialog,
         OpenSystemConfiguration,
         ToggleFullscreen,
+        ToggleHideUi,
         ToggleDockedMode,
         ResetWindowSize720p,
         ResetWindowSize900p,
@@ -98,6 +99,9 @@ private:
     GuiAction HotkeyToGuiAction(const char * hotkeyId);
     void OnGuiAction(GuiAction action);
 
+    void ToggleHideUi();
+    void UpdateUIVisibility();
+
 #ifdef _WIN32
     void ToggleFullscreen();
     void EnterFullscreen();
@@ -156,7 +160,6 @@ private:
     bool m_useSpeedLimit;
     uint32_t m_speedLimit;
     bool m_emulationRunning;
-#ifdef _WIN32
+    bool m_hideUi;
     std::unique_ptr<Win32FullscreenState> m_win32Fullscreen;
-#endif
 };

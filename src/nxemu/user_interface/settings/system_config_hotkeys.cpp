@@ -48,6 +48,7 @@ static const HotkeyLabelEntry kHotkeyLabels[] = {
     {Hotkey::Exit, "Exit"},
     {Hotkey::Fullscreen, "Fullscreen"},
     {Hotkey::ExitFullscreen, "Exit Fullscreen"},
+    {Hotkey::HideUi, "Hide UI"},
     {Hotkey::PauseContinue, "Pause / Continue"},
     {Hotkey::ToggleDockedMode, "Change Docked Mode"},
     {Hotkey::StopEmulation, "Stop Emulation"},

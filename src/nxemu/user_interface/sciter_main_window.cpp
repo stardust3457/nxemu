@@ -18,6 +18,7 @@
 #include <yuzu_common/settings_input.h>
 
 #include <Windows.h>
+#include <array>
 #include <cmath>
 
 struct Win32FullscreenState
@@ -89,6 +90,7 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_renderWindow(nullptr),
     m_windowTitle(windowTitle),
     m_emulationRunning(false),
+    m_hideUi(false),
     m_win32Fullscreen(std::make_unique<Win32FullscreenState>())
 {
     SettingsStore & settings = SettingsStore::GetInstance();
@@ -185,6 +187,10 @@ void SciterMainWindow::ResetMenu()
 
     MenuBarItemList viewMenu;
     viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleFullscreen),"&Fullscreen",nullptr,HotkeyAccelerator(Hotkey::Fullscreen)));
+    if (m_emulationRunning)
+    {
+        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleHideUi), m_hideUi ? "Show &UI" : "Hide &UI", nullptr, HotkeyAccelerator(Hotkey::HideUi)));
+    }
     MenuBarItemList resetWindowSizeMenu;
     resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize720p),"Reset Window Size to 720p"));
     resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize900p),"Reset Window Size to 900p"));
@@ -359,6 +365,10 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
     SciterMainWindow * impl = (SciterMainWindow *)userData;
     SettingsStore & settings = SettingsStore::GetInstance();
     impl->m_emulationRunning = settings.GetBool(NXCoreSetting::EmulationRunning);
+    if (!impl->m_emulationRunning)
+    {
+        impl->m_hideUi = false;
+    }
     if (settings.GetBool(NXCoreSetting::ShuttingDown))
     {
         return;
@@ -378,6 +388,7 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
         renderer.SetState(impl->m_emulationRunning ? SciterElement::STATE_DISABLED : 0, impl->m_emulationRunning ? 0 : SciterElement::STATE_DISABLED, true);
     }
     impl->ResetMenu();
+    impl->UpdateUIVisibility();
 }
 
 void SciterMainWindow::ApplyEmulationLoadingUi()
@@ -711,6 +722,10 @@ SciterMainWindow::GuiAction SciterMainWindow::HotkeyToGuiAction(const char * hot
     {
         return GuiAction::OpenControllersDialog;
     }
+    if (strcmp(hotkeyId, Hotkey::HideUi) == 0)
+    {
+        return GuiAction::ToggleHideUi;
+    }
     return GuiAction::Invalid;
 }
 
@@ -771,6 +786,9 @@ void SciterMainWindow::OnGuiAction(GuiAction action)
     case GuiAction::ToggleFullscreen:
         ToggleFullscreen();
         break;
+    case GuiAction::ToggleHideUi:
+        ToggleHideUi();
+        break;
     case GuiAction::ToggleDockedMode:
         OnToggleDockedMode();
         break;
@@ -816,6 +834,12 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
             OnGuiAction(GuiAction::ToggleFullscreen);
             return true;
         }
+        if (strcmp(hotkeyId, Hotkey::HideUi) == 0)
+        {
+            m_win32Fullscreen->pendingSwallowKeyUp = (uint32_t)keyCode;
+            OnGuiAction(GuiAction::ToggleHideUi);
+            return true;
+        }
         const GuiAction fromKey = HotkeyToGuiAction(hotkeyId);
         if (fromKey != GuiAction::Invalid)
         {
@@ -837,14 +861,11 @@ bool SciterMainWindow::OnKeyDown(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*it
 
 bool SciterMainWindow::OnKeyUp(SCITER_ELEMENT /*element*/, SCITER_ELEMENT /*item*/, SciterKeys keyCode, uint32_t keyboardState)
 {
-#ifdef _WIN32
-    if (m_win32Fullscreen != nullptr && m_win32Fullscreen->pendingSwallowKeyUp != 0 &&
-        (uint32_t)keyCode == m_win32Fullscreen->pendingSwallowKeyUp)
+    if (m_win32Fullscreen != nullptr && m_win32Fullscreen->pendingSwallowKeyUp != 0 && (uint32_t)keyCode == m_win32Fullscreen->pendingSwallowKeyUp)
     {
         m_win32Fullscreen->pendingSwallowKeyUp = 0;
         return true;
     }
-#endif
     if (IsMenuBarAccelerator((uint32_t)keyCode, keyboardState) != nullptr)
     {
         return true;
@@ -929,6 +950,51 @@ void SciterMainWindow::UpdatePausePanel()
     }
 }
 
+void SciterMainWindow::UpdateUIVisibility()
+{
+    const bool hide = m_hideUi || (m_win32Fullscreen != nullptr && m_win32Fullscreen->active);
+
+    std::array<SciterElement, 3> shellPanels = {{
+        m_rootElement.FindFirst("header"),
+        m_rootElement.GetElementByID("MainMenu"),
+        m_rootElement.GetElementByID("StatusBar"),
+    }};
+
+    for (SciterElement & panel : shellPanels)
+    {
+        if (!panel.IsValid())
+        {
+            continue;
+        }
+        if (hide)
+        {
+            panel.AddClassName("nx-fullscreen-hide");
+        }
+        else
+        {
+            panel.RemoveClassName("nx-fullscreen-hide");
+        }
+    }
+}
+
+void SciterMainWindow::ToggleHideUi()
+{
+    if (!m_emulationRunning)
+    {
+        return;
+    }
+    m_hideUi = !m_hideUi;
+    UpdateUIVisibility();
+    m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
+    SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
+    if (mainContents.IsValid())
+    {
+        mainContents.Update(true);
+    }
+    LayoutRenderWindow();
+    ResetMenu();
+}
+
 void SciterMainWindow::ToggleFullscreen()
 {
     if (!m_win32Fullscreen)
@@ -977,23 +1043,8 @@ void SciterMainWindow::EnterFullscreen()
 
     SetWindowPos(hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, w, h, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
-    SciterElement hdr(m_rootElement.FindFirst("header"));
-    if (hdr.IsValid())
-    {
-        hdr.AddClassName("nx-fullscreen-hide");
-    }
-    SciterElement mm(m_rootElement.GetElementByID("MainMenu"));
-    if (mm.IsValid())
-    {
-        mm.AddClassName("nx-fullscreen-hide");
-    }
-    SciterElement sb(m_rootElement.GetElementByID("StatusBar"));
-    if (sb.IsValid())
-    {
-        sb.AddClassName("nx-fullscreen-hide");
-    }
-
     fs.active = true;
+    UpdateUIVisibility();
     m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
     SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
     if (mainContents.IsValid())
@@ -1012,27 +1063,12 @@ void SciterMainWindow::ExitFullscreen()
     HWND hwnd = (HWND)m_window->GetHandle();
     Win32FullscreenState & fs = *m_win32Fullscreen;
 
-    SciterElement hdr(m_rootElement.FindFirst("header"));
-    if (hdr.IsValid())
-    {
-        hdr.RemoveClassName("nx-fullscreen-hide");
-    }
-    SciterElement mm(m_rootElement.GetElementByID("MainMenu"));
-    if (mm.IsValid())
-    {
-        mm.RemoveClassName("nx-fullscreen-hide");
-    }
-    SciterElement statusEl(m_rootElement.GetElementByID("StatusBar"));
-    if (statusEl.IsValid())
-    {
-        statusEl.RemoveClassName("nx-fullscreen-hide");
-    }
-
     SetWindowLongPtr(hwnd, GWL_STYLE, fs.savedStyle);
     SetWindowLongPtr(hwnd, GWL_EXSTYLE, fs.savedExStyle);
     SetWindowPlacement(hwnd, &fs.placement);
 
     fs.active = false;
+    UpdateUIVisibility();
     m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
     SciterElement mainContents(m_rootElement.GetElementByID("MainContents"));
     if (mainContents.IsValid())
