@@ -55,10 +55,14 @@ bool operator<(const ContentProviderEntry & lhs, const ContentProviderEntry & rh
 bool operator==(const ContentProviderEntry & lhs, const ContentProviderEntry & rhs);
 bool operator!=(const ContentProviderEntry & lhs, const ContentProviderEntry & rhs);
 
-class ContentProvider
+class ContentProvider :
+    public IContentProvider
 {
 public:
     virtual ~ContentProvider();
+
+    // IContentProvider
+    IFileSysNCA * GetEntry(uint64_t title_id, LoaderContentRecordType type) const override;
 
     virtual void Refresh() = 0;
 
