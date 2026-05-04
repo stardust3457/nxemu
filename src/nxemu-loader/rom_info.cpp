@@ -142,6 +142,20 @@ void RomInfo::AddToManualContentProvider(IManualContentProvider & provider)
     }
 }
 
+IVirtualFile * RomInfo::ReadManualRomFS()
+{
+    if (!m_loader)
+    {
+        return nullptr;
+    }
+    FileSys::VirtualFile out;
+    if (m_loader->ReadManualRomFS(out) != LoaderResultStatus::Success || !out)
+    {
+        return nullptr;
+    }
+    return std::make_unique<VirtualFileImpl>(out).release();
+}
+
 void RomInfo::Release()
 {
     delete this;

@@ -23,6 +23,7 @@ public:
     LoaderResultStatus ReadProgramIds(uint64_t * buffer, uint32_t * count) override;
     void AddToManualContentProvider(IManualContentProvider & provider) override;
     void Release() override;
+    IVirtualFile * ReadManualRomFS() override;
 
 private:
     RomInfo() = delete;

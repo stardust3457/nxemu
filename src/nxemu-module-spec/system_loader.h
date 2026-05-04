@@ -296,6 +296,7 @@ nxinterface IRomInfo
     virtual LoaderResultStatus ReadLogo(uint8_t * buffer, uint32_t * bufferSize) = 0;
     virtual LoaderResultStatus ReadProgramIds(uint64_t * buffer, uint32_t * count) = 0;
     virtual void AddToManualContentProvider(IManualContentProvider & provider) = 0;
+    virtual IVirtualFile * ReadManualRomFS() = 0;
     virtual void Release() = 0;
 };
 
