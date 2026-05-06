@@ -6,39 +6,41 @@
 #include <memory>
 #include <queue>
 
-#include "yuzu_common/swap.h"
 #include "core/hle/service/am/applet.h"
+#include "yuzu_common/swap.h"
+#include <nxemu-module-spec/operating_system.h>
 
 union Result;
 
-namespace Core {
+namespace Core
+{
 class System;
 }
 
-namespace Core::Frontend {
-class ECommerceApplet;
-} // namespace Core::Frontend
-
-namespace Kernel {
+namespace Kernel
+{
 class KernelCore;
 class KEvent;
 class KReadableEvent;
 } // namespace Kernel
 
-namespace Service::NFP {
+namespace Service::NFP
+{
 enum class CabinetMode : u8;
 } // namespace Service::NFP
 
-namespace Service::AM {
+namespace Service::AM
+{
 
 class IStorage;
 
-namespace Frontend {
+namespace Frontend
+{
 
-class FrontendApplet {
+class FrontendApplet
+{
 public:
-    explicit FrontendApplet(Core::System& system_, std::shared_ptr<Applet> applet_,
-                            LibraryAppletMode applet_mode_);
+    explicit FrontendApplet(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_);
     virtual ~FrontendApplet();
 
     virtual void Initialize();
@@ -48,11 +50,13 @@ public:
     virtual void Execute() = 0;
     virtual Result RequestExit() = 0;
 
-    LibraryAppletMode GetLibraryAppletMode() const {
+    LibraryAppletMode GetLibraryAppletMode() const
+    {
         return applet_mode;
     }
 
-    bool IsInitialized() const {
+    bool IsInitialized() const
+    {
         return initialized;
     }
 
@@ -64,30 +68,43 @@ protected:
     void Exit();
 
 protected:
-    Core::System& system;
+    Core::System & system;
     CommonArguments common_args{};
     std::weak_ptr<Applet> applet{};
     LibraryAppletMode applet_mode{};
     bool initialized{false};
 };
 
-struct FrontendAppletSet {
+struct FrontendAppletSet
+{
     FrontendAppletSet();
+    FrontendAppletSet(ICabinetFrontendApplet * cabinet_, IControllerFrontendApplet * controller_, IErrorFrontendApplet * error_, IMiiEditFrontendApplet * mii_edit_, IParentalControlsFrontendApplet * parental_controls, IPhotoViewerFrontendApplet * photo_viewer, IProfileSelectFrontendApplet * profile_select_, ISoftwareKeyboardFrontendApplet * software_keyboard_, IWebBrowserFrontendApplet * web_browser_);
     ~FrontendAppletSet();
 
-    FrontendAppletSet(const FrontendAppletSet&) = delete;
-    FrontendAppletSet& operator=(const FrontendAppletSet&) = delete;
+    FrontendAppletSet(const FrontendAppletSet &) = delete;
+    FrontendAppletSet & operator=(const FrontendAppletSet &) = delete;
 
-    FrontendAppletSet(FrontendAppletSet&&) noexcept;
-    FrontendAppletSet& operator=(FrontendAppletSet&&) noexcept;
+    FrontendAppletSet(FrontendAppletSet &&) noexcept;
+    FrontendAppletSet & operator=(FrontendAppletSet &&) noexcept;
+
+    ICabinetFrontendApplet * cabinet;    
+    IControllerFrontendApplet * controller;
+    IErrorFrontendApplet * error;
+    IMiiEditFrontendApplet * mii_edit;    
+    IParentalControlsFrontendApplet * parental_controls;
+    IPhotoViewerFrontendApplet * photo_viewer;
+    IProfileSelectFrontendApplet * profile_select;
+    ISoftwareKeyboardFrontendApplet * software_keyboard;
+    IWebBrowserFrontendApplet * web_browser;
 };
 
-class FrontendAppletHolder {
+class FrontendAppletHolder
+{
 public:
-    explicit FrontendAppletHolder(Core::System& system_);
+    explicit FrontendAppletHolder(Core::System & system_);
     ~FrontendAppletHolder();
 
-    const FrontendAppletSet& GetFrontendAppletSet() const;
+    const FrontendAppletSet & GetFrontendAppletSet() const;
     NFP::CabinetMode GetCabinetMode() const;
     AppletId GetCurrentAppletId() const;
 
@@ -97,15 +114,17 @@ public:
     void SetDefaultAppletsIfMissing();
     void ClearAll();
 
-    std::shared_ptr<FrontendApplet> GetApplet(std::shared_ptr<Applet> applet, AppletId id,
-                                              LibraryAppletMode mode) const;
+    std::shared_ptr<FrontendApplet> GetApplet(std::shared_ptr<Applet> applet, AppletId id, LibraryAppletMode mode) const;
 
 private:
+    struct DefaultApplets;
+
     AppletId current_applet_id{};
     NFP::CabinetMode cabinet_mode{};
 
     FrontendAppletSet frontend;
-    Core::System& system;
+    std::unique_ptr<DefaultApplets> frontendDefaults;
+    Core::System & system;
 };
 
 } // namespace Frontend

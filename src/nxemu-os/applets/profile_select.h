@@ -18,19 +18,10 @@ struct ProfileSelectParameters
     Service::AM::Frontend::UserSelectionPurpose purpose;
 };
 
-class ProfileSelectApplet : public Applet
+class DefaultProfileSelectApplet final : 
+    public IProfileSelectFrontendApplet
 {
 public:
-    using SelectProfileCallback = std::function<void(std::optional<Common::UUID>)>;
-
-    virtual ~ProfileSelectApplet();
-
-    virtual void SelectProfile(SelectProfileCallback callback, const ProfileSelectParameters & parameters) const = 0;
-};
-
-class DefaultProfileSelectApplet final : public ProfileSelectApplet
-{
-public:
-    void Close() const override;
-    void SelectProfile(SelectProfileCallback callback,  const ProfileSelectParameters & parameters) const override;
+    void Close() override;
+    void SelectProfile(void * user_data, ProfileSelectFinishedFn finished, const ProfileSelectHostParameters * parameters) const override;
 };

@@ -52,6 +52,64 @@ LoaderResultStatus RomInfo::ReadIcon(uint8_t * buffer, uint32_t * bufferSize)
     return LoaderResultStatus::ErrorNotInitialized;
 }
 
+LoaderResultStatus RomInfo::ReadBanner(uint8_t * buffer, uint32_t * bufferSize)
+{
+    if (!m_loader)
+    {
+        return LoaderResultStatus::ErrorNotInitialized;
+    }
+    std::vector<u8> tmp;
+    const LoaderResultStatus st = m_loader->ReadBanner(tmp);
+    if (st != LoaderResultStatus::Success)
+    {
+        return st;
+    }
+    if (bufferSize == nullptr)
+    {
+        return LoaderResultStatus::ErrorNotImplemented;
+    }
+    if (buffer != nullptr && *bufferSize < static_cast<uint32_t>(tmp.size()))
+    {
+        return LoaderResultStatus::ErrorBufferTooSmall;
+    }
+    *bufferSize = static_cast<uint32_t>(tmp.size());
+    if (buffer == nullptr)
+    {
+        return LoaderResultStatus::Success;
+    }
+    std::memcpy(buffer, tmp.data(), tmp.size());
+    return LoaderResultStatus::Success;
+}
+
+LoaderResultStatus RomInfo::ReadLogo(uint8_t * buffer, uint32_t * bufferSize)
+{
+    if (!m_loader)
+    {
+        return LoaderResultStatus::ErrorNotInitialized;
+    }
+    std::vector<u8> tmp;
+    const LoaderResultStatus st = m_loader->ReadLogo(tmp);
+    if (st != LoaderResultStatus::Success)
+    {
+        return st;
+    }
+    if (bufferSize == nullptr)
+    {
+        return LoaderResultStatus::ErrorNotImplemented;
+    }
+    if (buffer != nullptr && *bufferSize < static_cast<uint32_t>(tmp.size()))
+    {
+        return LoaderResultStatus::ErrorBufferTooSmall;
+    }
+    *bufferSize = static_cast<uint32_t>(tmp.size());
+    if (buffer == nullptr)
+    {
+        return LoaderResultStatus::Success;
+    }
+    std::memcpy(buffer, tmp.data(), tmp.size());
+    return LoaderResultStatus::Success;
+}
+
 LoaderResultStatus RomInfo::ReadProgramIds(uint64_t * buffer, uint32_t * count)
 {
     if (m_loader)
@@ -82,6 +140,20 @@ void RomInfo::AddToManualContentProvider(IManualContentProvider & provider)
             }
         }
     }
+}
+
+IVirtualFile * RomInfo::ReadManualRomFS()
+{
+    if (!m_loader)
+    {
+        return nullptr;
+    }
+    FileSys::VirtualFile out;
+    if (m_loader->ReadManualRomFS(out) != LoaderResultStatus::Success || !out)
+    {
+        return nullptr;
+    }
+    return std::make_unique<VirtualFileImpl>(out).release();
 }
 
 void RomInfo::Release()

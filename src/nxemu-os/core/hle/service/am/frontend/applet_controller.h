@@ -125,16 +125,18 @@ static_assert(sizeof(ControllerSupportResultInfo) == 0xC,
 class Controller final : public FrontendApplet {
 public:
     explicit Controller(Core::System& system_, std::shared_ptr<Applet> applet_,
-                        LibraryAppletMode applet_mode_);
+                        LibraryAppletMode applet_mode_, IControllerFrontendApplet & frontend_);
     ~Controller() override;
 
     void Initialize() override;
 
     Result GetStatus() const override;
     void ExecuteInteractive() override;
+    void Execute() override;
     Result RequestExit() override;
 
 private:
+    [[maybe_unused]] IControllerFrontendApplet & frontend;
     ControllerAppletVersion controller_applet_version;
     ControllerSupportArgPrivate controller_private_arg;
     ControllerSupportArgOld controller_user_arg_old;

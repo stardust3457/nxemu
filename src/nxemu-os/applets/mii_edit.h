@@ -2,24 +2,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
+#include <nxemu-module-spec/operating_system.h>
 
-#include <functional>
-
-#include "applets/applet.h"
-
-class MiiEditApplet : public Applet
+class DefaultMiiEditApplet final :
+    public IMiiEditFrontendApplet
 {
 public:
-    using MiiEditCallback = std::function<void()>;
-
-    virtual ~MiiEditApplet();
-
-    virtual void ShowMiiEdit(const MiiEditCallback & callback) const = 0;
-};
-
-class DefaultMiiEditApplet final : public MiiEditApplet
-{
-public:
-    void Close() const override;
-    void ShowMiiEdit(const MiiEditCallback & callback) const override;
+    void Close() override;
+    void ShowMiiEdit(void * user_data, SimpleFinishedFn finished) const override;
 };

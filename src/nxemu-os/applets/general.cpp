@@ -4,54 +4,46 @@
 #include "applets/general.h"
 #include "yuzu_common/logging/log.h"
 
-ParentalControlsApplet::~ParentalControlsApplet() = default;
-
-DefaultParentalControlsApplet::~DefaultParentalControlsApplet() = default;
-
-void DefaultParentalControlsApplet::Close() const
+void DefaultParentalControlsApplet::Close()
 {
 }
 
-void DefaultParentalControlsApplet::VerifyPIN(std::function<void(bool)> finished, bool suspend_future_verification_temporarily)
+void DefaultParentalControlsApplet::VerifyPIN(void * user_data, BoolFinishedFn finished, bool suspend_future_verification_temporarily)
 {
     LOG_INFO(Service_AM, "Application requested frontend to verify PIN (normal), suspend_future_verification_temporarily={}, verifying as correct.", suspend_future_verification_temporarily);
-    finished(true);
+    finished(user_data, true);
 }
 
-void DefaultParentalControlsApplet::VerifyPINForSettings(std::function<void(bool)> finished)
+void DefaultParentalControlsApplet::VerifyPINForSettings(void * user_data, BoolFinishedFn finished)
 {
     LOG_INFO(Service_AM, "Application requested frontend to verify PIN (settings), verifying as correct.");
-    finished(true);
+    finished(user_data, true);
 }
 
-void DefaultParentalControlsApplet::RegisterPIN(std::function<void()> finished)
+void DefaultParentalControlsApplet::RegisterPIN(void * user_data, SimpleFinishedFn finished)
 {
     LOG_INFO(Service_AM, "Application requested frontend to register new PIN");
-    finished();
+    finished(user_data);
 }
 
-void DefaultParentalControlsApplet::ChangePIN(std::function<void()> finished)
+void DefaultParentalControlsApplet::ChangePIN(void * user_data, SimpleFinishedFn finished)
 {
     LOG_INFO(Service_AM, "Application requested frontend to change PIN to new value");
-    finished();
+    finished(user_data);
 }
 
-PhotoViewerApplet::~PhotoViewerApplet() = default;
-
-DefaultPhotoViewerApplet::~DefaultPhotoViewerApplet() = default;
-
-void DefaultPhotoViewerApplet::Close() const
+void DefaultPhotoViewerApplet::Close()
 {
 }
 
-void DefaultPhotoViewerApplet::ShowPhotosForApplication(u64 title_id, std::function<void()> finished) const
+void DefaultPhotoViewerApplet::ShowPhotosForApplication(uint64_t title_id, void * user_data, SimpleFinishedFn finished) const
 {
     LOG_INFO(Service_AM, "Application requested frontend to display stored photos for title_id={:016X}", title_id);
-    finished();
+    finished(user_data);
 }
 
-void DefaultPhotoViewerApplet::ShowAllPhotos(std::function<void()> finished) const
+void DefaultPhotoViewerApplet::ShowAllPhotos(void * user_data, SimpleFinishedFn finished) const
 {
     LOG_INFO(Service_AM, "Application requested frontend to display all stored photos.");
-    finished();
+    finished(user_data);
 }

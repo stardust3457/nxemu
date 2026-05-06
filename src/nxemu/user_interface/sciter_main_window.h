@@ -1,14 +1,15 @@
 #pragma once
+#include "applets/web_browser.h"
+#include "startup_checks.h"
+#include "user_interface/widgets/rom_browser.h"
 #include <memory>
 #include <string>
 #include <nxemu-core/modules/system_modules.h>
 #include <nxemu-module-spec/base.h>
-#include <sciter_ui.h>
-#include <sciter_handler.h>
 #include <sciter_element.h>
+#include <sciter_handler.h>
+#include <sciter_ui.h>
 #include <widgets/menubar.h>
-#include "startup_checks.h"
-#include "user_interface/widgets/rom_browser.h"
 
 #ifdef _WIN32
 struct Win32FullscreenState;
@@ -39,6 +40,7 @@ class SciterMainWindow :
         OpenSystemConfiguration,
         ToggleFullscreen,
         ToggleStartGamesInFullscreen,
+        ToggleHideUi,
         ToggleDockedMode,
         ResetWindowSize720p,
         ResetWindowSize900p,
@@ -101,19 +103,20 @@ private:
     GuiAction HotkeyToGuiAction(const char * hotkeyId);
     void OnGuiAction(GuiAction action);
 
+    void ToggleHideUi();
+    void UpdateUIVisibility();
+
 #ifdef _WIN32
     void ToggleFullscreen();
     void EnterFullscreen();
     void ExitFullscreen();
     void ResetWindowSize(uint32_t nominal_width, uint32_t nominal_height);
-    void ResetWindowSize720();
-    void ResetWindowSize900();
-    void ResetWindowSize1080();
 #endif
     void LayoutRenderWindow();
     void UpdatePausePanel();
     void ApplyEmulationLoadingUi();
     void RefreshDiskCacheLoadingText();
+    void RegisterApplets();
 
     // IWindowDestroySink
     void OnWindowDestroy(HWINDOW hWnd) override;
@@ -154,6 +157,7 @@ private:
     std::string m_windowTitle;
     std::unique_ptr<SystemConfig> m_systemConfig;
     std::unique_ptr<InputConfig> m_inputConfig;
+    WebBrowserApplet m_WebBrowser;
     float m_resolutionUpFactor;
     bool m_useMultiCore;
     bool m_useSpeedLimit;
@@ -161,7 +165,6 @@ private:
     bool m_emulationRunning;
     bool m_pendingStartInFullscreen;
     std::string m_fullscreenMenuSvg;
-#ifdef _WIN32
+    bool m_hideUi;
     std::unique_ptr<Win32FullscreenState> m_win32Fullscreen;
-#endif
 };

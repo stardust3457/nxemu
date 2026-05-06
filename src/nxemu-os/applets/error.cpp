@@ -2,36 +2,43 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "applets/error.h"
+#include "core/hle/result.h"
 #include "yuzu_common/logging/log.h"
 
 ErrorApplet::~ErrorApplet() = default;
 
-void DefaultErrorApplet::Close() const
+void DefaultErrorApplet::Close()
 {
 }
 
-void DefaultErrorApplet::ShowError(Result error, FinishedCallback finished) const
+void DefaultErrorApplet::ShowError(uint32_t result_raw, void * user_data, SimpleFinishedFn finished) const
 {
-    LOG_CRITICAL(Service_Fatal, "Application requested error display: {:04}-{:04} (raw={:08X})",
-                 error.GetModule(), error.GetDescription(), error.raw);
+    const Result error{result_raw};
+    LOG_CRITICAL(Service_Fatal, "Application requested error display: {:04}-{:04} (raw={:08X})", error.GetModule(), error.GetDescription(), error.raw);
+    if (finished != nullptr)
+    {
+        finished(user_data);
+    }
 }
 
-void DefaultErrorApplet::ShowErrorWithTimestamp(Result error, std::chrono::seconds time,
-                                                FinishedCallback finished) const
+void DefaultErrorApplet::ShowErrorWithTimestamp(uint32_t result_raw, int64_t time_unix_seconds, void * user_data, SimpleFinishedFn finished) const
 {
-    LOG_CRITICAL(
-        Service_Fatal,
-        "Application requested error display: {:04X}-{:04X} (raw={:08X}) with timestamp={:016X}",
-        error.GetModule(), error.GetDescription(), error.raw, time.count());
+    const Result error{result_raw};
+    LOG_CRITICAL(Service_Fatal, "Application requested error display: {:04X}-{:04X} (raw={:08X}) with timestamp={}", error.GetModule(), error.GetDescription(), error.raw, time_unix_seconds);
+    if (finished != nullptr)
+    {
+        finished(user_data);
+    }
 }
 
-void DefaultErrorApplet::ShowCustomErrorText(Result error, std::string main_text,
-                                             std::string detail_text,
-                                             FinishedCallback finished) const
+void DefaultErrorApplet::ShowCustomErrorText(uint32_t result_raw, const char * dialog_text_utf8, const char * fullscreen_text_utf8, void * user_data, SimpleFinishedFn finished) const
 {
-    LOG_CRITICAL(Service_Fatal,
-                 "Application requested custom error with error_code={:04X}-{:04X} (raw={:08X})",
-                 error.GetModule(), error.GetDescription(), error.raw);
-    LOG_CRITICAL(Service_Fatal, "    Main Text: {}", main_text);
-    LOG_CRITICAL(Service_Fatal, "    Detail Text: {}", detail_text);
+    const Result error{result_raw};
+    LOG_CRITICAL(Service_Fatal, "Application requested custom error with error_code={:04X}-{:04X} (raw={:08X})", error.GetModule(), error.GetDescription(), error.raw);
+    LOG_CRITICAL(Service_Fatal, "    Dialog Text: {}", dialog_text_utf8 != nullptr ? dialog_text_utf8 : "");
+    LOG_CRITICAL(Service_Fatal, "    Fullscreen Text: {}", fullscreen_text_utf8 != nullptr ? fullscreen_text_utf8 : "");
+    if (finished != nullptr)
+    {
+        finished(user_data);
+    }
 }

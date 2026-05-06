@@ -10,6 +10,7 @@
 #include "core/file_sys/system_archive/system_archive.h"
 #include "core/file_sys/vfs/vfs_real.h"
 #include "core/file_sys/vfs/vfs_types.h"
+#include "core/file_sys/vfs/vfs_vector.h"
 #include "core/loader/loader.h"
 #include "rom_info.h"
 #include <common/path.h>
@@ -58,7 +59,35 @@ StorageId GetStorageIdForFrontendSlot(std::optional<FileSys::ContentProviderUnio
         }
         return false;
     }
+
 } // Anonymous namespace
+
+class HostFilesystemImpl final :
+    public IFilesystem
+{
+public:
+    explicit HostFilesystemImpl(FileSys::VirtualFilesystem & vfs) :
+        m_vfs(vfs)
+    {
+    }
+
+    IVirtualDirectory * CreateDirectory(const char * path, VirtualFileOpenMode perms) override
+    {
+        if (!m_vfs || path == nullptr)
+        {
+            return nullptr;
+        }
+        FileSys::VirtualDir dir = m_vfs->CreateDirectory(path, perms);
+        if (!dir)
+        {
+            return nullptr;
+        }
+        return std::make_unique<VirtualDirectoryImpl>(dir).release();
+    }
+
+private:
+    FileSys::VirtualFilesystem & m_vfs;
+};
 
 struct Systemloader::Impl {
     explicit Impl(Systemloader & loader, ISystemModules & modules) :
@@ -66,6 +95,7 @@ struct Systemloader::Impl {
         m_modules(modules),
         m_fsController(loader),
         m_manualContentProvider(std::make_unique<ManualContentProviderImpl>()),
+        m_hostFilesystem(m_virtualFilesystem),
         m_processID(0),
         m_titleID(0)
     {
@@ -84,6 +114,7 @@ struct Systemloader::Impl {
     std::unique_ptr<FileSys::ContentProviderUnion> m_contentProvider;
     ::FileSystemController m_fsController;
     std::unique_ptr<ManualContentProviderImpl> m_manualContentProvider;
+    HostFilesystemImpl m_hostFilesystem;
     uint64_t m_processID;
     uint64_t m_titleID;
 };
@@ -285,6 +316,16 @@ IFileSystemController & Systemloader::FileSystemController()
     return impl->m_fsController;
 }
 
+IContentProvider & Systemloader::ContentProvider()
+{
+    return *impl->m_contentProvider;
+}
+
+IFilesystem & Systemloader::Filesystem()
+{
+    return impl->m_hostFilesystem;
+}
+
 IVirtualFile * Systemloader::SynthesizeSystemArchive(const uint64_t title_id)
 {
     FileSys::VirtualFile file = FileSys::SystemArchive::SynthesizeSystemArchive(title_id);
@@ -293,6 +334,27 @@ IVirtualFile * Systemloader::SynthesizeSystemArchive(const uint64_t title_id)
         return std::make_unique<VirtualFileImpl>(file).release();
     }
     return nullptr;
+}
+
+IVirtualFile * Systemloader::CreateMemoryFile(const uint8_t * data, uint64_t size, const char * name)
+{
+    if (name == nullptr)
+    {
+        return nullptr;
+    }
+    if (size > 0 && data == nullptr)
+    {
+        return nullptr;
+    }
+
+    std::vector<u8> copy;
+    if (size > 0)
+    {
+        copy.assign(data, data + size);
+    }
+
+    FileSys::VirtualFile file = std::make_shared<FileSys::VectorVfsFile>(std::move(copy), name);
+    return std::make_unique<VirtualFileImpl>(file).release();
 }
 
 uint32_t Systemloader::GetContentProviderEntriesCount(bool useTitleType, LoaderTitleType titleType, bool useContentRecordType, LoaderContentRecordType contentRecordType, bool useTitleId, unsigned long long titleId)

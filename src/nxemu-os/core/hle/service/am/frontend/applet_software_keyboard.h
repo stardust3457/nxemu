@@ -3,24 +3,25 @@
 
 #pragma once
 
-#include "yuzu_common/common_types.h"
 #include "core/hle/result.h"
 #include "core/hle/service/am/frontend/applet_software_keyboard_types.h"
 #include "core/hle/service/am/frontend/applets.h"
+#include "yuzu_common/common_types.h"
+#include <nxemu-module-spec/operating_system.h>
 
-namespace Core {
+namespace Core
+{
 class System;
 }
 
-struct InlineAppearParameters;
-struct KeyboardInitializeParameters;
-class SoftwareKeyboardApplet;
+namespace Service::AM::Frontend
+{
 
-namespace Service::AM::Frontend {
-
-class SoftwareKeyboard final : public FrontendApplet {
+class SoftwareKeyboard final :
+    public FrontendApplet
+{
 public:
-    explicit SoftwareKeyboard(Core::System& system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, SoftwareKeyboardApplet& frontend_);
+    explicit SoftwareKeyboard(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, ISoftwareKeyboardFrontendApplet & frontend_);
     ~SoftwareKeyboard() override;
 
     void Initialize() override;
@@ -90,7 +91,7 @@ private:
      * Note that this does not cause the keyboard to appear.
      * Use the ShowInlineKeyboard() to cause the keyboard to appear.
      */
-    void InitializeFrontendInlineKeyboard(KeyboardInitializeParameters initialize_parameters);
+    void InitializeFrontendInlineKeyboard(const KeyboardInitializeParameters * initialize_parameters);
 
     void InitializeFrontendInlineKeyboardOld();
     void InitializeFrontendInlineKeyboardNew();
@@ -102,7 +103,7 @@ private:
     void ShowTextCheckDialog(SwkbdTextCheckResult text_check_result, std::u16string text_check_message);
 
     /// Signals the frontend to show the inline software keyboard.
-    void ShowInlineKeyboard(InlineAppearParameters appear_parameters);
+    void ShowInlineKeyboard(const InlineAppearParameters * appear_parameters);
 
     void ShowInlineKeyboardOld();
     void ShowInlineKeyboardNew();
@@ -118,16 +119,16 @@ private:
 
     // Inline Software Keyboard Requests
 
-    void RequestFinalize(const std::vector<u8>& request_data);
-    void RequestSetUserWordInfo(const std::vector<u8>& request_data);
-    void RequestSetCustomizeDic(const std::vector<u8>& request_data);
-    void RequestCalc(const std::vector<u8>& request_data);
+    void RequestFinalize(const std::vector<u8> & request_data);
+    void RequestSetUserWordInfo(const std::vector<u8> & request_data);
+    void RequestSetCustomizeDic(const std::vector<u8> & request_data);
+    void RequestCalc(const std::vector<u8> & request_data);
     void RequestCalcOld();
     void RequestCalcNew();
-    void RequestSetCustomizedDictionaries(const std::vector<u8>& request_data);
-    void RequestUnsetCustomizedDictionaries(const std::vector<u8>& request_data);
-    void RequestSetChangedStringV2Flag(const std::vector<u8>& request_data);
-    void RequestSetMovedCursorV2Flag(const std::vector<u8>& request_data);
+    void RequestSetCustomizedDictionaries(const std::vector<u8> & request_data);
+    void RequestUnsetCustomizedDictionaries(const std::vector<u8> & request_data);
+    void RequestSetChangedStringV2Flag(const std::vector<u8> & request_data);
+    void RequestSetMovedCursorV2Flag(const std::vector<u8> & request_data);
 
     // Inline Software Keyboard Replies
 
@@ -149,7 +150,7 @@ private:
     void ReplyChangedStringUtf8V2();
     void ReplyMovedCursorUtf8V2();
 
-    SoftwareKeyboardApplet & frontend;
+    ISoftwareKeyboardFrontendApplet & frontend;
 
     SwkbdAppletVersion swkbd_applet_version;
 

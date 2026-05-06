@@ -578,6 +578,9 @@ void OsSettingChanged(const char * setting, void * /*userData*/)
         case SettingType::BooleanValue:
             *osSetting.setting.boolValue = g_settings->GetBool(setting);
             break;
+        case SettingType::Float:
+            *osSetting.setting.floatValue = g_settings->GetFloat(setting);
+            break;
         case SettingType::S32Setting:
             osSetting.setting.s32Setting->SetValue(g_settings->GetInt(setting));
             break;
@@ -730,6 +733,16 @@ void SetupOsSetting(void)
                 if (value.isInt())
                 {
                     *osSetting.setting.uint32Value = (uint32_t)value.asUInt64();
+                }
+                break;
+            case SettingType::Float:
+                if (value.isDouble())
+                {
+                    *osSetting.setting.floatValue = (float)value.asDouble();
+                }
+                else if (value.isInt())
+                {
+                    *osSetting.setting.floatValue = (float)value.asInt64();
                 }
                 break;
             case SettingType::StringValue:

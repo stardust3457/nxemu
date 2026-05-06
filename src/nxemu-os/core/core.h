@@ -66,10 +66,6 @@ namespace APM {
 class Controller;
 }
 
-namespace FileSystem {
-class FileSystemController;
-} // namespace FileSystem
-
 namespace Glue {
 class ARPManager;
 }

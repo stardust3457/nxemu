@@ -6,10 +6,11 @@
 #include <filesystem>
 #include <optional>
 
-#include "yuzu_common/common_types.h"
+#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/result.h"
 #include "core/hle/service/am/frontend/applet_web_browser_types.h"
 #include "core/hle/service/am/frontend/applets.h"
+#include "yuzu_common/common_types.h"
 #include <nxemu-module-spec/system_loader.h>
 
 namespace Core {
@@ -20,14 +21,12 @@ namespace FileSys {
 enum class LoaderContentRecordType : u8;
 }
 
-class WebBrowserApplet;
-
 namespace Service::AM::Frontend
 {
 
 class WebBrowser final : public FrontendApplet {
 public:
-    WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, const WebBrowserApplet & frontend_);
+    WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, IWebBrowserFrontendApplet & frontend_);
     ~WebBrowser() override;
 
     void Initialize() override;
@@ -43,6 +42,8 @@ public:
 
 private:
     bool InputTLVExistsInMap(WebArgInputTLVType input_tlv_type) const;
+    static void CALL ExtractRom(void * this_);
+    static void CALL OpenWebPage(void * this_, uint32_t exit_reason_raw, const char * last_url_utf8);
 
     std::optional<std::vector<u8>> GetInputTLVData(WebArgInputTLVType input_tlv_type);
 
@@ -64,7 +65,7 @@ private:
     void ExecuteWifi();
     void ExecuteLobby();
 
-    const WebBrowserApplet & frontend;
+    IWebBrowserFrontendApplet & frontend;
 
     bool complete{false};
     Result status{ResultSuccess};
@@ -77,6 +78,7 @@ private:
     LoaderContentRecordType nca_type{};
     std::filesystem::path offline_cache_dir;
     std::filesystem::path offline_document;
+    IVirtualFilePtr offline_romfs;
 
     std::string external_url;
 };

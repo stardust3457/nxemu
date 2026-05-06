@@ -47,6 +47,7 @@ public:
     PerfStatsResults GetAndResetPerfStats() override;
     void SetEmulationPaused(bool paused) override;
     bool IsEmulationPaused() const override;
+    void SetFrontendApplets(ICabinetFrontendApplet * cabinet, IControllerFrontendApplet * controller, IErrorFrontendApplet * error, IMiiEditFrontendApplet * mii_edit, IParentalControlsFrontendApplet * parental_controls, IPhotoViewerFrontendApplet * photo_viewer, IProfileSelectFrontendApplet * profile_select, ISoftwareKeyboardFrontendApplet * software_keyboard, IWebBrowserFrontendApplet * web_browser) override;
 
 private:
     OSManager() = delete;

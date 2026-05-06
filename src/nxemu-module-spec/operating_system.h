@@ -2,6 +2,288 @@
 #include "base.h"
 #include <stdint.h>
 
+typedef struct CabinetParameters
+{
+    uint8_t tag_info[0x58];
+    uint8_t register_info[0x100];
+    uint8_t cabinet_mode;
+} CabinetParameters;
+
+typedef void (CALL *CabinetFinishedFn)(void * user_data, bool success, const char * amiibo_name_utf8);
+
+nxinterface ICabinetFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void ShowCabinetApplet(void * user_data, CabinetFinishedFn on_finished, const CabinetParameters * parameters) = 0;
+};
+
+typedef struct ControllerHostParameters
+{
+    int8_t min_players;
+    int8_t max_players;
+    bool keep_controllers_connected;
+    bool enable_single_mode;
+    bool enable_border_color;
+    bool enable_explain_text;
+    bool allow_pro_controller;
+    bool allow_handheld;
+    bool allow_dual_joycons;
+    bool allow_left_joycon;
+    bool allow_right_joycon;
+    bool allow_gamecube_controller;
+    uint32_t border_color_count;
+    uint8_t border_colors[64][4];
+    uint32_t explain_text_count;
+    char explain_text[64][0x81];
+} ControllerHostParameters;
+
+typedef void (CALL *ControllerReconfigureFn)(void * user_data, bool ok);
+
+nxinterface IControllerFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void ReconfigureControllers(void * user_data, ControllerReconfigureFn on_complete, const ControllerHostParameters * parameters) = 0;
+};
+
+typedef void (CALL *SimpleFinishedFn)(void * user_data);
+
+nxinterface IErrorFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void ShowError(uint32_t result_raw, void * user_data, SimpleFinishedFn finished) const = 0;
+    virtual void ShowErrorWithTimestamp(uint32_t result_raw, int64_t time_unix_seconds, void * user_data, SimpleFinishedFn finished) const = 0;
+    virtual void ShowCustomErrorText(uint32_t result_raw, const char * dialog_text_utf8, const char * fullscreen_text_utf8, void * user_data, SimpleFinishedFn finished) const = 0;
+};
+
+nxinterface IMiiEditFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void ShowMiiEdit(void * user_data, SimpleFinishedFn finished) const = 0;
+};
+
+typedef void (CALL *BoolFinishedFn)(void * user_data, bool ok);
+
+nxinterface IParentalControlsFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void VerifyPIN(void * user_data, BoolFinishedFn finished, bool suspend_future_verification_temporarily) = 0;
+    virtual void VerifyPINForSettings(void * user_data, BoolFinishedFn finished) = 0;
+    virtual void RegisterPIN(void * user_data, SimpleFinishedFn finished) = 0;
+    virtual void ChangePIN(void * user_data, SimpleFinishedFn finished) = 0;
+};
+
+nxinterface IPhotoViewerFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void ShowPhotosForApplication(uint64_t title_id, void * user_data, SimpleFinishedFn finished) const = 0;
+    virtual void ShowAllPhotos(void * user_data, SimpleFinishedFn finished) const = 0;
+};
+
+enum class ProfileUiMode : uint32_t
+{
+    UserSelector = 0,
+    UserCreator = 1,
+    EnsureNetworkServiceAccountAvailable = 2,
+    UserIconEditor = 3,
+    UserNicknameEditor = 4,
+    UserCreatorForStarter = 5,
+    NintendoAccountAuthorizationRequestContext = 6,
+    IntroduceExternalNetworkServiceAccount = 7,
+    IntroduceExternalNetworkServiceAccountForRegistration = 8,
+    NintendoAccountNnidLinker = 9,
+    LicenseRequirementsForNetworkService = 10,
+    LicenseRequirementsForNetworkServiceWithUserContextImpl = 11,
+    UserCreatorForImmediateNaLoginTest = 12,
+    UserQualificationPromoter = 13,
+};
+
+enum class UserSelectionPurposeHost : uint32_t
+{
+    General = 0,
+    GameCardRegistration = 1,
+    EShopLaunch = 2,
+    EShopItemShow = 3,
+    PicturePost = 4,
+    NintendoAccountLinkage = 5,
+    SettingsUpdate = 6,
+    SaveDataDeletion = 7,
+    UserMigration = 8,
+    SaveDataTransfer = 9,
+};
+
+typedef struct ProfileDisplayHostOptions
+{
+    bool is_network_service_account_required;
+    bool is_skip_enabled;
+    bool is_system_or_launcher;
+    bool is_registration_permitted;
+    bool show_skip_button;
+    bool additional_select;
+    bool show_user_selector;
+    bool is_unqualified_user_selectable;
+} ProfileDisplayHostOptions;
+
+typedef struct ProfileSelectHostParameters
+{
+    ProfileUiMode mode;
+    uint8_t invalid_uid_list[8][16];
+    ProfileDisplayHostOptions display_options;
+    UserSelectionPurposeHost purpose;
+} ProfileSelectHostParameters;
+
+typedef void (CALL *ProfileSelectFinishedFn)(void * user_data, bool has_uuid, const uint8_t uuid_bytes[16]);
+
+nxinterface IProfileSelectFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void SelectProfile(void * user_data, ProfileSelectFinishedFn finished, const ProfileSelectHostParameters * parameters) const = 0;
+};
+
+enum class SwkbdTypeHost : uint32_t
+{
+    Normal = 0,
+    NumberPad = 1,
+    Qwerty = 2,
+    Unknown3 = 3,
+    Latin = 4,
+    SimplifiedChinese = 5,
+    TraditionalChinese = 6,
+    Korean = 7,
+};
+
+enum class SwkbdPasswordModeHost : uint32_t
+{
+    Disabled = 0,
+    Enabled = 1,
+};
+
+enum class SwkbdTextDrawTypeHost : uint32_t
+{
+    Line = 0,
+    Box = 1,
+    DownloadCode = 2,
+};
+
+enum class SwkbdResultHost : uint32_t
+{
+    Ok = 0,
+    Cancel = 1,
+};
+
+enum class SwkbdTextCheckResultHost : uint32_t
+{
+    Success = 0,
+    Failure = 1,
+    Confirm = 2,
+    Silent = 3,
+};
+
+enum class SwkbdReplyTypeHost : uint32_t
+{
+    FinishedInitialize = 0x0,
+    Default = 0x1,
+    ChangedString = 0x2,
+    MovedCursor = 0x3,
+    MovedTab = 0x4,
+    DecidedEnter = 0x5,
+    DecidedCancel = 0x6,
+    ChangedStringUtf8 = 0x7,
+    MovedCursorUtf8 = 0x8,
+    DecidedEnterUtf8 = 0x9,
+    UnsetCustomizeDic = 0xA,
+    ReleasedUserWordInfo = 0xB,
+    UnsetCustomizedDictionaries = 0xC,
+    ChangedStringV2 = 0xD,
+    MovedCursorV2 = 0xE,
+    ChangedStringUtf8V2 = 0xF,
+    MovedCursorUtf8V2 = 0x10,
+};
+
+typedef struct KeyboardInitializeParameters
+{
+    uint16_t ok_text[9];
+    uint32_t ok_text_unit_count;
+    uint16_t header_text[65];
+    uint32_t header_text_unit_count;
+    uint16_t sub_text[129];
+    uint32_t sub_text_unit_count;
+    uint16_t guide_text[257];
+    uint32_t guide_text_unit_count;
+    uint16_t initial_text[0x3EA];
+    uint32_t initial_text_unit_count;
+    uint16_t left_optional_symbol_key;
+    uint16_t right_optional_symbol_key;
+    uint32_t max_text_length;
+    uint32_t min_text_length;
+    int32_t initial_cursor_position;
+    SwkbdTypeHost type;
+    SwkbdPasswordModeHost password_mode;
+    SwkbdTextDrawTypeHost text_draw_type;
+    uint32_t key_disable_flags_raw;
+    bool use_blur_background;
+    bool enable_backspace_button;
+    bool enable_return_button;
+    bool disable_cancel_button;
+} KeyboardInitializeHostParameters;
+
+typedef struct InlineAppearParameters
+{
+    uint32_t max_text_length;
+    uint32_t min_text_length;
+    float key_top_scale_x;
+    float key_top_scale_y;
+    float key_top_translate_x;
+    float key_top_translate_y;
+    SwkbdTypeHost type;
+    uint32_t key_disable_flags_raw;
+    bool key_top_as_floating;
+    bool enable_backspace_button;
+    bool enable_return_button;
+    bool disable_cancel_button;
+} InlineAppearHostParameters;
+
+typedef struct InlineTextHostParameters
+{
+    uint16_t input_text[0x3EA];
+    uint32_t input_text_unit_count;
+    int32_t cursor_position;
+} InlineTextHostParameters;
+
+typedef void (CALL *SwkbdSubmitNormalFn)(void * user_data, uint32_t result_raw, const uint16_t * text_utf16, uint32_t text_utf16_unit_count, bool confirmed);
+typedef void (CALL *SwkbdSubmitInlineFn)(void * user_data, uint32_t reply_raw, const uint16_t * text_utf16, uint32_t text_utf16_unit_count, int32_t cursor);
+
+nxinterface ISoftwareKeyboardFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void InitializeKeyboard(bool is_inline, const KeyboardInitializeParameters * initialize_parameters, void * user_data_normal, SwkbdSubmitNormalFn submit_normal, void * user_data_inline, SwkbdSubmitInlineFn submit_inline) = 0;
+    virtual void ShowNormalKeyboard() const = 0;
+    virtual void ShowTextCheckDialog(uint32_t text_check_result_raw, const uint16_t * message_utf16, uint32_t message_utf16_unit_count) const = 0;
+    virtual void ShowInlineKeyboard(const InlineAppearHostParameters * appear_parameters) const = 0;
+    virtual void HideInlineKeyboard() const = 0;
+    virtual void InlineTextChanged(const InlineTextHostParameters * text_parameters) const = 0;
+    virtual void ExitKeyboard() const = 0;
+};
+
+enum class WebExitReasonHost : uint32_t
+{
+    EndButtonPressed = 0,
+    BackButtonPressed = 1,
+    ExitRequested = 2,
+    CallbackURL = 3,
+    WindowClosed = 4,
+    ErrorDialog = 7,
+};
+
+typedef void (CALL *ExtractRomFsFn)(void * user_data);
+typedef void (CALL *OpenWebPageFn)(void * user_data, uint32_t exit_reason_raw, const char * last_url_utf8);
+
+nxinterface IWebBrowserFrontendApplet
+{
+    virtual void Close() = 0;
+    virtual void OpenLocalWebPage(const char * local_url_utf8, void * extract_user_data, ExtractRomFsFn extract_romfs, void * open_user_data, OpenWebPageFn open_callback) const = 0;
+    virtual void OpenExternalWebPage(const char * external_url_utf8, void * user_data, OpenWebPageFn callback) const = 0;
+};
+
 enum class ProgramAddressSpaceType : uint8_t
 {
     Is32Bit = 0,
@@ -433,6 +715,7 @@ nxinterface IOperatingSystem
     virtual PerfStatsResults GetAndResetPerfStats() = 0;
     virtual void SetEmulationPaused(bool paused) = 0;
     virtual bool IsEmulationPaused() const = 0;
+    virtual void SetFrontendApplets(ICabinetFrontendApplet * cabinet, IControllerFrontendApplet * controller, IErrorFrontendApplet * error, IMiiEditFrontendApplet * mii_edit, IParentalControlsFrontendApplet * parental_controls, IPhotoViewerFrontendApplet * photo_viewer, IProfileSelectFrontendApplet * profile_select, ISoftwareKeyboardFrontendApplet * software_keyboard, IWebBrowserFrontendApplet * web_browser) = 0;
 };
 
 EXPORT IOperatingSystem * CALL CreateOperatingSystem(ISystemModules & modules);

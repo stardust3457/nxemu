@@ -15,7 +15,7 @@
 namespace Service::AM::Frontend
 {
 
-MiiEdit::MiiEdit(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, const MiiEditApplet & frontend_) :
+MiiEdit::MiiEdit(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, IMiiEditFrontendApplet & frontend_) :
     FrontendApplet{system_, applet_, applet_mode_},
     frontend{frontend_}
 {
@@ -43,13 +43,11 @@ void MiiEdit::Initialize()
     {
     case MiiEditAppletVersion::Version3:
         ASSERT(applet_input_data.size() == sizeof(MiiEditAppletInputCommon) + sizeof(MiiEditAppletInputV3));
-        std::memcpy(&applet_input_v3, applet_input_data.data() + sizeof(MiiEditAppletInputCommon),
-                    sizeof(MiiEditAppletInputV3));
+        std::memcpy(&applet_input_v3, applet_input_data.data() + sizeof(MiiEditAppletInputCommon), sizeof(MiiEditAppletInputV3));
         break;
     case MiiEditAppletVersion::Version4:
         ASSERT(applet_input_data.size() == sizeof(MiiEditAppletInputCommon) + sizeof(MiiEditAppletInputV4));
-        std::memcpy(&applet_input_v4, applet_input_data.data() + sizeof(MiiEditAppletInputCommon),
-                    sizeof(MiiEditAppletInputV4));
+        std::memcpy(&applet_input_v4, applet_input_data.data() + sizeof(MiiEditAppletInputCommon), sizeof(MiiEditAppletInputV4));
         break;
     default:
         UNIMPLEMENTED_MSG("Unknown MiiEditAppletVersion={} with size={}", applet_input_common.version, applet_input_data.size());
@@ -163,8 +161,7 @@ void MiiEdit::MiiEditOutput(MiiEditResult result, s32 index)
     Exit();
 }
 
-void MiiEdit::MiiEditOutputForCharInfoEditing(MiiEditResult result,
-                                              const MiiEditCharInfo & char_info)
+void MiiEdit::MiiEditOutputForCharInfoEditing(MiiEditResult result, const MiiEditCharInfo & char_info)
 {
     const MiiEditAppletOutputForCharInfoEditing applet_output{
         .result{result},

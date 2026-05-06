@@ -4,15 +4,12 @@
 #include "applets/mii_edit.h"
 #include "yuzu_common/logging/log.h"
 
-MiiEditApplet::~MiiEditApplet() = default;
-
-void DefaultMiiEditApplet::Close() const
+void DefaultMiiEditApplet::Close()
 {
 }
 
-void DefaultMiiEditApplet::ShowMiiEdit(const MiiEditCallback & callback) const
+void DefaultMiiEditApplet::ShowMiiEdit(void * user_data, SimpleFinishedFn finished) const
 {
     LOG_WARNING(Service_AM, "(STUBBED) called");
-
-    callback();
+    finished(user_data);
 }

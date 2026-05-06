@@ -122,6 +122,11 @@ LoaderContentRecordType GetCRTypeFromNCAType(NCAContentType type)
 
 ContentProvider::~ContentProvider() = default;
 
+IFileSysNCA * ContentProvider::GetEntry(uint64_t title_id, LoaderContentRecordType type) const
+{
+    return GetEntryNCA(title_id, type).release();
+}
+
 bool ContentProvider::HasEntry(ContentProviderEntry entry) const
 {
     return HasEntry(entry.titleID, entry.type);

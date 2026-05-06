@@ -3,59 +3,25 @@
 
 #pragma once
 
-#include "yuzu_common/common_types.h"
-#include <functional>
-
 #include "applets/applet.h"
+#include <nxemu-module-spec/operating_system.h>
 
-class ParentalControlsApplet : public Applet
+class DefaultParentalControlsApplet final : 
+    public IParentalControlsFrontendApplet
 {
 public:
-    virtual ~ParentalControlsApplet();
-
-    // Prompts the user to enter a PIN and calls the callback with whether or not it matches the
-    // correct PIN. If the bool is passed, and the PIN was recently entered correctly, the frontend
-    // should not prompt and simply return true.
-    virtual void VerifyPIN(std::function<void(bool)> finished, bool suspend_future_verification_temporarily) = 0;
-
-    // Prompts the user to enter a PIN and calls the callback for correctness. Frontends can
-    // optionally alert the user that this is to change parental controls settings.
-    virtual void VerifyPINForSettings(std::function<void(bool)> finished) = 0;
-
-    // Prompts the user to create a new PIN for pctl and stores it with the service.
-    virtual void RegisterPIN(std::function<void()> finished) = 0;
-
-    // Prompts the user to verify the current PIN and then store a new one into pctl.
-    virtual void ChangePIN(std::function<void()> finished) = 0;
+    void Close() override;
+    void VerifyPIN(void * user_data, BoolFinishedFn finished, bool suspend_future_verification_temporarily) override;
+    void VerifyPINForSettings(void * user_data, BoolFinishedFn finished) override;
+    void RegisterPIN(void * user_data, SimpleFinishedFn finished) override;
+    void ChangePIN(void * user_data, SimpleFinishedFn finished) override;
 };
 
-class DefaultParentalControlsApplet final : public ParentalControlsApplet
+class DefaultPhotoViewerApplet final : 
+    public IPhotoViewerFrontendApplet
 {
 public:
-    ~DefaultParentalControlsApplet() override;
-
-    void Close() const override;
-    void VerifyPIN(std::function<void(bool)> finished, bool suspend_future_verification_temporarily) override;
-    void VerifyPINForSettings(std::function<void(bool)> finished) override;
-    void RegisterPIN(std::function<void()> finished) override;
-    void ChangePIN(std::function<void()> finished) override;
-};
-
-class PhotoViewerApplet : public Applet
-{
-public:
-    virtual ~PhotoViewerApplet();
-
-    virtual void ShowPhotosForApplication(u64 title_id, std::function<void()> finished) const = 0;
-    virtual void ShowAllPhotos(std::function<void()> finished) const = 0;
-};
-
-class DefaultPhotoViewerApplet final : public PhotoViewerApplet
-{
-public:
-    ~DefaultPhotoViewerApplet() override;
-
-    void Close() const override;
-    void ShowPhotosForApplication(u64 title_id, std::function<void()> finished) const override;
-    void ShowAllPhotos(std::function<void()> finished) const override;
+    void Close() override;
+    void ShowPhotosForApplication(uint64_t title_id, void * user_data, SimpleFinishedFn finished) const override;
+    void ShowAllPhotos(void * user_data, SimpleFinishedFn finished) const override;
 };
