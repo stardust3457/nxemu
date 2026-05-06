@@ -6,13 +6,10 @@
 
 #include <thread>
 
-CabinetApplet::~CabinetApplet() = default;
+void DefaultCabinetApplet::Close() {}
 
-void DefaultCabinetApplet::Close() const {}
-
-void DefaultCabinetApplet::ShowCabinetApplet(
-    const CabinetCallback& callback, const CabinetParameters& parameters,
-    std::shared_ptr<Service::NFC::NfcDevice> nfp_device) const {
+void DefaultCabinetApplet::ShowCabinetApplet(void * user_data, CabinetFinishedFn on_finished, const CabinetParameters * parameters)
+{
     LOG_WARNING(Service_AM, "(STUBBED) called");
-    callback(false, {});
+    on_finished(user_data, false, {});
 }

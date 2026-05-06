@@ -14,6 +14,35 @@ namespace Service::AM::Frontend
 namespace
 {
 
+void CALL SoftwareKeyboardSubmitNormalThunk(void * user_data, uint32_t result_raw, const uint16_t * text_utf16, uint32_t text_utf16_unit_count, bool confirmed)
+{
+    auto * const self = static_cast<SoftwareKeyboard *>(user_data);
+    self->SubmitTextNormal(static_cast<SwkbdResult>(result_raw), text_utf16 != nullptr && text_utf16_unit_count > 0 ? std::u16string(reinterpret_cast<const char16_t *>(text_utf16), text_utf16_unit_count) : std::u16string{}, confirmed);
+}
+
+void CALL SoftwareKeyboardSubmitInlineThunk(void * user_data, uint32_t reply_raw, const uint16_t * text_utf16, uint32_t text_utf16_unit_count, int32_t cursor)
+{
+    auto * const self = static_cast<SoftwareKeyboard *>(user_data);
+    self->SubmitTextInline(static_cast<SwkbdReplyType>(reply_raw), text_utf16 != nullptr && text_utf16_unit_count > 0 ? std::u16string(reinterpret_cast<const char16_t *>(text_utf16), text_utf16_unit_count) : std::u16string{}, cursor);
+}
+
+static void CopyUtf16ToHostBuffer(uint16_t * buf, std::size_t buf_units, uint32_t * count_out, const std::u16string & s)
+{
+    if (buf_units == 0)
+    {
+        *count_out = 0;
+        return;
+    }
+    const std::size_t max_copy = buf_units - 1;
+    const std::size_t n = std::min(s.size(), max_copy);
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        buf[i] = static_cast<uint16_t>(s[i]);
+    }
+    buf[n] = 0;
+    *count_out = static_cast<uint32_t>(n);
+}
+
 // The maximum number of UTF-16 characters that can be input into the swkbd text field.
 constexpr u32 DEFAULT_MAX_TEXT_LENGTH = 500;
 
@@ -47,7 +76,7 @@ void SetReplyBase(std::vector<u8> & reply, SwkbdState state, SwkbdReplyType repl
 
 } // Anonymous namespace
 
-SoftwareKeyboard::SoftwareKeyboard(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, SoftwareKeyboardApplet & frontend_) :
+SoftwareKeyboard::SoftwareKeyboard(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, ISoftwareKeyboardFrontendApplet & frontend_) :
     FrontendApplet{system_, applet_, applet_mode_},
     frontend{frontend_}
 {
@@ -59,15 +88,8 @@ void SoftwareKeyboard::Initialize()
 {
     FrontendApplet::Initialize();
 
-    LOG_INFO(Service_AM, "Initializing Software Keyboard Applet with LibraryAppletMode={}",
-             applet_mode);
-
-    LOG_DEBUG(Service_AM,
-              "Initializing Applet with common_args: arg_version={}, lib_version={}, "
-              "play_startup_sound={}, size={}, system_tick={}, theme_color={}",
-              common_args.arguments_version, common_args.library_version,
-              common_args.play_startup_sound, common_args.size, common_args.system_tick,
-              common_args.theme_color);
+    LOG_INFO(Service_AM, "Initializing Software Keyboard Applet with LibraryAppletMode={}", applet_mode);
+    LOG_DEBUG(Service_AM, "Initializing Applet with common_args: arg_version={}, lib_version={}, play_startup_sound={}, size={}, system_tick={}, theme_color={}", common_args.arguments_version, common_args.library_version, common_args.play_startup_sound, common_args.size, common_args.system_tick, common_args.theme_color);
 
     swkbd_applet_version = SwkbdAppletVersion{common_args.library_version};
 
@@ -123,8 +145,7 @@ void SoftwareKeyboard::Execute()
     ShowNormalKeyboard();
 }
 
-void SoftwareKeyboard::SubmitTextNormal(SwkbdResult result, std::u16string submitted_text,
-                                        bool confirmed)
+void SoftwareKeyboard::SubmitTextNormal(SwkbdResult result, std::u16string submitted_text, bool confirmed)
 {
     if (complete)
     {
@@ -148,8 +169,7 @@ void SoftwareKeyboard::SubmitTextNormal(SwkbdResult result, std::u16string submi
     }
 }
 
-void SoftwareKeyboard::SubmitTextInline(SwkbdReplyType reply_type, std::u16string submitted_text,
-                                        s32 cursor_position)
+void SoftwareKeyboard::SubmitTextInline(SwkbdReplyType reply_type, std::u16string submitted_text, s32 cursor_position)
 {
     if (complete)
     {
@@ -229,28 +249,23 @@ void SoftwareKeyboard::InitializeForeground()
     case SwkbdAppletVersion::Version5:
     case SwkbdAppletVersion::Version65542:
         ASSERT(swkbd_config_data.size() == sizeof(SwkbdConfigCommon) + sizeof(SwkbdConfigOld));
-        std::memcpy(&swkbd_config_old, swkbd_config_data.data() + sizeof(SwkbdConfigCommon),
-                    sizeof(SwkbdConfigOld));
+        std::memcpy(&swkbd_config_old, swkbd_config_data.data() + sizeof(SwkbdConfigCommon), sizeof(SwkbdConfigOld));
         break;
     case SwkbdAppletVersion::Version196615:
     case SwkbdAppletVersion::Version262152:
     case SwkbdAppletVersion::Version327689:
         ASSERT(swkbd_config_data.size() == sizeof(SwkbdConfigCommon) + sizeof(SwkbdConfigOld2));
-        std::memcpy(&swkbd_config_old2, swkbd_config_data.data() + sizeof(SwkbdConfigCommon),
-                    sizeof(SwkbdConfigOld2));
+        std::memcpy(&swkbd_config_old2, swkbd_config_data.data() + sizeof(SwkbdConfigCommon), sizeof(SwkbdConfigOld2));
         break;
     case SwkbdAppletVersion::Version393227:
     case SwkbdAppletVersion::Version524301:
         ASSERT(swkbd_config_data.size() == sizeof(SwkbdConfigCommon) + sizeof(SwkbdConfigNew));
-        std::memcpy(&swkbd_config_new, swkbd_config_data.data() + sizeof(SwkbdConfigCommon),
-                    sizeof(SwkbdConfigNew));
+        std::memcpy(&swkbd_config_new, swkbd_config_data.data() + sizeof(SwkbdConfigCommon), sizeof(SwkbdConfigNew));
         break;
     default:
-        UNIMPLEMENTED_MSG("Unknown SwkbdConfig revision={} with size={}", swkbd_applet_version,
-                          swkbd_config_data.size());
+        UNIMPLEMENTED_MSG("Unknown SwkbdConfig revision={} with size={}", swkbd_applet_version, swkbd_config_data.size());
         ASSERT(swkbd_config_data.size() >= sizeof(SwkbdConfigCommon) + sizeof(SwkbdConfigNew));
-        std::memcpy(&swkbd_config_new, swkbd_config_data.data() + sizeof(SwkbdConfigCommon),
-                    sizeof(SwkbdConfigNew));
+        std::memcpy(&swkbd_config_new, swkbd_config_data.data() + sizeof(SwkbdConfigCommon), sizeof(SwkbdConfigNew));
         break;
     }
 
@@ -267,9 +282,7 @@ void SoftwareKeyboard::InitializeForeground()
 
     std::vector<char16_t> initial_string(swkbd_config_common.initial_string_length);
 
-    std::memcpy(initial_string.data(),
-                work_buffer.data() + swkbd_config_common.initial_string_offset,
-                swkbd_config_common.initial_string_length * sizeof(char16_t));
+    std::memcpy(initial_string.data(), work_buffer.data() + swkbd_config_common.initial_string_offset, swkbd_config_common.initial_string_length * sizeof(char16_t));
 
     initial_text = Common::UTF16StringFromFixedZeroTerminatedBuffer(initial_string.data(),
                                                                     initial_string.size());
@@ -291,8 +304,7 @@ void SoftwareKeyboard::InitializePartialForeground(LibraryAppletMode library_app
     const auto & swkbd_inline_initialize_arg = swkbd_inline_initialize_arg_storage->GetData();
     ASSERT(swkbd_inline_initialize_arg.size() == sizeof(SwkbdInitializeArg));
 
-    std::memcpy(&swkbd_initialize_arg, swkbd_inline_initialize_arg.data(),
-                swkbd_inline_initialize_arg.size());
+    std::memcpy(&swkbd_initialize_arg, swkbd_inline_initialize_arg.data(), swkbd_inline_initialize_arg.size());
 
     if (swkbd_initialize_arg.library_applet_mode_flag)
     {
@@ -320,14 +332,7 @@ void SoftwareKeyboard::ProcessTextCheck()
         if (swkbd_text_check.text_check_result == SwkbdTextCheckResult::Failure ||
             swkbd_text_check.text_check_result == SwkbdTextCheckResult::Confirm)
         {
-            return swkbd_config_common.use_utf8
-                       ? Common::UTF8ToUTF16(Common::StringFromFixedZeroTerminatedBuffer(
-                             reinterpret_cast<const char *>(
-                                 swkbd_text_check.text_check_message.data()),
-                             swkbd_text_check.text_check_message.size() * sizeof(char16_t)))
-                       : Common::UTF16StringFromFixedZeroTerminatedBuffer(
-                             swkbd_text_check.text_check_message.data(),
-                             swkbd_text_check.text_check_message.size());
+            return swkbd_config_common.use_utf8 ? Common::UTF8ToUTF16(Common::StringFromFixedZeroTerminatedBuffer(reinterpret_cast<const char *>(swkbd_text_check.text_check_message.data()), swkbd_text_check.text_check_message.size() * sizeof(char16_t))) : Common::UTF16StringFromFixedZeroTerminatedBuffer( swkbd_text_check.text_check_message.data(), swkbd_text_check.text_check_message.size());
         }
         else
         {
@@ -409,12 +414,10 @@ void SoftwareKeyboard::SubmitNormalOutputAndExit(SwkbdResult result,
     {
         std::string utf8_submitted_text = Common::UTF16ToUTF8(submitted_text);
 
-        LOG_DEBUG(Service_AM, "\nSwkbdResult: {}\nUTF-8 Submitted Text: {}", result,
-                  utf8_submitted_text);
+        LOG_DEBUG(Service_AM, "\nSwkbdResult: {}\nUTF-8 Submitted Text: {}", result, utf8_submitted_text);
 
         std::memcpy(out_data.data(), &result, sizeof(SwkbdResult));
-        std::memcpy(out_data.data() + sizeof(SwkbdResult), utf8_submitted_text.data(),
-                    utf8_submitted_text.size());
+        std::memcpy(out_data.data() + sizeof(SwkbdResult), utf8_submitted_text.data(), utf8_submitted_text.size());
     }
     else
     {
@@ -443,12 +446,10 @@ void SoftwareKeyboard::SubmitForTextCheck(std::u16string submitted_text)
         // Include the null terminator in the buffer size.
         const u64 buffer_size = utf8_submitted_text.size() + 1;
 
-        LOG_DEBUG(Service_AM, "\nBuffer Size: {}\nUTF-8 Submitted Text: {}", buffer_size,
-                  utf8_submitted_text);
+        LOG_DEBUG(Service_AM, "\nBuffer Size: {}\nUTF-8 Submitted Text: {}", buffer_size, utf8_submitted_text);
 
         std::memcpy(out_data.data(), &buffer_size, sizeof(u64));
-        std::memcpy(out_data.data() + sizeof(u64), utf8_submitted_text.data(),
-                    utf8_submitted_text.size());
+        std::memcpy(out_data.data() + sizeof(u64), utf8_submitted_text.data(), utf8_submitted_text.size());
     }
     else
     {
@@ -572,42 +573,32 @@ void SoftwareKeyboard::InitializeFrontendNormalKeyboard()
 
     const auto disable_cancel_button = swkbd_applet_version >= SwkbdAppletVersion::Version393227 ? swkbd_config_new.disable_cancel_button : false;
 
-    KeyboardInitializeParameters initialize_parameters{
-        .ok_text{std::move(ok_text)},
-        .header_text{std::move(header_text)},
-        .sub_text{std::move(sub_text)},
-        .guide_text{std::move(guide_text)},
-        .initial_text{initial_text},
-        .left_optional_symbol_key{swkbd_config_common.left_optional_symbol_key},
-        .right_optional_symbol_key{swkbd_config_common.right_optional_symbol_key},
-        .max_text_length{max_text_length},
-        .min_text_length{min_text_length},
-        .initial_cursor_position{initial_cursor_position},
-        .type{swkbd_config_common.type},
-        .password_mode{swkbd_config_common.password_mode},
-        .text_draw_type{text_draw_type},
-        .key_disable_flags{swkbd_config_common.key_disable_flags},
-        .use_blur_background{swkbd_config_common.use_blur_background},
-        .enable_backspace_button{true},
-        .enable_return_button{enable_return_button},
-        .disable_cancel_button{disable_cancel_button},
-    };
+    KeyboardInitializeParameters host_parameters{};
+    CopyUtf16ToHostBuffer(host_parameters.ok_text, std::size(host_parameters.ok_text), &host_parameters.ok_text_unit_count, ok_text);
+    CopyUtf16ToHostBuffer(host_parameters.header_text, std::size(host_parameters.header_text), &host_parameters.header_text_unit_count, header_text);
+    CopyUtf16ToHostBuffer(host_parameters.sub_text, std::size(host_parameters.sub_text), &host_parameters.sub_text_unit_count, sub_text);
+    CopyUtf16ToHostBuffer(host_parameters.guide_text, std::size(host_parameters.guide_text), &host_parameters.guide_text_unit_count, guide_text);
+    CopyUtf16ToHostBuffer(host_parameters.initial_text, std::size(host_parameters.initial_text), &host_parameters.initial_text_unit_count, initial_text);
+    host_parameters.left_optional_symbol_key = static_cast<uint16_t>(swkbd_config_common.left_optional_symbol_key);
+    host_parameters.right_optional_symbol_key = static_cast<uint16_t>(swkbd_config_common.right_optional_symbol_key);
+    host_parameters.max_text_length = max_text_length;
+    host_parameters.min_text_length = min_text_length;
+    host_parameters.initial_cursor_position = initial_cursor_position;
+    host_parameters.type = static_cast<SwkbdTypeHost>(static_cast<uint32_t>(swkbd_config_common.type));
+    host_parameters.password_mode = static_cast<SwkbdPasswordModeHost>(static_cast<uint32_t>(swkbd_config_common.password_mode));
+    host_parameters.text_draw_type = static_cast<SwkbdTextDrawTypeHost>(static_cast<uint32_t>(text_draw_type));
+    host_parameters.key_disable_flags_raw = swkbd_config_common.key_disable_flags.raw;
+    host_parameters.use_blur_background = swkbd_config_common.use_blur_background;
+    host_parameters.enable_backspace_button = true;
+    host_parameters.enable_return_button = enable_return_button;
+    host_parameters.disable_cancel_button = disable_cancel_button;
 
-    frontend.InitializeKeyboard(
-        false, std::move(initialize_parameters),
-        [this](SwkbdResult result, std::u16string submitted_text, bool confirmed) {
-            SubmitTextNormal(result, submitted_text, confirmed);
-        },
-        {});
+    frontend.InitializeKeyboard(false, &host_parameters, this, SoftwareKeyboardSubmitNormalThunk, nullptr, nullptr);
 }
 
-void SoftwareKeyboard::InitializeFrontendInlineKeyboard(KeyboardInitializeParameters initialize_parameters)
+void SoftwareKeyboard::InitializeFrontendInlineKeyboard(const KeyboardInitializeParameters * initialize_parameters)
 {
-    frontend.InitializeKeyboard(
-        true, std::move(initialize_parameters), {},
-        [this](SwkbdReplyType reply_type, std::u16string submitted_text, s32 cursor_position) {
-            SubmitTextInline(reply_type, submitted_text, cursor_position);
-        });
+    frontend.InitializeKeyboard(true, initialize_parameters, nullptr, nullptr, this, SoftwareKeyboardSubmitInlineThunk);
 }
 
 void SoftwareKeyboard::InitializeFrontendInlineKeyboardOld()
@@ -630,28 +621,24 @@ void SoftwareKeyboard::InitializeFrontendInlineKeyboardOld()
     const auto text_draw_type =
         max_text_length <= 32 ? SwkbdTextDrawType::Line : SwkbdTextDrawType::Box;
 
-    KeyboardInitializeParameters initialize_parameters{
-        .ok_text{std::move(ok_text)},
-        .header_text{},
-        .sub_text{},
-        .guide_text{},
-        .initial_text{current_text},
-        .left_optional_symbol_key{appear_arg.left_optional_symbol_key},
-        .right_optional_symbol_key{appear_arg.right_optional_symbol_key},
-        .max_text_length{max_text_length},
-        .min_text_length{min_text_length},
-        .initial_cursor_position{initial_cursor_position},
-        .type{appear_arg.type},
-        .password_mode{SwkbdPasswordMode::Disabled},
-        .text_draw_type{text_draw_type},
-        .key_disable_flags{appear_arg.key_disable_flags},
-        .use_blur_background{false},
-        .enable_backspace_button{swkbd_calc_arg_old.enable_backspace_button},
-        .enable_return_button{appear_arg.enable_return_button},
-        .disable_cancel_button{appear_arg.disable_cancel_button},
-    };
+    KeyboardInitializeParameters host_parameters{};
+    CopyUtf16ToHostBuffer(host_parameters.ok_text, std::size(host_parameters.ok_text), &host_parameters.ok_text_unit_count, ok_text);
+    CopyUtf16ToHostBuffer(host_parameters.initial_text, std::size(host_parameters.initial_text), &host_parameters.initial_text_unit_count, current_text);
+    host_parameters.left_optional_symbol_key = static_cast<uint16_t>(appear_arg.left_optional_symbol_key);
+    host_parameters.right_optional_symbol_key = static_cast<uint16_t>(appear_arg.right_optional_symbol_key);
+    host_parameters.max_text_length = max_text_length;
+    host_parameters.min_text_length = min_text_length;
+    host_parameters.initial_cursor_position = initial_cursor_position;
+    host_parameters.type = static_cast<SwkbdTypeHost>(static_cast<uint32_t>(appear_arg.type));
+    host_parameters.password_mode = SwkbdPasswordModeHost::Disabled;
+    host_parameters.text_draw_type = static_cast<SwkbdTextDrawTypeHost>(static_cast<uint32_t>(text_draw_type));
+    host_parameters.key_disable_flags_raw = appear_arg.key_disable_flags.raw;
+    host_parameters.use_blur_background = false;
+    host_parameters.enable_backspace_button = swkbd_calc_arg_old.enable_backspace_button;
+    host_parameters.enable_return_button = appear_arg.enable_return_button;
+    host_parameters.disable_cancel_button = appear_arg.disable_cancel_button;
 
-    InitializeFrontendInlineKeyboard(std::move(initialize_parameters));
+    InitializeFrontendInlineKeyboard(&host_parameters);
 }
 
 void SoftwareKeyboard::InitializeFrontendInlineKeyboardNew()
@@ -674,28 +661,24 @@ void SoftwareKeyboard::InitializeFrontendInlineKeyboardNew()
     const auto text_draw_type =
         max_text_length <= 32 ? SwkbdTextDrawType::Line : SwkbdTextDrawType::Box;
 
-    KeyboardInitializeParameters initialize_parameters{
-        .ok_text{std::move(ok_text)},
-        .header_text{},
-        .sub_text{},
-        .guide_text{},
-        .initial_text{current_text},
-        .left_optional_symbol_key{appear_arg.left_optional_symbol_key},
-        .right_optional_symbol_key{appear_arg.right_optional_symbol_key},
-        .max_text_length{max_text_length},
-        .min_text_length{min_text_length},
-        .initial_cursor_position{initial_cursor_position},
-        .type{appear_arg.type},
-        .password_mode{SwkbdPasswordMode::Disabled},
-        .text_draw_type{text_draw_type},
-        .key_disable_flags{appear_arg.key_disable_flags},
-        .use_blur_background{false},
-        .enable_backspace_button{swkbd_calc_arg_new.enable_backspace_button},
-        .enable_return_button{appear_arg.enable_return_button},
-        .disable_cancel_button{appear_arg.disable_cancel_button},
-    };
+    KeyboardInitializeParameters host_parameters{};
+    CopyUtf16ToHostBuffer(host_parameters.ok_text, std::size(host_parameters.ok_text), &host_parameters.ok_text_unit_count, ok_text);
+    CopyUtf16ToHostBuffer(host_parameters.initial_text, std::size(host_parameters.initial_text), &host_parameters.initial_text_unit_count, current_text);
+    host_parameters.left_optional_symbol_key = static_cast<uint16_t>(appear_arg.left_optional_symbol_key);
+    host_parameters.right_optional_symbol_key = static_cast<uint16_t>(appear_arg.right_optional_symbol_key);
+    host_parameters.max_text_length = max_text_length;
+    host_parameters.min_text_length = min_text_length;
+    host_parameters.initial_cursor_position = initial_cursor_position;
+    host_parameters.type = static_cast<SwkbdTypeHost>(static_cast<uint32_t>(appear_arg.type));
+    host_parameters.password_mode = SwkbdPasswordModeHost::Disabled;
+    host_parameters.text_draw_type = static_cast<SwkbdTextDrawTypeHost>(static_cast<uint32_t>(text_draw_type));
+    host_parameters.key_disable_flags_raw = appear_arg.key_disable_flags.raw;
+    host_parameters.use_blur_background = false;
+    host_parameters.enable_backspace_button = swkbd_calc_arg_new.enable_backspace_button;
+    host_parameters.enable_return_button = appear_arg.enable_return_button;
+    host_parameters.disable_cancel_button = appear_arg.disable_cancel_button;
 
-    InitializeFrontendInlineKeyboard(std::move(initialize_parameters));
+    InitializeFrontendInlineKeyboard(&host_parameters);
 }
 
 void SoftwareKeyboard::ShowNormalKeyboard()
@@ -706,12 +689,12 @@ void SoftwareKeyboard::ShowNormalKeyboard()
 void SoftwareKeyboard::ShowTextCheckDialog(SwkbdTextCheckResult text_check_result,
                                            std::u16string text_check_message)
 {
-    frontend.ShowTextCheckDialog(text_check_result, std::move(text_check_message));
+    frontend.ShowTextCheckDialog(static_cast<uint32_t>(text_check_result), reinterpret_cast<const uint16_t *>(text_check_message.data()), static_cast<uint32_t>(text_check_message.size()));
 }
 
-void SoftwareKeyboard::ShowInlineKeyboard(InlineAppearParameters appear_parameters)
+void SoftwareKeyboard::ShowInlineKeyboard(const InlineAppearParameters * appear_parameters)
 {
-    frontend.ShowInlineKeyboard(std::move(appear_parameters));
+    frontend.ShowInlineKeyboard(appear_parameters);
 
     ChangeState(SwkbdState::InitializedIsShown);
 }
@@ -735,22 +718,21 @@ void SoftwareKeyboard::ShowInlineKeyboardOld()
     const u32 min_text_length =
         appear_arg.min_text_length <= max_text_length ? appear_arg.min_text_length : 0;
 
-    InlineAppearParameters appear_parameters{
-        .max_text_length{max_text_length},
-        .min_text_length{min_text_length},
-        .key_top_scale_x{swkbd_calc_arg_old.key_top_scale_x},
-        .key_top_scale_y{swkbd_calc_arg_old.key_top_scale_y},
-        .key_top_translate_x{swkbd_calc_arg_old.key_top_translate_x},
-        .key_top_translate_y{swkbd_calc_arg_old.key_top_translate_y},
-        .type{appear_arg.type},
-        .key_disable_flags{appear_arg.key_disable_flags},
-        .key_top_as_floating{swkbd_calc_arg_old.key_top_as_floating},
-        .enable_backspace_button{swkbd_calc_arg_old.enable_backspace_button},
-        .enable_return_button{appear_arg.enable_return_button},
-        .disable_cancel_button{appear_arg.disable_cancel_button},
-    };
+    InlineAppearParameters appear_parameters{};
+    appear_parameters.max_text_length = max_text_length;
+    appear_parameters.min_text_length = min_text_length;
+    appear_parameters.key_top_scale_x = swkbd_calc_arg_old.key_top_scale_x;
+    appear_parameters.key_top_scale_y = swkbd_calc_arg_old.key_top_scale_y;
+    appear_parameters.key_top_translate_x = swkbd_calc_arg_old.key_top_translate_x;
+    appear_parameters.key_top_translate_y = swkbd_calc_arg_old.key_top_translate_y;
+    appear_parameters.type = static_cast<SwkbdTypeHost>(static_cast<uint32_t>(appear_arg.type));
+    appear_parameters.key_disable_flags_raw = appear_arg.key_disable_flags.raw;
+    appear_parameters.key_top_as_floating = swkbd_calc_arg_old.key_top_as_floating;
+    appear_parameters.enable_backspace_button = swkbd_calc_arg_old.enable_backspace_button;
+    appear_parameters.enable_return_button = appear_arg.enable_return_button;
+    appear_parameters.disable_cancel_button = appear_arg.disable_cancel_button;
 
-    ShowInlineKeyboard(std::move(appear_parameters));
+    ShowInlineKeyboard(&appear_parameters);
 }
 
 void SoftwareKeyboard::ShowInlineKeyboardNew()
@@ -772,22 +754,21 @@ void SoftwareKeyboard::ShowInlineKeyboardNew()
     const u32 min_text_length =
         appear_arg.min_text_length <= max_text_length ? appear_arg.min_text_length : 0;
 
-    InlineAppearParameters appear_parameters{
-        .max_text_length{max_text_length},
-        .min_text_length{min_text_length},
-        .key_top_scale_x{swkbd_calc_arg_new.key_top_scale_x},
-        .key_top_scale_y{swkbd_calc_arg_new.key_top_scale_y},
-        .key_top_translate_x{swkbd_calc_arg_new.key_top_translate_x},
-        .key_top_translate_y{swkbd_calc_arg_new.key_top_translate_y},
-        .type{appear_arg.type},
-        .key_disable_flags{appear_arg.key_disable_flags},
-        .key_top_as_floating{swkbd_calc_arg_new.key_top_as_floating},
-        .enable_backspace_button{swkbd_calc_arg_new.enable_backspace_button},
-        .enable_return_button{appear_arg.enable_return_button},
-        .disable_cancel_button{appear_arg.disable_cancel_button},
-    };
+    InlineAppearParameters appear_parameters{};
+    appear_parameters.max_text_length = max_text_length;
+    appear_parameters.min_text_length = min_text_length;
+    appear_parameters.key_top_scale_x = swkbd_calc_arg_new.key_top_scale_x;
+    appear_parameters.key_top_scale_y = swkbd_calc_arg_new.key_top_scale_y;
+    appear_parameters.key_top_translate_x = swkbd_calc_arg_new.key_top_translate_x;
+    appear_parameters.key_top_translate_y = swkbd_calc_arg_new.key_top_translate_y;
+    appear_parameters.type = static_cast<SwkbdTypeHost>(static_cast<uint32_t>(appear_arg.type));
+    appear_parameters.key_disable_flags_raw = appear_arg.key_disable_flags.raw;
+    appear_parameters.key_top_as_floating = swkbd_calc_arg_new.key_top_as_floating;
+    appear_parameters.enable_backspace_button = swkbd_calc_arg_new.enable_backspace_button;
+    appear_parameters.enable_return_button = appear_arg.enable_return_button;
+    appear_parameters.disable_cancel_button = appear_arg.disable_cancel_button;
 
-    ShowInlineKeyboard(std::move(appear_parameters));
+    ShowInlineKeyboard(&appear_parameters);
 }
 
 void SoftwareKeyboard::HideInlineKeyboard()
@@ -806,12 +787,16 @@ void SoftwareKeyboard::HideInlineKeyboard()
 
 void SoftwareKeyboard::InlineTextChanged()
 {
-    InlineTextParameters text_parameters{
-        .input_text{current_text},
-        .cursor_position{current_cursor_position},
-    };
+    InlineTextHostParameters host_parameters{};
+    const std::size_t n = std::min(current_text.size(), static_cast<std::size_t>(0x3EA));
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        host_parameters.input_text[i] = static_cast<uint16_t>(current_text[i]);
+    }
+    host_parameters.input_text_unit_count = static_cast<uint32_t>(n);
+    host_parameters.cursor_position = current_cursor_position;
 
-    frontend.InlineTextChanged(std::move(text_parameters));
+    frontend.InlineTextChanged(&host_parameters);
 }
 
 void SoftwareKeyboard::ExitKeyboard()

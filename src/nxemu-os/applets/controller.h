@@ -3,57 +3,22 @@
 
 #pragma once
 
-#include <functional>
-#include <vector>
-
-#include "applets/applet.h"
-#include "yuzu_common/common_types.h"
+#include <nxemu-module-spec/operating_system.h>
 
 namespace Core::HID
 {
 class HIDCore;
 }
 
-using BorderColor = std::array<u8, 4>;
-using ExplainText = std::array<char, 0x81>;
-
-struct ControllerParameters
-{
-    s8 min_players{};
-    s8 max_players{};
-    bool keep_controllers_connected{};
-    bool enable_single_mode{};
-    bool enable_border_color{};
-    std::vector<BorderColor> border_colors{};
-    bool enable_explain_text{};
-    std::vector<ExplainText> explain_text{};
-    bool allow_pro_controller{};
-    bool allow_handheld{};
-    bool allow_dual_joycons{};
-    bool allow_left_joycon{};
-    bool allow_right_joycon{};
-    bool allow_gamecube_controller{};
-};
-
-class ControllerApplet : public Applet
-{
-public:
-    using ReconfigureCallback = std::function<void(bool)>;
-
-    virtual ~ControllerApplet();
-
-    virtual void ReconfigureControllers(ReconfigureCallback callback,
-                                        const ControllerParameters & parameters) const = 0;
-};
-
-class DefaultControllerApplet final : public ControllerApplet
+class DefaultControllerApplet final : 
+    public IControllerFrontendApplet
 {
 public:
     explicit DefaultControllerApplet(Core::HID::HIDCore & hid_core_);
-    ~DefaultControllerApplet() override;
+    ~DefaultControllerApplet();
 
-    void Close() const override;
-    void ReconfigureControllers(ReconfigureCallback callback, const ControllerParameters & parameters) const override;
+    void Close() override;
+    void ReconfigureControllers(void * user_data, ControllerReconfigureFn on_complete, const ControllerHostParameters * parameters) override;
 
 private:
     Core::HID::HIDCore & hid_core;

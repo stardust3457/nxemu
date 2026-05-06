@@ -40,8 +40,7 @@ T ParseRawValue(const std::vector<u8> & data)
 
 std::string ParseStringValue(const std::vector<u8> & data)
 {
-    return Common::StringFromFixedZeroTerminatedBuffer(reinterpret_cast<const char *>(data.data()),
-                                                       data.size());
+    return Common::StringFromFixedZeroTerminatedBuffer((const char *)data.data(),data.size());
 }
 
 std::string GetMainURL(const std::string & url)
@@ -116,8 +115,8 @@ void ExtractSharedFonts(Core::System & system)
 
 } // namespace
 
-WebBrowser::WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, const WebBrowserApplet & frontend_) :
-    FrontendApplet{system_, applet_, applet_mode_}, 
+WebBrowser::WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, IWebBrowserFrontendApplet & frontend_) :
+    FrontendApplet{system_, applet_, applet_mode_},
     frontend(frontend_)
 {
 }
@@ -129,13 +128,7 @@ void WebBrowser::Initialize()
     FrontendApplet::Initialize();
 
     LOG_INFO(Service_AM, "Initializing Web Browser Applet.");
-
-    LOG_DEBUG(Service_AM,
-              "Initializing Applet with common_args: arg_version={}, lib_version={}, "
-              "play_startup_sound={}, size={}, system_tick={}, theme_color={}",
-              common_args.arguments_version, common_args.library_version,
-              common_args.play_startup_sound, common_args.size, common_args.system_tick,
-              common_args.theme_color);
+    LOG_DEBUG(Service_AM, "Initializing Applet with common_args: arg_version={}, lib_version={}, play_startup_sound={}, size={}, system_tick={}, theme_color={}", common_args.arguments_version, common_args.library_version, common_args.play_startup_sound, common_args.size, common_args.system_tick, common_args.theme_color);
 
     web_applet_version = WebAppletVersion{common_args.library_version};
 
@@ -147,8 +140,7 @@ void WebBrowser::Initialize()
 
     web_arg_input_tlv_map = ReadWebArgs(web_arg, web_arg_header);
 
-    LOG_DEBUG(Service_AM, "WebArgHeader: total_tlv_entries={}, shim_kind={}",
-              web_arg_header.total_tlv_entries, web_arg_header.shim_kind);
+    LOG_DEBUG(Service_AM, "WebArgHeader: total_tlv_entries={}, shim_kind={}", web_arg_header.total_tlv_entries, web_arg_header.shim_kind);
 
     ExtractSharedFonts(system);
 
@@ -225,17 +217,15 @@ void WebBrowser::Execute()
 
 void WebBrowser::ExtractOfflineRomFS()
 {
-    LOG_DEBUG(Service_AM, "Extracting RomFS to {}",Common::FS::PathToUTF8String(offline_cache_dir));
+    LOG_DEBUG(Service_AM, "Extracting RomFS to {}", Common::FS::PathToUTF8String(offline_cache_dir));
 
     UNIMPLEMENTED();
 }
 
 void WebBrowser::WebBrowserExit(WebExitReason exit_reason, std::string last_url)
 {
-    if ((web_arg_header.shim_kind == ShimKind::Share &&
-         web_applet_version >= WebAppletVersion::Version196608) ||
-        (web_arg_header.shim_kind == ShimKind::Web &&
-         web_applet_version >= WebAppletVersion::Version524288))
+    if ((web_arg_header.shim_kind == ShimKind::Share && web_applet_version >= WebAppletVersion::Version196608) ||
+        (web_arg_header.shim_kind == ShimKind::Web && web_applet_version >= WebAppletVersion::Version524288))
     {
         // TODO: Push Output TLVs instead of a WebCommonReturnValue
     }
@@ -246,8 +236,7 @@ void WebBrowser::WebBrowserExit(WebExitReason exit_reason, std::string last_url)
     std::memcpy(&web_common_return_value.last_url, last_url.data(), last_url.size());
     web_common_return_value.last_url_size = last_url.size();
 
-    LOG_DEBUG(Service_AM, "WebCommonReturnValue: exit_reason={}, last_url={}, last_url_size={}",
-              exit_reason, last_url, last_url.size());
+    LOG_DEBUG(Service_AM, "WebCommonReturnValue: exit_reason={}, last_url={}, last_url_size={}", exit_reason, last_url, last_url.size());
 
     complete = true;
     std::vector<u8> out_data(sizeof(WebCommonReturnValue));

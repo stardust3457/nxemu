@@ -1,19 +1,20 @@
-#include <nxemu-core/settings/identifiers.h>
+#include "os_manager.h"
+#include "core/core_timing.h"
 #include "core/cpu_manager.h"
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/service/am/applet_manager.h"
+#include "core/hle/service/am/frontend/applets.h"
 #include "core/hle/service/filesystem/filesystem.h"
-#include "core/core_timing.h"
 #include "core/perf_stats.h"
+#include "os_settings.h"
+#include "yuzu_audio_core/sink/sink_details.h"
 #include "yuzu_common/settings.h"
 #include "yuzu_common/settings_input.h"
 #include "yuzu_hid_core/frontend/emulated_controller.h"
 #include "yuzu_hid_core/hid_core.h"
-#include "yuzu_input_common/main.h"
 #include "yuzu_input_common/drivers/keyboard.h"
-#include "yuzu_audio_core/sink/sink_details.h"
-#include "os_manager.h"
-#include "os_settings.h"
+#include "yuzu_input_common/main.h"
+#include <nxemu-core/settings/identifiers.h>
 
 namespace
 {
@@ -373,4 +374,19 @@ bool OSManager::IsEmulationPaused() const
         return false;
     }
     return !m_emuThread->IsRunning();
+}
+
+void OSManager::SetFrontendApplets(ICabinetFrontendApplet * cabinet, IControllerFrontendApplet * controller, IErrorFrontendApplet * error, IMiiEditFrontendApplet * mii_edit, IParentalControlsFrontendApplet * parental_controls, IPhotoViewerFrontendApplet * photo_viewer, IProfileSelectFrontendApplet * profile_select, ISoftwareKeyboardFrontendApplet * software_keyboard, IWebBrowserFrontendApplet * web_browser)
+{
+    Service::AM::Frontend::FrontendAppletSet applets{};
+    applets.cabinet = cabinet;
+    applets.controller = controller;
+    applets.error = error;
+    applets.mii_edit = mii_edit;
+    applets.parental_controls = parental_controls;
+    applets.photo_viewer = photo_viewer;
+    applets.profile_select = profile_select;
+    applets.software_keyboard = software_keyboard;
+    applets.web_browser = web_browser;
+    m_coreSystem.SetFrontendAppletSet(std::move(applets));
 }

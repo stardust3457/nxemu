@@ -8,15 +8,28 @@
 
 extern IModuleSettings * g_settings;
 
-ProfileSelectApplet::~ProfileSelectApplet() = default;
-
-void DefaultProfileSelectApplet::Close() const
+void DefaultProfileSelectApplet::Close()
 {
 }
 
-void DefaultProfileSelectApplet::SelectProfile(SelectProfileCallback callback, const ProfileSelectParameters & parameters) const
+void DefaultProfileSelectApplet::SelectProfile(void * user_data, ProfileSelectFinishedFn finished, const ProfileSelectHostParameters * parameters) const
 {
+    (void)parameters;
+
     Service::Account::ProfileManager manager;
-    callback(manager.GetUser(g_settings->GetInt(NXOsSetting::CurrentUser)).value_or(Common::UUID{}));
+    const std::optional<Common::UUID> user = manager.GetUser(g_settings->GetInt(NXOsSetting::CurrentUser));
+
+    uint8_t uuid_bytes[16]{};
+    bool has_uuid = false;
+    if (user.has_value() && user->IsValid())
+    {
+        has_uuid = true;
+        std::memcpy(uuid_bytes, user->uuid.data(), sizeof(uuid_bytes));
+    }
+
+    if (finished != nullptr)
+    {
+        finished(user_data, has_uuid, uuid_bytes);
+    }
     LOG_INFO(Service_ACC, "called, selecting current user instead of prompting...");
 }

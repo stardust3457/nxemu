@@ -14,8 +14,6 @@
 
 extern IModuleSettings * g_settings;
 
-ControllerApplet::~ControllerApplet() = default;
-
 DefaultControllerApplet::DefaultControllerApplet(Core::HID::HIDCore & hid_core_) :
     hid_core{hid_core_}
 {
@@ -23,15 +21,24 @@ DefaultControllerApplet::DefaultControllerApplet(Core::HID::HIDCore & hid_core_)
 
 DefaultControllerApplet::~DefaultControllerApplet() = default;
 
-void DefaultControllerApplet::Close() const
+void DefaultControllerApplet::Close()
 {
 }
 
-void DefaultControllerApplet::ReconfigureControllers(ReconfigureCallback callback, const ControllerParameters & parameters) const
+void DefaultControllerApplet::ReconfigureControllers(void * user_data, ControllerReconfigureFn on_complete, const ControllerHostParameters * parameters)
 {
     LOG_INFO(Service_HID, "called, deducing the best configuration based on the given parameters!");
 
-    const std::size_t min_supported_players = parameters.enable_single_mode ? 1 : parameters.min_players;
+    if (parameters == nullptr)
+    {
+        if (on_complete != nullptr)
+        {
+            on_complete(user_data, false);
+        }
+        return;
+    }
+
+    const std::size_t min_supported_players = parameters->enable_single_mode ? 1U : static_cast<std::size_t>(parameters->min_players);
 
     // Disconnect Handheld first.
     auto * handheld = hid_core.GetEmulatedController(NpadIdType::Handheld);
@@ -54,17 +61,17 @@ void DefaultControllerApplet::ReconfigureControllers(ReconfigureCallback callbac
 
         // Connect controllers based on the following priority list from highest to lowest priority:
         // Pro Controller -> Dual Joycons -> Left Joycon/Right Joycon -> Handheld
-        if (parameters.allow_pro_controller)
+        if (parameters->allow_pro_controller)
         {
             controller->SetNpadStyleIndex(NpadStyleIndex::Fullkey);
             controller->Connect(true);
         }
-        else if (parameters.allow_dual_joycons)
+        else if (parameters->allow_dual_joycons)
         {
             controller->SetNpadStyleIndex(NpadStyleIndex::JoyconDual);
             controller->Connect(true);
         }
-        else if (parameters.allow_left_joycon && parameters.allow_right_joycon)
+        else if (parameters->allow_left_joycon && parameters->allow_right_joycon)
         {
             // Assign left joycons to even player indices and right joycons to odd player indices.
             // We do this since Captain Toad Treasure Tracker expects a left joycon for Player 1 and
@@ -80,7 +87,7 @@ void DefaultControllerApplet::ReconfigureControllers(ReconfigureCallback callbac
                 controller->Connect(true);
             }
         }
-        else if (index == 0 && parameters.enable_single_mode && parameters.allow_handheld && g_settings->GetInt(NXOsSetting::DockedMode) != static_cast<int32_t>(Settings::DockedMode::Docked))
+        else if (index == 0 && parameters->enable_single_mode && parameters->allow_handheld && g_settings->GetInt(NXOsSetting::DockedMode) != static_cast<int32_t>(Settings::DockedMode::Docked))
         {
             // We should *never* reach here under any normal circumstances.
             controller->SetNpadStyleIndex(NpadStyleIndex::Handheld);
@@ -92,5 +99,8 @@ void DefaultControllerApplet::ReconfigureControllers(ReconfigureCallback callbac
         }
     }
 
-    callback(true);
+    if (on_complete != nullptr)
+    {
+        on_complete(user_data, true);
+    }
 }

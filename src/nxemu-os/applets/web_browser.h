@@ -2,34 +2,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-
-#include <functional>
-#include <string>
-
-#include "applets/applet.h"
-#include "core/hle/service/am/frontend/applet_web_browser_types.h"
-
-class WebBrowserApplet :
-    public Applet
-{
-public:
-    using ExtractROMFSCallback = std::function<void()>;
-    using OpenWebPageCallback = std::function<void(Service::AM::Frontend::WebExitReason, std::string)>;
-
-    virtual ~WebBrowserApplet();
-
-    virtual void OpenLocalWebPage(const std::string & local_url, ExtractROMFSCallback extract_romfs_callback, OpenWebPageCallback callback) const = 0;
-    virtual void OpenExternalWebPage(const std::string & external_url, OpenWebPageCallback callback) const = 0;
-};
+#include <nxemu-module-spec/operating_system.h>
 
 class DefaultWebBrowserApplet final :
-    public WebBrowserApplet
+    public IWebBrowserFrontendApplet
 {
 public:
-    ~DefaultWebBrowserApplet() override;
+    void Close() override;
 
-    void Close() const override;
-
-    void OpenLocalWebPage(const std::string & local_url, ExtractROMFSCallback extract_romfs_callback, OpenWebPageCallback callback) const override;
-    void OpenExternalWebPage(const std::string & external_url, OpenWebPageCallback callback) const override;
+    void OpenLocalWebPage(const char * local_url_utf8, void * extract_user_data, ExtractRomFsFn extract_romfs, void * open_user_data, OpenWebPageFn open_callback) const override;
+    void OpenExternalWebPage(const char * external_url_utf8, void * user_data, OpenWebPageFn callback) const override;
 };

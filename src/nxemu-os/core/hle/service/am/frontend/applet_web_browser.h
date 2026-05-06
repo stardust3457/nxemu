@@ -6,10 +6,10 @@
 #include <filesystem>
 #include <optional>
 
-#include "yuzu_common/common_types.h"
 #include "core/hle/result.h"
 #include "core/hle/service/am/frontend/applet_web_browser_types.h"
 #include "core/hle/service/am/frontend/applets.h"
+#include "yuzu_common/common_types.h"
 #include <nxemu-module-spec/system_loader.h>
 
 namespace Core {
@@ -20,14 +20,12 @@ namespace FileSys {
 enum class LoaderContentRecordType : u8;
 }
 
-class WebBrowserApplet;
-
 namespace Service::AM::Frontend
 {
 
 class WebBrowser final : public FrontendApplet {
 public:
-    WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, const WebBrowserApplet & frontend_);
+    WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, IWebBrowserFrontendApplet & frontend_);
     ~WebBrowser() override;
 
     void Initialize() override;
@@ -64,7 +62,7 @@ private:
     void ExecuteWifi();
     void ExecuteLobby();
 
-    const WebBrowserApplet & frontend;
+    IWebBrowserFrontendApplet & frontend;
 
     bool complete{false};
     Result status{ResultSuccess};

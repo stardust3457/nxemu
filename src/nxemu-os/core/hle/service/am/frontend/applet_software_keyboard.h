@@ -7,20 +7,17 @@
 #include "core/hle/result.h"
 #include "core/hle/service/am/frontend/applet_software_keyboard_types.h"
 #include "core/hle/service/am/frontend/applets.h"
+#include <nxemu-module-spec/operating_system.h>
 
 namespace Core {
 class System;
 }
 
-struct InlineAppearParameters;
-struct KeyboardInitializeParameters;
-class SoftwareKeyboardApplet;
-
 namespace Service::AM::Frontend {
 
 class SoftwareKeyboard final : public FrontendApplet {
 public:
-    explicit SoftwareKeyboard(Core::System& system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, SoftwareKeyboardApplet& frontend_);
+    explicit SoftwareKeyboard(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, ISoftwareKeyboardFrontendApplet & frontend_);
     ~SoftwareKeyboard() override;
 
     void Initialize() override;
@@ -90,7 +87,7 @@ private:
      * Note that this does not cause the keyboard to appear.
      * Use the ShowInlineKeyboard() to cause the keyboard to appear.
      */
-    void InitializeFrontendInlineKeyboard(KeyboardInitializeParameters initialize_parameters);
+    void InitializeFrontendInlineKeyboard(const KeyboardInitializeParameters * initialize_parameters);
 
     void InitializeFrontendInlineKeyboardOld();
     void InitializeFrontendInlineKeyboardNew();
@@ -102,7 +99,7 @@ private:
     void ShowTextCheckDialog(SwkbdTextCheckResult text_check_result, std::u16string text_check_message);
 
     /// Signals the frontend to show the inline software keyboard.
-    void ShowInlineKeyboard(InlineAppearParameters appear_parameters);
+    void ShowInlineKeyboard(const InlineAppearParameters * appear_parameters);
 
     void ShowInlineKeyboardOld();
     void ShowInlineKeyboardNew();
@@ -149,7 +146,7 @@ private:
     void ReplyChangedStringUtf8V2();
     void ReplyMovedCursorUtf8V2();
 
-    SoftwareKeyboardApplet & frontend;
+    ISoftwareKeyboardFrontendApplet & frontend;
 
     SwkbdAppletVersion swkbd_applet_version;
 

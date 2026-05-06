@@ -550,6 +550,7 @@ void System::AddGlueRegistrationForProcess(Kernel::KProcess & process, uint32_t 
 void System::SetFrontendAppletSet(Service::AM::Frontend::FrontendAppletSet && set)
 {
     impl->frontend_applets.SetFrontendAppletSet(std::move(set));
+    impl->frontend_applets.SetDefaultAppletsIfMissing();
 }
 
 Service::AM::Frontend::FrontendAppletHolder & System::GetFrontendAppletHolder()
