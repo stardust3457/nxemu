@@ -7,6 +7,7 @@
 #include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/version.h>
+#include <nxemu-module-spec/operating_system.h>
 #include <nxemu-module-spec/system_loader.h>
 #include <nxemu-module-spec/video.h>
 #include <nxemu-os/os_settings_identifiers.h>
@@ -114,6 +115,8 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
 
 SciterMainWindow::~SciterMainWindow()
 {
+    m_WebBrowser.DetachWindow();
+
     SettingsStore & settings = SettingsStore::GetInstance();
     settings.UnregisterCallback(NXCoreSetting::EmulationRunning, SciterMainWindow::EmulationRunning, this);
     settings.UnregisterCallback(NXCoreSetting::EmulationState, SciterMainWindow::EmulationStateChanged, this);
@@ -139,6 +142,17 @@ SciterMainWindow::~SciterMainWindow()
         m_romBrowser->ClearItems();
     }
     m_modules.ShutDown();
+}
+
+void SciterMainWindow::RegisterApplets()
+{
+    if (!m_modules.IsValid())
+    {
+        return;
+    }
+    IOperatingSystem & os = m_modules.Modules().OperatingSystem();
+    m_WebBrowser.AttachToWindow(m_window->GetHandle());
+    os.SetFrontendApplets(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &m_WebBrowser);
 }
 
 void SciterMainWindow::ResetMenu()
@@ -238,6 +252,7 @@ bool SciterMainWindow::Show()
 
     CreateRenderWindow();
     m_modules.Setup(*this);
+    RegisterApplets();
     UpdateStatusbar();
 
     m_sciterUI.AttachHandler(m_rootElement.GetElementByID("dockedMode"), IID_ICLICKSINK, (IClickSink *)this);
@@ -286,6 +301,7 @@ void SciterMainWindow::ShowConfig(const char * startPage)
 void SciterMainWindow::LoadGame(const char * path)
 {
     m_modules.Setup(*this);
+    RegisterApplets();
 
     ISystemloader & loader = m_modules.Modules().Systemloader();
     loader.LoadRom(path);
@@ -536,6 +552,7 @@ void SciterMainWindow::OnOpenFile()
     if (m_modules.IsValid())
     {
         m_modules.Setup(*this);
+        RegisterApplets();
 
         ISystemloader & loader = m_modules.Modules().Systemloader();
         loader.SelectAndLoad((void *)m_window->GetHandle());
@@ -732,6 +749,7 @@ void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
 
 void SciterMainWindow::OnWindowDestroy(HWINDOW /*hWnd*/)
 {
+    m_WebBrowser.DetachWindow();
     m_sciterUI.Stop();
 }
 

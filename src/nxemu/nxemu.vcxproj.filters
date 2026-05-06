@@ -37,6 +37,12 @@
     <Filter Include="Source Files\user_interface\widgets">
       <UniqueIdentifier>{a4091b11-2249-4f6f-8fd2-49ae4e48ea92}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\applets">
+      <UniqueIdentifier>{4b652fba-ede2-4e48-81a4-487d72e67c61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\applets">
+      <UniqueIdentifier>{7c84bbd1-3d6a-4327-9c0e-84e51ef5164d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -98,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="user_interface\settings\system_config_logging.cpp">
       <Filter>Source Files\user_interface\settings</Filter>
+    </ClCompile>
+    <ClCompile Include="applets\web_browser.cpp">
+      <Filter>Source Files\applets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="user_interface\settings\system_config_logging.h">
       <Filter>Header Files\user_interface\settings</Filter>
+    </ClInclude>
+    <ClInclude Include="applets\web_browser.h">
+      <Filter>Header Files\applets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

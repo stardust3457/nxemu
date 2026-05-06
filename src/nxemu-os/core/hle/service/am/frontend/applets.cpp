@@ -151,7 +151,7 @@ AppletId FrontendAppletHolder::GetCurrentAppletId() const
 
 void FrontendAppletHolder::SetFrontendAppletSet(FrontendAppletSet set)
 {
-    UNIMPLEMENTED();
+    frontend = std::move(set);
 }
 
 void FrontendAppletHolder::SetCabinetMode(NFP::CabinetMode mode)
