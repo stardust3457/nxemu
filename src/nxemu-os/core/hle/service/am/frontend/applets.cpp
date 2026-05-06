@@ -6,8 +6,8 @@
 #include "applets/cabinet.h"
 #include "applets/controller.h"
 #include "applets/error.h"
-#include "applets/mii_edit.h"
 #include "applets/general.h"
+#include "applets/mii_edit.h"
 #include "applets/profile_select.h"
 #include "applets/software_keyboard.h"
 #include "applets/web_browser.h"
@@ -20,6 +20,7 @@
 #include "core/hle/service/am/frontend/applet_controller.h"
 #include "core/hle/service/am/frontend/applet_error.h"
 #include "core/hle/service/am/frontend/applet_general.h"
+#include "core/hle/service/am/frontend/applet_mii_edit.h"
 #include "core/hle/service/am/frontend/applet_profile_select.h"
 #include "core/hle/service/am/frontend/applet_software_keyboard.h"
 #include "core/hle/service/am/frontend/applet_web_browser.h"
@@ -220,8 +221,34 @@ void FrontendAppletHolder::ClearAll()
 
 std::shared_ptr<FrontendApplet> FrontendAppletHolder::GetApplet(std::shared_ptr<Applet> applet, AppletId id, LibraryAppletMode mode) const
 {
-    UNIMPLEMENTED_MSG("No backend implementation exists for applet_id={:02X}! Falling back to stub applet.", static_cast<u8>(id));
-    return std::make_shared<StubApplet>(system, applet, id, mode);
+    switch (id)
+    {
+    case AppletId::Auth:
+        return std::make_shared<Auth>(system, applet, mode);
+    case AppletId::Cabinet:
+        return std::make_shared<Cabinet>(system, applet, mode);
+    case AppletId::Controller:
+        return std::make_shared<Controller>(system, applet, mode, *frontend.controller);
+    case AppletId::Error:
+        return std::make_shared<Error>(system, applet, mode);
+    case AppletId::ProfileSelect:
+        return std::make_shared<ProfileSelect>(system, applet, mode);
+    case AppletId::SoftwareKeyboard:
+        return std::make_shared<SoftwareKeyboard>(system, applet, mode, *frontend.software_keyboard);
+    case AppletId::MiiEdit:
+        return std::make_shared<MiiEdit>(system, applet, mode, *frontend.mii_edit);
+    case AppletId::Web:
+    case AppletId::Shop:
+    case AppletId::OfflineWeb:
+    case AppletId::LoginShare:
+    case AppletId::WebAuth:
+        return std::make_shared<WebBrowser>(system, applet, mode, *frontend.web_browser);
+    case AppletId::PhotoViewer:
+        return std::make_shared<PhotoViewer>(system, applet, mode);
+    default:
+        UNIMPLEMENTED_MSG("No backend implementation exists for applet_id={:02X}! Falling back to stub applet.",static_cast<u8>(id));
+        return std::make_shared<StubApplet>(system, applet, id, mode);
+    }
 }
 
 } // namespace Service::AM::Frontend

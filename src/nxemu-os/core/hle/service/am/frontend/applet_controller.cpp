@@ -20,8 +20,9 @@ namespace Service::AM::Frontend
 [[maybe_unused]] constexpr Result ResultControllerSupportNotSupportedNpadStyle{ErrorModule::HID,
                                                                                3102};
 
-Controller::Controller(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_) :
-    FrontendApplet{system_, applet_, applet_mode_}
+Controller::Controller(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, IControllerFrontendApplet & frontend_) :
+    FrontendApplet{system_, applet_, applet_mode_},
+    frontend{frontend_}
 {
 }
 
@@ -32,7 +33,6 @@ void Controller::Initialize()
     FrontendApplet::Initialize();
 
     LOG_INFO(Service_HID, "Initializing Controller Applet.");
-
     LOG_DEBUG(Service_HID, "Initializing Applet with common_args: arg_version={}, lib_version={}, play_startup_sound={}, size={}, system_tick={}, theme_color={}", common_args.arguments_version, common_args.library_version, common_args.play_startup_sound, common_args.size, common_args.system_tick, common_args.theme_color);
 
     controller_applet_version = ControllerAppletVersion{common_args.library_version};
@@ -153,6 +153,15 @@ Result Controller::GetStatus() const
 void Controller::ExecuteInteractive()
 {
     ASSERT_MSG(false, "Attempted to call interactive execution on non-interactive applet.");
+}
+
+void Controller::Execute()
+{
+    if (complete)
+    {
+        return;
+    }
+    UNIMPLEMENTED();
 }
 
 Result Controller::RequestExit()

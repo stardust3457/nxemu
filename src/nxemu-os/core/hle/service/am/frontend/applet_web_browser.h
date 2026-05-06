@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <optional>
 
+#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/result.h"
 #include "core/hle/service/am/frontend/applet_web_browser_types.h"
 #include "core/hle/service/am/frontend/applets.h"
@@ -41,6 +42,8 @@ public:
 
 private:
     bool InputTLVExistsInMap(WebArgInputTLVType input_tlv_type) const;
+    static void CALL ExtractRom(void * this_);
+    static void CALL OpenWebPage(void * this_, uint32_t exit_reason_raw, const char * last_url_utf8);
 
     std::optional<std::vector<u8>> GetInputTLVData(WebArgInputTLVType input_tlv_type);
 
@@ -75,6 +78,7 @@ private:
     LoaderContentRecordType nca_type{};
     std::filesystem::path offline_cache_dir;
     std::filesystem::path offline_document;
+    IVirtualFilePtr offline_romfs;
 
     std::string external_url;
 };
