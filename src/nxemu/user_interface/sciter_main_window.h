@@ -3,6 +3,7 @@
 #include "startup_checks.h"
 #include "user_interface/widgets/rom_browser.h"
 #include <memory>
+#include <string>
 #include <nxemu-core/modules/system_modules.h>
 #include <nxemu-module-spec/base.h>
 #include <sciter_element.h>
@@ -38,6 +39,7 @@ class SciterMainWindow :
         OpenControllersDialog,
         OpenSystemConfiguration,
         ToggleFullscreen,
+        ToggleStartGamesInFullscreen,
         ToggleHideUi,
         ToggleDockedMode,
         ResetWindowSize720p,
@@ -94,6 +96,7 @@ private:
     void OnInputConfig();
     void OnRecetGame(uint32_t fileIndex);
     void OnToggleDockedMode();
+    void OnToggleStartGamesInFullscreen();
     void UpdateStatusBar();
     const MenuBarAccelerator * HotkeyAccelerator(const char * name);
     const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);
@@ -160,6 +163,8 @@ private:
     bool m_useSpeedLimit;
     uint32_t m_speedLimit;
     bool m_emulationRunning;
+    bool m_pendingStartInFullscreen;
+    std::string m_fullscreenMenuSvg;
     bool m_hideUi;
     std::unique_ptr<Win32FullscreenState> m_win32Fullscreen;
 };

@@ -235,6 +235,102 @@ menu li .menu-item-label
   text-align: left;
 }
 
+menu li:has-child-of-type(menu) caption
+{
+  width: *;
+  text-align: left;
+}
+
+menu li:current caption,
+menu li:hover:owns-popup caption
+{
+  color: #f0f0f0;
+}
+
+menu li .menu-item-glyph
+{
+  width: 1.15em;
+  min-width: 1.15em;
+  max-width: 1.15em;
+  min-height: 1.15em;
+  max-height: 1.15em;
+  margin: 0 0.55em 0 0;
+  box-sizing: border-box;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  foreground-image: none;
+}
+
+menu li .menu-item-glyph.menu-item-glyph-spacer
+{
+  border: 1.5px solid transparent;
+  border-radius: 3px;
+  position: relative;
+}
+
+menu li .menu-item-glyph.menu-item-checkbox
+{
+  border: 1.5px solid var(--color-ui-text-muted, #8c8c8c);
+  border-radius: 3px;
+  position: relative;
+  foreground-image: none;
+}
+
+menu li .menu-item-glyph.menu-item-checkbox.checked
+{
+  border-color: var(--color-ui-text-primary, #f0f0f0);
+}
+
+menu li .menu-item-glyph.menu-item-icon-svg
+{
+  border: none;
+  width: 1.15em;
+  height: 1.15em;
+  min-width: 1.15em;
+  max-width: 1.15em;
+  padding: 0;
+}
+
+menu li .menu-item-glyph.menu-item-icon-svg svg
+{
+  width: 1.05em;
+  height: 1.05em;
+  display: block;
+  vertical-align: middle;
+}
+
+menu li .menu-item-glyph.menu-item-icon-svg path
+{
+  fill: currentColor;
+}
+
+menu li .menu-item-glyph .menu-item-checkmark
+{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: *;
+  height: *;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.72em;
+  line-height: 1.15em;
+  color: var(--color-ui-text-primary, #f0f0f0);
+}
+
+menu li:current .menu-item-glyph.menu-item-checkbox,
+menu li:hover:owns-popup .menu-item-glyph.menu-item-checkbox
+{
+  border-color: #f0f0f0;
+}
+
+menu li:current .menu-item-glyph .menu-item-checkmark,
+menu li:hover:owns-popup .menu-item-glyph .menu-item-checkmark
+{
+  color: #f0f0f0;
+}
+
 menu li .menu-accelerator
 {
   width: max-content;

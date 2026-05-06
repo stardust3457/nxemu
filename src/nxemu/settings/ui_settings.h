@@ -19,6 +19,7 @@ struct UISettings
     bool performVulkanCheck;
     bool hasBrokenVulkan;
     bool enableAllControllers;
+    bool startGamesInFullscreen;
     HotkeyMap hotkeys;
 };
 
