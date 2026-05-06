@@ -14,9 +14,10 @@ namespace
     const HotkeyMap g_defaultHotkeys = {
         {Hotkey::LoadFile, {.key = (uint32_t)SCITER_KEY_O, .ctrl = true}},
         {Hotkey::Exit, {.key = (uint32_t)SCITER_KEY_Q, .ctrl = true}},
-        {Hotkey::Fullscreen, {.key = (uint32_t)SCITER_KEY_F11, .ctrl = false, .alt = false, .shift = false}},
-        {Hotkey::ExitFullscreen, {.key = (uint32_t)SCITER_KEY_ESCAPE, .ctrl = false, .alt = false, .shift = false}},
-        {Hotkey::PauseContinue, {.key = (uint32_t)SCITER_KEY_F4}},
+        {Hotkey::Fullscreen, {.key = (uint32_t)SCITER_KEY_F11}},
+        {Hotkey::ExitFullscreen, {.key = (uint32_t)SCITER_KEY_ESCAPE}},
+        {Hotkey::HideUi, {.key = (uint32_t)SCITER_KEY_F4}},
+        {Hotkey::PauseContinue, {.key = (uint32_t)SCITER_KEY_F2}},
         {Hotkey::ToggleDockedMode, {.key = (uint32_t)SCITER_KEY_F10}},
         {Hotkey::StopEmulation, {.key = (uint32_t)SCITER_KEY_F5}},
         {Hotkey::Controllers, {.key = (uint32_t)SCITER_KEY_C, .ctrl = true}},
