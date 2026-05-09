@@ -6,25 +6,28 @@
 #include <filesystem>
 #include <optional>
 
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/result.h"
 #include "core/hle/service/am/frontend/applet_web_browser_types.h"
 #include "core/hle/service/am/frontend/applets.h"
-#include "yuzu_common/common_types.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/common_types.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
-namespace Core {
+namespace Core
+{
 class System;
 }
 
-namespace FileSys {
+namespace FileSys
+{
 enum class LoaderContentRecordType : u8;
 }
 
 namespace Service::AM::Frontend
 {
 
-class WebBrowser final : public FrontendApplet {
+class WebBrowser final : public FrontendApplet
+{
 public:
     WebBrowser(Core::System & system_, std::shared_ptr<Applet> applet_, LibraryAppletMode applet_mode_, IWebBrowserFrontendApplet & frontend_);
     ~WebBrowser() override;

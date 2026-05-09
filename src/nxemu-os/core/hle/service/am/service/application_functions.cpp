@@ -1,14 +1,11 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "yuzu_common/settings.h"
-#include "yuzu_common/uuid.h"
+#include "core/hle/service/am/service/application_functions.h"
 #include "core/file_sys/errors.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/kernel/k_transfer_memory.h"
 #include "core/hle/service/am/am_results.h"
 #include "core/hle/service/am/applet.h"
-#include "core/hle/service/am/service/application_functions.h"
 #include "core/hle/service/am/service/storage.h"
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/glue/glue_manager.h"
@@ -16,6 +13,9 @@
 #include "core/hle/service/ns/service_getter_interface.h"
 #include "core/hle/service/sm/sm.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
+#include <yuzu_common/settings.h>
+#include <yuzu_common/uuid.h>
 
 namespace FileSys {
 

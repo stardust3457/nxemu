@@ -4,10 +4,10 @@
 #include "yuzu_common/scope_exit.h"
 
 #include "core/core.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/kernel/k_process.h"
 #include "core/hle/service/am/process.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
 namespace Service::AM
 {

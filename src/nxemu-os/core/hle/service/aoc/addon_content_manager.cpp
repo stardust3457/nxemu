@@ -5,18 +5,17 @@
 #include <numeric>
 #include <vector>
 
-#include "yuzu_common/logging/log.h"
-#include "yuzu_common/settings.h"
 #include "core/core.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/kernel/k_event.h"
 #include "core/hle/service/aoc/addon_content_manager.h"
 #include "core/hle/service/aoc/purchase_event_manager.h"
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/ipc_helpers.h"
 #include "core/hle/service/server_manager.h"
-
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
+#include <yuzu_common/logging/log.h>
+#include <yuzu_common/settings.h>
 
 namespace FileSys {
 

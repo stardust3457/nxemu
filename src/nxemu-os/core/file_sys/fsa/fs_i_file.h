@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "yuzu_common/overflow.h"
 #include "core/file_sys/errors.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/file_sys/fs_file.h"
 #include "core/file_sys/fs_operate_range.h"
 #include "core/hle/result.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
+#include <yuzu_common/overflow.h>
 
 namespace FileSys::Fsa
 {

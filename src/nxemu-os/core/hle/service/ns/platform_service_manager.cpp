@@ -5,18 +5,18 @@
 #include <cstring>
 #include <vector>
 
-#include "yuzu_common/yuzu_assert.h"
-#include "yuzu_common/common_types.h"
-#include "yuzu_common/logging/log.h"
-#include "yuzu_common/swap.h"
 #include "core/core.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/kernel/k_shared_memory.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/physical_memory.h"
 #include "core/hle/service/cmif_serialization.h"
 #include "core/hle/service/ns/platform_service_manager.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/common_types.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
+#include <yuzu_common/logging/log.h>
+#include <yuzu_common/swap.h>
+#include <yuzu_common/yuzu_assert.h>
 
 namespace Service::NS {
 

@@ -4,13 +4,13 @@
 #pragma once
 
 #include "core/file_sys/errors.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/file_sys/fs_directory.h"
 #include "core/file_sys/fs_file.h"
 #include "core/file_sys/fs_filesystem.h"
 #include "core/hle/result.h"
-#include "yuzu_common/common_types.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/common_types.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
 namespace FileSys::Fsa
 {

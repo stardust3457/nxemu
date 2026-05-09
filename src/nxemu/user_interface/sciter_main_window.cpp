@@ -4,6 +4,7 @@
 #include "settings/ui_settings.h"
 #include "user_interface/key_mappings.h"
 #include <common/std_string.h>
+#include <nxemu-core/notification.h>
 #include <nxemu-core/settings/identifiers.h>
 #include <nxemu-core/settings/settings.h>
 #include <nxemu-core/version.h>
@@ -288,6 +289,11 @@ void SciterMainWindow::ResetMenu()
     MenuBarItemList optionsMenu;
     optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenControllersDialog), "&Controllers...", nullptr, HotkeyAccelerator(Hotkey::Controllers)));
     optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenSystemConfiguration), "Confi&gure...", nullptr, HotkeyAccelerator(Hotkey::Configure)));
+    if (!m_emulationRunning && m_modules.IsValid())
+    {
+        optionsMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
+        optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::InstallFirmware), "Install &Firmware...", nullptr, nullptr));
+    }
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&Options", &optionsMenu));
 
     m_menuBar->AddSink(this);
@@ -332,6 +338,7 @@ bool SciterMainWindow::Show()
     CreateRenderWindow();
     m_modules.Setup(*this);
     RegisterApplets();
+    ResetMenu();
     UpdateStatusWidgets();
     UpdateEmulationStatusText();
 
@@ -654,6 +661,56 @@ void SciterMainWindow::OnOpenFile()
     }
 }
 
+void SciterMainWindow::OnInstallFirmware()
+{
+    if (m_window == nullptr || m_emulationRunning || !m_modules.IsValid())
+    {
+        return;
+    }
+
+    Path folder;
+    folder.BrowseForDirectory((void *)m_window->GetHandle(), "Select folder containing firmware .dnca files");
+    if (!folder.DirectoryExists())
+    {
+        return;
+    }
+
+    ISystemloader & loader = m_modules.Modules().Systemloader();
+    const FirmwareInstallResult result = loader.InstallFirmwareFromFolder(folder);
+
+    switch (result)
+    {
+    case FirmwareInstallResult::Success:
+        g_notify->DisplayError("Firmware installed successfully.", "Firmware installed");
+        UpdateStatusWidgets();
+        break;
+    case FirmwareInstallResult::InvalidArgument:
+        g_notify->DisplayError("Invalid folder path.", "Firmware install failed");
+        break;
+    case FirmwareInstallResult::SourceNotDirectory:
+        g_notify->DisplayError("The selected path is not a directory.", "Firmware install failed");
+        break;
+    case FirmwareInstallResult::NoNCAsFound:
+        g_notify->DisplayError("No .dnca files found in that folder. ", "Firmware install failed");
+        break;
+    case FirmwareInstallResult::SystemNandUnavailable:
+        g_notify->DisplayError("System NAND is not available. Ensure the NAND data directory exists and the emulator initialized successfully.", "Firmware install failed");
+        break;
+    case FirmwareInstallResult::NotWritable:
+        g_notify->DisplayError("System NAND content is not writable.", "Firmware install failed");
+        break;
+    case FirmwareInstallResult::FailedClearRegistered:
+        g_notify->DisplayError("Could not clear the registered firmware folder before copying new files.", "Firmware install failed");
+        break;
+    case FirmwareInstallResult::FailedCopy:
+        g_notify->DisplayError("Copying one or more firmware files failed. See the log for details.", "Firmware install failed");
+        break;
+    default:
+        g_notify->DisplayError("Unknown error.", "Firmware install failed");
+        break;
+    }
+}
+
 void SciterMainWindow::OnFileExit()
 {
     m_sciterUI.Stop();
@@ -886,6 +943,9 @@ void SciterMainWindow::OnGuiAction(GuiAction action)
     {
     case GuiAction::LoadFile:
         OnOpenFile();
+        break;
+    case GuiAction::InstallFirmware:
+        OnInstallFirmware();
         break;
     case GuiAction::ExitApplication:
         OnFileExit();

@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "core/hle/service/pctl/parental_control_service.h"
 #include "core/core.h"
 #include "core/hle/service/cmif_serialization.h"
-#include "core/hle/service/pctl/parental_control_service.h"
 #include "core/hle/service/pctl/pctl_results.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
 namespace Service::PCTL {
 

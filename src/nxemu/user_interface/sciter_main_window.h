@@ -38,6 +38,7 @@ class SciterMainWindow :
         StopEmulation,
         OpenControllersDialog,
         OpenSystemConfiguration,
+        InstallFirmware,
         ToggleFullscreen,
         ToggleStartGamesInFullscreen,
         ToggleHideUi,
@@ -94,6 +95,7 @@ private:
     void OnPauseContinueGame();
     void OnSystemConfig();
     void OnInputConfig();
+    void OnInstallFirmware();
     void OnRecetGame(uint32_t fileIndex);
     void OnToggleDockedMode();
     void OnToggleStartGamesInFullscreen();
