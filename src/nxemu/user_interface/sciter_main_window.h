@@ -83,7 +83,7 @@ private:
     static void DisplayedFramesChanged(const char * setting, void * userData);
     static void DiskCacheLoadChanged(const char * setting, void * userData);
     static void HotKeysChanged(const char * setting, void * userData);
-    void UpdateStatusbar();
+    void UpdateStatusWidgets();
     void UpdateInputDrivers();
     void PreventOSSleep();
     void AllowOSSleep();
@@ -97,7 +97,7 @@ private:
     void OnRecetGame(uint32_t fileIndex);
     void OnToggleDockedMode();
     void OnToggleStartGamesInFullscreen();
-    void UpdateStatusBar();
+    void UpdateEmulationStatusText();
     const MenuBarAccelerator * HotkeyAccelerator(const char * name);
     const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);
     GuiAction HotkeyToGuiAction(const char * hotkeyId);

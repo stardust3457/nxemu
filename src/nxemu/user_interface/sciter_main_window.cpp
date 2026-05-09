@@ -275,7 +275,8 @@ bool SciterMainWindow::Show()
     CreateRenderWindow();
     m_modules.Setup(*this);
     RegisterApplets();
-    UpdateStatusbar();
+    UpdateStatusWidgets();
+    UpdateEmulationStatusText();
 
     m_sciterUI.AttachHandler(m_rootElement.GetElementByID("dockedMode"), IID_ICLICKSINK, (IClickSink *)this);
     m_sciterUI.AttachHandler(m_rootElement.GetElementByID("renderer"), IID_ICLICKSINK, (IClickSink *)this);
@@ -329,7 +330,7 @@ void SciterMainWindow::LoadGame(const char * path)
     loader.LoadRom(path);
 }
 
-void SciterMainWindow::UpdateStatusbar()
+void SciterMainWindow::UpdateStatusWidgets()
 {
     SettingsStore & settings = SettingsStore::GetInstance();
     SciterElement dockedMode(m_rootElement.GetElementByID("dockedMode"));
@@ -643,17 +644,11 @@ void SciterMainWindow::OnInputConfig()
     m_inputConfig->Display((void *)m_window->GetHandle());
 }
 
-void SciterMainWindow::UpdateStatusBar()
+void SciterMainWindow::UpdateEmulationStatusText()
 {
     SciterElement statusTextEl(m_rootElement.GetElementByID("StatusText"));
     if (!statusTextEl.IsValid())
     {
-        return;
-    }
-    if (!m_emulationRunning)
-    {
-        m_rootElement.SetTimer(0, (uint32_t *)TIMER_UPDATE_STATUS);
-        statusTextEl.SetText("");
         return;
     }
 
@@ -661,45 +656,51 @@ void SciterMainWindow::UpdateStatusBar()
     {
         return;
     }
+
     IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
     IVideo & video = m_modules.Modules().Video();
     std::vector<std::string> parts;
 
-    if (operatingSystem.IsEmulationPaused())
+    if (m_emulationRunning)
     {
-        parts.push_back("Paused");
-    }
-
-    const int shaders_building = video.ShadersBuilding();
-
-    if (shaders_building > 0)
-    {
-        parts.push_back(stdstr_f("Building: %d shader(s)", shaders_building));
-    }
-
-    PerfStatsResults results = operatingSystem.GetAndResetPerfStats();
-
-    if (m_resolutionUpFactor != 1.0)
-    {
-        parts.push_back(stdstr_f("Scale: %.0fx", m_resolutionUpFactor));
-    }
-    if (!m_useMultiCore)
-    {
-        if (m_useSpeedLimit)
+        if (operatingSystem.IsEmulationPaused())
         {
-            if (results.emulation_speed > 0.999 && results.emulation_speed < 1.01)
+            parts.push_back("Paused");
+        }
+
+        const int shaders_building = video.ShadersBuilding();
+
+        if (shaders_building > 0)
+        {
+            parts.push_back(stdstr_f("Building: %d shader(s)", shaders_building));
+        }
+
+        if (m_resolutionUpFactor != 1.0)
+        {
+            parts.push_back(stdstr_f("Scale: %.0fx", m_resolutionUpFactor));
+        }
+        PerfStatsResults results = operatingSystem.GetAndResetPerfStats();
+        if (!m_useMultiCore)
+        {
+            if (m_useSpeedLimit)
             {
-                results.emulation_speed = 100.0;
+                if (results.emulation_speed > 0.999 && results.emulation_speed < 1.01)
+                {
+                    results.emulation_speed = 100.0;
+                }
+                parts.push_back(stdstr_f("Speed: %.0f / %d", results.emulation_speed * 100.0, m_speedLimit));
             }
-            parts.push_back(stdstr_f("Speed: %.0f / %d", results.emulation_speed * 100.0, m_speedLimit));
+            else
+            {
+                parts.push_back(stdstr_f("Speed: %f", results.emulation_speed * 100.0));
+            }
         }
-        else
-        {
-            parts.push_back(stdstr_f("Speed: %f", results.emulation_speed * 100.0));
-        }
+        parts.push_back(stdstr_f("%.0f FPS (%.2f ms)%s", std::round(results.average_game_fps), std::isnan(results.frametime) ? 0.0 : (results.frametime * 1000.0), m_useSpeedLimit ? "" : " Unlocked"));
     }
-    parts.push_back(stdstr_f("%.0f FPS (%.2f ms)%s", std::round(results.average_game_fps), std::isnan(results.frametime) ? 0.0 : (results.frametime * 1000.0), m_useSpeedLimit ? "" : " Unlocked"));
-    
+    else
+    {
+        m_rootElement.SetTimer(0, (uint32_t *)TIMER_UPDATE_STATUS);    
+    }
     std::string status;
     for (size_t i = 0; i < parts.size(); i++)
     {
@@ -1269,7 +1270,7 @@ void SciterMainWindow::SettingChanged(const char * setting, void * userData)
     SciterMainWindow * impl = (SciterMainWindow *)userData;
     if (strcmp(setting, NXOsSetting::AudioMuted) == 0 || strcmp(setting, NXOsSetting::AudioVolume) == 0)
     {
-        impl->UpdateStatusbar();
+        impl->UpdateStatusWidgets();
     }
     else if (strcmp(setting, NXOsSetting::ResolutionUpFactor) == 0)
     {
@@ -1289,7 +1290,7 @@ void SciterMainWindow::SettingChanged(const char * setting, void * userData)
     }
     else if (strcmp(setting, NXOsSetting::DockedMode) == 0)
     {
-        impl->UpdateStatusbar();
+        impl->UpdateStatusWidgets();
         impl->LayoutRenderWindow();
     }
 }
@@ -1312,7 +1313,7 @@ bool SciterMainWindow::OnTimer(SCITER_ELEMENT /*element*/, uint32_t * timerId)
     }
     else if (timerId == (uint32_t *)TIMER_UPDATE_STATUS)
     {
-        UpdateStatusBar();
+        UpdateEmulationStatusText();
     }
     return true;
 }
