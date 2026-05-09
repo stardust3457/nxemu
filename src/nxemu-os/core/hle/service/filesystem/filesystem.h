@@ -3,36 +3,40 @@
 
 #pragma once
 
-#include <memory>
-#include <map>
-#include <mutex>
-#include "yuzu_common/common_types.h"
 #include "core/hle/result.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include <core/file_sys/fs_filesystem.h>
+#include <map>
+#include <memory>
+#include <mutex>
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/common_types.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
-namespace Core {
+namespace Core
+{
 class System;
 }
 
+namespace Service
+{
 
-namespace Service {
-
-namespace SM {
+namespace SM
+{
 class ServiceManager;
 } // namespace SM
 
-namespace FileSystem {
+namespace FileSystem
+{
 
 class RomFsController;
 
-void LoopProcess(Core::System& system);
+void LoopProcess(Core::System & system);
 
 // A class that wraps a VfsDirectory with methods that return ResultVal and Result instead of
 // pointers and booleans. This makes using a VfsDirectory with switch services much easier and
 // avoids repetitive code.
-class VfsDirectoryServiceWrapper {
+class VfsDirectoryServiceWrapper
+{
 public:
     explicit VfsDirectoryServiceWrapper(IVirtualDirectoryPtr && backing);
     ~VfsDirectoryServiceWrapper();
@@ -48,35 +52,35 @@ public:
      * @param size The size of the new file, filled with zeroes
      * @return Result of the operation
      */
-    Result CreateFile(const std::string& path, u64 size) const;
+    Result CreateFile(const std::string & path, u64 size) const;
 
     /**
      * Delete a file specified by its path
      * @param path Path relative to the archive
      * @return Result of the operation
      */
-    Result DeleteFile(const std::string& path) const;
+    Result DeleteFile(const std::string & path) const;
 
     /**
      * Create a directory specified by its path
      * @param path Path relative to the archive
      * @return Result of the operation
      */
-    Result CreateDirectory(const std::string& path) const;
+    Result CreateDirectory(const std::string & path) const;
 
     /**
      * Delete a directory specified by its path
      * @param path Path relative to the archive
      * @return Result of the operation
      */
-    Result DeleteDirectory(const std::string& path) const;
+    Result DeleteDirectory(const std::string & path) const;
 
     /**
      * Delete a directory specified by its path and anything under it
      * @param path Path relative to the archive
      * @return Result of the operation
      */
-    Result DeleteDirectoryRecursively(const std::string& path) const;
+    Result DeleteDirectoryRecursively(const std::string & path) const;
 
     /**
      * Cleans the specified directory. This is similar to DeleteDirectoryRecursively,
@@ -88,7 +92,7 @@ public:
      *
      * @return Result of the operation.
      */
-    Result CleanDirectoryRecursively(const std::string& path) const;
+    Result CleanDirectoryRecursively(const std::string & path) const;
 
     /**
      * Rename a File specified by its path
@@ -96,7 +100,7 @@ public:
      * @param dest_path Destination path relative to the archive
      * @return Result of the operation
      */
-    Result RenameFile(const std::string& src_path, const std::string& dest_path) const;
+    Result RenameFile(const std::string & src_path, const std::string & dest_path) const;
 
     /**
      * Rename a Directory specified by its path
@@ -104,7 +108,7 @@ public:
      * @param dest_path Destination path relative to the archive
      * @return Result of the operation
      */
-    Result RenameDirectory(const std::string& src_path, const std::string& dest_path) const;
+    Result RenameDirectory(const std::string & src_path, const std::string & dest_path) const;
 
     /**
      * Open a file specified by its path, using the specified mode

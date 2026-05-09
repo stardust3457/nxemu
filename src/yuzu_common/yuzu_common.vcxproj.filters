@@ -336,6 +336,9 @@
     <ClInclude Include="hardware_properties.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fs\filesystem_interfaces.h">
+      <Filter>Header Files\fs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logging\backend.cpp">
@@ -445,6 +448,9 @@
     </ClCompile>
     <ClCompile Include="zstd_compression.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fs\filesystem_interfaces.cpp">
+      <Filter>Source Files\fs</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

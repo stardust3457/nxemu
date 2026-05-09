@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/hle/service/cmif_types.h"
 #include "core/hle/service/filesystem/filesystem.h"
 #include "core/hle/service/service.h"
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
 namespace Service::FileSystem {
 

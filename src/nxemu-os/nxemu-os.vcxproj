@@ -55,7 +55,6 @@
     <ClCompile Include="core\arm\debug.cpp" />
     <ClCompile Include="core\constants.cpp" />
     <ClCompile Include="core\core.cpp" />
-    <ClCompile Include="core\file_sys\filesystem_interfaces.cpp" />
     <ClCompile Include="core\hle\kernel\board\nintendo\nx\k_system_control.cpp" />
     <ClCompile Include="core\hle\kernel\init\init_slab_setup.cpp" />
     <ClCompile Include="core\hle\kernel\kernel.cpp" />
@@ -495,7 +494,6 @@
     <ClInclude Include="core\debugger\debugger.h" />
     <ClInclude Include="core\device_memory.h" />
     <ClInclude Include="core\file_sys\errors.h" />
-    <ClInclude Include="core\file_sys\filesystem_interfaces.h" />
     <ClInclude Include="core\file_sys\fsa\fs_i_filesystem.h" />
     <ClInclude Include="core\file_sys\fssrv\fssrv_sf_path.h" />
     <ClInclude Include="core\file_sys\fs_directory.h" />

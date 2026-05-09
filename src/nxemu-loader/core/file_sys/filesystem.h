@@ -43,6 +43,8 @@ public:
     FileSys::VirtualDir GetModificationLoadRoot(uint64_t title_id) const;
     FileSys::VirtualDir GetModificationDumpRoot(uint64_t title_id) const;
 
+    FileSys::VirtualDir GetSystemNANDContentDirectory() const;
+
     void CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite = true);
 
     // IFileSystemController

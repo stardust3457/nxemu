@@ -170,6 +170,15 @@ FileSys::VirtualDir FileSystemController::GetModificationDumpRoot(uint64_t title
     return bis_factory->GetModificationDumpRoot(title_id);
 }
 
+FileSys::VirtualDir FileSystemController::GetSystemNANDContentDirectory() const
+{
+    if (bis_factory == nullptr)
+    {
+        return nullptr;
+    }
+    return bis_factory->GetSystemNANDContentDirectory();
+}
+
 void FileSystemController::CreateFactories(FileSys::VfsFilesystem & vfs, bool overwrite)
 {
     if (overwrite)

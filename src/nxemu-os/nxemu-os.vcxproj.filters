@@ -463,9 +463,6 @@
     <Filter Include="Header Files\core\file_sys\fssrv">
       <UniqueIdentifier>{b3758d60-2c75-43e0-ae2c-85b8c0f3eb1d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\core\file_sys">
-      <UniqueIdentifier>{cf2bcb01-61c2-4960-b4d9-626729bf6b1f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\core\hle\service\nifm">
       <UniqueIdentifier>{021246c5-9aaf-477b-88d7-01861bcd9634}</UniqueIdentifier>
     </Filter>
@@ -1804,9 +1801,6 @@
       <Filter>Header Files\core\file_sys</Filter>
     </ClInclude>
     <ClInclude Include="core\file_sys\fs_string_util.h">
-      <Filter>Header Files\core\file_sys</Filter>
-    </ClInclude>
-    <ClInclude Include="core\file_sys\filesystem_interfaces.h">
       <Filter>Header Files\core\file_sys</Filter>
     </ClInclude>
     <ClInclude Include="core\hle\service\nifm\nifm.h">
@@ -3201,9 +3195,6 @@
     </ClCompile>
     <ClCompile Include="core\hle\service\filesystem\fsp\fs_i_save_data_info_reader.cpp">
       <Filter>Source Files\core\hle\service\filesystem\fsp</Filter>
-    </ClCompile>
-    <ClCompile Include="core\file_sys\filesystem_interfaces.cpp">
-      <Filter>Source Files\core\file_sys</Filter>
     </ClCompile>
     <ClCompile Include="core\hle\service\nifm\nifm.cpp">
       <Filter>Source Files\core\hle\service\nifm</Filter>

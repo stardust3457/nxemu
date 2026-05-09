@@ -4,8 +4,8 @@
 #include "core/core.h"
 #include "core/hle/service/filesystem/filesystem.h"
 #include "core/hle/service/glue/time/time_zone_binary.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
 namespace Service::Glue::Time {
 namespace {

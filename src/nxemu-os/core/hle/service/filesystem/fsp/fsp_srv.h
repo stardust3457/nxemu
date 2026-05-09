@@ -7,9 +7,9 @@
 #include "core/hle/service/cmif_types.h"
 #include "core/hle/service/filesystem/fsp/fsp_types.h"
 #include "core/hle/service/service.h"
-#include "core/file_sys/filesystem_interfaces.h"
 #include "core/file_sys/fs_save_data_types.h"
 #include <nxemu-module-spec/system_loader.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 
 namespace Core {
 class Reporter;

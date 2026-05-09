@@ -15,6 +15,7 @@
 #include <nxemu/settings/ui_identifiers.h>
 #include <sciter_element.h>
 #include <widgets/menubar.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 #include <yuzu_common/settings.h>
 #include <yuzu_common/settings_input.h>
 
@@ -82,6 +83,62 @@ static float EmulationAspectRatioForWindowReset(float window_aspect_ratio)
     default:
         return 720.0f / 1280.0f;
     }
+}
+
+std::string GetInstalledFirmwareDisplayVersion(ISystemloader & loader)
+{
+    constexpr uint64_t FirmwareVersionSystemDataId = 0x0100000000000809ULL;
+
+    IFileSysRegisteredCache & nand = loader.FileSystemController().GetSystemNANDContents();
+    FileSysNCAPtr nca = nand.GetEntry(FirmwareVersionSystemDataId, LoaderContentRecordType::Data);
+    if (!nca)
+    {
+        return {};
+    }
+
+    IVirtualFilePtr romfs_file(nca->GetRomFS());
+    if (!romfs_file)
+    {
+        return {};
+    }
+
+    IVirtualDirectoryPtr romfs = romfs_file->ExtractRomFS();
+    if (!romfs)
+    {
+        return {};
+    }
+
+    IVirtualFilePtr version_file(romfs->GetFile("file"));
+    if (!version_file)
+    {
+        return {};
+    }
+
+    struct FirmwareVersionFormatRaw
+    {
+        uint8_t major;
+        uint8_t minor;
+        uint8_t micro;
+        uint8_t pad0;
+        uint8_t revision_major;
+        uint8_t revision_minor;
+        uint8_t pad1[2];
+        char platform[0x20];
+        uint8_t version_hash[0x40];
+        char display_version[0x18];
+        char display_title[0x80];
+    };
+    static_assert(sizeof(FirmwareVersionFormatRaw) == 0x100);
+
+    FirmwareVersionFormatRaw firmware{};
+    const uint64_t bytes_read = version_file->ReadBytes(reinterpret_cast<uint8_t *>(&firmware), sizeof(firmware), 0);
+    if (bytes_read != sizeof(firmware))
+    {
+        return {};
+    }
+
+    const auto end = std::find(std::begin(firmware.display_version), std::end(firmware.display_version), '\0');
+    return std::string(firmware.display_version, end);
 }
 } // namespace
 
@@ -659,6 +716,7 @@ void SciterMainWindow::UpdateEmulationStatusText()
 
     IOperatingSystem & operatingSystem = m_modules.Modules().OperatingSystem();
     IVideo & video = m_modules.Modules().Video();
+    ISystemloader & loader = m_modules.Modules().Systemloader();
     std::vector<std::string> parts;
 
     if (m_emulationRunning)
@@ -700,6 +758,11 @@ void SciterMainWindow::UpdateEmulationStatusText()
     else
     {
         m_rootElement.SetTimer(0, (uint32_t *)TIMER_UPDATE_STATUS);    
+    }
+    const std::string firmware_version = GetInstalledFirmwareDisplayVersion(loader);
+    if (!firmware_version.empty())
+    {
+        parts.push_back("Firmware: " + firmware_version);
     }
     std::string status;
     for (size_t i = 0; i < parts.size(); i++)
