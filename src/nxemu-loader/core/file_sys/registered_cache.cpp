@@ -16,6 +16,7 @@
 #include "yuzu_common/scope_exit.h"
 #include "yuzu_common/yuzu_assert.h"
 #include <algorithm>
+#include <common/sha256.h>
 #include <random>
 #include <regex>
 
@@ -49,16 +50,12 @@ static bool FollowsTwoDigitDirFormat(std::string_view name)
 
 static bool FollowsNcaIdFormat(std::string_view name)
 {
-    static const std::regex nca_id_regex("[0-9A-F]{32}\\.nca", std::regex_constants::ECMAScript |
-                                                                   std::regex_constants::icase);
-    static const std::regex nca_id_cnmt_regex(
-        "[0-9A-F]{32}\\.cnmt.nca", std::regex_constants::ECMAScript | std::regex_constants::icase);
-    return (name.size() == 36 && std::regex_match(name.begin(), name.end(), nca_id_regex)) ||
-           (name.size() == 41 && std::regex_match(name.begin(), name.end(), nca_id_cnmt_regex));
+    static const std::regex nca_id_regex("[0-9A-F]{32}\\.nca", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    static const std::regex nca_id_cnmt_regex("[0-9A-F]{32}\\.cnmt.nca", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    return (name.size() == 36 && std::regex_match(name.begin(), name.end(), nca_id_regex)) || (name.size() == 41 && std::regex_match(name.begin(), name.end(), nca_id_cnmt_regex));
 }
 
-static std::string GetRelativePathFromNcaID(const std::array<u8, 16> & nca_id, bool second_hex_upper,
-                                            bool within_two_digit, bool cnmt_suffix)
+static std::string GetRelativePathFromNcaID(const std::array<u8, 16> & nca_id, bool second_hex_upper, bool within_two_digit, bool cnmt_suffix)
 {
     if (!within_two_digit)
     {
@@ -66,11 +63,16 @@ static std::string GetRelativePathFromNcaID(const std::array<u8, 16> & nca_id, b
         return fmt::format(format_str, Common::HexToString(nca_id, second_hex_upper));
     }
 
-    UNIMPLEMENTED();
+    const std::string id_bytes(reinterpret_cast<const char *>(nca_id.data()), nca_id.size());
+    const std::string hash_hex = sha256(id_bytes);
+    const std::vector<u8> hash = Common::HexStringToVector(hash_hex, false);
+    if (hash.empty())
+    {
+        return {};
+    }
 
-    const auto format_str =
-        fmt::runtime(cnmt_suffix ? "/000000{:02X}/{}.cnmt.nca" : "/000000{:02X}/{}.nca");
-    return fmt::format(format_str, 0, Common::HexToString(nca_id, second_hex_upper));
+    const auto format_str = fmt::runtime(cnmt_suffix ? "/000000{:02X}/{}.cnmt.nca" : "/000000{:02X}/{}.nca");
+    return fmt::format(format_str, hash[0], Common::HexToString(nca_id, second_hex_upper));
 }
 
 static std::string GetCNMTName(LoaderTitleType type, uint64_t title_id)
@@ -933,7 +935,9 @@ VirtualFile ContentProviderUnion::GetEntryUnparsed(uint64_t title_id, LoaderCont
 
         const auto res = provider.second->GetEntryUnparsed(title_id, type);
         if (res != nullptr)
+        {
             return res;
+        }
     }
 
     return nullptr;
@@ -944,11 +948,15 @@ VirtualFile ContentProviderUnion::GetEntryRaw(uint64_t title_id, LoaderContentRe
     for (const auto & provider : providers)
     {
         if (provider.second == nullptr)
+        {
             continue;
+        }
 
         const auto res = provider.second->GetEntryRaw(title_id, type);
         if (res != nullptr)
+        {
             return res;
+        }
     }
 
     return nullptr;
@@ -969,9 +977,7 @@ std::unique_ptr<NCA> ContentProviderUnion::GetEntryNCA(uint64_t title_id, Loader
     return nullptr;
 }
 
-std::vector<ContentProviderEntry> ContentProviderUnion::ListEntriesFilter(
-    std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type,
-    std::optional<uint64_t> title_id) const
+std::vector<ContentProviderEntry> ContentProviderUnion::ListEntriesFilter(std::optional<LoaderTitleType> title_type, std::optional<LoaderContentRecordType> record_type, std::optional<uint64_t> title_id) const
 {
     std::vector<ContentProviderEntry> out;
 
@@ -1017,8 +1023,7 @@ ContentProviderUnion::ListEntriesFilterOrigin(std::optional<ContentProviderUnion
     return out;
 }
 
-std::optional<ContentProviderUnionSlot> ContentProviderUnion::GetSlotForEntry(
-    uint64_t title_id, LoaderContentRecordType type) const
+std::optional<ContentProviderUnionSlot> ContentProviderUnion::GetSlotForEntry(uint64_t title_id, LoaderContentRecordType type) const
 {
     const auto iter =
         std::find_if(providers.begin(), providers.end(), [title_id, type](const auto & provider) {
@@ -1035,8 +1040,7 @@ std::optional<ContentProviderUnionSlot> ContentProviderUnion::GetSlotForEntry(
 
 ManualContentProvider::~ManualContentProvider() = default;
 
-void ManualContentProvider::AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type,
-                                     uint64_t title_id, VirtualFile file)
+void ManualContentProvider::AddEntry(LoaderTitleType title_type, LoaderContentRecordType content_type, uint64_t title_id, VirtualFile file)
 {
     entries.insert_or_assign({title_type, content_type, title_id}, file);
 }
