@@ -168,5 +168,7 @@ private:
     bool m_pendingStartInFullscreen;
     std::string m_fullscreenMenuSvg;
     bool m_hideUi;
+    uint64_t m_lastDiskCacheStatusPostMs;
+    int m_lastPostedDiskCacheStage;
     std::unique_ptr<Win32FullscreenState> m_win32Fullscreen;
 };
