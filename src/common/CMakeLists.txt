@@ -1,4 +1,5 @@
 add_library(common STATIC
+    base64.cpp
     dynamic_library.cpp
     file.cpp
     json.cpp

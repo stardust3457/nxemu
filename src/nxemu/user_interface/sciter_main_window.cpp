@@ -3,6 +3,7 @@
 #include "settings/system_config.h"
 #include "settings/ui_settings.h"
 #include "user_interface/key_mappings.h"
+#include <common/base64.h>
 #include <common/std_string.h>
 #include <nxemu-core/notification.h>
 #include <nxemu-core/settings/identifiers.h>
@@ -23,6 +24,8 @@
 #include <Windows.h>
 #include <array>
 #include <cmath>
+#include <string>
+#include <vector>
 
 struct Win32FullscreenState
 {
@@ -64,7 +67,6 @@ bool AcceleratorMatchesKey(const MenuBarAccelerator & accel, uint32_t keyCode, u
     return ctrl == accel.ctrl && alt == accel.alt && shift == accel.shift;
 }
 
-/** Matches Layout::EmulationAspectRatio (yuzu_video_core) for window-size reset; inlined to avoid a link dep. */
 static float EmulationAspectRatioForWindowReset(float window_aspect_ratio)
 {
     using Settings::AspectRatio;
@@ -84,6 +86,29 @@ static float EmulationAspectRatioForWindowReset(float window_aspect_ratio)
     default:
         return 720.0f / 1280.0f;
     }
+}
+
+void LoadImageToElement(SciterElement elem, const std::vector<uint8_t> & data)
+{
+    if (!elem.IsValid())
+    {
+        return;
+    }
+    if (!data.empty())
+    {
+        const char * mime = "image/png";
+        if (data.size() >= 2 && data[0] == 0xff && data[1] == 0xd8)
+        {
+            mime = "image/jpeg";
+        }
+        else if (data.size() >= 4 && data[0] == 'G' && data[1] == 'I' && data[2] == 'F')
+        {
+            mime = "image/gif";
+        }
+        const std::string uri = stdstr_f("data:%s;base64,%s", mime, base64_encode(data.data(), data.size()).c_str());
+        elem.SetAttribute("src", uri.c_str());
+    }
+    elem.SetStyleAttribute("display", data.empty() ? "none" : "block");
 }
 
 std::string GetInstalledFirmwareDisplayVersion(ISystemloader & loader)
@@ -141,6 +166,85 @@ std::string GetInstalledFirmwareDisplayVersion(ISystemloader & loader)
     const auto end = std::find(std::begin(firmware.display_version), std::end(firmware.display_version), '\0');
     return std::string(firmware.display_version, end);
 }
+
+void UpdateLoadingProgressBar(SciterElement & fillEl, bool indeterminate, int widthPercent, bool shaderBuilding)
+{
+    if (!fillEl.IsValid())
+    {
+        return;
+    }
+    if (indeterminate)
+    {
+        fillEl.AddClassName("indeterminate");
+        fillEl.RemoveClassName("building");
+        fillEl.SetStyleAttribute("width", "42%");
+    }
+    else
+    {
+        fillEl.RemoveClassName("indeterminate");
+        if (shaderBuilding)
+        {
+            fillEl.AddClassName("building");
+        }
+        else
+        {
+            fillEl.RemoveClassName("building");
+        }
+        const int w = (std::max)(0, (std::min)(100, widthPercent));
+        fillEl.SetStyleAttribute("width", stdstr_f("%d%%", w).c_str());
+    }
+}
+
+std::string HtmlEscapeForHtmlContent(const std::string & s)
+{
+    std::string out;
+    out.reserve(s.size());
+    for (const char c : s)
+    {
+        switch (c)
+        {
+        case '&':
+            out += "&amp;";
+            break;
+        case '<':
+            out += "&lt;";
+            break;
+        case '>':
+            out += "&gt;";
+            break;
+        case '"':
+            out += "&quot;";
+            break;
+        default:
+            out += c;
+            break;
+        }
+    }
+    return out;
+}
+
+std::string GetGameTitleLoadingHtml(ISystemloader & loader, const char * verb)
+{
+    IRomInfoPtr info(loader.LoadedRomInfo());
+    if (!info)
+    {
+        return stdstr_f("<span class=\"loading-verb\">%s</span> <span class=\"loading-game-name\">...</span>", verb);
+    }
+    uint32_t sz = 0;
+    if (info->ReadTitle(nullptr, &sz) != LoaderResultStatus::Success || sz == 0)
+    {
+        return stdstr_f("<span class=\"loading-verb\">%s</span> <span class=\"loading-game-name\">...</span>", verb);
+    }
+    std::vector<char> buf(static_cast<size_t>(sz) + 1, 0);
+    if (info->ReadTitle(buf.data(), &sz) != LoaderResultStatus::Success)
+    {
+        return stdstr_f("<span class=\"loading-verb\">%s</span> <span class=\"loading-game-name\">...</span>", verb);
+    }
+    const std::string titleEsc = HtmlEscapeForHtmlContent(std::string(buf.data()));
+    return stdstr_f("<span class=\"loading-verb\">%s</span> <span class=\"loading-game-name\">%s</span>", verb,
+                    titleEsc.c_str());
+}
+
 } // namespace
 
 SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitle) :
@@ -515,6 +619,7 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
 
     if (state == EmulationState::LoadingRom || state == EmulationState::Starting)
     {
+        impl->UpdateLoadingScreenDetails();
         impl->ApplyEmulationLoadingUi();
     }
     else if (state == EmulationState::Running)
@@ -601,26 +706,42 @@ void SciterMainWindow::RefreshDiskCacheLoadingText()
     const int current = settings.GetInt(NXCoreSetting::DiskCacheLoadCurrent);
     const int total = settings.GetInt(NXCoreSetting::DiskCacheLoadTotal);
 
+    SciterElement fillEl(m_rootElement.GetElementByID("LoadingProgressFill"));
+
     std::string text;
     switch (stage)
     {
     case 0:
-        text = "Loading...";
+        text = GetGameTitleLoadingHtml(m_modules.Modules().Systemloader(), "Loading");
+        UpdateLoadingProgressBar(fillEl, true, 0, false);
         break;
     case 1:
-        text = stdstr_f("Loading shaders %d / %d", current, total);
+        text = stdstr_f(
+            "<span class=\"loading-verb\">Loading shaders</span> <span class=\"loading-shader-count\">%d / %d</span>",
+            current, total);
+        if (total > 0)
+        {
+            const int pct = static_cast<int>((100.0 * static_cast<double>(current)) / static_cast<double>(total));
+            UpdateLoadingProgressBar(fillEl, false, pct, true);
+        }
+        else
+        {
+            UpdateLoadingProgressBar(fillEl, true, 0, false);
+        }
         break;
     case 2:
-        text = "Launching...";
+        text = GetGameTitleLoadingHtml(m_modules.Modules().Systemloader(), "Launching");
+        UpdateLoadingProgressBar(fillEl, false, 100, false);
         break;
     default:
+        UpdateLoadingProgressBar(fillEl, true, 0, false);
         return;
     }
 
-    SciterElement status(m_rootElement.GetElementByID("LoadingStatusText"));
+    SciterElement status(m_rootElement.GetElementByID("loadingText"));
     if (status.IsValid())
     {
-        status.SetText(text.c_str());
+        status.SetHTML(reinterpret_cast<const uint8_t *>(text.c_str()), text.size());
     }
     m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
 }
@@ -1134,6 +1255,50 @@ void SciterMainWindow::UpdatePausePanel()
         const bool showRender = settings.GetBool(NXCoreSetting::DisplayedFrames);
         ShowWindow((HWND)m_renderWindow, showRender ? SW_SHOW : SW_HIDE);
     }
+}
+
+void SciterMainWindow::UpdateLoadingScreenDetails()
+{
+    IRomInfoPtr info(m_modules.Modules().Systemloader().LoadedRomInfo());
+    if (!info)
+    {
+        return;
+    }
+
+    std::vector<uint8_t> logoData, bannerData, iconData;
+    uint32_t sz = 0;
+    if (info->ReadLogo(nullptr, &sz) == LoaderResultStatus::Success && sz > 0)
+    {
+        logoData.resize(sz);
+        if (info->ReadLogo(logoData.data(), &sz) != LoaderResultStatus::Success)
+        {
+            logoData.clear();
+        }
+    }
+
+    sz = 0;
+    if (info->ReadBanner(nullptr, &sz) == LoaderResultStatus::Success && sz > 0)
+    {
+        bannerData.resize(sz);
+        if (info->ReadBanner(bannerData.data(), &sz) != LoaderResultStatus::Success)
+        {
+            bannerData.clear();
+        }
+    }
+
+    sz = 0;
+    if (info->ReadIcon(nullptr, &sz) == LoaderResultStatus::Success && sz > 0)
+    {
+        iconData.resize(sz);
+        if (info->ReadIcon(iconData.data(), &sz) != LoaderResultStatus::Success)
+        {
+            iconData.clear();
+        }
+    }
+
+    LoadImageToElement(m_rootElement.GetElementByID("LoadingCornerLogo"), logoData);
+    LoadImageToElement(m_rootElement.GetElementByID("LoadingCornerBanner"), bannerData);
+    LoadImageToElement(m_rootElement.GetElementByID("LoadingGameIcon"), iconData);
 }
 
 void SciterMainWindow::UpdateUIVisibility()

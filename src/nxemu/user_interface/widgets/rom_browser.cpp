@@ -2,6 +2,7 @@
 #include "user_interface/sciter_main_window.h"
 #include "settings/ui_settings.h"
 #include <map>
+#include <common/base64.h>
 #include <common/path.h>
 #include <common/std_string.h>  
 #include <nxemu-module-spec/system_loader.h>
@@ -10,9 +11,8 @@
 #include <nxemu/settings/ui_identifiers.h>
 #include <sciter_handler.h>
 #include <sciter_element.h>
+#include <yuzu_common/fs/filesystem_interfaces.h>
 #include <yuzu_common/fs/fs.h>
-#include <yuzu_common/interface_pointer.h>
-#include <yuzu_common/interface_pointer_def.h>
 #include <mutex>
 #include <thread>
 #include <unordered_set>
@@ -25,60 +25,6 @@ enum
     EVENT_UPDATE_LIST = 0x1000,
     TIMER_UPDATE_UI = 1,
 };
-
-std::string Base64Encode(const uint8_t * data, size_t len)
-{
-    static const char * base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    std::string ret;
-    int32_t i = 0;
-    int32_t j = 0;
-    uint8_t char_array_3[3];
-    uint8_t char_array_4[4];
-
-    while (len--)
-    {
-        char_array_3[i++] = *(data++);
-        if (i == 3)
-        {
-            char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-            char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-            char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-            char_array_4[3] = char_array_3[2] & 0x3f;
-
-            for (i = 0; i < 4; i++)
-            {
-                ret += base64_chars[char_array_4[i]];
-            }
-            i = 0;
-        }
-    }
-
-    if (i)
-    {
-        for (j = i; j < 3; j++)
-        {
-            char_array_3[j] = '\0';
-        }
-
-        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-
-        for (j = 0; j < i + 1; j++)
-        {
-            ret += base64_chars[char_array_4[j]];        
-        }
-
-        while ((i++ < 3))
-        {
-            ret += '=';
-        }
-    }
-    return ret;
-}
-
-using IRomInfoPtr = InterfacePtr<IRomInfo>;
 
 class WidgetRomBrowser;
 
@@ -267,7 +213,7 @@ bool WidgetRomBrowser::RenderUI()
                 SciterElement iconElement;
                 iconElement.Create("img", "");
                 iconElement.SetAttribute("class", "rom-icon");
-                iconElement.SetAttribute("src", stdstr_f("data:image/jpeg;base64,%s", Base64Encode(romEntry.icon.data(), romEntry.icon.size()).c_str()).c_str());
+                iconElement.SetAttribute("src", stdstr_f("data:image/jpeg;base64,%s", base64_encode(romEntry.icon.data(), romEntry.icon.size()).c_str()).c_str());
                 romCardContents.Insert(iconElement, romCardContents.GetChildCount());
                 romEntry.icon.clear();
             }
@@ -508,7 +454,7 @@ void RomListWorker::ScanFileSystem(const std::string & dir_path)
 
             ISystemloader & systemloader = m_modules.Systemloader();
             RomEntry entry;
-            IRomInfoPtr romInfo = systemloader.RomInfo(physical_name.c_str(), 0, 0);
+            IRomInfoPtr romInfo(systemloader.RomInfo(physical_name.c_str(), 0, 0));
             if (!romInfo)
             {
                 return true;

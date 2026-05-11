@@ -116,6 +116,7 @@ private:
 #endif
     void LayoutRenderWindow();
     void UpdatePausePanel();
+    void UpdateLoadingScreenDetails();
     void ApplyEmulationLoadingUi();
     void RefreshDiskCacheLoadingText();
     void RegisterApplets();

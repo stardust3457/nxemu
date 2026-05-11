@@ -24,6 +24,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>
+    <ClInclude Include="base64.h" />
     <ClInclude Include="dynamic_library.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="json.h" />
@@ -36,6 +37,7 @@
     <ClInclude Include="std_string.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base64.cpp" />
     <ClCompile Include="dynamic_library.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="json.cpp" />
