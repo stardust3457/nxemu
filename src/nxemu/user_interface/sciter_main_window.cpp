@@ -255,6 +255,9 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_emulationRunning(false),
     m_pendingStartInFullscreen(false),
     m_hideUi(false),
+    m_lastDiskCacheStatusPostMs(0),
+    m_lastPostedDiskCacheStage(0),
+    m_shownFirstFrame(false),
     m_win32Fullscreen(std::make_unique<Win32FullscreenState>())
 {
     SettingsStore & settings = SettingsStore::GetInstance();
@@ -460,11 +463,7 @@ bool SciterMainWindow::Show()
     m_sciterUI.AttachHandler(m_rootElement, IID_ITIMERSINK, (ITimerSink *)this);
     m_rootElement.SetTimer(25, (uint32_t *)TIMER_UPDATE_INPUT);
 
-    SciterElement romBrowserPanel = m_rootElement.GetElementByID("RomBrowserPanel");
-    if (romBrowserPanel.IsValid())
-    {
-        romBrowserPanel.SetStyleAttribute("display", "block");
-    }
+    ShowPanel(Panel::RomBrowser);
 
     SciterElement rombrowser = m_rootElement.FindFirst("rombrowser");
     interfacePtr = rombrowser.IsValid() ? m_sciterUI.GetElementInterface(rombrowser, IID_ROMBROWSER) : nullptr;
@@ -547,8 +546,6 @@ void SciterMainWindow::CreateRenderWindow()
         IVideo & video = m_modules.Modules().Video();
         video.UpdateFramebufferLayout(rect.right - rect.left, rect.bottom - rect.top);
     }
-
-    UpdatePausePanel();
 }
 
 void SciterMainWindow::SetCaption(const std::string & caption)
@@ -597,18 +594,29 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
     impl->UpdateUIVisibility();
 }
 
-void SciterMainWindow::ApplyEmulationLoadingUi()
+void SciterMainWindow::ShowPanel(Panel panel)
 {
-    SciterElement romBrowserPanel(m_rootElement.GetElementByID("RomBrowserPanel"));
-    if (romBrowserPanel.IsValid())
+    struct PanelEntry
     {
-        romBrowserPanel.SetStyleAttribute("display", "none");
-    }
-    SciterElement loadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
-    if (loadingPanel.IsValid())
+        Panel panel;
+        const char * id;
+    };
+    static const PanelEntry panels[] = {
+        {Panel::RomBrowser, "RomBrowserPanel"},
+        {Panel::Loading, "LoadingPanel"},
+        {Panel::Pause, "PausePanel"},
+    };
+
+    for (const PanelEntry & entry : panels)
     {
-        loadingPanel.SetStyleAttribute("display", "block");
+        SciterElement elem(m_rootElement.GetElementByID(entry.id));
+        if (!elem.IsValid())
+        {
+            continue;
+        }
+        elem.SetStyleAttribute("display", panel == entry.panel ? "block" : "none");
     }
+    ShowWindow((HWND)m_renderWindow, panel == Panel::Renderer ? SW_SHOW : SW_HIDE);
     m_sciterUI.UpdateWindow(m_rootElement.GetElementHwnd(true));
 }
 
@@ -617,10 +625,12 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
     SciterMainWindow * impl = (SciterMainWindow *)userData;
     EmulationState state = (EmulationState)SettingsStore::GetInstance().GetInt(NXCoreSetting::EmulationState);
 
-    if (state == EmulationState::LoadingRom || state == EmulationState::Starting)
+    if (state == EmulationState::LoadingRom)
     {
         impl->UpdateLoadingScreenDetails();
         impl->ApplyEmulationLoadingUi();
+        impl->m_shownFirstFrame = false;
+        impl->ShowPanel(Panel::Loading);
     }
     else if (state == EmulationState::Running)
     {
@@ -631,16 +641,21 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
         }
         impl->m_rootElement.PostEvent(EVENT_EMULATION_RUNNING);
         impl->ResetMenu();
+        if (impl->m_shownFirstFrame)
+        {
+            impl->ShowPanel(Panel::Renderer);        
+        }
     }
     else if (state == EmulationState::Paused)
     {
         impl->ResetMenu();
+        impl->ShowPanel(Panel::Pause);
+        impl->UpdateEmulationStatusText();
     }
     else if (state == EmulationState::Stopped)
     {
         impl->m_rootElement.PostEvent(EVENT_EMULATION_STOPPED);
     }
-    impl->UpdatePausePanel();
 }
 
 void SciterMainWindow::GameFileChanged(const char * /*setting*/, void * userData)
@@ -689,13 +704,35 @@ void SciterMainWindow::GameNameChanged(const char * /*setting*/, void * userData
 
 void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * userData)
 {
+    SettingsStore & settings = SettingsStore::GetInstance();
     SciterMainWindow * impl = (SciterMainWindow *)userData;
-    impl->m_rootElement.PostEvent(EVENT_EMULATION_FIRST_FRAME);
+
+    impl->m_shownFirstFrame = settings.GetBool(NXCoreSetting::DisplayedFrames);
+    if (impl->m_shownFirstFrame)
+    {
+        impl->m_rootElement.PostEvent(EVENT_EMULATION_FIRST_FRAME);
+    }
 }
 
 void SciterMainWindow::DiskCacheLoadChanged(const char * /*setting*/, void * userData)
 {
     SciterMainWindow * impl = static_cast<SciterMainWindow *>(userData);
+    SettingsStore & settings = SettingsStore::GetInstance();
+    const int stage = settings.GetInt(NXCoreSetting::DiskCacheLoadStage);
+
+    constexpr uint64_t intervalMs = 50;
+    const uint64_t now = GetTickCount64();
+    const bool neverPosted = (impl->m_lastDiskCacheStatusPostMs == 0);
+    const bool stageChanged = (stage != impl->m_lastPostedDiskCacheStage);
+    const uint64_t elapsed = neverPosted ? intervalMs : (now - impl->m_lastDiskCacheStatusPostMs);
+
+    if (!neverPosted && !stageChanged && elapsed < intervalMs)
+    {
+        return;
+    }
+
+    impl->m_lastPostedDiskCacheStage = stage;
+    impl->m_lastDiskCacheStatusPostMs = now;
     impl->m_rootElement.PostEvent(EVENT_DISK_CACHE_STATUS);
 }
 
@@ -931,7 +968,10 @@ void SciterMainWindow::UpdateEmulationStatusText()
                 parts.push_back(stdstr_f("Speed: %f", results.emulation_speed * 100.0));
             }
         }
-        parts.push_back(stdstr_f("%.0f FPS (%.2f ms)%s", std::round(results.average_game_fps), std::isnan(results.frametime) ? 0.0 : (results.frametime * 1000.0), m_useSpeedLimit ? "" : " Unlocked"));
+        if (results.average_game_fps != 0)
+        {
+            parts.push_back(stdstr_f("%.0f FPS (%.2f ms)%s", std::round(results.average_game_fps), std::isnan(results.frametime) ? 0.0 : (results.frametime * 1000.0), m_useSpeedLimit ? "" : " Unlocked"));
+        }
     }
     else
     {
@@ -1223,37 +1263,6 @@ void SciterMainWindow::LayoutRenderWindow()
     {
         IVideo & video = m_modules.Modules().Video();
         video.UpdateFramebufferLayout(width, height);
-    }
-    UpdatePausePanel();
-}
-
-void SciterMainWindow::UpdatePausePanel()
-{
-    SciterElement panel(m_rootElement.GetElementByID("PausePanel"));
-    if (!panel.IsValid())
-    {
-        return;
-    }
-
-    const bool paused =
-        m_emulationRunning && m_modules.IsValid() && m_modules.Modules().OperatingSystem().IsEmulationPaused();
-
-    panel.SetStyleAttribute("display", paused ? "block" : "none");
-
-    if (m_renderWindow == nullptr || !m_emulationRunning)
-    {
-        return;
-    }
-
-    if (paused)
-    {
-        ShowWindow((HWND)m_renderWindow, SW_HIDE);
-    }
-    else
-    {
-        SettingsStore & settings = SettingsStore::GetInstance();
-        const bool showRender = settings.GetBool(NXCoreSetting::DisplayedFrames);
-        ShowWindow((HWND)m_renderWindow, showRender ? SW_SHOW : SW_HIDE);
     }
 }
 
@@ -1631,7 +1640,7 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/
     }
     if (event_code == EVENT_EMULATION_LOADING)
     {
-        ApplyEmulationLoadingUi();
+        ShowPanel(Panel::Loading);
     }
     else if (event_code == EVENT_EMULATION_RUNNING)
     {
@@ -1640,33 +1649,16 @@ bool SciterMainWindow::OnEvent(SCITER_ELEMENT element, SCITER_ELEMENT /*source*/
     }
     else if (event_code == EVENT_EMULATION_STOPPED)
     {
-        ShowWindow((HWND)m_renderWindow, SW_HIDE);
-        SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
-        if (LoadingPanel.IsValid())
-        {
-            LoadingPanel.SetStyleAttribute("display", "none");
-        }
-
-        SciterElement romBrowserPanel(m_rootElement.GetElementByID("RomBrowserPanel"));
-        if (romBrowserPanel.IsValid())
-        {
-            romBrowserPanel.SetStyleAttribute("display", "block");
-        }
-        UpdatePausePanel();
+        m_shownFirstFrame = false;
+        ShowPanel(Panel::RomBrowser);
     }
     else if (event_code == EVENT_EMULATION_FIRST_FRAME)
     {
         SettingsStore & settings = SettingsStore::GetInstance();
         if (settings.GetBool(NXCoreSetting::DisplayedFrames))
         {
-            ShowWindow((HWND)m_renderWindow, SW_SHOW);
-            SciterElement LoadingPanel(m_rootElement.GetElementByID("LoadingPanel"));
-            if (LoadingPanel.IsValid())
-            {
-                LoadingPanel.SetStyleAttribute("display", "none");
-            }
+            ShowPanel(Panel::Renderer);
         }
-        UpdatePausePanel();
     }
     else if (event_code == EVENT_DISK_CACHE_STATUS)
     {
