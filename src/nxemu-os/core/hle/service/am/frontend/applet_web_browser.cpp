@@ -144,11 +144,10 @@ IVirtualFilePtr GetOfflineRomFS(Core::System & system, u64 title_id, LoaderConte
     if (nca_type == LoaderContentRecordType::HtmlDocument)
     {
         LOG_WARNING(Service_AM, "Falling back to manual RomFS from the loaded application.");
-        IRomInfo * loaded = loader.LoadedRomInfo();
-        if (loaded != nullptr)
+        IRomInfoPtr loaded(loader.LoadedRomInfo());
+        if (loaded)
         {
             romfs = IVirtualFilePtr(loaded->ReadManualRomFS());
-            loaded->Release();
         }
     }
 

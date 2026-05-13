@@ -19,13 +19,19 @@
     </div>
     <div id="LoadingPanel" class="main-contents-panel">
       <div class="loading-container">
-        <div class="loading-text"><span id="LoadingStatusText" class="text">Loading</span>
-      	  <div class="dot-pulse-container">
-            <div class="dot-pulse"></div>
-            <div class="dot-pulse"></div>
-            <div class="dot-pulse"></div>
-      	  </div>
-      	</div>
+        <img id="LoadingCornerLogo" />
+        <div class="loading-main">
+          <img id="LoadingGameIcon" alt="" />
+          <div class="loading-text-column">
+            <div id="loadingText" />
+            <div class="loading-progress-wrap">
+              <div class="loading-progress-track">
+                <div id="LoadingProgressFill" class="loading-progress-fill indeterminate"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <img id="LoadingCornerBanner" />
       </div>
     </div>
     <div id="PausePanel" class="main-contents-panel">

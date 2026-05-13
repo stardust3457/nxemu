@@ -21,6 +21,7 @@ std::vector<uint8_t> IVirtualFilePtr::ReadAllBytes() const
 
 template class InterfacePtr<IVirtualDirectoryList>;
 template class InterfacePtr<IVirtualDirectory>;
+template class InterfacePtr<IRomInfo>;
 template class InterfacePtr<IVirtualFileList>;
 template class InterfacePtr<IVirtualFile>;
 template class InterfacePtr<IFileSysNCA>;
