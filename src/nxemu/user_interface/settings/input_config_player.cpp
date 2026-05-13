@@ -481,7 +481,8 @@ InputConfigPlayer::InputConfigPlayer(ISciterUI & sciterUI, InputConfig & config,
     m_inputDeviceList(config.InputDeviceList()),
     m_timeoutTimerActive(false),
     m_pollingType(PollingInputType::None),
-    m_pollingButtonId(0)
+    m_pollingButtonId(0),
+    m_stickUiThrottleLast{}
 {
     memset(&m_buttonValues, 0, sizeof(m_buttonValues));
     m_emulatedController = &m_emulatedControllerPlayer;
@@ -1345,6 +1346,34 @@ void InputConfigPlayer::HandleClick(SciterElement & button, uint32_t buttonId, P
     m_page.SetTimer(25, (uint32_t*)TIMER_POLL);
 }
 
+void InputConfigPlayer::RefreshStickUi()
+{
+    const auto now = std::chrono::steady_clock::now();
+    if (m_stickUiThrottleLast != std::chrono::steady_clock::time_point{} &&
+        (now - m_stickUiThrottleLast) < std::chrono::milliseconds(50))
+    {
+        return;
+    }
+    m_stickUiThrottleLast = now;
+    m_stickValues = m_emulatedController->GetSticksValues();
+
+    // Y axis is inverted
+    m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.value = -m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.value;
+    m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.raw_value = -m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.raw_value;
+    m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.value = -m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.value;
+    m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.raw_value = -m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.raw_value;
+    SciterElement controllerSvg = GetControllerSvg();
+    if (!controllerSvg.IsValid())
+    {
+        return;
+    }
+    UpdateStickDisplay(controllerSvg, NativeAnalogValues::LStick);
+    UpdateStickDisplay(controllerSvg, NativeAnalogValues::RStick);
+
+    controllerSvg.Update(true);
+    m_sciterUI.UpdateWindow(m_page.GetElementHwnd(true));
+}
+
 void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
 {
     switch (type) {
@@ -1354,14 +1383,7 @@ void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
         UpdateButtonState();
         break;
     case ControllerTriggerType::Stick:
-        m_stickValues = m_emulatedController->GetSticksValues();
-        // Y axis is inverted
-        m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.value = -m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.value;
-        m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.raw_value = -m_stickValues.status[(size_t)NativeAnalogValues::LStick].y.raw_value;
-        m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.value = -m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.value;
-        m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.raw_value = -m_stickValues.status[(size_t)NativeAnalogValues::RStick].y.raw_value;
-        UpdateStickDisplay(NativeAnalogValues::LStick);
-        UpdateStickDisplay(NativeAnalogValues::RStick);
+        RefreshStickUi();
         break;
     case ControllerTriggerType::Motion:
         m_motionValues = m_emulatedController->GetMotions();
@@ -1787,18 +1809,17 @@ void InputConfigPlayer::UpdateMotionCube()
     }
 }
 
-void InputConfigPlayer::UpdateStickDisplay(NativeAnalogValues analog)
+void InputConfigPlayer::UpdateStickDisplay(const SciterElement& svg, NativeAnalogValues analog)
 {
     if (analog != NativeAnalogValues::LStick && analog != NativeAnalogValues::RStick)
     {
         return;
     }
-    StickStatus & status = m_stickValues.status[(size_t)analog];
-    SciterElement svg = GetControllerSvg();
     if (!svg.IsValid())
     {
         return;
     }
+    StickStatus & status = m_stickValues.status[(size_t)analog];
 
     SciterElement el = svg.FindFirst(analog == NativeAnalogValues::LStick ? ".left-stick-visual" : ".right-stick-visual");
     if (!el.IsValid())
