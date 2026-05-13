@@ -1721,6 +1721,9 @@ void InputConfigPlayer::UpdateButtonState()
             }
         }
     }
+
+    controllerSvg.Update(true);
+    m_sciterUI.UpdateWindow(m_page.GetElementHwnd(true));
 }
 
 void InputConfigPlayer::UpdateMotionCube()
