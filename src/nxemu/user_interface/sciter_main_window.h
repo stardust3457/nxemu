@@ -50,6 +50,14 @@ class SciterMainWindow :
         RecentFileMenuLast = RecentFileMenuFirst + 20,
     };
 
+    enum class Panel
+    {
+        RomBrowser,
+        Loading,
+        Pause,
+        Renderer
+    };
+
     enum
     {
         TIMER_UPDATE_UI = 5000,
@@ -115,8 +123,7 @@ private:
     void ResetWindowSize(uint32_t nominal_width, uint32_t nominal_height);
 #endif
     void LayoutRenderWindow();
-    void UpdatePausePanel();
-    void ApplyEmulationLoadingUi();
+    void ShowPanel(Panel panel);
     void RefreshDiskCacheLoadingText();
     void RegisterApplets();
 
@@ -170,5 +177,6 @@ private:
     bool m_hideUi;
     uint64_t m_lastDiskCacheStatusPostMs;
     int m_lastPostedDiskCacheStage;
+    bool m_shownFirstFrame;
     std::unique_ptr<Win32FullscreenState> m_win32Fullscreen;
 };
