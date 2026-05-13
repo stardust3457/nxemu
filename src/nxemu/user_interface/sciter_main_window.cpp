@@ -151,6 +151,8 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_emulationRunning(false),
     m_pendingStartInFullscreen(false),
     m_hideUi(false),
+    m_lastDiskCacheStatusPostMs(0),
+    m_lastPostedDiskCacheStage(0),
     m_shownFirstFrame(false),
     m_win32Fullscreen(std::make_unique<Win32FullscreenState>())
 {
@@ -609,6 +611,22 @@ void SciterMainWindow::DisplayedFramesChanged(const char * /*setting*/, void * u
 void SciterMainWindow::DiskCacheLoadChanged(const char * /*setting*/, void * userData)
 {
     SciterMainWindow * impl = static_cast<SciterMainWindow *>(userData);
+    SettingsStore & settings = SettingsStore::GetInstance();
+    const int stage = settings.GetInt(NXCoreSetting::DiskCacheLoadStage);
+
+    constexpr uint64_t intervalMs = 50;
+    const uint64_t now = GetTickCount64();
+    const bool neverPosted = (impl->m_lastDiskCacheStatusPostMs == 0);
+    const bool stageChanged = (stage != impl->m_lastPostedDiskCacheStage);
+    const uint64_t elapsed = neverPosted ? intervalMs : (now - impl->m_lastDiskCacheStatusPostMs);
+
+    if (!neverPosted && !stageChanged && elapsed < intervalMs)
+    {
+        return;
+    }
+
+    impl->m_lastPostedDiskCacheStage = stage;
+    impl->m_lastDiskCacheStatusPostMs = now;
     impl->m_rootElement.PostEvent(EVENT_DISK_CACHE_STATUS);
 }
 
