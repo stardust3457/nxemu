@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <sciter_element.h>
 #include <widgets/combo_box.h>
 #include <nxemu-module-spec/operating_system.h>
@@ -56,12 +57,13 @@ private:
     void UpdateMappingWithDefaults();
     void HandleClick(SciterElement& button, uint32_t button_id, PollingInputType type);
     void ControllerEventCallback(ControllerTriggerType type);
+    void RefreshStickUi();
     void UpdateControllerAvailableButtons();
     void UpdateControllerEnabledButtons();
     void UpdateControllerButtonNames();
     void UpdateButtonState();
     void UpdateMotionCube();
-    void UpdateStickDisplay(NativeAnalogValues analog);
+    void UpdateStickDisplay(const SciterElement & svg, NativeAnalogValues analog);
     void DeadzoneSliderChanged(uint32_t analogId);
     SciterElement GetControllerSvg();
     bool IsInputAcceptable(const IParamPackage & params) const;
