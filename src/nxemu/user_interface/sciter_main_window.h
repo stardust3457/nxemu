@@ -123,9 +123,7 @@ private:
     void ResetWindowSize(uint32_t nominal_width, uint32_t nominal_height);
 #endif
     void LayoutRenderWindow();
-    void UpdatePausePanel();
     void UpdateLoadingScreenDetails();
-    void ApplyEmulationLoadingUi();
     void ShowPanel(Panel panel);
     void RefreshDiskCacheLoadingText();
     void RegisterApplets();

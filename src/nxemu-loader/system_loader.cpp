@@ -177,6 +177,7 @@ bool Systemloader::LoadRom(const char * fileName)
         return false;
     }
 
+    g_settings->SetInt(NXCoreSetting::EmulationState, (int32_t)EmulationState::RomLoaded);
     Loader::AppLoader * app_loader = impl->m_appLoader.get();
     const LoaderFileType file_type = impl->m_appLoader->GetFileType();
     if (file_type == LoaderFileType::Unknown || file_type == LoaderFileType::Error) 

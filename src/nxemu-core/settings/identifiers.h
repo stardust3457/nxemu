@@ -6,6 +6,7 @@ enum class EmulationState : int32_t
     Stopped,
     Starting,
     LoadingRom,
+    RomLoaded,
     Running,
     Paused,
     Stopping,

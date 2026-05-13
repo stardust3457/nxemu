@@ -103,4 +103,5 @@ private:
     PollingInputType m_pollingType;
     uint32_t m_pollingButtonId;
     std::vector<std::pair<int, NpadStyleIndex>> index_controller_type_pairs;
+    std::chrono::steady_clock::time_point m_stickUiThrottleLast;
 };

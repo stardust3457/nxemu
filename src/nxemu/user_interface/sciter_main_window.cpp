@@ -625,10 +625,9 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
     SciterMainWindow * impl = (SciterMainWindow *)userData;
     EmulationState state = (EmulationState)SettingsStore::GetInstance().GetInt(NXCoreSetting::EmulationState);
 
-    if (state == EmulationState::LoadingRom)
+    if (state == EmulationState::RomLoaded)
     {
         impl->UpdateLoadingScreenDetails();
-        impl->ApplyEmulationLoadingUi();
         impl->m_shownFirstFrame = false;
         impl->ShowPanel(Panel::Loading);
     }
