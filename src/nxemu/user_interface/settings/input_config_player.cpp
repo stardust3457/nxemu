@@ -417,6 +417,57 @@ namespace
         return stdstr_f("%f,%f %f,%f %f,%f %f,%f", v[0].first, v[0].second, v[1].first, v[1].second, v[2].first, v[2].second, v[3].first, v[3].second);
     }
 
+    void PaintMotionCubeGroup(SciterElement motion, const vec3f_t& eulerValue, float size)
+    {
+        if (!motion.IsValid())
+        {
+            return;
+        }
+        const Common::Vec3f euler(eulerValue.x, eulerValue.y, eulerValue.z);
+        std::array<Common::Vec3f, 8> cube {{
+            {-0.7f, -1, -0.5f}, {-0.7f, 1, -0.5f}, {0.7f, 1, -0.5f}, {0.7f, -1, -0.5f},
+            {-0.7f, -1, 0.5f}, {-0.7f, 1, 0.5f}, {0.7f, 1, 0.5f}, {0.7f, -1, 0.5f},
+        }};
+        for (Common::Vec3f & point : cube)
+        {
+            point.RotateFromOrigin(euler.x, euler.y, euler.z);
+            point *= size;
+        }
+        const std::array<std::pair<float, float>, 4> front = {{
+            {cube[0].x, cube[0].y}, {cube[1].x, cube[1].y},
+            {cube[2].x, cube[2].y}, {cube[3].x, cube[3].y}
+        }};
+        const std::array<std::pair<float, float>, 4> back = {{
+            {cube[4].x, cube[4].y}, {cube[5].x, cube[5].y},
+            {cube[6].x, cube[6].y}, {cube[7].x, cube[7].y}
+        }};
+        SciterElement poly_front = motion.FindFirst(".cube.face.front");
+        if (poly_front.IsValid())
+        {
+            poly_front.SetAttribute("points", points_string(front).c_str());
+        }
+        SciterElement poly_back = motion.FindFirst(".cube.face.back");
+        if (poly_back.IsValid())
+        {
+            poly_back.SetAttribute("points", points_string(back).c_str());
+        }
+        const int A[4] = { 0, 1, 2, 3 };
+        const int B[4] = { 4, 5, 6, 7 };
+        for (int i = 0; i < 4; ++i)
+        {
+            const std::string sel = std::string(".cube.edge.e") + char('0' + i);
+            SciterElement e = motion.FindFirst(sel.c_str());
+            if (!e.IsValid())
+            {
+                continue;
+            }
+            e.SetAttribute("x1", stdstr_f("%f", cube[A[i]].x).c_str());
+            e.SetAttribute("y1", stdstr_f("%f", cube[A[i]].y).c_str());
+            e.SetAttribute("x2", stdstr_f("%f", cube[B[i]].x).c_str());
+            e.SetAttribute("y2", stdstr_f("%f", cube[B[i]].y).c_str());
+        }
+    }
+
     std::string GetButtonName(ButtonNames button_name)
     {
         switch (button_name)
@@ -1386,7 +1437,6 @@ void InputConfigPlayer::ControllerEventCallback(ControllerTriggerType type)
         RefreshStickUi();
         break;
     case ControllerTriggerType::Motion:
-        m_motionValues = m_emulatedController->GetMotions();
         UpdateMotionCube();
         break;
     }
@@ -1750,63 +1800,55 @@ void InputConfigPlayer::UpdateButtonState()
 
 void InputConfigPlayer::UpdateMotionCube()
 {
-    float size = 15.0f;
-    const vec3f_t & eulerValue = m_motionValues.motion[(uint32_t)NativeMotionValues::MotionLeft].euler;
-    const Common::Vec3f euler(eulerValue.x, eulerValue.y, eulerValue.z);
-
-    std::array<Common::Vec3f, 8> cube {{
-        {-0.7f, -1, -0.5f}, {-0.7f, 1, -0.5f}, {0.7f, 1, -0.5f}, {0.7f, -1, -0.5f},
-        {-0.7f, -1, 0.5f}, {-0.7f, 1, 0.5f}, {0.7f, 1, 0.5f}, {0.7f, -1, 0.5f},
-    }};
-
-    for (Common::Vec3f & point : cube)
+    if (m_comboControllerType == nullptr)
     {
-        point.RotateFromOrigin(euler.x, euler.y, euler.z);
-        point *= size;
+        return;
     }
-
-    std::array<std::pair<float, float>, 4> front = {{
-        {cube[0].x, cube[0].y}, {cube[1].x, cube[1].y},
-        {cube[2].x, cube[2].y}, {cube[3].x, cube[3].y}
-    }};
-    std::array<std::pair<float, float>, 4> back = {{
-        {cube[4].x, cube[4].y}, {cube[5].x, cube[5].y},
-        {cube[6].x, cube[6].y}, {cube[7].x, cube[7].y}
-    }};
-
-    SciterElement motion = m_page.FindFirst("#motion");
-    if (!motion.IsValid())
+    const NpadStyleIndex layout = GetControllerTypeFromIndex(m_comboControllerType->CurrentIndex());
+    if (layout == NpadStyleIndex::GameCube)
     {
         return;
     }
 
-    SciterElement poly_front = motion.FindFirst(".cube.face.front");
-    if (poly_front.IsValid())
+    const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    if (m_motionUiThrottleLast != std::chrono::steady_clock::time_point{} && (now - m_motionUiThrottleLast) < std::chrono::milliseconds(50))
     {
-        poly_front.SetAttribute("points", points_string(front).c_str());
+        return;
     }
-    SciterElement poly_back = motion.FindFirst(".cube.face.back");
-    if (poly_back.IsValid())
+    m_motionUiThrottleLast = now;
+
+    m_motionValues = m_emulatedController->GetMotions();
+
+    SciterElement svg = GetControllerSvg();
+    if (!svg.IsValid())
     {
-        poly_back.SetAttribute("points", points_string(back).c_str());
+        return;
     }
 
-    const int A[4] = { 0,1,2,3 };
-    const int B[4] = { 4,5,6,7 };
-    for (int i = 0; i < 4; ++i) 
+    switch (layout)
     {
-        std::string sel = std::string(".cube.edge.e") + char('0' + i);
-        SciterElement e = motion.FindFirst(sel.c_str());
-        if (!e.IsValid())
-        {
-            continue;
-        }
-
-        e.SetAttribute("x1", stdstr_f("%f", cube[A[i]].x).c_str());
-        e.SetAttribute("y1", stdstr_f("%f", cube[A[i]].y).c_str());
-        e.SetAttribute("x2", stdstr_f("%f", cube[B[i]].x).c_str());
-        e.SetAttribute("y2", stdstr_f("%f", cube[B[i]].y).c_str());
+    case NpadStyleIndex::JoyconDual:
+        PaintMotionCubeGroup(svg.GetElementByID("motion-left"), m_motionValues.motion[(uint32_t)NativeMotionValues::MotionLeft].euler, 20.0f);
+        PaintMotionCubeGroup(svg.GetElementByID("motion-right"), m_motionValues.motion[(uint32_t)NativeMotionValues::MotionRight].euler, 20.0f);
+        break;
+    case NpadStyleIndex::JoyconRight:
+        PaintMotionCubeGroup(svg.FindFirst(".motion"), m_motionValues.motion[(uint32_t)NativeMotionValues::MotionRight].euler, 20.0f);
+        break;
+    case NpadStyleIndex::JoyconLeft:
+        PaintMotionCubeGroup(svg.FindFirst(".motion"), m_motionValues.motion[(uint32_t)NativeMotionValues::MotionLeft].euler, 20.0f);
+        break;
+    case NpadStyleIndex::Fullkey:
+        PaintMotionCubeGroup(svg.FindFirst(".motion"), m_motionValues.motion[(uint32_t)NativeMotionValues::MotionLeft].euler, 15.0f);
+        break;
+    case NpadStyleIndex::Handheld:
+        PaintMotionCubeGroup(svg.FindFirst(".motion"), m_motionValues.motion[(uint32_t)NativeMotionValues::MotionLeft].euler, 15.0f);
+        break;
+    default:
+        return;
     }
+
+    svg.Update(true);
+    m_sciterUI.UpdateWindow(m_page.GetElementHwnd(true));
 }
 
 void InputConfigPlayer::UpdateStickDisplay(const SciterElement& svg, NativeAnalogValues analog)
