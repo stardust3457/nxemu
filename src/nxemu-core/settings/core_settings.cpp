@@ -49,6 +49,7 @@ namespace
 
     static CoreSetting settings[] = {
         { NXCoreSetting::ModuleDirectory, "", "ModuleDirectory-x64", &coreSettings.moduleDir, &coreSettings.moduleDirValue, "./modules" },
+#ifdef _WIN32
 #ifdef _DEBUG
         { NXCoreSetting::ModuleLoader, "modules", "loader", &coreSettings.moduleLoader, "loader\\nxemu-loader_d.dll" },
         { NXCoreSetting::ModuleCpu, "modules", "cpu", &coreSettings.moduleCpu, "cpu\\nxemu-cpu_d.dll" },
@@ -59,6 +60,12 @@ namespace
         { NXCoreSetting::ModuleCpu, "modules", "cpu", &coreSettings.moduleCpu, "cpu\\nxemu-cpu.dll" },
         { NXCoreSetting::ModuleVideo, "modules", "video", &coreSettings.moduleVideo, "video\\nxemu-video.dll" },
         { NXCoreSetting::ModuleOs, "modules", "os", &coreSettings.moduleOs, "operating_system\\nxemu-os.dll" },
+#endif
+#else
+        { NXCoreSetting::ModuleLoader, "modules", "loader", &coreSettings.moduleLoader, "libnxemu-loader.so" },
+        { NXCoreSetting::ModuleCpu, "modules", "cpu", &coreSettings.moduleCpu, "libnxemu-cpu.so" },
+        { NXCoreSetting::ModuleVideo, "modules", "video", &coreSettings.moduleVideo, "libnxemu-video.so" },
+        { NXCoreSetting::ModuleOs, "modules", "os", &coreSettings.moduleOs, "libnxemu-os.so" },
 #endif
         { NXCoreSetting::ShowLogConsole, "", "ShowLogConsole", &coreSettings.ShowLogConsole, false },
         { NXCoreSetting::LogFilter, "", "LogFilter", &coreSettings.LogFilter, "*:Info" },

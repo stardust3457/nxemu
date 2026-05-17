@@ -43,7 +43,7 @@ StorageId GetStorageIdForFrontendSlot(std::optional<FileSys::ContentProviderUnio
     {
         static const char * supported_extensions[] = {
             "nro",
-            "dxci", 
+            "dxci",
             "dnsp"
         };
 

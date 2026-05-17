@@ -47,7 +47,7 @@ struct OSSettings
     Settings::Setting<s32> current_user{linkage, 0, "current_user", Settings::Category::System};
 
 #ifdef ANDROID
-    SwitchableSetting<ConsoleMode> use_docked_mode{linkage, ConsoleMode::Handheld, "use_docked_mode", Category::System, Specialization::Radio, true, true};
+    Settings::SwitchableSetting<Settings::ConsoleMode> use_docked_mode{linkage, Settings::ConsoleMode::Handheld, "use_docked_mode", Settings::Category::System, Settings::Specialization::Radio, true, true};
 #else
     Settings::SwitchableSetting<Settings::ConsoleMode> use_docked_mode{linkage, Settings::ConsoleMode::Docked, "use_docked_mode", Settings::Category::System, Settings::Specialization::Radio, true, true};
 #endif

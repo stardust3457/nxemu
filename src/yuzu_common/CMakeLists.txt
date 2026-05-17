@@ -134,14 +134,8 @@ endif()
 if(ANDROID)
     target_sources(yuzu_common
         PUBLIC
-            fs/fs_android.cpp
-            fs/fs_android.h
-            android/android_common.cpp
-            android/android_common.h
             android/id_cache.cpp
             android/id_cache.h
-            android/applets/software_keyboard.cpp
-            android/applets/software_keyboard.h
     )
 endif()
 
