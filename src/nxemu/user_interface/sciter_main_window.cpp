@@ -302,11 +302,65 @@ SciterMainWindow::SciterMainWindow(ISciterUI & sciterUI, const char * windowTitl
     m_useSpeedLimit = settings.GetBool(NXOsSetting::UseSpeedLimit);
     m_speedLimit = settings.GetBool(NXOsSetting::SpeedLimit);
 
-    std::vector<uint8_t> resource;
-    if (m_sciterUI.LoadResource("fullscreen.svg", resource))
+}
+
+const char * SciterMainWindow::MenuIconResource(GuiAction action) const
+{
+    switch (action)
     {
-        m_fullscreenMenuSvg.assign(reinterpret_cast<const char *>(resource.data()), resource.size());
+    case GuiAction::LoadFile:
+        return "open-file.svg";
+    case GuiAction::ExitApplication:
+        return "close.svg";
+    case GuiAction::InstallFirmwareFromFile:
+    case GuiAction::InstallFirmwareFromFolder:
+        return "install.svg";
+    case GuiAction::ToggleFullscreen:
+        return "fullscreen.svg";
+    case GuiAction::OpenControllersDialog:
+        return "controller.svg";
+    case GuiAction::OpenSystemConfiguration:
+        return "settings.svg";
+    case GuiAction::PauseOrContinueEmulation:
+        return "pause.svg";
+    case GuiAction::StopEmulation:
+        return "stop.svg";
+    case GuiAction::ToggleHideUi:
+        return "hide-ui.svg";
+    case GuiAction::ResetWindowSize720p:
+    case GuiAction::ResetWindowSize900p:
+    case GuiAction::ResetWindowSize1080p:
+        return "resize.svg";
+    default:
+        return nullptr;
     }
+}
+
+const std::string * SciterMainWindow::MenuIconSvgForResource(const char * resource)
+{
+    if (resource == nullptr)
+    {
+        return nullptr;
+    }
+    const auto found = m_menuIconSvgs.find(resource);
+    if (found != m_menuIconSvgs.end())
+    {
+        return &found->second;
+    }
+    std::vector<uint8_t> data;
+    if (!m_sciterUI.LoadResource(resource, data) || data.empty())
+    {
+        return nullptr;
+    }
+    std::string & cached = m_menuIconSvgs[resource];
+    cached.assign(reinterpret_cast<const char *>(data.data()), data.size());
+    return &cached;
+}
+
+const std::string * SciterMainWindow::MenuIconSvg(GuiAction action)
+{
+    const char * resource = MenuIconResource(action);
+    return MenuIconSvgForResource(resource);
 }
 
 SciterMainWindow::~SciterMainWindow()
@@ -360,7 +414,7 @@ void SciterMainWindow::ResetMenu()
 
     MenuBarItemList mainTitleMenu;
     MenuBarItemList fileMenu;
-    fileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::LoadFile), "&Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile)));
+    fileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::LoadFile), "&Load File...", nullptr, HotkeyAccelerator(Hotkey::LoadFile), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::LoadFile)));
 
     Stringlist & recentFiles = uiSettings.recentFiles;
     MenuBarItemList RecentFileMenu;
@@ -373,11 +427,11 @@ void SciterMainWindow::ResetMenu()
             RecentFileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::RecentFileMenuFirst) + recentFileIndex, MenuString.c_str()));
             recentFileIndex += 1;
         }
-        fileMenu.emplace_back(MenuBarItem::SUB_MENU, "&Recent File", &RecentFileMenu);
+        fileMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&Recent File", &RecentFileMenu, nullptr, MenuBarItem::CheckState::None, MenuIconSvgForResource("recent.svg")));
     }
 
     fileMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
-    fileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ExitApplication), "E&xit", nullptr, HotkeyAccelerator(Hotkey::Exit)));
+    fileMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ExitApplication), "E&xit", nullptr, HotkeyAccelerator(Hotkey::Exit), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::ExitApplication)));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&File", &fileMenu));
 
     MenuBarItemList systemMenu;
@@ -388,8 +442,8 @@ void SciterMainWindow::ResetMenu()
         {
             paused = m_modules.Modules().OperatingSystem().IsEmulationPaused();
         }
-        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::PauseOrContinueEmulation),paused ? "Continue" : "Pause",nullptr, HotkeyAccelerator(Hotkey::PauseContinue)));
-        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::StopEmulation), "&Stop", nullptr, HotkeyAccelerator(Hotkey::StopEmulation)));
+        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::PauseOrContinueEmulation), paused ? "Continue" : "Pause", nullptr, HotkeyAccelerator(Hotkey::PauseContinue), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::PauseOrContinueEmulation)));
+        systemMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::StopEmulation), "&Stop", nullptr, HotkeyAccelerator(Hotkey::StopEmulation), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::StopEmulation)));
         mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&System", &systemMenu));
     }
 
@@ -401,29 +455,30 @@ void SciterMainWindow::ResetMenu()
     }
     if (m_emulationRunning)
     {
-        const std::string * fullscreenSvg = m_fullscreenMenuSvg.empty() ? nullptr : &m_fullscreenMenuSvg;
-        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleFullscreen), "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen), MenuBarItem::CheckState::None, fullscreenSvg));
+        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleFullscreen), "&Fullscreen", nullptr, HotkeyAccelerator(Hotkey::Fullscreen), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::ToggleFullscreen)));
     }
     if (m_emulationRunning)
     {
-        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleHideUi), m_hideUi ? "Show &UI" : "Hide &UI", nullptr, HotkeyAccelerator(Hotkey::HideUi)));
+        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleHideUi), m_hideUi ? "Show &UI" : "Hide &UI", nullptr, HotkeyAccelerator(Hotkey::HideUi), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::ToggleHideUi)));
     }
     MenuBarItemList resetWindowSizeMenu;
-    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize720p),"Reset Window Size to 720p"));
-    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize900p),"Reset Window Size to 900p"));
-    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize1080p),"Reset Window Size to 1080p"));
-    viewMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Reset Window Size", &resetWindowSizeMenu));
+    const std::string * resizeMenuSvg = MenuIconSvg(GuiAction::ResetWindowSize720p);
+    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize720p), "Reset Window Size to 720p", nullptr, nullptr, MenuBarItem::CheckState::None, resizeMenuSvg));
+    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize900p), "Reset Window Size to 900p", nullptr, nullptr, MenuBarItem::CheckState::None, resizeMenuSvg));
+    resetWindowSizeMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ResetWindowSize1080p), "Reset Window Size to 1080p", nullptr, nullptr, MenuBarItem::CheckState::None, resizeMenuSvg));
+    viewMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Reset Window Size", &resetWindowSizeMenu, nullptr, MenuBarItem::CheckState::None, resizeMenuSvg));
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&View", &viewMenu));
 
     MenuBarItemList optionsMenu;
-    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenControllersDialog), "&Controllers...", nullptr, HotkeyAccelerator(Hotkey::Controllers)));
-    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenSystemConfiguration), "Confi&gure...", nullptr, HotkeyAccelerator(Hotkey::Configure)));
+    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenControllersDialog), "&Controllers...", nullptr, HotkeyAccelerator(Hotkey::Controllers), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::OpenControllersDialog)));
+    optionsMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::OpenSystemConfiguration), "Confi&gure...", nullptr, HotkeyAccelerator(Hotkey::Configure), MenuBarItem::CheckState::None, MenuIconSvg(GuiAction::OpenSystemConfiguration)));
     MenuBarItemList installFirmwareMenu;
     if (!m_emulationRunning && m_modules.IsValid())
     {
         optionsMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
-        installFirmwareMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::InstallFirmwareFromFile), "Install from &DXCI or ZIP...", nullptr, nullptr));
-        installFirmwareMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::InstallFirmwareFromFolder), "Install from &folder...", nullptr, nullptr));
+        const std::string * installFirmwareSvg = MenuIconSvg(GuiAction::InstallFirmwareFromFile);
+        installFirmwareMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::InstallFirmwareFromFile), "Install from &DXCI or ZIP...", nullptr, nullptr, MenuBarItem::CheckState::None, installFirmwareSvg));
+        installFirmwareMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::InstallFirmwareFromFolder), "Install from &folder...", nullptr, nullptr, MenuBarItem::CheckState::None, installFirmwareSvg));
         optionsMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "Install &Firmware", &installFirmwareMenu));
     }
     mainTitleMenu.push_back(MenuBarItem(MenuBarItem::SUB_MENU, "&Options", &optionsMenu));

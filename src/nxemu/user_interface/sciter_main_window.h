@@ -2,6 +2,7 @@
 #include "applets/web_browser.h"
 #include "startup_checks.h"
 #include "user_interface/widgets/rom_browser.h"
+#include <map>
 #include <memory>
 #include <string>
 #include <nxemu-core/modules/system_modules.h>
@@ -115,6 +116,9 @@ private:
     const char * IsMenuBarAccelerator(uint32_t keyCode, uint32_t keyboardState);
     GuiAction HotkeyToGuiAction(const char * hotkeyId);
     void OnGuiAction(GuiAction action);
+    const char * MenuIconResource(GuiAction action) const;
+    const std::string * MenuIconSvg(GuiAction action);
+    const std::string * MenuIconSvgForResource(const char * resource);
 
     void ToggleHideUi();
     void UpdateUIVisibility();
@@ -177,7 +181,7 @@ private:
     uint32_t m_speedLimit;
     bool m_emulationRunning;
     bool m_pendingStartInFullscreen;
-    std::string m_fullscreenMenuSvg;
+    std::map<std::string, std::string> m_menuIconSvgs;
     bool m_hideUi;
     uint64_t m_lastDiskCacheStatusPostMs;
     int m_lastPostedDiskCacheStage;
