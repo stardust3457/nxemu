@@ -252,6 +252,10 @@ void SetupUISetting(void)
                 settingsStore.SetDefaultString(setting.identifier, setting.default_hotKeys != nullptr ? SerializeUIHotkeysMap(*setting.default_hotKeys).c_str() : "");
                 settingsStore.SetString(setting.identifier, SerializeUIHotkeysMap(*setting.setting.hotkey_map).c_str());
                 break;
+            case SettingType::Bool:
+                settingsStore.SetDefaultBool(setting.identifier, setting.default_bool);
+                settingsStore.SetBool(setting.identifier, setting.setting.boolean != nullptr ? *setting.setting.boolean : setting.default_bool);
+                break;
             default:
                 g_notify->BreakPoint(__FILE__, __LINE__);
             }
@@ -298,7 +302,7 @@ void SaveUISetting(void)
             }
             break;
         case SettingType::int32:
-            if (*setting.setting.boolean != setting.default_bool)
+            if (*setting.setting.int32 != static_cast<int32_t>(setting.default_int32))
             {
                 JsonSetNestedValue(json, setting.json_key, JsonValue(*setting.setting.int32));
             }
@@ -459,6 +463,12 @@ namespace
                         uiSetting.setting.hotkey_map->clear();
                     }
                     merge_default_hotkeys(*uiSetting.setting.hotkey_map);
+                }
+                break;
+            case SettingType::Bool:
+                if (uiSetting.setting.boolean != nullptr)
+                {
+                    *uiSetting.setting.boolean = settingsStore.GetBool(setting);
                 }
                 break;
             default:
