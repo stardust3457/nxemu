@@ -14,6 +14,12 @@ void Notification::DisplayError(const char * message, const char * title) const
     MessageBoxW(nullptr, stdstr(message).ToUTF16().c_str(), stdstr(title).ToUTF16().c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
 }
 
+NotificationResponse Notification::Query(const char * message, const char * title) const
+{
+    const int result = MessageBoxW(nullptr, stdstr(message).ToUTF16().c_str(), stdstr(title).ToUTF16().c_str(), MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND);
+    return result == IDYES ? NotificationResponse::Yes : NotificationResponse::No;
+}
+
 void Notification::BreakPoint(const char * fileName, uint32_t lineNumber)
 {
     DisplayError(stdstr_f("Break point found at\n%s\n%d", fileName, lineNumber).c_str(), "Error");

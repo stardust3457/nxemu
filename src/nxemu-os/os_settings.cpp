@@ -657,7 +657,7 @@ void SetupOsSetting(void)
             UNIMPLEMENTED();
         }
     }
-    
+
     JsonValue root;
     JsonReader reader;
     std::string json = g_settings->GetSectionSettings("nxemu-os");

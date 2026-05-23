@@ -26,10 +26,10 @@
 
 enum
 {
-    MODULE_LOADER_SPECS_VERSION = 0x011E,
-    MODULE_VIDEO_SPECS_VERSION = 0x0117,
-    MODULE_CPU_SPECS_VERSION = 0x010E,
-    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x0114,
+    MODULE_LOADER_SPECS_VERSION = 0x011F,
+    MODULE_VIDEO_SPECS_VERSION = 0x0118,
+    MODULE_CPU_SPECS_VERSION = 0x010F,
+    MODULE_OPERATING_SYSTEM_SPECS_VERSION = 0x0115,
 };
 
 enum MODULE_TYPE : uint16_t
@@ -40,10 +40,17 @@ enum MODULE_TYPE : uint16_t
     MODULE_TYPE_OPERATING_SYSTEM = 4,
 };
 
+enum class NotificationResponse : uint32_t
+{
+    No = 0,
+    Yes = 1,
+};
+
 nxinterface IModuleNotification
 {
     virtual void DisplayError(const char * message, const char * title) = 0;
     virtual void BreakPoint(const char * fileName, uint32_t lineNumber) = 0;
+    virtual NotificationResponse Query(const char * message, const char * title) = 0;
 };
 
 typedef void (*SettingChangeCallback)(const char * setting, void * userData);
