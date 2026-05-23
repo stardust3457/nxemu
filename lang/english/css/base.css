@@ -300,9 +300,17 @@ menu li .menu-item-glyph.menu-item-icon-svg svg
   vertical-align: middle;
 }
 
-menu li .menu-item-glyph.menu-item-icon-svg path
+menu li .menu-item-glyph.menu-item-icon-svg path,
+menu li .menu-item-glyph.menu-item-icon-svg circle
 {
   fill: currentColor;
+}
+
+menu li .menu-item-glyph.menu-item-icon-svg path[fill="none"],
+menu li .menu-item-glyph.menu-item-icon-svg circle[fill="none"]
+{
+  fill: none;
+  stroke: currentColor;
 }
 
 menu li .menu-item-glyph .menu-item-checkmark
