@@ -3,6 +3,7 @@
 #include "core/file_sys/card_image.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/filesystem.h"
+#include "core/file_sys/control_metadata.h"
 #include "core/file_sys/patch_manager.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/romfs.h"
@@ -757,6 +758,22 @@ uint32_t Systemloader::GetContentProviderEntries(bool useTitleType, LoaderTitleT
 IFileSysNCA * Systemloader::GetContentProviderEntry(uint64_t title_id, LoaderContentRecordType type)
 {
     return GetContentProvider().GetEntryNCA(title_id, type).release();
+}
+
+IFileSysNACP * Systemloader::ReadControlData()
+{
+    if (impl->m_appLoader == nullptr)
+    {
+        return nullptr;
+    }
+
+    FileSys::NACP nacp;
+    if (impl->m_appLoader->ReadControlData(nacp) != LoaderResultStatus::Success)
+    {
+        return nullptr;
+    }
+
+    return new FileSys::NACP(nacp);
 }
 
 IFileSysNACP * Systemloader::GetPMControlMetadata(uint64_t programID)
