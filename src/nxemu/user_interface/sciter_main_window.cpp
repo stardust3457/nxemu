@@ -417,6 +417,7 @@ void SciterMainWindow::ResetMenu()
     if (!m_emulationRunning)
     {
         viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleStartGamesInFullscreen), "&Start games in fullscreen", nullptr, nullptr, uiSettings.startGamesInFullscreen ? MenuBarItem::CheckState::Checked : MenuBarItem::CheckState::Unchecked));
+        viewMenu.push_back(MenuBarItem(static_cast<int32_t>(GuiAction::ToggleStartGamesWithUiHidden), "Start games with &UI hidden", nullptr, nullptr, uiSettings.startGamesWithUiHidden ? MenuBarItem::CheckState::Checked : MenuBarItem::CheckState::Unchecked));
         viewMenu.push_back(MenuBarItem(MenuBarItem::SPLITER));
     }
     if (m_emulationRunning)
@@ -619,6 +620,7 @@ void SciterMainWindow::EmulationRunning(const char * /*setting*/, void * userDat
     SettingsStore & settings = SettingsStore::GetInstance();
     impl->m_emulationRunning = settings.GetBool(NXCoreSetting::EmulationRunning);
     impl->m_pendingStartInFullscreen = impl->m_emulationRunning && uiSettings.startGamesInFullscreen;
+    impl->m_pendingStartWithUiHidden = impl->m_emulationRunning && uiSettings.startGamesWithUiHidden;
     if (!impl->m_emulationRunning && impl->m_win32Fullscreen && impl->m_win32Fullscreen->active)
     {
         impl->ExitFullscreen();
@@ -698,6 +700,19 @@ void SciterMainWindow::EmulationStateChanged(const char * /*setting*/, void * us
         {
             impl->m_pendingStartInFullscreen = false;
             impl->EnterFullscreen();
+        }
+        if (impl->m_pendingStartWithUiHidden && uiSettings.startGamesWithUiHidden)
+        {
+            impl->m_pendingStartWithUiHidden = false;
+            impl->m_hideUi = true;
+            impl->UpdateUIVisibility();
+            impl->m_sciterUI.UpdateWindow(impl->m_rootElement.GetElementHwnd(true));
+            SciterElement mainContents(impl->m_rootElement.GetElementByID("MainContents"));
+            if (mainContents.IsValid())
+            {
+                mainContents.Update(true);
+            }
+            impl->LayoutRenderWindow();
         }
         impl->m_rootElement.PostEvent(EVENT_EMULATION_RUNNING);
         impl->ResetMenu();
@@ -1343,6 +1358,17 @@ void SciterMainWindow::OnToggleStartGamesInFullscreen()
     ResetMenu();
 }
 
+void SciterMainWindow::OnToggleStartGamesWithUiHidden()
+{
+    if (m_emulationRunning)
+    {
+        return;
+    }
+    uiSettings.startGamesWithUiHidden = !uiSettings.startGamesWithUiHidden;
+    SaveUISetting();
+    ResetMenu();
+}
+
 void SciterMainWindow::OnRecetGame(uint32_t fileIndex)
 {
     Stringlist & recentFiles = uiSettings.recentFiles;
@@ -1358,7 +1384,7 @@ void SciterMainWindow::OnWindowDestroy(HWINDOW /*hWnd*/)
     m_sciterUI.Stop();
 }
 
-bool SciterMainWindow::OnWindowCloseRequest(HWINDOW hWnd)
+bool SciterMainWindow::OnWindowCloseRequest(HWINDOW /*hWnd*/)
 {
     return ConfirmCloseEmulator();
 }
@@ -1419,6 +1445,9 @@ void SciterMainWindow::OnGuiAction(GuiAction action)
         break;
     case GuiAction::ToggleStartGamesInFullscreen:
         OnToggleStartGamesInFullscreen();
+        break;
+    case GuiAction::ToggleStartGamesWithUiHidden:
+        OnToggleStartGamesWithUiHidden();
         break;
     case GuiAction::ToggleHideUi:
         ToggleHideUi();

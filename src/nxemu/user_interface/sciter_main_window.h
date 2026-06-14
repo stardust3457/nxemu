@@ -47,6 +47,7 @@ class SciterMainWindow :
         InstallFirmwareFromFolder,
         ToggleFullscreen,
         ToggleStartGamesInFullscreen,
+        ToggleStartGamesWithUiHidden,
         ToggleHideUi,
         ToggleDockedMode,
         ResetWindowSize720p,
@@ -126,6 +127,7 @@ private:
     void OnRecetGame(uint32_t fileIndex);
     void OnToggleDockedMode();
     void OnToggleStartGamesInFullscreen();
+    void OnToggleStartGamesWithUiHidden();
     void OnAbout();
     void OnOpenDiscord();
     void OnOpenAppDirectory();
@@ -204,6 +206,7 @@ private:
     uint32_t m_speedLimit;
     bool m_emulationRunning;
     bool m_pendingStartInFullscreen;
+    bool m_pendingStartWithUiHidden;
     std::map<std::string, std::string> m_menuIconSvgs;
     bool m_hideUi;
     uint64_t m_lastDiskCacheStatusPostMs;
